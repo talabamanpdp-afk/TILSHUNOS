@@ -2,7 +2,7 @@
   "name": "TILSHUNOS — Til o‘rganish platformasi",
   "short_name": "TILSHUNOS",
   "description": "Tillarni o‘z tempingizda o‘rganing.",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f6f7fb",

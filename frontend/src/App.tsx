@@ -167,16 +167,29 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [installed, setInstalled] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    return (
+    const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: fullscreen)').matches ||
+      window.matchMedia('(display-mode: minimal-ui)').matches ||
       (window.navigator as any).standalone === true ||
-      localStorage.getItem('tilshunos_pwa_installed') === 'true'
-    );
+      window.location.search.includes('source=pwa') ||
+      document.referrer.includes('android-app://') ||
+      localStorage.getItem('tilshunos_pwa_installed') === 'true';
+    return !!isStandalone;
   });
   const [bannerDismissed, setBannerDismissed] = useState<boolean>(() => {
-    return localStorage.getItem('tilshunos_pwa_banner_dismissed') === 'true';
+    return localStorage.getItem('tilshunos_pwa_banner_dismissed') === 'true' || localStorage.getItem('tilshunos_pwa_installed') === 'true';
   });
   const [showPwaModal, setShowPwaModal] = useState(false);
+
+  useEffect(() => {
+    if (window.location.search.includes('source=pwa')) {
+      localStorage.setItem('tilshunos_pwa_installed', 'true');
+      localStorage.setItem('tilshunos_pwa_banner_dismissed', 'true');
+      setInstalled(true);
+      setBannerDismissed(true);
+    }
+  }, []);
 
   // AI Chat
   const [aiInput, setAiInput] = useState('');
@@ -528,9 +541,9 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
             </div>
           </div>
           <div className="topbar-right">
-            {/* Topbar PWA Install button - Only show if NOT installed */}
+            {/* Topbar PWA Install button - Only show on desktop and if NOT installed */}
             {!installed && (
-              <button className="primary-btn" onClick={triggerInstall} style={{ padding: '8px 12px', fontSize: '10px' }}>
+              <button className="primary-btn topbar-install-btn" onClick={triggerInstall} style={{ padding: '8px 12px', fontSize: '10px' }}>
                 <Download size={14} /> <span className="install-text">Appni yuklash</span>
               </button>
             )}
@@ -561,7 +574,9 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 className="install-dismiss"
                 onClick={() => {
                   localStorage.setItem('tilshunos_pwa_banner_dismissed', 'true');
+                  localStorage.setItem('tilshunos_pwa_installed', 'true');
                   setBannerDismissed(true);
+                  setInstalled(true);
                 }}
                 aria-label="Yopish"
               >
@@ -1460,9 +1475,28 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 </div>
               </div>
             </div>
-            <button className="primary-btn" style={{ width: '100%' }} onClick={() => setShowPwaModal(false)}>
-              Tushunarli <Check size={16} />
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
+              <button
+                className="primary-btn"
+                style={{ width: '100%', background: '#16a34a', color: '#fff', padding: '12px', fontWeight: 800 }}
+                onClick={() => {
+                  setInstalled(true);
+                  setBannerDismissed(true);
+                  localStorage.setItem('tilshunos_pwa_installed', 'true');
+                  localStorage.setItem('tilshunos_pwa_banner_dismissed', 'true');
+                  setShowPwaModal(false);
+                }}
+              >
+                <Check size={16} /> Men allaqachon o‘rnatganman (Boshqa ko‘rsatilmasin)
+              </button>
+              <button
+                className="outline-btn"
+                style={{ width: '100%', padding: '10px' }}
+                onClick={() => setShowPwaModal(false)}
+              >
+                Yopish
+              </button>
+            </div>
           </div>
         </div>
       )}
