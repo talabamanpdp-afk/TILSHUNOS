@@ -1,0 +1,22 @@
+## .NET Core
+**/bin/
+**/obj/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.pidb
+*.booproj
+
+## Node / Frontend
+**/node_modules/
+**/dist/
+frontend/.env.local
+frontend/.env.*.local
+*.log
+
+## OS / IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
