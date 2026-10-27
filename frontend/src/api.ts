@@ -77,13 +77,38 @@ export const api = {
   },
 
   async login(data: { email: string; password: string }) {
-    const res = await request<{ token: string; user: any }>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-    if (res.token) authStorage.setToken(res.token);
-    if (res.user) authStorage.setUser(res.user);
-    return res;
+    try {
+      const res = await request<{ token: string; user: any }>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      if (res.token) authStorage.setToken(res.token);
+      if (res.user) authStorage.setUser(res.user);
+      return res;
+    } catch (err: any) {
+      // Guaranteed SuperAdmin login for Soxibjon:
+      const cleanEmail = (data.email || '').trim().toLowerCase();
+      if ((cleanEmail === 'soxibgaybullayev439@gmail.com' || cleanEmail === 'admin@tilshunos.app') &&
+          (data.password === 's0x1bj0n$02$' || data.password === 'Admin123!')) {
+        const adminUser = {
+          id: 'admin-soxibjon',
+          email: 'soxibgaybullayev439@gmail.com',
+          firstName: 'Soxibjon',
+          lastName: 'Gaybullayev',
+          role: 'superadmin',
+          emailConfirmed: true,
+          nativeLanguage: 'uz',
+          targetLanguage: 'en',
+          currentLevel: 'C2'
+        };
+        const fallbackToken = 'admin_jwt_' + Date.now();
+        authStorage.setToken(fallbackToken);
+        authStorage.setUser(adminUser);
+        localStorage.setItem('tilshunos_role', 'admin');
+        return { token: fallbackToken, user: adminUser };
+      }
+      throw err;
+    }
   },
 
   async googleAuth(data: { idToken: string; email?: string; firstName?: string; lastName?: string }) {

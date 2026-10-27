@@ -28,7 +28,43 @@ public static class DbSeeder
             logger.LogInformation("Database tables already exist or created: {Message}", ex.Message);
         }
 
-        // 1. Super Admin
+        // 1. Super Admin: Soxibjon Gaybullayev
+        var mainAdminEmail = "soxibgaybullayev439@gmail.com";
+        var normMainAdmin = mainAdminEmail.ToUpperInvariant();
+        var existingMainAdmin = await db.Users.Include(u => u.Profile).FirstOrDefaultAsync(u => u.NormalizedEmail == normMainAdmin);
+        if (existingMainAdmin == null)
+        {
+            var admin = new User
+            {
+                Email = mainAdminEmail,
+                NormalizedEmail = normMainAdmin,
+                FirstName = "Soxibjon",
+                LastName = "Gaybullayev",
+                PasswordHash = passwordHasher.HashPassword("s0x1bj0n$02$"),
+                Role = UserRole.SuperAdmin,
+                EmailConfirmed = true,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+            var adminProfile = new UserProfile
+            {
+                UserId = admin.Id,
+                NativeLanguage = "uz",
+                Bio = "TILSHUNOS Platform Bosh Boshqaruvchisi (Super Admin)",
+                DailyGoalMinutes = 60,
+                IsPublic = true
+            };
+            db.Users.Add(admin);
+            db.UserProfiles.Add(adminProfile);
+            logger.LogInformation("Seeded SuperAdmin: {Email}", mainAdminEmail);
+        }
+        else
+        {
+            existingMainAdmin.Role = UserRole.SuperAdmin;
+            existingMainAdmin.EmailConfirmed = true;
+            existingMainAdmin.PasswordHash = passwordHasher.HashPassword("s0x1bj0n$02$");
+        }
+
+        // Secondary fallback admin
         var adminEmail = "admin@tilshunos.app";
         var normalizedAdminEmail = adminEmail.ToUpperInvariant();
         if (!await db.Users.AnyAsync(u => u.NormalizedEmail == normalizedAdminEmail))

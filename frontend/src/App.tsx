@@ -100,7 +100,7 @@ export const languageMaterials: Record<string, any[]> = {
 
 const lessons = languageMaterials['en'];
 
-function Dashboard({ onLogout }: { onLogout: () => void }) {
+function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: boolean; setDark: (d: boolean) => void }) {
   const currentUser = authStorage.getUser();
   const [active, setActive] = useState('Bosh sahifa');
   const [selectedLang, setSelectedLang] = useState(() => localStorage.getItem('tilshunos_language') || 'en');
@@ -141,7 +141,6 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [search, setSearch] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
-  const [dark, setDark] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
   const [toast, setToast] = useState('');
   const [newWord, setNewWord] = useState({ word: '', translation: '', example: '', topic: 'Umumiy' });
@@ -164,9 +163,19 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     { name: 'Siz', avatar: 'S', score: 0, rank: 3 }
   ]);
 
-  // PWA install state
+  // PWA install state - detect if already installed
   const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [installed, setInstalled] = useState(false);
+  const [installed, setInstalled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true ||
+      localStorage.getItem('tilshunos_pwa_installed') === 'true'
+    );
+  });
+  const [bannerDismissed, setBannerDismissed] = useState<boolean>(() => {
+    return localStorage.getItem('tilshunos_pwa_banner_dismissed') === 'true';
+  });
   const [showPwaModal, setShowPwaModal] = useState(false);
 
   // AI Chat
@@ -210,6 +219,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     window.addEventListener('beforeinstallprompt', handler);
     const installedHandler = () => {
       setInstalled(true);
+      localStorage.setItem('tilshunos_pwa_installed', 'true');
       setInstallPrompt(null);
     };
     window.addEventListener('appinstalled', installedHandler);
@@ -222,6 +232,11 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const triggerInstall = async () => {
     if (installPrompt) {
       await installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      if (choice?.outcome === 'accepted') {
+        setInstalled(true);
+        localStorage.setItem('tilshunos_pwa_installed', 'true');
+      }
       setInstallPrompt(null);
     } else {
       setShowPwaModal(true);
@@ -441,16 +456,18 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           </div>
         )}
 
-        {/* Mobile Install button in sidebar */}
-        <button
-          className="nav-item"
-          style={{ background: 'var(--soft)', color: 'var(--purple)', fontWeight: 700, margin: '6px 0 10px' }}
-          onClick={triggerInstall}
-        >
-          <Smartphone size={18} />
-          <span>Ilovani o‘rnatish</span>
-          <Download size={15} />
-        </button>
+        {/* Mobile Install button in sidebar - Only show if NOT installed */}
+        {!installed && (
+          <button
+            className="nav-item"
+            style={{ background: 'var(--soft)', color: 'var(--purple)', fontWeight: 700, margin: '6px 0 10px' }}
+            onClick={triggerInstall}
+          >
+            <Smartphone size={18} />
+            <span>Ilovani o‘rnatish</span>
+            <Download size={15} />
+          </button>
+        )}
 
         <nav className="nav-list">
           {navItems.map(item => (
@@ -511,10 +528,12 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             </div>
           </div>
           <div className="topbar-right">
-            {/* Mobile PWA Install button */}
-            <button className="primary-btn" onClick={triggerInstall} style={{ padding: '8px 12px', fontSize: '10px' }}>
-              <Download size={14} /> <span className="install-text">Appni yuklash</span>
-            </button>
+            {/* Topbar PWA Install button - Only show if NOT installed */}
+            {!installed && (
+              <button className="primary-btn" onClick={triggerInstall} style={{ padding: '8px 12px', fontSize: '10px' }}>
+                <Download size={14} /> <span className="install-text">Appni yuklash</span>
+              </button>
+            )}
             <div className="search-global">
               <Search size={17} />
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Qidirish..." />
@@ -527,8 +546,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         </header>
 
         <div className="page-content">
-          {/* Universal PWA Install Banner */}
-          {!installed && (
+          {/* Universal PWA Install Banner - Only show if NOT installed and NOT dismissed */}
+          {!installed && !bannerDismissed && (
             <div className="install-banner">
               <div className="install-badge"><Download size={20} /></div>
               <div>
@@ -538,7 +557,14 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               <button className="primary-btn" onClick={triggerInstall}>
                 O‘rnatish <ArrowDownRight size={15} />
               </button>
-              <button className="install-dismiss" onClick={e => (e.currentTarget.parentElement as HTMLElement).remove()} aria-label="Yopish">
+              <button
+                className="install-dismiss"
+                onClick={() => {
+                  localStorage.setItem('tilshunos_pwa_banner_dismissed', 'true');
+                  setBannerDismissed(true);
+                }}
+                aria-label="Yopish"
+              >
                 <X size={16} />
               </button>
             </div>
@@ -1288,9 +1314,15 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                     </div>
                     <span className={`toggle ${dark ? 'on' : ''}`}><i /></span>
                   </button>
-                  <button className="primary-btn" onClick={triggerInstall} style={{ marginTop: '10px' }}>
-                    <Smartphone size={16} /> Ilovani telefonga o‘rnatish
-                  </button>
+                  {!installed ? (
+                    <button className="primary-btn" onClick={triggerInstall} style={{ marginTop: '10px' }}>
+                      <Smartphone size={16} /> Ilovani telefonga o‘rnatish
+                    </button>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#16a34a', fontSize: '11px', fontWeight: 700, marginTop: '10px', background: 'var(--soft)', padding: '10px', borderRadius: '8px' }}>
+                      <Check size={16} /> Ilova ushbu qurilmaga o‘rnatilgan
+                    </div>
+                  )}
                   <button className="outline-btn" onClick={onLogout} style={{ marginTop: '10px', color: '#e05656' }}>
                     <LogOut size={15} /> Hisobdan chiqish
                   </button>
@@ -1484,6 +1516,20 @@ function App() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [cmsContent, setCmsContent] = useState<any>(null);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [dark, setDark] = useState<boolean>(() => {
+    const saved = localStorage.getItem('tilshunos_theme');
+    if (saved) return saved === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('tilshunos_theme', dark ? 'dark' : 'light');
+    if (dark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [dark]);
 
   // Load public CMS content
   useEffect(() => {
@@ -1684,11 +1730,11 @@ function App() {
     if (role === 'teacher') {
       return <TeacherPanel onLogout={handleLogout} />;
     }
-    return <Dashboard onLogout={handleLogout} />;
+    return <Dashboard onLogout={handleLogout} dark={dark} setDark={setDark} />;
   }
 
   return (
-    <div className="entry-shell">
+    <div className={`entry-shell ${dark ? 'dark' : ''}`}>
       <header className="entry-header">
         <button className="entry-brand" onClick={() => setPage('welcome')}>
           <span className="entry-logo"><Languages size={23} /></span>
@@ -1697,6 +1743,9 @@ function App() {
         <nav>
           <a href="#features">Imkoniyatlar</a>
           <a href="#about">Biz haqimizda</a>
+          <button className="entry-theme-toggle" onClick={() => setDark(!dark)} title="Mavzuni almashtirish">
+            {dark ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
           <button className="entry-login" onClick={() => begin('login')}>
             Kirish <ArrowRight size={16} />
           </button>
@@ -1798,7 +1847,12 @@ function App() {
           </div>
 
           <div className="auth-card">
-            <button className="auth-back" onClick={() => setPage('welcome')}>← Bosh sahifaga</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <button className="auth-back" onClick={() => setPage('welcome')} style={{ margin: 0 }}>← Bosh sahifaga</button>
+              <button className="entry-theme-toggle" onClick={() => setDark(!dark)} title="Mavzuni almashtirish" style={{ width: '34px', height: '34px' }}>
+                {dark ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+            </div>
             <span className="entry-kicker">{page === 'verify' ? 'XAVFSIZLIK' : 'XUSH KELIBSIZ'}</span>
             <h2>{page === 'verify' ? 'Tasdiqlash kodi' : page === 'login' ? 'Hisobga kirish' : 'Hisob yaratish'}</h2>
             <p className="auth-desc">

