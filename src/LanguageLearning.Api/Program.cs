@@ -88,13 +88,39 @@ using (var scope = app.Services.CreateScope())
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
+        logger.LogInformation("Ensuring database tables are created...");
+        await db.Database.EnsureCreatedAsync();
+        logger.LogInformation("Database tables verified. Seeding initial data...");
         await DbSeeder.SeedAsync(db, hasher, logger);
+        logger.LogInformation("Database initialization complete.");
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "An error occurred while seeding the database.");
+        logger.LogError(ex, "An error occurred while creating or seeding the database: {Message}", ex.Message);
     }
 }
+
+// Global Exception Handler Middleware
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Unhandled API Exception on {Path}: {Message}", context.Request.Path, ex.Message);
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new 
+        { 
+            error = ex.Message, 
+            inner = ex.InnerException?.Message,
+            path = context.Request.Path.Value 
+        });
+    }
+});
 
 // HTTP request pipeline
 if (app.Environment.IsDevelopment())
