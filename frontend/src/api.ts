@@ -133,39 +133,7 @@ export const api = {
   },
 
   async googleAuth(data: { idToken: string; email?: string; firstName?: string; lastName?: string }) {
-    const cleanEmail = (data.email || '').trim().toLowerCase();
-    if (cleanEmail === 'soxibgaybullayev439@gmail.com' || cleanEmail === 'admin@tilshunos.app') {
-      const adminUser = {
-        id: 'admin-soxibjon',
-        email: 'soxibgaybullayev439@gmail.com',
-        firstName: data.firstName || 'Soxibjon',
-        lastName: data.lastName || 'Gaybullayev',
-        role: 'superadmin',
-        emailConfirmed: true,
-        nativeLanguage: 'uz',
-        targetLanguage: 'en',
-        currentLevel: 'C2'
-      };
-      const token = 'admin_jwt_google_' + Date.now();
-      authStorage.setToken(token);
-      authStorage.setUser(adminUser);
-      localStorage.setItem('tilshunos_role', 'admin');
-
-      fetch(`${BASE_URL}/auth/google`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          idToken: data.idToken || 'google_token',
-          email: data.email,
-          firstName: data.firstName || 'Soxibjon',
-          lastName: data.lastName || 'Gaybullayev'
-        })
-      }).catch(() => {});
-
-      return { token, user: adminUser };
-    }
-
-    const res = await request<{ token: string; user: any }>('/auth/google', {
+    const res = await request<{ token: string; user: any; isNewUser?: boolean }>('/auth/google', {
       method: 'POST',
       body: JSON.stringify({
         idToken: data.idToken || data.email || 'google_token',

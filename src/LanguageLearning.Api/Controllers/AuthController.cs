@@ -186,6 +186,11 @@ public class AuthController : ControllerBase
         var lastName = !string.IsNullOrWhiteSpace(request.LastName) ? request.LastName.Trim() : "Google";
 
         var isSuperAdminAccount = email == "soxibgaybullayev439@gmail.com" || email == "admin@tilshunos.app";
+        if (isSuperAdminAccount)
+        {
+            return Unauthorized(new { message = "Super Admin tizimiga xavfsizlik yuzasidan faqat admin email va paroli orqali kirish mumkin." });
+        }
+
         var normalizedEmail = email.ToUpperInvariant();
         var user = await _db.Users
             .Include(u => u.Profile)
