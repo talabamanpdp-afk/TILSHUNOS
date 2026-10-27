@@ -1,36 +1,10 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from './lib/theme';
-import { AuthProvider } from './lib/auth';
-import { initPwaListeners } from './lib/pwa';
-import { App } from './app/App';
-import './index.css';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+import './styles.css';
 
-// Initialize PWA install prompt listeners
-initPwaListeners();
+createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 2, // 2 minutes
-    },
-  },
-});
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ThemeProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </ThemeProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  </React.StrictMode>
-);
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => undefined); });
+}
