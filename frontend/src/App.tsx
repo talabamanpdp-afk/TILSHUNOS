@@ -1,6 +1,7 @@
 import { AdminPanel } from './components/AdminPanel';
 import { TeacherPanel } from './components/TeacherPanel';
 import { DuelMatchModal } from './components/DuelMatchModal';
+import { GoogleOAuthModal } from './components/GoogleOAuthModal';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Award, BookA, BookOpen, Bookmark, Brain,
@@ -1482,6 +1483,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [cmsContent, setCmsContent] = useState<any>(null);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
 
   // Load public CMS content
   useEffect(() => {
@@ -1608,24 +1610,21 @@ function App() {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
+    setShowGoogleModal(true);
+    setMessage('');
+  };
+
+  const handleGoogleSuccess = async (data: { email: string; firstName: string; lastName: string; birthDate?: string }) => {
+    setShowGoogleModal(false);
     setLoading(true);
     setMessage('');
     try {
-      let targetEmail = email.trim();
-      if (!targetEmail) {
-        const promptEmail = prompt('Google akkauntingiz email manzilini kiriting:', 'foydalanuvchi@gmail.com');
-        if (!promptEmail) {
-          setLoading(false);
-          return;
-        }
-        targetEmail = promptEmail.trim();
-      }
       const res = await api.googleAuth({
         idToken: 'google_oauth_token',
-        email: targetEmail,
-        firstName: name || targetEmail.split('@')[0],
-        lastName: 'Google'
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName
       });
       const userRole = res.user?.role;
       const roleStr = typeof userRole === 'string' ? userRole.toLowerCase() : userRole === 1 ? 'admin' : userRole === 2 ? 'teacher' : 'user';
@@ -1925,6 +1924,13 @@ function App() {
           </div>
         </section>
       )}
+
+      {/* Rasmiy Google OAuth Modal (Akkaunt tanlash, Consent va Tasdiqlash) */}
+      <GoogleOAuthModal
+        isOpen={showGoogleModal}
+        onClose={() => setShowGoogleModal(false)}
+        onSuccess={handleGoogleSuccess}
+      />
     </div>
   );
 }
