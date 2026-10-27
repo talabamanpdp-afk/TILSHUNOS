@@ -1587,39 +1587,39 @@ function App() {
             </p>
 
             {page !== 'verify' ? (
-              <>
+              <form onSubmit={e => { e.preventDefault(); if (page === 'login') handleLoginSubmit(); else handleRegisterSubmit(); }}>
                 {page === 'register' && (
                   <label>
                     Ism va familiya
-                    <input value={name} onChange={e => setName(e.target.value)} placeholder="Masalan, Jasur Aliyev" />
+                    <input id="auth-name" value={name} onChange={e => setName(e.target.value)} placeholder="Masalan, Jasur Aliyev" />
                   </label>
                 )}
                 <label>
                   Email manzili
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="siz@example.com" />
+                  <input id="auth-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="siz@example.com" />
                 </label>
                 <label>
                   Parol
-                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Kamida 6 belgili parol" />
+                  <input id="auth-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Kamida 6 belgili parol" />
                 </label>
 
-                <button className="google-demo" onClick={handleGoogleLogin} disabled={loading}>
+                <button type="button" className="google-demo" onClick={handleGoogleLogin} disabled={loading}>
                   <b>G</b> Google orqali davom etish
                 </button>
 
                 <div className="auth-divider">yoki email orqali</div>
 
-                <button className="entry-primary auth-submit" onClick={page === 'login' ? handleLoginSubmit : handleRegisterSubmit} disabled={loading}>
+                <button id="auth-submit-btn" type="submit" className="entry-primary auth-submit" disabled={loading}>
                   {loading ? 'Bajarilmoqda...' : page === 'login' ? 'Kirish' : 'Tasdiqlash kodini yuborish'} <ArrowRight size={17} />
                 </button>
 
                 <p className="auth-switch">
                   {page === 'login' ? 'Hisobingiz yo‘qmi?' : 'Hisobingiz bormi?'}
-                  <button onClick={() => begin(page === 'login' ? 'register' : 'login')}>
+                  <button type="button" onClick={() => begin(page === 'login' ? 'register' : 'login')}>
                     {page === 'login' ? 'Ro‘yxatdan o‘tish' : 'Kirish'}
                   </button>
                 </p>
-              </>
+              </form>
             ) : (
               <>
                 <label>
