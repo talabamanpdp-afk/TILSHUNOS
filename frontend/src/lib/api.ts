@@ -1,4 +1,7 @@
-const BASE_URL = (import.meta.env.VITE_API_URL as string)?.replace(/\/$/, '') || '/api/v1';
+const BASE_URL = (import.meta.env.VITE_API_URL as string)?.replace(/\/$/, '') || 
+  (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? '/api/v1' 
+    : 'https://tilshunos.onrender.com/api/v1');
 
 export class ApiError extends Error {
   status: number;
