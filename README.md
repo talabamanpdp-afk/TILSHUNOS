@@ -11,6 +11,16 @@
 
 ---
 
+## 🌐 Live Production Deployments
+
+| Component | Platform | Live URL / Connection | Status |
+| :--- | :--- | :--- | :--- |
+| **Frontend Web / PWA** | **Vercel** | [https://tilshunosuz.vercel.app](https://tilshunosuz.vercel.app) *(Alt: [tilshunos-rho.vercel.app](https://tilshunos-rho.vercel.app))* | 🟢 Live & Operational |
+| **Backend Web API** | **Render** | [https://tilshunos.onrender.com](https://tilshunos.onrender.com) | 🟢 Live & Operational |
+| **Cloud Database** | **Supabase** | `aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres` (PostgreSQL 17) | 🟢 16 Tables Seeded |
+
+---
+
 ## 🌟 Key Features & Architectural Highlights
 
 ### 1. 🛡️ Anti-Fraud Learning Verification Engine
