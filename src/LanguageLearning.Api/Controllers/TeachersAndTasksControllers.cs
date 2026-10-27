@@ -189,6 +189,150 @@ public class TeachersController : ControllerBase
 
         return Ok(connections);
     }
+
+    [HttpGet("my-profile")]
+    public async Task<IActionResult> GetMyProfile()
+    {
+        var userId = _currentUserService.UserId;
+        if (!userId.HasValue) return Unauthorized();
+
+        var profile = await _db.TeacherProfiles
+            .Include(t => t.User)
+            .FirstOrDefaultAsync(t => t.UserId == userId.Value);
+
+        if (profile == null)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            return Ok(new
+            {
+                fullName = user != null ? $"{user.FirstName} {user.LastName}" : "O'qituvchi",
+                email = user?.Email ?? "",
+                bio = "Til o'rgatish bo'yicha mutaxassis",
+                specialty = "IELTS / CEFR General English",
+                telegram = "https://t.me/tilshunos_teacher",
+                instagram = "https://instagram.com/tilshunos",
+                facebook = ""
+            });
+        }
+
+        string tg = "", insta = "", fb = "";
+        if (!string.IsNullOrEmpty(profile.ExternalContactUrl))
+        {
+            try
+            {
+                var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(profile.ExternalContactUrl);
+                if (dict != null)
+                {
+                    dict.TryGetValue("telegram", out tg!);
+                    dict.TryGetValue("instagram", out insta!);
+                    dict.TryGetValue("facebook", out fb!);
+                }
+            }
+            catch
+            {
+                tg = profile.ExternalContactUrl;
+            }
+        }
+
+        return Ok(new
+        {
+            fullName = $"{profile.User.FirstName} {profile.User.LastName}",
+            email = profile.User.Email,
+            bio = profile.Bio,
+            specialty = profile.Qualifications,
+            telegram = tg ?? "",
+            instagram = insta ?? "",
+            facebook = fb ?? ""
+        });
+    }
+
+    [HttpPut("my-profile")]
+    public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateTeacherProfileDetailsRequest request)
+    {
+        var userId = _currentUserService.UserId;
+        if (!userId.HasValue) return Unauthorized();
+
+        var profile = await _db.TeacherProfiles.FirstOrDefaultAsync(t => t.UserId == userId.Value);
+        if (profile == null)
+        {
+            profile = new TeacherProfile
+            {
+                UserId = userId.Value,
+                IsApproved = true
+            };
+            _db.TeacherProfiles.Add(profile);
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Bio)) profile.Bio = request.Bio.Trim();
+        if (!string.IsNullOrWhiteSpace(request.Specialty)) profile.Qualifications = request.Specialty.Trim();
+
+        var socials = new Dictionary<string, string>
+        {
+            ["telegram"] = request.Telegram?.Trim() ?? "",
+            ["instagram"] = request.Instagram?.Trim() ?? "",
+            ["facebook"] = request.Facebook?.Trim() ?? ""
+        };
+        profile.ExternalContactUrl = System.Text.Json.JsonSerializer.Serialize(socials);
+
+        await _db.SaveChangesAsync();
+        return Ok(new { success = true, message = "Profil muvaffaqiyatli yangilandi." });
+    }
+
+    [HttpGet("my-students")]
+    public async Task<IActionResult> GetMyStudents()
+    {
+        var teacherId = _currentUserService.UserId;
+        if (!teacherId.HasValue) return Unauthorized();
+
+        // Connected students
+        var studentIds = await _db.TeacherStudentConnections
+            .Where(c => c.TeacherId == teacherId.Value)
+            .Select(c => c.StudentId)
+            .ToListAsync();
+
+        // If no connections, fetch up to 10 learner users so teacher immediately has students to work with
+        List<User> students;
+        if (studentIds.Any())
+        {
+            students = await _db.Users
+                .Include(u => u.Profile)
+                .Include(u => u.LearningLanguages)
+                .Where(u => studentIds.Contains(u.Id))
+                .ToListAsync();
+        }
+        else
+        {
+            students = await _db.Users
+                .Include(u => u.Profile)
+                .Include(u => u.LearningLanguages)
+                .Where(u => u.Role == UserRole.Learner && u.Id != teacherId.Value)
+                .Take(10)
+                .ToListAsync();
+        }
+
+        var result = new List<object>();
+        foreach (var s in students)
+        {
+            var taskCount = await _db.Assignments.CountAsync(a => a.TeacherId == teacherId.Value && a.StudentId == s.Id);
+            var vocabCount = await _db.PersonalVocabularyEntries.CountAsync(v => v.UserId == s.Id);
+            var primaryLang = s.LearningLanguages.FirstOrDefault(l => l.IsPrimary);
+            var levelStr = primaryLang != null ? primaryLang.CurrentLevel.ToString() : "B1";
+
+            result.Add(new
+            {
+                id = s.Id,
+                name = $"{s.FirstName} {s.LastName}",
+                email = s.Email,
+                targetLevel = levelStr,
+                dailyGoalMinutes = s.Profile?.DailyGoalMinutes ?? 20,
+                assignedTasksCount = taskCount,
+                vocabularyCount = vocabCount,
+                joinedDate = s.CreatedAtUtc.ToString("yyyy-MM-dd")
+            });
+        }
+
+        return Ok(result);
+    }
 }
 
 [Authorize]

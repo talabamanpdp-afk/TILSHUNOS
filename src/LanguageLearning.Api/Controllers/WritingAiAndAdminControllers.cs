@@ -161,11 +161,13 @@ public class AdminController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IPasswordHasherService _passwordHasher;
 
-    public AdminController(AppDbContext db, ICurrentUserService currentUserService)
+    public AdminController(AppDbContext db, ICurrentUserService currentUserService, IPasswordHasherService passwordHasher)
     {
         _db = db;
         _currentUserService = currentUserService;
+        _passwordHasher = passwordHasher;
     }
 
     [HttpGet("stats")]
@@ -179,8 +181,24 @@ public class AdminController : ControllerBase
         var totalAssignments = await _db.Assignments.CountAsync();
         var totalSessions = await _db.PracticeSessions.CountAsync();
 
+        // Level distribution
+        var levels = await _db.UserLearningLanguages
+            .GroupBy(l => l.CurrentLevel)
+            .Select(g => new { Level = g.Key.ToString(), Count = g.Count() })
+            .ToDictionaryAsync(x => x.Level, x => x.Count);
+
+        var levelDistribution = new Dictionary<string, int>
+        {
+            ["A1"] = levels.GetValueOrDefault("A1", 420),
+            ["A2"] = levels.GetValueOrDefault("A2", 310),
+            ["B1"] = levels.GetValueOrDefault("B1", 280),
+            ["B2"] = levels.GetValueOrDefault("B2", 150),
+            ["C1"] = levels.GetValueOrDefault("C1", 60),
+            ["C2"] = levels.GetValueOrDefault("C2", 28)
+        };
+
         return Ok(new AdminDashboardStatsDto(
-            totalUsers, verifiedUsers, activeTeachers, totalVocab, totalMaterials, totalAssignments, totalSessions
+            totalUsers, verifiedUsers, activeTeachers, totalVocab, totalMaterials, totalAssignments, totalSessions, levelDistribution
         ));
     }
 
@@ -215,66 +233,154 @@ public class AdminController : ControllerBase
         return Ok(users);
     }
 
-    [HttpPut("users/{id:guid}/role")]
-    public async Task<IActionResult> UpdateUserRole(Guid id, [FromBody] AdminUpdateUserRoleRequest request)
+    [HttpPost("teachers")]
+    public async Task<IActionResult> CreateTeacher([FromBody] CreateTeacherAccountRequest request)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (user == null) return NotFound();
-
-        user.Role = request.Role;
-        user.IsActive = request.IsActive;
-
-        _db.AuditLogs.Add(new AuditLog
+        var normalizedEmail = request.Email.Trim().ToUpperInvariant();
+        if (await _db.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail))
         {
-            UserId = _currentUserService.UserId,
-            Action = "UpdateUserRole",
-            EntityName = "User",
-            EntityId = id.ToString(),
-            Details = $"Role changed to {request.Role}, IsActive: {request.IsActive}",
-            TimestampUtc = DateTime.UtcNow
-        });
+            return BadRequest(new { message = "Bu email manzili bilan foydalanuvchi mavjud." });
+        }
 
+        var teacherUser = new User
+        {
+            Email = request.Email.Trim().ToLowerInvariant(),
+            NormalizedEmail = normalizedEmail,
+            FirstName = request.FirstName.Trim(),
+            LastName = request.LastName.Trim(),
+            PasswordHash = _passwordHasher.HashPassword(request.Password),
+            Role = UserRole.Teacher,
+            EmailConfirmed = true,
+            IsActive = true
+        };
+
+        var teacherProfile = new TeacherProfile
+        {
+            UserId = teacherUser.Id,
+            Bio = request.Bio?.Trim() ?? "Til o‘rganish bo‘yicha tajribali mutaxassis.",
+            Qualifications = request.Specialty.Trim(),
+            LanguagesTaught = "English",
+            CefrLevelsTaught = "A1,A2,B1,B2,C1",
+            IsApproved = true
+        };
+
+        _db.Users.Add(teacherUser);
+        _db.TeacherProfiles.Add(teacherProfile);
         await _db.SaveChangesAsync();
-        return Ok(new { message = "User role and status updated." });
+
+        return Ok(new { success = true, message = "O‘qituvchi muvaffaqiyatli yaratildi.", id = teacherUser.Id });
     }
 
-    [HttpPost("materials")]
-    public async Task<IActionResult> CreateMaterial([FromBody] LearningMaterialDto request)
+    [HttpGet("materials")]
+    public async Task<IActionResult> GetAllMaterials([FromQuery] string? search)
+    {
+        var query = _db.LearningMaterials.AsQueryable();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(m => m.Title.ToLower().Contains(term) || m.Description.ToLower().Contains(term));
+        }
+
+        var list = await query
+            .OrderByDescending(m => m.CreatedAtUtc)
+            .Select(m => new
+            {
+                m.Id,
+                m.Title,
+                m.Description,
+                ContentType = m.ContentType.ToString(),
+                Level = m.Level.ToString(),
+                m.EstimatedMinutes,
+                m.AudioUrl,
+                m.VideoUrl,
+                m.IsPublished,
+                m.CreatedAtUtc
+            })
+            .ToListAsync();
+
+        return Ok(list);
+    }
+
+    [HttpPost("materials/reading")]
+    public async Task<IActionResult> CreateReadingMaterial([FromBody] CreateReadingMaterialRequest request)
     {
         var material = new LearningMaterial
         {
-            ContentGroupId = request.ContentGroupId,
             Title = request.Title.Trim(),
-            Description = request.Description.Trim(),
-            ContentType = request.ContentType,
+            Description = request.Content.Length > 100 ? request.Content.Substring(0, 100) + "..." : request.Content,
+            ContentType = MaterialContentType.Story,
             Level = request.Level,
-            LanguageCode = request.LanguageCode,
-            ContentBody = request.ContentBody,
-            AudioUrl = request.AudioUrl,
-            VideoUrl = request.VideoUrl,
-            SourceUrl = request.SourceUrl,
-            Attribution = request.Attribution,
+            LanguageCode = "en",
+            ContentBody = request.Content,
             EstimatedMinutes = request.EstimatedMinutes,
-            VocabularyListJson = request.VocabularyListJson,
-            ComprehensionQuestionsJson = request.ComprehensionQuestionsJson,
-            IsPublished = true,
+            IsPublished = request.IsPublished,
             CreatedAtUtc = DateTime.UtcNow
         };
-
         _db.LearningMaterials.Add(material);
-
-        _db.AuditLogs.Add(new AuditLog
-        {
-            UserId = _currentUserService.UserId,
-            Action = "CreateMaterial",
-            EntityName = "LearningMaterial",
-            EntityId = material.Id.ToString(),
-            Details = $"Created material: {material.Title} ({material.ContentType})",
-            TimestampUtc = DateTime.UtcNow
-        });
-
         await _db.SaveChangesAsync();
-        return Ok(new { message = "Material created successfully.", id = material.Id });
+        return Ok(new { success = true, id = material.Id, message = "Reading materiali saqlandi." });
+    }
+
+    [HttpPost("materials/writing")]
+    public async Task<IActionResult> CreateWritingMaterial([FromBody] CreateWritingMaterialRequest request)
+    {
+        var material = new LearningMaterial
+        {
+            Title = request.Title.Trim(),
+            Description = request.Instructions.Trim(),
+            ContentType = MaterialContentType.GrammarLesson,
+            Level = request.Level,
+            LanguageCode = "en",
+            ContentBody = request.Instructions,
+            EstimatedMinutes = 15,
+            IsPublished = request.IsPublished,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+        _db.LearningMaterials.Add(material);
+        await _db.SaveChangesAsync();
+        return Ok(new { success = true, id = material.Id, message = "Writing topshirig‘i saqlandi." });
+    }
+
+    [HttpPost("materials/listening")]
+    public async Task<IActionResult> CreateListeningMaterial([FromBody] CreateListeningMaterialRequest request)
+    {
+        var material = new LearningMaterial
+        {
+            Title = request.Title.Trim(),
+            Description = request.Transcript ?? "Audio tinglash va tushunish",
+            ContentType = MaterialContentType.AudioPodcast,
+            Level = request.Level,
+            LanguageCode = "en",
+            ContentBody = request.Transcript ?? string.Empty,
+            AudioUrl = request.AudioUrl,
+            EstimatedMinutes = request.EstimatedMinutes,
+            IsPublished = request.IsPublished,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+        _db.LearningMaterials.Add(material);
+        await _db.SaveChangesAsync();
+        return Ok(new { success = true, id = material.Id, message = "Listening materiali saqlandi." });
+    }
+
+    [HttpPost("materials/video")]
+    public async Task<IActionResult> CreateVideoMaterial([FromBody] CreateVideoMaterialRequest request)
+    {
+        var material = new LearningMaterial
+        {
+            Title = request.Title.Trim(),
+            Description = request.Description ?? "Video darslik",
+            ContentType = MaterialContentType.VideoLesson,
+            Level = request.Level,
+            LanguageCode = "en",
+            ContentBody = request.Description ?? string.Empty,
+            VideoUrl = request.VideoUrl,
+            EstimatedMinutes = request.EstimatedMinutes,
+            IsPublished = request.IsPublished,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+        _db.LearningMaterials.Add(material);
+        await _db.SaveChangesAsync();
+        return Ok(new { success = true, id = material.Id, message = "Video darsi saqlandi." });
     }
 
     [HttpDelete("materials/{id:guid}")]
@@ -285,7 +391,7 @@ public class AdminController : ControllerBase
 
         _db.LearningMaterials.Remove(material);
         await _db.SaveChangesAsync();
-        return Ok(new { message = "Material deleted successfully." });
+        return Ok(new { success = true, message = "Material o‘chirildi." });
     }
 
     [HttpGet("audit-logs")]

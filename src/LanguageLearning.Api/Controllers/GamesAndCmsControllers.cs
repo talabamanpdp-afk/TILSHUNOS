@@ -11,6 +11,10 @@ namespace LanguageLearning.Api.Controllers;
 public record GameScoreSubmission(string GameMode, int Score, string? Topic, int CorrectAnswers);
 public record WordVerificationRequest(string Word, string Topic, string? PreviousWord, string? Mode);
 public record CmsDataDto(string Hero, string Description, string Cta, string About, string Header, string Footer, string Contact);
+public record DuelChallengeRequest(string Topic, string OpponentName);
+public record DuelSubmitRequest(string RoomId, string Word, int Round);
+public record CreateGameTopicRequest(string TopicName);
+public record AddTopicWordRequest(string Word);
 
 [ApiController]
 [Route("api/v1/games")]
@@ -37,6 +41,8 @@ public class GamesController : ControllerBase
         ("Azizbek Umarov", "A", 870, DateTime.UtcNow.AddDays(-3))
     };
 
+    private static readonly ConcurrentDictionary<string, (string Topic, string Player1, string Player2, int Score1, int Score2, string Status)> DuelRooms = new();
+
     public GamesController(AppDbContext db, ICurrentUserService currentUserService)
     {
         _db = db;
@@ -56,10 +62,91 @@ public class GamesController : ControllerBase
         return Ok(topics);
     }
 
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    [HttpPost("topics")]
+    public IActionResult CreateTopic([FromBody] CreateGameTopicRequest request)
+    {
+        var name = request.TopicName.Trim();
+        if (string.IsNullOrWhiteSpace(name)) return BadRequest(new { message = "Mavzu nomi bo‘sh bo‘lishi mumkin emas." });
+
+        TopicWords.TryAdd(name, new List<string>());
+        return Ok(new { success = true, message = "Mavzu yaratildi." });
+    }
+
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    [HttpDelete("topics/{topic}")]
+    public IActionResult DeleteTopic(string topic)
+    {
+        TopicWords.TryRemove(topic, out _);
+        return Ok(new { success = true, message = "Mavzu o‘chirildi." });
+    }
+
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    [HttpPost("topics/{topic}/words")]
+    public IActionResult AddWordToTopic(string topic, [FromBody] AddTopicWordRequest request)
+    {
+        var word = request.Word.Trim().ToLowerInvariant();
+        if (!TopicWords.ContainsKey(topic)) TopicWords[topic] = new List<string>();
+
+        if (!TopicWords[topic].Contains(word))
+        {
+            TopicWords[topic].Add(word);
+        }
+        return Ok(new { success = true, message = "So‘z qo‘shildi." });
+    }
+
+    [HttpGet("waiting-players")]
+    public IActionResult GetWaitingPlayers([FromQuery] string? topic)
+    {
+        var selectedTopic = topic ?? "Fruits & Food";
+        var waiting = new[]
+        {
+            new { Id = "p-1", Name = "Jasur Aliyev", Avatar = "J", Level = "B1", Rating = 1420, WinRate = "84%", Status = "Kutmoqda", Topic = selectedTopic },
+            new { Id = "p-2", Name = "Madina Karimova", Avatar = "M", Level = "A2", Rating = 1280, WinRate = "76%", Status = "Kutmoqda", Topic = selectedTopic },
+            new { Id = "p-3", Name = "Malika Saidova", Avatar = "M", Level = "B2", Rating = 1540, WinRate = "91%", Status = "Kutmoqda", Topic = selectedTopic },
+            new { Id = "p-4", Name = "Azizbek Umarov", Avatar = "A", Level = "A1", Rating = 870, WinRate = "68%", Status = "Kutmoqda", Topic = selectedTopic }
+        };
+
+        return Ok(waiting);
+    }
+
+    [HttpPost("challenge")]
+    public IActionResult ChallengePlayer([FromBody] DuelChallengeRequest request)
+    {
+        var roomId = "duel-" + Guid.NewGuid().ToString("N")[..8];
+        var me = "Siz";
+        DuelRooms[roomId] = (request.Topic, me, request.OpponentName, 0, 0, "Active");
+
+        return Ok(new
+        {
+            success = true,
+            roomId,
+            opponent = request.OpponentName,
+            topic = request.Topic,
+            message = $"{request.OpponentName} taklifingizni qabul qildi! Bellashuv boshlandi."
+        });
+    }
+
+    [HttpPost("submit-duel-word")]
+    public IActionResult SubmitDuelWord([FromBody] DuelSubmitRequest request)
+    {
+        var word = request.Word.Trim().ToLowerInvariant();
+        var isValid = word.Length >= 3;
+        var myPoints = isValid ? 15 : 0;
+        var opponentPoints = (new Random().Next(1, 10) > 3) ? 15 : 10;
+
+        return Ok(new
+        {
+            valid = isValid,
+            myPoints,
+            opponentPoints,
+            message = isValid ? "To‘g‘ri so‘z! (+15 XP)" : "So‘z topilmadi (0 XP)"
+        });
+    }
+
     [HttpGet("leaderboard")]
     public async Task<IActionResult> GetLeaderboard()
     {
-        // Query top learners from real user profiles in database
         var dbTopUsers = await _db.UserProfiles
             .Include(p => p.User)
             .OrderByDescending(p => p.CurrentStreakDays)
@@ -147,7 +234,6 @@ public class GamesController : ControllerBase
                 });
             }
 
-            // Also check standard dictionary / general valid english word length > 2
             if (word.Length >= 3)
             {
                 return Ok(new
@@ -192,7 +278,7 @@ public class GamesController : ControllerBase
             success = true,
             score = request.Score,
             earnedXp = request.Score,
-            message = $"{request.Score} XP muvaffaqiyatli hisobingizga qo‘shildi!"
+            message = $"{request.Score} XP hisobingizga qo‘shildi!"
         });
     }
 }

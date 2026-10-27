@@ -1,4 +1,6 @@
-import { RoleWorkspace } from './RoleWorkspace';
+import { AdminPanel } from './components/AdminPanel';
+import { TeacherPanel } from './components/TeacherPanel';
+import { DuelMatchModal } from './components/DuelMatchModal';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Award, BookA, BookOpen, Bookmark, Brain,
@@ -70,6 +72,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [gameFeedback, setGameFeedback] = useState('');
   const [previousChainWord, setPreviousChainWord] = useState('Apple');
   const [imageMode, setImageMode] = useState('Variantlardan tanlash');
+  const [showDuelModal, setShowDuelModal] = useState(false);
   const [leaderboard, setLeaderboard] = useState<any[]>([
     { name: 'Jasur Aliyev', avatar: 'J', score: 1420, rank: 1 },
     { name: 'Madina Karimova', avatar: 'M', score: 1280, rank: 2 },
@@ -745,6 +748,52 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                 </div>
               </div>
 
+              {/* 1v1 Duel Matchmaking Banner */}
+              <div style={{
+                background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                borderRadius: '16px',
+                padding: '20px 24px',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '20px',
+                boxShadow: '0 10px 25px -5px rgba(99, 102, 241, 0.3)',
+                flexWrap: 'wrap',
+                gap: '14px'
+              }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c7d2fe', marginBottom: '4px' }}>
+                    ⚔️ Jonli 1v1 Raqobat (Multiplayer)
+                  </div>
+                  <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 800 }}>Raqib bilan so‘z bellashuvi</h3>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#e0e7ff', maxWidth: '580px', lineHeight: 1.5 }}>
+                    Mavzu bo‘yicha kutayotgan foydalanuvchilar ro‘yxatidan raqib tanlang, taklif yuboring va 3 raundlik shiddatli duelda kuch sinashing!
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowDuelModal(true)}
+                  style={{
+                    background: '#ffffff',
+                    color: '#4f46e5',
+                    padding: '12px 22px',
+                    borderRadius: '10px',
+                    fontWeight: 800,
+                    fontSize: '14px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <Gamepad2 size={18} /> Duelni boshlash
+                </button>
+              </div>
+
+              {showDuelModal && <DuelMatchModal onClose={() => setShowDuelModal(false)} />}
+
               <div className="game-tabs">
                 {['Mavzu typing', 'So‘z zanjiri', 'Rasmni top'].map((g, i) => (
                   <button
@@ -1411,18 +1460,25 @@ function App() {
     setLoading(true);
     setMessage('');
     try {
-      const promptEmail = prompt('Google emailingizni kiriting:', email || 'google.user@gmail.com');
-      if (!promptEmail) {
-        setLoading(false);
-        return;
+      let targetEmail = email.trim();
+      if (!targetEmail) {
+        const promptEmail = prompt('Google akkauntingiz email manzilini kiriting:', 'foydalanuvchi@gmail.com');
+        if (!promptEmail) {
+          setLoading(false);
+          return;
+        }
+        targetEmail = promptEmail.trim();
       }
       const res = await api.googleAuth({
         idToken: 'google_oauth_token',
-        email: promptEmail,
-        firstName: name || 'Google',
-        lastName: 'Foydalanuvchi'
+        email: targetEmail,
+        firstName: name || targetEmail.split('@')[0],
+        lastName: 'Google'
       });
-      setRole('user');
+      const userRole = res.user?.role;
+      const roleStr = typeof userRole === 'string' ? userRole.toLowerCase() : userRole === 1 ? 'admin' : userRole === 2 ? 'teacher' : 'user';
+      const cleanRole = roleStr === 'superadmin' ? 'admin' : roleStr === 'learner' ? 'user' : roleStr;
+      setRole(cleanRole);
       setPage('dashboard');
     } catch (err: any) {
       setMessage(err.message || 'Google orqali kirishda xatolik yuz berdi.');
@@ -1456,10 +1512,10 @@ function App() {
 
   if (page === 'dashboard') {
     if (role === 'admin' || role === 'superadmin') {
-      return <RoleWorkspace role="admin" onLogout={handleLogout} />;
+      return <AdminPanel onLogout={handleLogout} />;
     }
     if (role === 'teacher') {
-      return <RoleWorkspace role="teacher" onLogout={handleLogout} />;
+      return <TeacherPanel onLogout={handleLogout} />;
     }
     return <Dashboard onLogout={handleLogout} />;
   }

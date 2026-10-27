@@ -201,12 +201,64 @@ export const api = {
     return request<any[]>(`/materials${qs}`);
   },
 
-  // Teachers
+  // Duel Matchmaking (Word Battle 1v1)
+  async getWaitingPlayers(topic: string) {
+    return request<any[]>(`/games/waiting-players?topic=${encodeURIComponent(topic)}`);
+  },
+
+  async challengePlayer(data: { challengedUserId: string; topic: string }) {
+    return request<any>('/games/challenge', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async submitDuelWord(data: { topic: string; word: string; round: number }) {
+    return request<any>('/games/submit-duel-word', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async addGameTopic(data: { topic: string; sampleWords: string[] }) {
+    return request<any>('/games/topics', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  // Teachers Management
   async getTeachers(search?: string) {
     const sp = new URLSearchParams();
     if (search) sp.append('search', search);
     const qs = sp.toString() ? `?${sp.toString()}` : '';
     return request<any[]>(`/teachers${qs}`);
+  },
+
+  async getAssignedStudents() {
+    return request<any[]>('/teachers/my-students');
+  },
+
+  async getTeacherMyProfile() {
+    return request<any>('/teachers/my-profile');
+  },
+
+  async updateTeacherProfileDetails(data: { specialty?: string; bio?: string; telegram?: string; instagram?: string; facebook?: string }) {
+    return request<any>('/teachers/my-profile', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async getAssignedByMe() {
+    return request<any[]>('/tasks/assigned-by-me');
+  },
+
+  async createAssignment(data: { studentId: string; title: string; instructions: string; taskType: number; level: number; languageCode: string; dueDateUtc: string; maxScore: number }) {
+    return request<any>('/tasks', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   },
 
   // CMS
@@ -229,5 +281,52 @@ export const api = {
   async getAdminUsers(search?: string) {
     const qs = search ? `?search=${encodeURIComponent(search)}` : '';
     return request<any[]>(`/admin/users${qs}`);
+  },
+
+  async createTeacher(data: { firstName: string; lastName: string; email: string; password: string; specialty: string; bio?: string }) {
+    return request<any>('/admin/teachers', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async getAllAdminMaterials(search?: string) {
+    const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+    return request<any[]>(`/admin/materials${qs}`);
+  },
+
+  async createReadingMaterial(data: { title: string; content: string; level: number; estimatedMinutes: number; isPublished: boolean }) {
+    return request<any>('/admin/materials/reading', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async createWritingMaterial(data: { title: string; instructions: string; level: number; isPublished: boolean }) {
+    return request<any>('/admin/materials/writing', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async createListeningMaterial(data: { title: string; audioUrl: string; transcript?: string; level: number; estimatedMinutes: number; isPublished: boolean }) {
+    return request<any>('/admin/materials/listening', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async createVideoMaterial(data: { title: string; videoUrl: string; description?: string; level: number; estimatedMinutes: number; isPublished: boolean }) {
+    return request<any>('/admin/materials/video', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async deleteMaterial(id: string) {
+    return request<any>(`/admin/materials/${id}`, {
+      method: 'DELETE'
+    });
   }
 };
+

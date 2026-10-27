@@ -282,7 +282,15 @@ public record AdminDashboardStatsDto(
     int TotalVocabularyEntries,
     int TotalMaterials,
     int TotalAssignments,
-    int TotalPracticeSessions
+    int TotalPracticeSessions,
+    Dictionary<string, int>? StudentsByLevel
 );
+
+public record CreateTeacherAccountRequest(string FirstName, string LastName, string Email, string Password, string Specialty, string? Bio);
+public record UpdateTeacherProfileDetailsRequest(string? Specialty, string? Bio, string? Telegram, string? Instagram, string? Facebook);
+public record CreateReadingMaterialRequest(string Title, string Content, string Topic, CefrLevel Level, int EstimatedMinutes, bool IsPublished);
+public record CreateWritingMaterialRequest(string Title, string Instructions, string Topic, CefrLevel Level, int TargetWordCount, bool IsPublished);
+public record CreateListeningMaterialRequest(string Title, string AudioUrl, string? Transcript, string Topic, CefrLevel Level, int EstimatedMinutes, bool IsPublished);
+public record CreateVideoMaterialRequest(string Title, string VideoUrl, string? Description, string Topic, CefrLevel Level, int EstimatedMinutes, bool IsPublished);
 
 public record AdminUpdateUserRoleRequest(UserRole Role, bool IsActive);
