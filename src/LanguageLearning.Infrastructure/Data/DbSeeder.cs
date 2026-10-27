@@ -5,13 +5,28 @@ using LanguageLearning.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+
 namespace LanguageLearning.Infrastructure.Data;
 
 public static class DbSeeder
 {
     public static async Task SeedAsync(AppDbContext db, IPasswordHasherService passwordHasher, ILogger logger)
     {
-        await db.Database.EnsureCreatedAsync();
+        try
+        {
+            var creator = db.Database.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator;
+            if (creator != null)
+            {
+                await creator.CreateTablesAsync();
+                logger.LogInformation("Database tables created successfully.");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogInformation("Database tables already exist or created: {Message}", ex.Message);
+        }
 
         // 1. Super Admin
         var adminEmail = "admin@tilshunos.app";

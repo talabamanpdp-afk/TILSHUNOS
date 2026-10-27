@@ -88,8 +88,20 @@ using (var scope = app.Services.CreateScope())
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        logger.LogInformation("Ensuring database tables are created...");
-        await db.Database.EnsureCreatedAsync();
+        var infra = (Microsoft.EntityFrameworkCore.Infrastructure.IInfrastructure<IServiceProvider>)db;
+        var creator = infra.Instance.GetService(typeof(Microsoft.EntityFrameworkCore.Storage.IRelationalDatabaseCreator)) as Microsoft.EntityFrameworkCore.Storage.IRelationalDatabaseCreator;
+        if (creator != null)
+        {
+            try
+            {
+                await creator.CreateTablesAsync();
+                logger.LogInformation("Database tables created successfully.");
+            }
+            catch (Exception ex)
+            {
+                logger.LogInformation("Tables already exist: {Message}", ex.Message);
+            }
+        }
         logger.LogInformation("Database tables verified. Seeding initial data...");
         await DbSeeder.SeedAsync(db, hasher, logger);
         logger.LogInformation("Database initialization complete.");
