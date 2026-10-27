@@ -192,10 +192,11 @@ export const api = {
   },
 
   // Materials
-  async getMaterials(params?: { contentType?: number; level?: number; search?: string }) {
+  async getMaterials(params?: { contentType?: number; level?: number; languageCode?: string; search?: string }) {
     const sp = new URLSearchParams();
     if (params?.contentType !== undefined) sp.append('contentType', String(params.contentType));
     if (params?.level !== undefined) sp.append('level', String(params.level));
+    if (params?.languageCode) sp.append('languageCode', params.languageCode);
     if (params?.search) sp.append('search', params.search);
     const qs = sp.toString() ? `?${sp.toString()}` : '';
     return request<any[]>(`/materials${qs}`);
@@ -206,14 +207,14 @@ export const api = {
     return request<any[]>(`/games/waiting-players?topic=${encodeURIComponent(topic)}`);
   },
 
-  async challengePlayer(data: { challengedUserId: string; topic: string }) {
+  async challengePlayer(data: { challengedUserId: string; topic: string; opponentName?: string }) {
     return request<any>('/games/challenge', {
       method: 'POST',
       body: JSON.stringify(data)
     });
   },
 
-  async submitDuelWord(data: { topic: string; word: string; round: number }) {
+  async submitDuelWord(data: { topic: string; word: string; round: number; roomId?: string }) {
     return request<any>('/games/submit-duel-word', {
       method: 'POST',
       body: JSON.stringify(data)

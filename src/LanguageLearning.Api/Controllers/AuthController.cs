@@ -122,17 +122,12 @@ public class AuthController : ControllerBase
     [HttpPost("google")]
     public async Task<IActionResult> GoogleAuth([FromBody] GoogleAuthRequest request)
     {
-        // For development and testing with Google Sign-in flow:
-        // Extracts claims or uses standard token validation
-        var email = "google.user@tilshunos.app";
-        var firstName = "Learner";
-        var lastName = "Google";
-
-        // If IdToken contains dummy or dev test data, parse or provide default
-        if (request.IdToken.Contains("@"))
-        {
-            email = request.IdToken.Trim().ToLowerInvariant();
-        }
+        var email = !string.IsNullOrWhiteSpace(request.Email)
+            ? request.Email.Trim().ToLowerInvariant()
+            : (request.IdToken.Contains("@") ? request.IdToken.Trim().ToLowerInvariant() : "google.user@tilshunos.app");
+        
+        var firstName = !string.IsNullOrWhiteSpace(request.FirstName) ? request.FirstName.Trim() : "Learner";
+        var lastName = !string.IsNullOrWhiteSpace(request.LastName) ? request.LastName.Trim() : "Google";
 
         var normalizedEmail = email.ToUpperInvariant();
         var user = await _db.Users
@@ -140,8 +135,10 @@ public class AuthController : ControllerBase
             .Include(u => u.LearningLanguages)
             .FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
 
+        bool isNewUser = false;
         if (user == null)
         {
+            isNewUser = true;
             user = new User
             {
                 Email = email,
@@ -168,11 +165,18 @@ public class AuthController : ControllerBase
 
         var token = _jwtService.GenerateToken(user);
         var primaryLang = user.LearningLanguages.FirstOrDefault(l => l.IsPrimary);
+        
+        // If user has not chosen language/level, treat as requiring onboarding
+        if (primaryLang == null)
+        {
+            isNewUser = true;
+        }
+
         var userDto = new UserDto(
             user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.EmailConfirmed,
             user.Profile?.NativeLanguage, primaryLang?.LanguageCode, primaryLang?.CurrentLevel);
 
-        return Ok(new AuthResponse(token, userDto));
+        return Ok(new AuthResponse(token, userDto, isNewUser));
     }
 
     [HttpPost("verify-email")]

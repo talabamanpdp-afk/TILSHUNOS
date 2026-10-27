@@ -5,13 +5,13 @@ namespace LanguageLearning.Application.DTOs;
 // --- Auth DTOs ---
 public record RegisterRequest(string FirstName, string LastName, string Email, string Password, string ConfirmPassword);
 public record LoginRequest(string Email, string Password);
-public record GoogleAuthRequest(string IdToken);
+public record GoogleAuthRequest(string IdToken, string? Email = null, string? FirstName = null, string? LastName = null);
 public record VerifyEmailRequest(string Email, string Code);
 public record ResendCodeRequest(string Email);
 public record ForgotPasswordRequest(string Email);
 public record ResetPasswordRequest(string Email, string Token, string NewPassword);
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
-public record AuthResponse(string Token, UserDto User);
+public record AuthResponse(string Token, UserDto User, bool IsNewUser = false);
 
 public record UserDto(
     Guid Id,
@@ -288,9 +288,9 @@ public record AdminDashboardStatsDto(
 
 public record CreateTeacherAccountRequest(string FirstName, string LastName, string Email, string Password, string Specialty, string? Bio);
 public record UpdateTeacherProfileDetailsRequest(string? Specialty, string? Bio, string? Telegram, string? Instagram, string? Facebook);
-public record CreateReadingMaterialRequest(string Title, string Content, string Topic, CefrLevel Level, int EstimatedMinutes, bool IsPublished);
-public record CreateWritingMaterialRequest(string Title, string Instructions, string Topic, CefrLevel Level, int TargetWordCount, bool IsPublished);
-public record CreateListeningMaterialRequest(string Title, string AudioUrl, string? Transcript, string Topic, CefrLevel Level, int EstimatedMinutes, bool IsPublished);
-public record CreateVideoMaterialRequest(string Title, string VideoUrl, string? Description, string Topic, CefrLevel Level, int EstimatedMinutes, bool IsPublished);
+public record CreateReadingMaterialRequest(string Title, string Content, string Topic, CefrLevel Level, int EstimatedMinutes, bool IsPublished, string? LanguageCode = "en");
+public record CreateWritingMaterialRequest(string Title, string Instructions, string Topic, CefrLevel Level, int TargetWordCount, bool IsPublished, string? LanguageCode = "en");
+public record CreateListeningMaterialRequest(string Title, string AudioUrl, string? Transcript, string Topic, CefrLevel Level, int EstimatedMinutes, bool IsPublished, string? LanguageCode = "en");
+public record CreateVideoMaterialRequest(string Title, string VideoUrl, string? Description, string Topic, CefrLevel Level, int EstimatedMinutes, bool IsPublished, string? LanguageCode = "en");
 
 public record AdminUpdateUserRoleRequest(UserRole Role, bool IsActive);

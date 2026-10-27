@@ -37,15 +37,99 @@ const navItems: NavItem[] = [
   { label: 'AI yordamchi', icon: Sparkles }
 ];
 
-const lessons = [
-  { title: 'Daily conversations', sub: 'Kundalik suhbatlar', level: 'A2', type: 'Tinglash', mins: '12 daqiqa', icon: Headphones, color: 'lavender' },
-  { title: 'The power of habits', sub: 'Odatlar kuchi', level: 'B1', type: 'O‘qish', mins: '8 daqiqa', icon: BookOpen, color: 'mint' },
-  { title: 'At the coffee shop', sub: 'Kafeda suhbat', level: 'A1', type: 'Gapirish', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
+export const supportedLanguages = [
+  { code: 'ru', flag: '🇷🇺', name: 'Rus tili', sub: 'Русский язык' },
+  { code: 'en', flag: '🇬🇧', name: 'Ingliz tili', sub: 'English' },
+  { code: 'uz', flag: '🇺🇿', name: 'O‘zbek tili', sub: 'O‘zbekcha' },
+  { code: 'tr', flag: '🇹🇷', name: 'Turk tili', sub: 'Türkçe' },
+  { code: 'de', flag: '🇩🇪', name: 'Nemis tili', sub: 'Deutsch' },
 ];
+
+export const cefrLevels = [
+  { code: 'A1', name: 'Boshlang‘ich', desc: 'Oddiy so‘z va iboralar' },
+  { code: 'A2', name: 'Elementar', desc: 'Kundalik muloqot' },
+  { code: 'B1', name: 'O‘rta daraja', desc: 'Erkin suhbat' },
+  { code: 'B2', name: 'Mustaqil', desc: 'Murakkab matnlar' },
+  { code: 'C1', name: 'Ilg‘or', desc: 'Akademik mahorat' },
+  { code: 'C2', name: 'Mukammal', desc: 'Ona tili darajasi' },
+];
+
+export const languageMaterials: Record<string, any[]> = {
+  de: [
+    { title: 'Guten Tag! — Begrüßungen', sub: 'Kundalik nemischa salomlashuv va tanishuv', level: 'A1', type: 'Tinglash', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
+    { title: 'Der Alltag in Berlin', sub: 'Berlindagi hayot va madaniyat haqida matn', level: 'A2', type: 'O‘qish', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Im Café bestellen', sub: 'Kafeda nemischa buyurtma berish', level: 'A1', type: 'Gapirish', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
+    { title: 'Schreiben: Mein Lieblingstraum', sub: 'Mening orzularim mavzusida insho', level: 'B1', type: 'Yozish', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
+    { title: 'Deutsche Grammatik: Dativ & Akkusativ', sub: 'Kelishiklar qoidasi va amaliy mashqlar', level: 'B1', type: 'O‘qish', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Wortschatz: Reise nach München', sub: 'Sayohat uchun eng muhim nemischa so‘zlar', level: 'A2', type: 'Lug‘at', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
+  ],
+  ru: [
+    { title: 'Диалоги на каждый день', sub: 'Kundalik ruscha suhbatlar va tanishuv', level: 'A1', type: 'Tinglash', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
+    { title: 'Зимний вечер в Ташкенте', sub: 'Badiiy matn tahlili va o‘qish', level: 'A2', type: 'O‘qish', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'В ресторане и кафе', sub: 'Restoranda buyurtma berish', level: 'A1', type: 'Gapirish', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
+    { title: 'Письмо: Мои планы на будущее', sub: 'Kelajak rejalari haqida insho', level: 'B1', type: 'Yozish', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
+    { title: 'Грамматика: Падежи русского языка', sub: '6 ta kelishik va qo‘llanishi', level: 'B1', type: 'O‘qish', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Словарь: Путешествия и гостиницы', sub: 'Mehmonxona va sayohat so‘zlari', level: 'A2', type: 'Lug‘at', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
+  ],
+  uz: [
+    { title: 'Ona tili: Salomlashish odobi', sub: 'Xushmuomalalik va madaniy muloqot', level: 'A1', type: 'Tinglash', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
+    { title: 'O‘zbekiston me’moriy obidalari', sub: 'Samarqand va Buxoro tarixi haqida matn', level: 'A2', type: 'O‘qish', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Bozorlik va savdolashish', sub: 'Sharqona bozor madaniyati va dialog', level: 'A1', type: 'Gapirish', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
+    { title: 'Insho: Milliy qadriyatlarimiz', sub: 'Oila va an’analar haqida insho yozish', level: 'B1', type: 'Yozish', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
+    { title: 'O‘zbek tili grammatikasi', sub: 'Fe’l nisbatlari va qo‘shimchalar', level: 'B1', type: 'O‘qish', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Lug‘at: Sayyohlar uchun atamalar', sub: 'Mehmon kutish va mehmondo‘stlik', level: 'A2', type: 'Lug‘at', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
+  ],
+  tr: [
+    { title: 'Günlük Konuşmalar: Merhabalaşma', sub: 'Kundalik turkcha salomlashuvlar', level: 'A1', type: 'Tinglash', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
+    { title: 'İstanbul Boğazı ve Tarihi', sub: 'Istanbul bo‘g‘ozi haqida matn', level: 'A2', type: 'O‘qish', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Restoranda Sipariş Verme', sub: 'Turk oshxonasida buyurtma berish', level: 'A1', type: 'Gapirish', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
+    { title: 'Yazma: Hayalimdeki Tatil Planı', sub: 'Tatil rejalari haqida yozma insho', level: 'B1', type: 'Yozish', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
+    { title: 'Türkçe Dilbilgisi: Fiil Çekimleri', sub: 'Zamonlar va shaxs-son qo‘shimchalari', level: 'B1', type: 'O‘qish', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Seyahat ve Alışveriş Kelimeleri', sub: 'Kiyim-kechak va xarid so‘zlari', level: 'A2', type: 'Lug‘at', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
+  ],
+  en: [
+    { title: 'Daily conversations', sub: 'Kundalik suhbatlar va dialoglar', level: 'A2', type: 'Tinglash', mins: '12 daqiqa', icon: Headphones, color: 'lavender' },
+    { title: 'The power of habits', sub: 'Odatlar kuchi va kitobdan parchalar', level: 'B1', type: 'O‘qish', mins: '8 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'At the coffee shop', sub: 'Kafeda suhbat va buyurtma', level: 'A1', type: 'Gapirish', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
+    { title: 'Writing: My Daily Routine', sub: 'Kun tartibi haqida insho yozish', level: 'A2', type: 'Yozish', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
+    { title: 'Useful Expressions for Travel', sub: 'Sayohat uchun eng kerakli iboralar', level: 'B1', type: 'Lug‘at', mins: '10 daqiqa', icon: Languages, color: 'lavender' },
+    { title: 'Pronunciation & Accent Mastery', sub: 'Talaffuz va to‘g‘ri aksent mashqi', level: 'A1', type: 'Gapirish', mins: '7 daqiqa', icon: Mic2, color: 'mint' }
+  ]
+};
+
+const lessons = languageMaterials['en'];
 
 function Dashboard({ onLogout }: { onLogout: () => void }) {
   const currentUser = authStorage.getUser();
   const [active, setActive] = useState('Bosh sahifa');
+  const [selectedLang, setSelectedLang] = useState(() => localStorage.getItem('tilshunos_language') || 'en');
+  const [selectedLevel, setSelectedLevel] = useState(() => localStorage.getItem('tilshunos_level') || 'B1');
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [backendMaterials, setBackendMaterials] = useState<any[]>([]);
+
+  useEffect(() => {
+    api.getMaterials({ languageCode: selectedLang })
+      .then(res => {
+        if (Array.isArray(res)) setBackendMaterials(res);
+      })
+      .catch(() => {});
+  }, [selectedLang]);
+
+  const currentLangObj = supportedLanguages.find(l => l.code === selectedLang) || supportedLanguages[0];
+  const currentLessons = useMemo(() => {
+    const staticItems = languageMaterials[selectedLang] || languageMaterials['en'];
+    const dynamicItems = backendMaterials.map(m => ({
+      title: m.title,
+      sub: m.description || m.title,
+      level: m.level || 'B1',
+      type: m.contentType === 'AudioPodcast' ? 'Tinglash' : m.contentType === 'Story' ? 'O‘qish' : m.contentType === 'GrammarLesson' ? 'Yozish' : 'Material',
+      mins: `${m.estimatedMinutes || 10} daqiqa`,
+      icon: m.contentType === 'AudioPodcast' ? Headphones : m.contentType === 'Story' ? BookOpen : MessageCircle,
+      color: 'lavender'
+    }));
+    return [...staticItems, ...dynamicItems];
+  }, [selectedLang, backendMaterials]);
+
   const [words, setWords] = useState<Word[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('tilshunos_words') || 'null') || initialWords;
@@ -291,13 +375,70 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           </button>
         </div>
 
-        <div className="profile-mini">
+        <div
+          className="profile-mini"
+          onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+          style={{ cursor: 'pointer', position: 'relative' }}
+          title="Tilni o‘zgartirish uchun bosing"
+        >
           <div className="avatar">{userInitial}</div>
           <div className="profile-copy">
             <strong>{userName}</strong>
-            <span><span className="online-dot" /> Ingliz tili · B1</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="online-dot" /> {currentLangObj.flag} {currentLangObj.name} · {selectedLevel}
+            </span>
           </div>
+          <ChevronDown size={14} style={{ opacity: 0.6 }} />
         </div>
+
+        {langDropdownOpen && (
+          <div style={{
+            background: 'var(--card-bg, #fff)',
+            border: '1px solid var(--border)',
+            borderRadius: '12px',
+            padding: '8px',
+            marginBottom: '10px',
+            boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px'
+          }}>
+            <small style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, padding: '4px 8px' }}>
+              TILNI ALMASHTIRISH:
+            </small>
+            {supportedLanguages.map(l => (
+              <button
+                key={l.code}
+                onClick={() => {
+                  setSelectedLang(l.code);
+                  localStorage.setItem('tilshunos_language', l.code);
+                  localStorage.setItem('tilshunos_language_name', l.name);
+                  localStorage.setItem('tilshunos_language_flag', l.flag);
+                  setLangDropdownOpen(false);
+                  notify(`${l.name} tanlandi! ✓`);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: selectedLang === l.code ? 'var(--soft)' : 'transparent',
+                  color: selectedLang === l.code ? 'var(--purple)' : 'inherit',
+                  fontWeight: selectedLang === l.code ? 700 : 500,
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  textAlign: 'left'
+                }}
+              >
+                <span>{l.flag}</span>
+                <span>{l.name}</span>
+                {selectedLang === l.code && <Check size={14} style={{ marginLeft: 'auto' }} />}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Mobile Install button in sidebar */}
         <button
@@ -530,7 +671,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                   </button>
                 </div>
                 <div className="lesson-grid">
-                  {lessons.map((lesson, i) => (
+                  {currentLessons.slice(0, 3).map((lesson, i) => (
                     <button
                       className="lesson-card"
                       key={lesson.title}
@@ -1016,13 +1157,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                 <button className="filter-chip">B2 · Yuqori</button>
               </div>
               <div className="resource-grid">
-                {[
-                  ...lessons,
-                  { title: 'Writing: My Daily Routine', sub: 'Insho yozish amaliyoti', level: 'A2', type: 'Yozish', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
-                  { title: 'Useful Expressions for Travel', sub: 'Sayohat uchun iboralar', level: 'B1', type: 'Lug‘at', mins: '10 daqiqa', icon: Languages, color: 'lavender' },
-                  { title: 'Pronunciation & Accent Mastery', sub: 'Talaffuz va ohang mashqlari', level: 'A1', type: 'Gapirish', mins: '7 daqiqa', icon: Mic2, color: 'mint' }
-                ]
-                  .filter(l => active === 'Materiallar' || l.type === active || (active === 'O‘qish' && l.type === 'O‘qish'))
+                {currentLessons
+                  .filter(l => active === 'Materiallar' || l.type === active || (active === 'O‘qish' && l.type === 'O‘qish') || (active === 'Tinglash' && l.type === 'Tinglash') || (active === 'Yozish' && l.type === 'Yozish') || (active === 'Gapirish' && l.type === 'Gapirish'))
                   .map(l => (
                     <button key={l.title} className="resource-card" onClick={() => notify(`${l.title} ochilmoqda`)}>
                       <div className={`resource-art ${l.color}`}>
@@ -1325,7 +1461,14 @@ function Stat({ icon: Icon, label, value, note, color, trend }: { icon: LucideIc
 
 function App() {
   const [page, setPage] = useState<'welcome' | 'login' | 'register' | 'verify' | 'onboarding' | 'dashboard'>(() => {
-    return authStorage.getToken() ? 'dashboard' : 'welcome';
+    const token = authStorage.getToken();
+    if (!token) return 'welcome';
+    const currentRole = localStorage.getItem('tilshunos_role') || 'user';
+    if (currentRole === 'admin' || currentRole === 'teacher') return 'dashboard';
+    const lang = localStorage.getItem('tilshunos_language');
+    // Qat'iyan: oddiy foydalanuvchi til va darajani tanlamagan bo'lsa, dashboardga o'tkazilmaydi!
+    if (!lang) return 'onboarding';
+    return 'dashboard';
   });
   const [role, setRole] = useState(() => localStorage.getItem('tilshunos_role') || 'user');
   const [name, setName] = useState('');
@@ -1333,8 +1476,8 @@ function App() {
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [intent, setIntent] = useState<'login' | 'register'>('register');
-  const [language, setLanguage] = useState('English');
-  const [level, setLevel] = useState('A1');
+  const [language, setLanguage] = useState(() => localStorage.getItem('tilshunos_language') || 'ru');
+  const [level, setLevel] = useState(() => localStorage.getItem('tilshunos_level') || 'A1');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -1409,6 +1552,15 @@ function App() {
       const roleStr = typeof userRole === 'string' ? userRole.toLowerCase() : userRole === 1 ? 'admin' : userRole === 2 ? 'teacher' : 'user';
       const cleanRole = roleStr === 'superadmin' ? 'admin' : roleStr === 'learner' ? 'user' : roleStr;
       setRole(cleanRole);
+
+      // QAT'IYAN: Agar oddiy o'quvchi bo'lsa va til tanlamagan bo'lsa, onboardingga o'tadi!
+      if (cleanRole === 'user') {
+        const hasLang = res.user?.targetLanguage || localStorage.getItem('tilshunos_language');
+        if (!hasLang) {
+          setPage('onboarding');
+          return;
+        }
+      }
       setPage('dashboard');
     } catch (err: any) {
       setMessage(err.message || 'Email yoki parol noto‘g‘ri.');
@@ -1479,6 +1631,16 @@ function App() {
       const roleStr = typeof userRole === 'string' ? userRole.toLowerCase() : userRole === 1 ? 'admin' : userRole === 2 ? 'teacher' : 'user';
       const cleanRole = roleStr === 'superadmin' ? 'admin' : roleStr === 'learner' ? 'user' : roleStr;
       setRole(cleanRole);
+
+      // QAT'IYAN: Agar yangi foydalanuvchi bo'lsa yoki til/daraja belgilanmagan bo'lsa, ONBOARDING ochiladi!
+      if (cleanRole === 'user') {
+        const isNew = (res as any).isNewUser;
+        const hasLang = !isNew && (res.user?.targetLanguage || localStorage.getItem('tilshunos_language'));
+        if (!hasLang) {
+          setPage('onboarding');
+          return;
+        }
+      }
       setPage('dashboard');
     } catch (err: any) {
       setMessage(err.message || 'Google orqali kirishda xatolik yuz berdi.');
@@ -1489,17 +1651,23 @@ function App() {
 
   const finishOnboarding = async () => {
     const levelMap: Record<string, number> = { A1: 0, A2: 1, B1: 2, B2: 3, C1: 4, C2: 5 };
+    setLoading(true);
     try {
       await api.completeOnboarding({
-        primaryLanguage: language === 'English' ? 'en' : language === 'Deutsch' ? 'de' : 'es',
+        primaryLanguage: language, // 'ru', 'en', 'uz', 'tr', 'de'
         targetLevel: levelMap[level] ?? 1,
         nativeLanguage: 'uz',
         dailyGoalMinutes: 20
       });
     } catch {
       // fallback
+    } finally {
+      setLoading(false);
     }
-    localStorage.setItem('tilshunos_language', language);
+    const found = supportedLanguages.find(l => l.code === language) || supportedLanguages[0];
+    localStorage.setItem('tilshunos_language', found.code);
+    localStorage.setItem('tilshunos_language_name', found.name);
+    localStorage.setItem('tilshunos_language_flag', found.flag);
     localStorage.setItem('tilshunos_level', level);
     setPage('dashboard');
   };
@@ -1723,39 +1891,36 @@ function App() {
             <h1>Qaysi tilni <span>o‘rganmoqchisiz?</span></h1>
             <p>Tanlovingiz bo‘yicha dashboard va lug‘at tavsiyalari moslashtiriladi.</p>
             <div className="language-options">
-              {[
-                ['English', '🇬🇧', 'Ingliz tili'],
-                ['Deutsch', '🇩🇪', 'Nemis tili'],
-                ['Español', '🇪🇸', 'Ispan tili'],
-                ['Türkçe', '🇹🇷', 'Turk tili'],
-                ['Français', '🇫🇷', 'Fransuz tili'],
-                ['한국어', '🇰🇷', 'Koreys tili']
-              ].map(([v, f, l]) => (
-                <button key={v} className={language === v ? 'chosen' : ''} onClick={() => setLanguage(v)}>
-                  <span>{f}</span>
-                  <strong>{l}</strong>
-                  {language === v && <Check size={17} />}
+              {supportedLanguages.map(item => (
+                <button
+                  key={item.code}
+                  className={language === item.code ? 'chosen' : ''}
+                  onClick={() => setLanguage(item.code)}
+                >
+                  <span style={{ fontSize: '24px' }}>{item.flag}</span>
+                  <div>
+                    <strong style={{ display: 'block', fontSize: '14px' }}>{item.name}</strong>
+                    <small style={{ fontSize: '11px', color: '#64748b' }}>{item.sub}</small>
+                  </div>
+                  {language === item.code && <Check size={18} />}
                 </button>
               ))}
             </div>
-            <h3>Hozirgi darajangiz</h3>
+            <h3>Hozirgi darajangiz (CEFR)</h3>
             <div className="level-options">
-              {[
-                ['A1', 'Boshlang‘ich'],
-                ['A2', 'Elementar'],
-                ['B1', 'O‘rta'],
-                ['B2', 'O‘rtadan yuqori'],
-                ['C1', 'Yuqori'],
-                ['C2', 'Mukammal']
-              ].map(([v, l]) => (
-                <button key={v} className={level === v ? 'chosen' : ''} onClick={() => setLevel(v)}>
-                  <strong>{v}</strong>
-                  <span>{l}</span>
+              {cefrLevels.map(lvl => (
+                <button
+                  key={lvl.code}
+                  className={level === lvl.code ? 'chosen' : ''}
+                  onClick={() => setLevel(lvl.code)}
+                >
+                  <strong>{lvl.code}</strong>
+                  <span>{lvl.name}</span>
                 </button>
               ))}
             </div>
-            <button className="entry-primary onboarding-submit" onClick={finishOnboarding}>
-              Shaxsiy yo‘l xaritamni yaratish <ArrowRight size={18} />
+            <button className="entry-primary onboarding-submit" onClick={finishOnboarding} disabled={loading}>
+              {loading ? 'Saqlanmoqda...' : 'Tasdiqlash va o‘rganishni boshlash'} <ArrowRight size={18} />
             </button>
           </div>
         </section>

@@ -14,16 +14,17 @@ interface WaitingPlayer {
 }
 
 export function DuelMatchModal({
-  isOpen,
+  isOpen = true,
   onClose,
   initialTopic = 'Fruits & Food',
   onDuelWin
 }: {
-  isOpen: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   initialTopic?: string;
-  onDuelWin: (earnedXp: number) => void;
+  onDuelWin?: (earnedXp: number) => void;
 }) {
+  if (!isOpen) return null;
   const [topic, setTopic] = useState(initialTopic);
   const [topics, setTopics] = useState<string[]>(['Fruits & Food', 'Travel & Places', 'Daily Life', 'Character & Mind']);
   const [waitingPlayers, setWaitingPlayers] = useState<WaitingPlayer[]>([]);
@@ -81,7 +82,11 @@ export function DuelMatchModal({
     setDuelState('matching');
 
     try {
-      const res = await api.challengePlayer({ topic, opponentName: opponent.name });
+      const res = await api.challengePlayer({
+        challengedUserId: opponent.id || 'opponent-user',
+        topic,
+        opponentName: opponent.name
+      });
       setRoomId(res.roomId || 'duel-live');
       setTimeout(() => {
         setDuelState('playing');
@@ -109,7 +114,7 @@ export function DuelMatchModal({
     setWordInput('');
 
     try {
-      const res = await api.submitDuelWord({ roomId, word, round });
+      const res = await api.submitDuelWord({ roomId, topic, word, round });
       if (res.valid) {
         setMyScore(s => s + res.myPoints);
         setOpponentScore(s => s + res.opponentPoints);
@@ -147,7 +152,7 @@ export function DuelMatchModal({
       setDuelState('result');
       const won = myScore >= opponentScore;
       const earned = won ? 50 : 20;
-      onDuelWin(earned);
+      if (onDuelWin) onDuelWin(earned);
       api.submitGameScore({
         gameMode: '1v1 Duel',
         score: myScore + earned,

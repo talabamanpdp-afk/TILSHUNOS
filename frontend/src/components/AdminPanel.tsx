@@ -154,13 +154,31 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
     }
   };
 
+  const levelToNumber = (lvl: string) => {
+    switch (lvl) {
+      case 'A1': return 0;
+      case 'A2': return 1;
+      case 'B1': return 2;
+      case 'B2': return 3;
+      case 'C1': return 4;
+      case 'C2': return 5;
+      default: return 2;
+    }
+  };
+
   const handleAddReading = async () => {
     if (!readingForm.title || !readingForm.content) {
       notify('Sarlavha va matnni kiriting');
       return;
     }
     try {
-      await api.createReadingMaterial(readingForm);
+      await api.createReadingMaterial({
+        title: readingForm.title,
+        content: readingForm.content,
+        level: levelToNumber(readingForm.level),
+        estimatedMinutes: readingForm.mins,
+        isPublished: readingForm.isPublished
+      });
       setMaterials(m => [{ id: Date.now(), title: readingForm.title, contentType: 'Story', level: readingForm.level, isPublished: readingForm.isPublished }, ...m]);
       setReadingForm({ title: '', content: '', topic: 'Daily Life', level: 'B1', mins: 10, isPublished: true });
       notify('Reading materiali saqlandi!');
@@ -175,7 +193,12 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
       return;
     }
     try {
-      await api.createWritingMaterial(writingForm);
+      await api.createWritingMaterial({
+        title: writingForm.title,
+        instructions: writingForm.instructions,
+        level: levelToNumber(writingForm.level),
+        isPublished: writingForm.isPublished
+      });
       setMaterials(m => [{ id: Date.now(), title: writingForm.title, contentType: 'GrammarLesson', level: writingForm.level, isPublished: writingForm.isPublished }, ...m]);
       setWritingForm({ title: '', instructions: '', topic: 'Daily Life', level: 'B1', words: 150, isPublished: true });
       notify('Writing topshirig‘i saqlandi!');
@@ -190,7 +213,14 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
       return;
     }
     try {
-      await api.createListeningMaterial(listeningForm);
+      await api.createListeningMaterial({
+        title: listeningForm.title,
+        audioUrl: listeningForm.audioUrl,
+        transcript: listeningForm.transcript,
+        level: levelToNumber(listeningForm.level),
+        estimatedMinutes: listeningForm.mins,
+        isPublished: listeningForm.isPublished
+      });
       setMaterials(m => [{ id: Date.now(), title: listeningForm.title, contentType: 'AudioPodcast', level: listeningForm.level, isPublished: listeningForm.isPublished }, ...m]);
       setListeningForm({ title: '', audioUrl: '', transcript: '', topic: 'Daily Life', level: 'B1', mins: 12, isPublished: true });
       notify('Listening audio materiali saqlandi!');
@@ -205,7 +235,14 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
       return;
     }
     try {
-      await api.createVideoMaterial(videoForm);
+      await api.createVideoMaterial({
+        title: videoForm.title,
+        videoUrl: videoForm.videoUrl,
+        description: videoForm.description,
+        level: levelToNumber(videoForm.level),
+        estimatedMinutes: videoForm.mins,
+        isPublished: videoForm.isPublished
+      });
       setMaterials(m => [{ id: Date.now(), title: videoForm.title, contentType: 'VideoLesson', level: videoForm.level, isPublished: videoForm.isPublished }, ...m]);
       setVideoForm({ title: '', videoUrl: '', description: '', topic: 'Daily Life', level: 'B1', mins: 15, isPublished: true });
       notify('Video darslik saqlandi!');
@@ -280,7 +317,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
         <header className="topbar">
           <div className="topbar-left">
             <div className="breadcrumb">
-              Boshqaruv <span style={{ opacity: 0.4 }}>/</span> <strong>{adminNav.find(x => x[1] === section)?.[0] || 'Dashboard'}</strong>
+              Boshqaruv <span style={{ opacity: 0.4 }}>/</span> <strong>{String(adminNav.find(x => x[1] === section)?.[0] || 'Dashboard')}</strong>
             </div>
           </div>
           <div className="topbar-right">
