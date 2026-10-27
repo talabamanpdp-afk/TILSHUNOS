@@ -3,7 +3,7 @@ import {
   Activity, BookOpen, Boxes, FileAudio, FileText, Gamepad2, Globe, LayoutDashboard,
   LogOut, Plus, Settings, ShieldCheck, Users, Video, GraduationCap, ClipboardList,
   Search, Trash2, Edit3, Save, UserCog, Headphones, PenLine, BookMarked, ChartNoAxesCombined,
-  Check, Sun, Moon, Sparkles, ArrowRight
+  Check, Sun, Moon, Sparkles, ArrowRight, Menu, X
 } from 'lucide-react';
 import { api, authStorage } from '../api';
 
@@ -27,6 +27,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const [dark, setDark] = useState(false);
   const [toast, setToast] = useState('');
   const [query, setQuery] = useState('');
+  const [mobileNav, setMobileNav] = useState(false);
 
   // Statistics & Level Distribution
   const [stats, setStats] = useState<any>({
@@ -273,7 +274,9 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
   return (
     <div className={dark ? 'app dark' : 'app'}>
-      <aside className="sidebar" style={{ width: '260px' }}>
+      {mobileNav && <div className="scrim" onClick={() => setMobileNav(false)} />}
+
+      <aside className={`sidebar ${mobileNav ? 'mobile-open' : ''}`}>
         <div className="brand">
           <div className="brand-mark" style={{ background: 'linear-gradient(135deg, #7869f5, #5b4bf0)' }}>
             <ShieldCheck size={24} />
@@ -282,6 +285,9 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
             <div className="brand-name">TILSHUNOS<span>.</span></div>
             <div className="brand-caption">ADMIN BOSHQARUV MARKAZI</div>
           </div>
+          <button className="icon-btn mobile-close" onClick={() => setMobileNav(false)} aria-label="Menyuni yopish">
+            <X size={18} />
+          </button>
         </div>
 
         <div className="profile-mini" style={{ background: 'var(--soft)', borderColor: 'var(--border)' }}>
@@ -296,7 +302,10 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
           {adminNav.map(([label, key, Icon]: any) => (
             <button
               key={key}
-              onClick={() => setSection(key)}
+              onClick={() => {
+                setSection(key);
+                setMobileNav(false);
+              }}
               className={`nav-item ${section === key ? 'active' : ''}`}
             >
               <Icon size={18} strokeWidth={1.8} />
@@ -313,9 +322,12 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
         </div>
       </aside>
 
-      <main className="main-area" style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
+      <main className="main-area">
         <header className="topbar">
-          <div className="topbar-left">
+          <div className="topbar-left" style={{ gap: '12px' }}>
+            <button className="icon-btn hamburger" onClick={() => setMobileNav(true)} aria-label="Menyuni ochish">
+              <Menu size={20} />
+            </button>
             <div className="breadcrumb">
               Boshqaruv <span style={{ opacity: 0.4 }}>/</span> <strong>{String(adminNav.find(x => x[1] === section)?.[0] || 'Dashboard')}</strong>
             </div>
@@ -380,13 +392,13 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px', marginTop: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px', marginTop: '18px' }}>
                   {Object.entries(levelDist).map(([lvl, count]: [string, any]) => {
                     const pct = Math.round((count / Math.max(1, totalStudents)) * 100);
                     return (
-                      <div key={lvl} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--purple)' }}>{lvl} DARAJA</span>
-                        <h2 style={{ fontSize: '24px', margin: '8px 0 4px' }}>{count} ta</h2>
+                      <div key={lvl} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)' }}>{lvl} DARAJA</span>
+                        <h2 style={{ fontSize: '22px', margin: '6px 0 4px' }}>{count} ta</h2>
                         <div style={{ height: '6px', background: 'var(--panel)', borderRadius: '6px', overflow: 'hidden', margin: '8px 0' }}>
                           <div style={{ height: '100%', width: `${pct}%`, background: 'var(--purple)' }} />
                         </div>
@@ -412,7 +424,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 </button>
               </div>
 
-              <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+              <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
                 <div className="panel" style={{ padding: '24px' }}>
                   <h3>Bosh Sahifa / Hero Qismi</h3>
                   <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: '14px 0' }}>
@@ -460,7 +472,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
               <div className="panel" style={{ padding: '24px', marginBottom: '24px' }}>
                 <h3>Yangi O‘qituvchi Qo‘shish</h3>
-                <div className="form-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginTop: '14px' }}>
+                <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginTop: '14px' }}>
                   <label>Ism<input value={teacherForm.firstName} onChange={e => setTeacherForm({ ...teacherForm, firstName: e.target.value })} placeholder="Dilnoza" /></label>
                   <label>Familiya<input value={teacherForm.lastName} onChange={e => setTeacherForm({ ...teacherForm, lastName: e.target.value })} placeholder="Rahimova" /></label>
                   <label>Email<input type="email" value={teacherForm.email} onChange={e => setTeacherForm({ ...teacherForm, email: e.target.value })} placeholder="teacher@tilshunos.uz" /></label>
@@ -474,28 +486,30 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
               </div>
 
               <div className="panel" style={{ padding: '20px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--muted)' }}>
-                      <th style={{ padding: '10px' }}>ISMI</th>
-                      <th style={{ padding: '10px' }}>EMAIL</th>
-                      <th style={{ padding: '10px' }}>MUTAXASSISLIK</th>
-                      <th style={{ padding: '10px' }}>O‘QUVCHILAR</th>
-                      <th style={{ padding: '10px' }}>HOLAT</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {teachers.map(t => (
-                      <tr key={t.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '12px 10px', fontWeight: 700 }}>{t.name}</td>
-                        <td style={{ padding: '12px 10px', color: 'var(--muted)' }}>{t.email}</td>
-                        <td style={{ padding: '12px 10px' }}>{t.specialty}</td>
-                        <td style={{ padding: '12px 10px' }}>{t.students} ta</td>
-                        <td style={{ padding: '12px 10px' }}><span className="status status-learned">{t.status}</span></td>
+                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <table style={{ width: '100%', minWidth: '550px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--muted)' }}>
+                        <th style={{ padding: '10px' }}>ISMI</th>
+                        <th style={{ padding: '10px' }}>EMAIL</th>
+                        <th style={{ padding: '10px' }}>MUTAXASSISLIK</th>
+                        <th style={{ padding: '10px' }}>O‘QUVCHILAR</th>
+                        <th style={{ padding: '10px' }}>HOLAT</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {teachers.map(t => (
+                        <tr key={t.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                          <td style={{ padding: '12px 10px', fontWeight: 700 }}>{t.name}</td>
+                          <td style={{ padding: '12px 10px', color: 'var(--muted)' }}>{t.email}</td>
+                          <td style={{ padding: '12px 10px' }}>{t.specialty}</td>
+                          <td style={{ padding: '12px 10px' }}>{t.students} ta</td>
+                          <td style={{ padding: '12px 10px' }}><span className="status status-learned">{t.status}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </>
           )}
@@ -512,7 +526,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
               <div className="panel" style={{ padding: '24px', marginBottom: '24px' }}>
                 <h3>Yangi So‘z Qo‘shish</h3>
-                <div className="form-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginTop: '14px' }}>
+                <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginTop: '14px' }}>
                   <label>Inglizcha so‘z<input value={vocabForm.word} onChange={e => setVocabForm({ ...vocabForm, word: e.target.value })} placeholder="beautiful" /></label>
                   <label>Tarjimasi<input value={vocabForm.translation} onChange={e => setVocabForm({ ...vocabForm, translation: e.target.value })} placeholder="chiroyli" /></label>
                   <label>Daraja
@@ -532,32 +546,34 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
               </div>
 
               <div className="panel" style={{ padding: '20px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--muted)' }}>
-                      <th style={{ padding: '10px' }}>SO‘Z</th>
-                      <th style={{ padding: '10px' }}>TARJIMA</th>
-                      <th style={{ padding: '10px' }}>DARAJA</th>
-                      <th style={{ padding: '10px' }}>MAVZU</th>
-                      <th style={{ padding: '10px' }}>AMAL</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {generalVocab.map(v => (
-                      <tr key={v.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '12px 10px', fontWeight: 800 }}>{v.word}</td>
-                        <td style={{ padding: '12px 10px' }}>{v.translation}</td>
-                        <td style={{ padding: '12px 10px' }}><span className="status status-progress">{v.level}</span></td>
-                        <td style={{ padding: '12px 10px', color: 'var(--muted)' }}>{v.topic}</td>
-                        <td style={{ padding: '12px 10px' }}>
-                          <button onClick={() => setGeneralVocab(l => l.filter(x => x.id !== v.id))} style={{ background: 'none', border: 0, color: '#e05656', cursor: 'pointer' }}>
-                            <Trash2 size={16} />
-                          </button>
-                        </td>
+                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <table style={{ width: '100%', minWidth: '550px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--muted)' }}>
+                        <th style={{ padding: '10px' }}>SO‘Z</th>
+                        <th style={{ padding: '10px' }}>TARJIMA</th>
+                        <th style={{ padding: '10px' }}>DARAJA</th>
+                        <th style={{ padding: '10px' }}>MAVZU</th>
+                        <th style={{ padding: '10px' }}>AMAL</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {generalVocab.map(v => (
+                        <tr key={v.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                          <td style={{ padding: '12px 10px', fontWeight: 800 }}>{v.word}</td>
+                          <td style={{ padding: '12px 10px' }}>{v.translation}</td>
+                          <td style={{ padding: '12px 10px' }}><span className="status status-progress">{v.level}</span></td>
+                          <td style={{ padding: '12px 10px', color: 'var(--muted)' }}>{v.topic}</td>
+                          <td style={{ padding: '12px 10px' }}>
+                            <button onClick={() => setGeneralVocab(l => l.filter(x => x.id !== v.id))} style={{ background: 'none', border: 0, color: '#e05656', cursor: 'pointer' }}>
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </>
           )}
@@ -619,7 +635,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                   <p>O‘quvchilar darajasiga mos hikoya, maqola yoki matnlar kiriting.</p>
                 </div>
               </div>
-              <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="form-grid" style={{ gap: '16px' }}>
                 <label>Sarlavha<input value={readingForm.title} onChange={e => setReadingForm({ ...readingForm, title: e.target.value })} placeholder="The Power of Habits" /></label>
                 <label>Daraja
                   <select value={readingForm.level} onChange={e => setReadingForm({ ...readingForm, level: e.target.value })}>
@@ -650,7 +666,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                   <p>Insho mavzulari, talab qilinadigan so‘zlar soni va topshiriq yo‘riqnomasini kiriting.</p>
                 </div>
               </div>
-              <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="form-grid" style={{ gap: '16px' }}>
                 <label>Topshiriq Sarlavhasi<input value={writingForm.title} onChange={e => setWritingForm({ ...writingForm, title: e.target.value })} placeholder="My Favorite City" /></label>
                 <label>Daraja
                   <select value={writingForm.level} onChange={e => setWritingForm({ ...writingForm, level: e.target.value })}>
@@ -681,7 +697,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                   <p>Audio fayl havolasi (MP3) va uning transkriptini kiriting.</p>
                 </div>
               </div>
-              <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="form-grid" style={{ gap: '16px' }}>
                 <label>Audio Sarlavhasi<input value={listeningForm.title} onChange={e => setListeningForm({ ...listeningForm, title: e.target.value })} placeholder="At the Coffee Shop" /></label>
                 <label>Audio URL (MP3 havola)<input value={listeningForm.audioUrl} onChange={e => setListeningForm({ ...listeningForm, audioUrl: e.target.value })} placeholder="https://example.com/audio.mp3" /></label>
                 <label>Daraja
@@ -708,7 +724,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                   <p>YouTube yoki to‘g‘ridan-to‘g‘ri video havolasini kiriting.</p>
                 </div>
               </div>
-              <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="form-grid" style={{ gap: '16px' }}>
                 <label>Video Sarlavhasi<input value={videoForm.title} onChange={e => setVideoForm({ ...videoForm, title: e.target.value })} placeholder="English Pronunciation Secrets" /></label>
                 <label>Video URL (YouTube yoki MP4)<input value={videoForm.videoUrl} onChange={e => setVideoForm({ ...videoForm, videoUrl: e.target.value })} placeholder="https://youtube.com/watch?v=..." /></label>
                 <label>Daraja
