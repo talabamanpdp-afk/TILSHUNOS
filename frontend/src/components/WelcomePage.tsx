@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Languages, ArrowRight, ChevronRight, Check, Sparkles, BookOpen, Headphones,
   PenLine, MessageCircle, Mic2, Gamepad2, Users, Trophy, ShieldCheck,
@@ -45,6 +45,44 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [previewTab, setPreviewTab] = useState<'vocab' | 'lesson' | 'progress'>('vocab');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
+  // Smart auto-hiding navbar on scroll down, reappearing on scroll up
+  const [navVisible, setNavVisible] = useState(true);
+  const [navScrolled, setNavScrolled] = useState(false);
+
+  useEffect(() => {
+    let lastScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
+    let ticking = false;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (currentScrollY <= 70) {
+            // Near the top: always visible and unscrolled
+            setNavVisible(true);
+            setNavScrolled(false);
+          } else {
+            setNavScrolled(true);
+            const delta = currentScrollY - lastScrollY;
+            if (delta < -4) {
+              // Scrolling UP -> reveal navbar immediately
+              setNavVisible(true);
+            } else if (delta > 4 && !mobileMenuOpen) {
+              // Scrolling DOWN -> hide navbar to increase screen area
+              setNavVisible(false);
+            }
+          }
+          lastScrollY = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [mobileMenuOpen]);
 
   // Audio pronunciation simulation
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -110,7 +148,11 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         </div>
 
         {/* Global Split Nav Header */}
-        <header className="holo-nav">
+        <header
+          className={`holo-nav ${navScrolled ? 'holo-nav-scrolled' : ''} ${
+            navVisible || mobileMenuOpen ? 'holo-nav-visible' : 'holo-nav-hidden'
+          }`}
+        >
           <div className="holo-nav-container">
             {/* Left Brand & Nav links (on blue side) */}
             <div className="holo-nav-left">

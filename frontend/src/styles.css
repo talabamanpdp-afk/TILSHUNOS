@@ -1468,11 +1468,28 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   background: radial-gradient(circle at 120% 50%, transparent 18%, rgba(255, 255, 255, 0.05) 19%, transparent 20%, transparent 32%, rgba(255, 255, 255, 0.05) 33%, transparent 34%, transparent 46%, rgba(255, 255, 255, 0.05) 47%, transparent 48%, transparent 60%, rgba(255, 255, 255, 0.05) 61%, transparent 62%);
 }
 
-/* Nav Header */
+/* Nav Header - Smart Sticky Header */
 .holo-nav {
-  position: relative;
-  z-index: 25;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   width: 100%;
+  z-index: 100;
+  transform: translateY(0);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.25s ease,
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+  will-change: transform;
+}
+
+.holo-nav.holo-nav-hidden {
+  transform: translateY(-115%);
+}
+
+.holo-nav.holo-nav-visible {
+  transform: translateY(0);
 }
 
 .holo-nav-container {
@@ -1481,7 +1498,114 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 44px;
+  padding: 22px 44px;
+  transition: padding 0.25s ease;
+}
+
+/* Scrolled Nav styling (revealed when user scrolls up) */
+.holo-nav.holo-nav-scrolled {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+}
+
+.holo-nav.holo-nav-scrolled .holo-nav-container {
+  padding: 13px 44px;
+}
+
+.holo-nav.holo-nav-scrolled .holo-brand {
+  color: #0f172a;
+}
+
+.holo-nav.holo-nav-scrolled .holo-brand-icon {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.holo-nav.holo-nav-scrolled .holo-nav-link {
+  color: #334155;
+}
+
+.holo-nav.holo-nav-scrolled .holo-nav-link:hover {
+  color: #2563eb;
+}
+
+.holo-nav.holo-nav-scrolled .holo-theme-toggle {
+  border-color: rgba(203, 213, 225, 0.8);
+  background: rgba(241, 245, 249, 0.8);
+  color: #475569;
+}
+
+.holo-nav.holo-nav-scrolled .holo-theme-toggle:hover {
+  background: #ffffff;
+  color: #2563eb;
+}
+
+.holo-nav.holo-nav-scrolled .holo-sign-in {
+  color: #1e293b;
+}
+
+.holo-nav.holo-nav-scrolled .holo-sign-in:hover {
+  opacity: 0.8;
+}
+
+.holo-nav.holo-nav-scrolled .holo-mobile-hamburger {
+  color: #0f172a;
+}
+
+/* Dark mode support for scrolled nav */
+.welcome-root.dark .holo-nav.holo-nav-scrolled {
+  background: rgba(15, 23, 42, 0.92);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.65);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.welcome-root.dark .holo-nav.holo-nav-scrolled .holo-brand {
+  color: #f8fafc;
+}
+
+.welcome-root.dark .holo-nav.holo-nav-scrolled .holo-brand-icon {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.welcome-root.dark .holo-nav.holo-nav-scrolled .holo-nav-link {
+  color: #cbd5e1;
+}
+
+.welcome-root.dark .holo-nav.holo-nav-scrolled .holo-nav-link:hover {
+  color: #60a5fa;
+}
+
+.welcome-root.dark .holo-nav.holo-nav-scrolled .holo-theme-toggle {
+  border-color: rgba(51, 65, 85, 0.8);
+  background: rgba(30, 41, 59, 0.8);
+  color: #94a3b8;
+}
+
+.welcome-root.dark .holo-nav.holo-nav-scrolled .holo-theme-toggle:hover {
+  color: #60a5fa;
+  background: rgba(51, 65, 85, 0.9);
+}
+
+.welcome-root.dark .holo-nav.holo-nav-scrolled .holo-sign-in {
+  color: #f1f5f9;
+}
+
+.welcome-root.dark .holo-nav.holo-nav-scrolled .holo-mobile-hamburger {
+  color: #f8fafc;
+}
+
+.welcome-root.dark .mobile-drawer {
+  background: #0f172a;
+  border-bottom-color: rgba(51, 65, 85, 0.8);
+}
+
+.welcome-root.dark .mobile-nav-links a {
+  color: #f1f5f9;
 }
 
 .holo-nav-left {
@@ -1606,7 +1730,7 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   z-index: 10;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 30px 44px 50px;
+  padding: 105px 44px 50px;
 }
 
 .holo-hero-grid {
@@ -2064,8 +2188,9 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
 @media (max-width: 1180px) {
   .holo-headline { font-size: 50px; }
   .holo-hero-grid { grid-template-columns: 1.1fr 0.9fr; gap: 24px; }
-  .holo-nav-container { padding: 20px 24px; }
-  .holo-hero-content { padding: 20px 24px 40px; }
+  .holo-nav-container { padding: 18px 24px; }
+  .holo-nav.holo-nav-scrolled .holo-nav-container { padding: 12px 24px; }
+  .holo-hero-content { padding: 92px 24px 40px; }
 }
 
 @media (max-width: 992px) {
@@ -2085,6 +2210,9 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
 @media (max-width: 640px) {
   .holo-headline { font-size: 34px; }
   .holo-pill-badge { font-size: 10px; padding: 4px 10px; margin-left: 8px; }
+  .holo-nav-container { padding: 14px 18px; }
+  .holo-nav.holo-nav-scrolled .holo-nav-container { padding: 10px 18px; }
+  .holo-hero-content { padding: 80px 18px 36px; }
   .holo-metrics-bar { flex-direction: column; align-items: flex-start; gap: 16px; border-top: none; }
   .holo-metric-divider { display: none; }
   .holo-cta-row { flex-direction: column; align-items: flex-start; gap: 18px; }
