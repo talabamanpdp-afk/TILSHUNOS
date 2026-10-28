@@ -12,6 +12,7 @@ import {
   Users, Volume2, X, Zap, type LucideIcon
 } from 'lucide-react';
 import { api, authStorage } from './api';
+import { playSpeech } from './utils/speech';
 
 type Word = { id: number; word: string; translation: string; example: string; topic: string; state: 'Rejalashtirilgan' | 'Jarayonda' | 'O‘rganilgan' };
 
@@ -832,7 +833,20 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                       <div className="table-word">
                         <div className="word-letter">{w.word[0].toUpperCase()}</div>
                         <div>
-                          <strong>{w.word}</strong>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <strong>{w.word}</strong>
+                            <button
+                              className="mini-speak-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                playSpeech(w.word, 'en');
+                              }}
+                              title="Talaffuzni tinglash"
+                              type="button"
+                            >
+                              <Volume2 size={13} />
+                            </button>
+                          </div>
                           <small>{w.example || 'Misol kiritilmagan'}</small>
                         </div>
                       </div>
@@ -1413,7 +1427,11 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
             <div className="question-content">
               <div className="question-label">SO‘ZNING O‘ZBEKCHA TARJIMASINI YOZING</div>
               <h2>{currentQuestion?.word || 'achieve'}</h2>
-              <button className="pronounce-btn" onClick={() => notify('Talaffuz: audio tinglash')}>
+              <button
+                className="pronounce-btn"
+                onClick={() => playSpeech(currentQuestion?.word || '', 'en')}
+                type="button"
+              >
                 <Volume2 size={17} /> Audio talaffuz
               </button>
               <input

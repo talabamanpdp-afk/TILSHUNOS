@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import {
   Languages, ArrowRight, ChevronRight, Check, Sparkles, BookOpen, Headphones,
   PenLine, MessageCircle, Mic2, Gamepad2, Users, Trophy, ShieldCheck,
-  ChevronDown, ChevronUp, Sun, Moon, Menu, X, Play, Volume2, Award,
-  Clock, Flame, HelpCircle, Send, ExternalLink, Heart, Layers, Target, Compass,
-  Search, Star, Smartphone
+  ChevronDown, ChevronUp, Sun, Moon, Menu, X, Play, Volume2, VolumeX, Volume1,
+  Award, Clock, Flame, HelpCircle, Send, ExternalLink, Heart, Layers, Target, Compass,
+  Search, Star, Smartphone, Mic, RotateCcw
 } from 'lucide-react';
+import {
+  playSpeech, stopSpeech, startListening,
+  SupportedLang, LANG_LABELS, isSpeechRecognitionSupported
+} from '../utils/speech';
 
 export interface CmsConfig {
   hero?: string;
@@ -216,17 +220,81 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
     return () => clearTimeout(timer);
   }, [previewTab]);
 
-  // Audio pronunciation simulation
-  const [audioPlaying, setAudioPlaying] = useState(false);
-  const playSampleAudio = (text: string) => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      setAudioPlaying(true);
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'en-US';
-      utter.rate = 0.9;
-      utter.onend = () => setAudioPlaying(false);
-      utter.onerror = () => setAudioPlaying(false);
-      window.speechSynthesis.speak(utter);
+  // Multilingual Speech & Interactive Demo State
+  const [selectedDemoLang, setSelectedDemoLang] = useState<SupportedLang>('en');
+  const [flipMode, setFlipMode] = useState(false);
+  const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
+  const [activeSpeechText, setActiveSpeechText] = useState<string | null>(null);
+  const [listeningWord, setListeningWord] = useState<string | null>(null);
+  const [interimSpeech, setInterimSpeech] = useState<string>('');
+  const [pronunciationResults, setPronunciationResults] = useState<Record<string, { score: number; passed: boolean; feedback: string } | null>>({});
+  const [readingAudioPlaying, setReadingAudioPlaying] = useState(false);
+
+  const handlePlayAudio = (text: string, rate: number = 0.9) => {
+    if (activeSpeechText === text) {
+      stopSpeech();
+      setActiveSpeechText(null);
+      return;
+    }
+    setActiveSpeechText(text);
+    playSpeech(text, {
+      lang: selectedDemoLang,
+      rate,
+      onEnd: () => setActiveSpeechText(null),
+      onError: () => setActiveSpeechText(null)
+    });
+  };
+
+  const handleMicTest = (word: string) => {
+    if (listeningWord === word) {
+      stopSpeech();
+      setListeningWord(null);
+      setInterimSpeech('');
+      return;
+    }
+
+    if (!isSpeechRecognitionSupported()) {
+      alert('Sizning brauzeringizda mikrofondan ovoz tanish moduli qo‘llab-quvvatlanmaydi. Iltimos Google Chrome yoki Microsoft Edge brauzeridan foydalaning.');
+      return;
+    }
+
+    setListeningWord(word);
+    setInterimSpeech('Eshityapman... So‘zni ayting');
+    startListening({
+      lang: selectedDemoLang,
+      targetWord: word,
+      onInterim: (text) => setInterimSpeech(text),
+      onResult: (res) => {
+        setListeningWord(null);
+        setInterimSpeech('');
+        setPronunciationResults(prev => ({ ...prev, [word]: res }));
+      },
+      onError: (errMsg) => {
+        setListeningWord(null);
+        setInterimSpeech('');
+        alert(errMsg);
+      }
+    });
+  };
+
+  const toggleCardFlip = (word: string) => {
+    if (!flipMode) return;
+    setFlippedCards(prev => ({ ...prev, [word]: !prev[word] }));
+  };
+
+  const toggleReadingAudio = () => {
+    if (readingAudioPlaying) {
+      stopSpeech();
+      setReadingAudioPlaying(false);
+    } else {
+      setReadingAudioPlaying(true);
+      const fullText = `${sampleLesson.title}. ${sampleLesson.article}`;
+      playSpeech(fullText, {
+        lang: selectedDemoLang === 'ru' ? 'ru' : selectedDemoLang === 'de' ? 'de' : selectedDemoLang === 'tr' ? 'tr' : 'en',
+        rate: 0.88,
+        onEnd: () => setReadingAudioPlaying(false),
+        onError: () => setReadingAudioPlaying(false)
+      });
     }
   };
 
@@ -316,14 +384,37 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   const previewTitle = cms?.previewSection?.title || 'Platformaning haqiqiy imkoniyatlarini sinab ko‘ring';
   const previewSubtitle = cms?.previewSection?.subtitle || 'Ro‘yxatdan o‘tishdan avval asosiy 3 ta modulimiz qanday ishlashini amalda ko‘ring.';
 
-  const defaultVocabItems = [
-    { word: 'Achieve', tr: 'Erishmoq, zabt etmoq', lvl: 'B1', ex: 'You can achieve any language goal with daily practice.', topic: 'Motivatsiya' },
-    { word: 'Curious', tr: 'Qiziquvchan, yangilikka intiluvchan', lvl: 'A2', ex: 'Children are naturally curious about the world.', topic: 'Xarakter' },
-    { word: 'Resilience', tr: 'Sabr-bardosh, chidamlilik', lvl: 'B2', ex: 'She showed great resilience in learning pronunciation.', topic: 'Psixologiya' }
-  ];
-  const vocabItems = (cms?.previewSection?.vocabItems && cms.previewSection.vocabItems.length > 0)
-    ? cms.previewSection.vocabItems
-    : defaultVocabItems;
+  const multilingualVocab: Record<SupportedLang, Array<{ word: string; tr: string; lvl: string; ex: string; topic: string }>> = {
+    en: (cms?.previewSection?.vocabItems && cms.previewSection.vocabItems.length > 0)
+      ? cms.previewSection.vocabItems
+      : [
+          { word: 'Achieve', tr: 'Erishmoq, zabt etmoq', lvl: 'B1', ex: 'You can achieve any language goal with daily practice.', topic: 'Motivatsiya' },
+          { word: 'Curious', tr: 'Qiziquvchan, yangilikka intiluvchan', lvl: 'A2', ex: 'Children are naturally curious about the world.', topic: 'Xarakter' },
+          { word: 'Resilience', tr: 'Sabr-bardosh, chidamlilik', lvl: 'B2', ex: 'She showed great resilience in learning pronunciation.', topic: 'Psixologiya' }
+        ],
+    de: [
+      { word: 'Entdecken', tr: 'Kashf qilmoq, o‘rganmoq', lvl: 'A2', ex: 'Wir entdecken jeden Tag neue deutsche Wörter.', topic: 'Bilim' },
+      { word: 'Zuverlässig', tr: 'Ishonchli, qat’iyatli', lvl: 'B1', ex: 'Ein zuverlässiger Wortschatz ist der Schlüssel zum Erfolg.', topic: 'Ko‘nikma' },
+      { word: 'Begeisterung', tr: 'Ishtiyoq, katta qiziqish', lvl: 'B2', ex: 'Mit Begeisterung lernt man Sprachen viel schneller.', topic: 'Ruhlanish' }
+    ],
+    tr: [
+      { word: 'Başarmak', tr: 'Muvaffaqiyat qozonmoq, uddalamoq', lvl: 'A2', ex: 'Her gün pratik yaparak Türkçe konuşmayı başaracaksınız.', topic: 'Muvaffaqiyat' },
+      { word: 'Meraklı', tr: 'Qiziquvchan, o‘rganishga intiluvchan', lvl: 'A2', ex: 'Yeni bir dil öğrenirken meraklı olmak çok önemlidir.', topic: 'Xarakter' },
+      { word: 'Kararlılık', tr: 'Qat’iyat, sobitqadamlik', lvl: 'B2', ex: 'Büyük hedeflere kararlılık ve düzenli çalışma ile ulaşılır.', topic: 'Iroda' }
+    ],
+    ru: [
+      { word: 'Вдохновение', tr: 'Ilhom, jo‘shqinlik', lvl: 'B1', ex: 'Вдохновение приходит во время ежедневных практических занятий.', topic: 'Ijod' },
+      { word: 'Достижение', tr: 'Yutuq, muhim marra', lvl: 'B1', ex: 'Каждое новое выученное слово — это ваше личное достижение.', topic: 'Rivojlanish' },
+      { word: 'Любознательный', tr: 'Bilimga chanqoq, qiziquvchan', lvl: 'A2', ex: 'Любознательные студенты осваивают язык значительно быстрее.', topic: 'Xususiyat' }
+    ],
+    uz: [
+      { word: 'Barkamol', tr: 'Har tomonlama yetuk, mukammal', lvl: 'B2', ex: 'Barkamol avlod o‘z ona tilidan tashqari jahon tillarini puxta egallaydi.', topic: 'Ma’naviyat' },
+      { word: 'Izlanish', tr: 'Doimiy intilish, yangi bilim izlash', lvl: 'A2', ex: 'Muntazam izlanish va mashqlar tilni ravon gapirishga olib keladi.', topic: 'Ta’lim' },
+      { word: 'Zukko', tr: 'Topqir, zehnli, tez anglovchi', lvl: 'B1', ex: 'Zukko o‘quvchilar yangi qoidalarni jonli misollarda oson eslab qoladilar.', topic: 'Zehn' }
+    ]
+  };
+
+  const vocabItems = multilingualVocab[selectedDemoLang] || multilingualVocab.en;
 
   const defaultSampleLesson = {
     level: 'CEFR B1 · READING',
@@ -814,35 +905,193 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
             </button>
           </div>
 
-          {/* Tab Content 1: Vocabulary */}
+          {/* Tab Content 1: Vocabulary & Flashcards */}
           {previewTab === 'vocab' && (
             <div className="preview-content-card scroll-reveal-scale delay-200">
-              <div className="vocab-demo-grid scroll-stagger-parent revealed">
-                {vocabItems.map(item => (
-                  <div key={item.word} className="demo-word-card">
-                    <div className="demo-word-top">
-                      <span className="demo-level-pill">{item.lvl}</span>
-                      <button className="demo-speak-btn" onClick={() => playSampleAudio(item.word)}>
-                        <Volume2 size={16} />
-                      </button>
-                    </div>
-                    <h3 className="demo-target-word">{item.word}</h3>
-                    <p className="demo-trans">{item.tr}</p>
-                    <p className="demo-example">“{item.ex}”</p>
-                    <div className="demo-topic-tag">{item.topic}</div>
-                  </div>
-                ))}
+              {/* Interactive Toolbar: Multilingual Pills + Flashcard Mode Toggle */}
+              <div className="vocab-demo-toolbar">
+                <div className="demo-lang-pills">
+                  {(['en', 'de', 'tr', 'ru', 'uz'] as SupportedLang[]).map((lng) => (
+                    <button
+                      key={lng}
+                      className={`demo-lang-pill ${selectedDemoLang === lng ? 'active' : ''}`}
+                      onClick={() => {
+                        setSelectedDemoLang(lng);
+                        setFlippedCards({});
+                        setPronunciationResults({});
+                        stopSpeech();
+                      }}
+                      type="button"
+                    >
+                      <span className="lang-flag">{LANG_LABELS[lng]?.flag}</span>
+                      <span>{LANG_LABELS[lng]?.nativeName}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="demo-toolbar-actions">
+                  <button
+                    className={`demo-flip-toggle ${flipMode ? 'active' : ''}`}
+                    onClick={() => {
+                      setFlipMode(!flipMode);
+                      setFlippedCards({});
+                    }}
+                    title="Flashcard rejimida kartani bosganda tarjimasi ochiladi"
+                    type="button"
+                  >
+                    <span>⚡</span>
+                    <span>{flipMode ? 'Flashcard: Faol ✓' : 'Flashcard rejimi'}</span>
+                  </button>
+                </div>
               </div>
+
+              {/* Grid of Word Cards */}
+              <div className="vocab-demo-grid scroll-stagger-parent revealed">
+                {vocabItems.map((item) => {
+                  const isFlipped = flippedCards[item.word];
+                  const scoreObj = pronunciationResults[item.word];
+                  const isSpeakingThis = activeSpeechText === item.word;
+                  const isListeningThis = listeningWord === item.word;
+
+                  return (
+                    <div
+                      key={item.word}
+                      className={`demo-word-card ${flipMode ? 'is-flip-card' : ''} ${isFlipped ? 'flipped' : ''}`}
+                      onClick={() => toggleCardFlip(item.word)}
+                    >
+                      <div className="demo-word-top">
+                        <div className="demo-badge-wrap">
+                          <span className="demo-level-pill">{item.lvl}</span>
+                          <span className="demo-lang-badge-tag">{LANG_LABELS[selectedDemoLang]?.flag}</span>
+                        </div>
+
+                        {/* Speech & Audio Controls */}
+                        <div className="demo-actions-group">
+                          {/* Normal 0.9x TTS Pronounce */}
+                          <button
+                            className={`demo-ctrl-btn ${isSpeakingThis ? 'playing' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePlayAudio(item.word, 0.9);
+                            }}
+                            title="Normal talaffuzni tinglash (0.9x)"
+                            type="button"
+                          >
+                            {isSpeakingThis ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                          </button>
+
+                          {/* Slow Turtle 0.65x TTS Pronounce */}
+                          <button
+                            className="demo-ctrl-btn demo-slow-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePlayAudio(item.word, 0.65);
+                            }}
+                            title="Sekin, aniq talaffuz (0.65x 🐢)"
+                            type="button"
+                          >
+                            <span>🐢</span>
+                            <small>0.7x</small>
+                          </button>
+
+                          {/* Live Microphone Pronunciation Test */}
+                          <button
+                            className={`demo-ctrl-btn demo-mic-btn ${isListeningThis ? 'listening-pulse' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMicTest(item.word);
+                            }}
+                            title="Mikrofonda o‘z talaffuzingizni sinab ko‘ring 🎤"
+                            type="button"
+                          >
+                            <Mic size={14} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <h3 className="demo-target-word">{item.word}</h3>
+
+                      {/* Microphone Recognition Live Status */}
+                      {isListeningThis && (
+                        <div className="demo-mic-live-banner animate-pulse">
+                          <Mic size={13} />
+                          <span>{interimSpeech || 'Eshityapman... So‘zni ayting'}</span>
+                        </div>
+                      )}
+
+                      {/* Pronunciation AI Score Display */}
+                      {scoreObj && !isListeningThis && (
+                        <div className={`demo-score-chip ${scoreObj.passed ? 'passed' : 'retry'}`}>
+                          <strong>{scoreObj.score}%</strong>
+                          <span>{scoreObj.feedback}</span>
+                        </div>
+                      )}
+
+                      {/* Translation: Normal or Hidden in Flashcard Mode */}
+                      {flipMode && !isFlipped ? (
+                        <div className="flip-hint-badge">
+                          <span>👁️ Tarjimani ko‘rish uchun bosing</span>
+                        </div>
+                      ) : (
+                        <p className="demo-trans">{item.tr}</p>
+                      )}
+
+                      {/* Contextual Sentence with Speech */}
+                      <div className="demo-example-row">
+                        <p className="demo-example">“{item.ex}”</p>
+                        <button
+                          className="demo-sentence-speak-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePlayAudio(item.ex, 0.88);
+                          }}
+                          title="Misol gapni to‘liq tinglash"
+                          type="button"
+                        >
+                          <Volume1 size={13} />
+                          <span>Gapni tinglash</span>
+                        </button>
+                      </div>
+
+                      <div className="demo-topic-tag">{item.topic}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
               <div className="preview-footer-note">
                 <Sparkles size={16} style={{ color: '#356cf6' }} />
-                <span>Har bir so‘z intervalli takrorlash va kontekstual misollar orqali xotirada mustahkamlanadi.</span>
+                <span>
+                  Brauzerning zamonaviy Web Speech API orqali ingliz, nemis, turk va rus tillarida xotirasiz va real vaqtda audio talaffuz.
+                </span>
               </div>
             </div>
           )}
 
-          {/* Tab Content 2: Sample Lesson */}
+          {/* Tab Content 2: Sample Lesson & Reading with Audio Darslik */}
           {previewTab === 'lesson' && (
             <div className="preview-content-card scroll-reveal-scale delay-200">
+              <div className="lesson-audio-bar">
+                <button
+                  className={`lesson-audio-btn ${readingAudioPlaying ? 'playing' : ''}`}
+                  onClick={toggleReadingAudio}
+                  type="button"
+                >
+                  {readingAudioPlaying ? (
+                    <>
+                      <VolumeX size={17} />
+                      <span>Audioni to‘xtatish</span>
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 size={17} />
+                      <span>🎧 Dars matnini to‘liq tinglash (Audio darslik)</span>
+                    </>
+                  )}
+                </button>
+                <span className="lesson-audio-note">Tabiiy intonatsiyada to‘liq o‘qib beradi</span>
+              </div>
+
               <div className="lesson-preview-container scroll-stagger-parent revealed">
                 <div className="lesson-text-block">
                   <div className="lesson-text-head">
