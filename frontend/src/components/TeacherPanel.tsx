@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Sun, Moon } from 'lucide-react';
 import { api, authStorage } from '../api';
 
 interface Student {
@@ -24,9 +25,11 @@ interface TeacherProfileState {
 
 interface TeacherPanelProps {
   onLogout: () => void;
+  dark?: boolean;
+  setDark?: (d: boolean) => void;
 }
 
-export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout }) => {
+export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setDark }) => {
   const [activeTab, setActiveTab] = useState<'students' | 'tasks' | 'profile' | 'personal'>('students');
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
@@ -211,11 +214,11 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout }) => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', color: '#1e293b', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: dark ? '#151522' : '#f8fafc', color: dark ? '#f1f0fc' : '#1e293b', fontFamily: 'Inter, sans-serif' }}>
       {/* Top Navigation */}
       <header style={{
-        background: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
+        background: dark ? '#202032' : '#ffffff',
+        borderBottom: dark ? '1px solid #343449' : '1px solid #e2e8f0',
         padding: '14px 28px',
         display: 'flex',
         alignItems: 'center',
@@ -241,10 +244,10 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout }) => {
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>TILSHUNOS</h1>
+              <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: dark ? '#f1f0fc' : '#0f172a' }}>TILSHUNOS</h1>
               <span style={{
-                background: '#e0e7ff',
-                color: '#4338ca',
+                background: dark ? '#312e81' : '#e0e7ff',
+                color: dark ? '#c7d2fe' : '#4338ca',
                 fontSize: '11px',
                 fontWeight: 700,
                 padding: '2px 8px',
@@ -253,7 +256,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout }) => {
                 O'QITUVCHI PANELI
               </span>
             </div>
-            <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+            <p style={{ margin: 0, fontSize: '12px', color: dark ? '#94a3b8' : '#64748b' }}>
               O'quvchilar monitoringi, vazifalar taqsimoti va shaxsiy kabinet
             </p>
           </div>
@@ -261,16 +264,35 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout }) => {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{profile.fullName}</div>
-            <div style={{ fontSize: '11px', color: '#64748b' }}>{profile.specialty || "Ingliz tili ustozi"}</div>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: dark ? '#f1f0fc' : '#0f172a' }}>{profile.fullName}</div>
+            <div style={{ fontSize: '11px', color: dark ? '#94a3b8' : '#64748b' }}>{profile.specialty || "Ingliz tili ustozi"}</div>
           </div>
+          {setDark && (
+            <button
+              onClick={() => setDark(!dark)}
+              style={{
+                width: '36px',
+                height: '36px',
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: '8px',
+                border: dark ? '1px solid #343449' : '1px solid #e2e8f0',
+                background: dark ? '#2e2b4b' : '#fff',
+                color: dark ? '#f1f0fc' : '#475569',
+                cursor: 'pointer'
+              }}
+              title="Mavzuni almashtirish"
+            >
+              {dark ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+          )}
           <button
             onClick={onLogout}
             style={{
               padding: '8px 16px',
               borderRadius: '8px',
-              border: '1px solid #e2e8f0',
-              background: '#fff',
+              border: dark ? '1px solid #343449' : '1px solid #e2e8f0',
+              background: dark ? '#202032' : '#fff',
               color: '#dc2626',
               fontWeight: 600,
               fontSize: '13px',

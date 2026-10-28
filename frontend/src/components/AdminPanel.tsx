@@ -24,9 +24,9 @@ const adminNav = [
   ['Tizim Sozlamalari', 'settings', Settings]
 ];
 
-export function AdminPanel({ onLogout }: { onLogout: () => void }) {
+export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; dark: boolean; setDark: (d: boolean) => void }) {
   const [section, setSection] = useState('dashboard');
-  const [dark, setDark] = useState(false);
+
   const [toast, setToast] = useState('');
   const [query, setQuery] = useState('');
   const [mobileNav, setMobileNav] = useState(false);

@@ -1558,17 +1558,28 @@ function App() {
     }
   });
   const [dark, setDark] = useState<boolean>(() => {
-    const saved = localStorage.getItem('tilshunos_theme');
-    if (saved) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    try {
+      const saved = localStorage.getItem('tilshunos_theme');
+      if (saved) return saved === 'dark';
+      if (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) return true;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return false;
+    }
   });
 
   useEffect(() => {
-    localStorage.setItem('tilshunos_theme', dark ? 'dark' : 'light');
+    try {
+      localStorage.setItem('tilshunos_theme', dark ? 'dark' : 'light');
+    } catch {}
     if (dark) {
       document.documentElement.classList.add('dark');
+      document.documentElement.style.backgroundColor = '#151522';
+      document.documentElement.style.colorScheme = 'dark';
     } else {
       document.documentElement.classList.remove('dark');
+      document.documentElement.style.backgroundColor = '#f6f7fb';
+      document.documentElement.style.colorScheme = 'light';
     }
   }, [dark]);
 
@@ -1748,10 +1759,10 @@ function App() {
 
   if (page === 'dashboard') {
     if (role === 'admin' || role === 'superadmin') {
-      return <AdminPanel onLogout={handleLogout} />;
+      return <AdminPanel onLogout={handleLogout} dark={dark} setDark={setDark} />;
     }
     if (role === 'teacher') {
-      return <TeacherPanel onLogout={handleLogout} />;
+      return <TeacherPanel onLogout={handleLogout} dark={dark} setDark={setDark} />;
     }
     return <Dashboard onLogout={handleLogout} dark={dark} setDark={setDark} />;
   }
