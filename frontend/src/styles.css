@@ -3903,3 +3903,107 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   .about-footer-top { flex-direction: column; align-items: flex-start; }
 }
 
+/* ========================================================
+   ADMIN & CMS PANEL FORMS & INPUTS STYLING
+   ======================================================== */
+.panel input:not([type="checkbox"]):not([type="radio"]),
+.panel textarea,
+.panel select,
+.cms-input,
+.cms-textarea {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text, #1e293b);
+  background: var(--card-bg, #ffffff);
+  border: 1.5px solid var(--border, #cbd5e1);
+  border-radius: 9px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.panel input:not([type="checkbox"]):not([type="radio"]):focus,
+.panel textarea:focus,
+.panel select:focus,
+.cms-input:focus,
+.cms-textarea:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+  background: #ffffff !important;
+}
+
+.panel input::placeholder,
+.panel textarea::placeholder,
+.cms-input::placeholder,
+.cms-textarea::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.panel label b {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted, #64748b);
+  letter-spacing: 0.2px;
+}
+
+.panel textarea,
+.cms-textarea {
+  resize: vertical;
+  min-height: 54px;
+}
+
+/* Ensure grid columns don't overflow when containing inputs */
+.panel div[style*="gridTemplateColumns"] > * {
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Dark mode inputs in Admin Panel */
+.dark .panel input:not([type="checkbox"]):not([type="radio"]),
+.dark .panel textarea,
+.dark .panel select,
+.dark .cms-input,
+.dark .cms-textarea {
+  background: #0f172a;
+  color: #f8fafc;
+  border-color: #334155;
+}
+
+.dark .panel input:not([type="checkbox"]):not([type="radio"]):focus,
+.dark .panel textarea:focus,
+.dark .panel select:focus,
+.dark .cms-input:focus,
+.dark .cms-textarea:focus {
+  border-color: #818cf8 !important;
+  background: #1e293b !important;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25) !important;
+}
+
+.dark .panel input::placeholder,
+.dark .panel textarea::placeholder,
+.dark .cms-input::placeholder,
+.dark .cms-textarea::placeholder {
+  color: #64748b;
+}
+
+.dark .panel label b {
+  color: #94a3b8;
+}
+
+

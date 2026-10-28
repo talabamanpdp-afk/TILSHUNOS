@@ -2443,14 +2443,14 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                   {/* 3 Vocab Demo Items */}
                   <div className="panel" style={{ padding: '24px' }}>
                     <h3 style={{ marginBottom: '14px' }}>1-Modul: Lug‘at & Namuna So‘zlar (3 ta karta)</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
                       {(cms.previewSection?.vocabItems || []).map((item: any, idx: number) => (
-                        <div key={idx} style={{ background: 'var(--bg)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '8px' }}>
+                        <div key={idx} style={{ background: 'var(--bg)', padding: '18px', borderRadius: '14px', border: '1px solid var(--border)', minWidth: 0, boxSizing: 'border-box' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '10px', letterSpacing: '0.5px' }}>
                             {idx + 1}-NAMUNA SO‘Z
                           </span>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
                               <b style={{ fontSize: '11px' }}>Inglizcha so‘z:</b>
                               <input
                                 value={item.word || ''}
@@ -2462,7 +2462,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                                 placeholder="Achieve"
                               />
                             </label>
-                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
                               <b style={{ fontSize: '11px' }}>O‘zbekcha tarjimasi:</b>
                               <input
                                 value={item.tr || ''}
@@ -2474,8 +2474,8 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                                 placeholder="Erishmoq, zabt etmoq"
                               />
                             </label>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.8fr)', gap: '10px' }}>
+                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
                                 <b style={{ fontSize: '11px' }}>Daraja:</b>
                                 <input
                                   value={item.lvl || ''}
@@ -2487,7 +2487,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                                   placeholder="B1"
                                 />
                               </label>
-                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
                                 <b style={{ fontSize: '11px' }}>Mavzu:</b>
                                 <input
                                   value={item.topic || ''}
@@ -2500,7 +2500,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                                 />
                               </label>
                             </div>
-                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
                               <b style={{ fontSize: '11px' }}>Misol jumla:</b>
                               <textarea
                                 value={item.ex || ''}
@@ -2523,7 +2523,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                   <div className="panel" style={{ padding: '24px' }}>
                     <h3 style={{ marginBottom: '14px' }}>2-Modul: Namuna Dars & Reading Matni</h3>
                     <div className="form-grid" style={{ gap: '14px' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '12px' }}>
                         <label>
                           <b style={{ fontSize: '11px' }}>Daraja / Rukn:</b>
                           <input
