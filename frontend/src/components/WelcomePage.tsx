@@ -88,6 +88,37 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
     return () => window.removeEventListener('scroll', handleScroll);
   }, [mobileMenuOpen]);
 
+  // Scroll reveal observer: smoothly animates every element as user scrolls down the page
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
+
+    // Small delay to ensure DOM nodes are ready
+    const timer = setTimeout(() => {
+      const elements = document.querySelectorAll(
+        '.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale, .scroll-stagger-parent'
+      );
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('revealed');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0.08,
+          rootMargin: '0px 0px -30px 0px'
+        }
+      );
+
+      elements.forEach((el) => observer.observe(el));
+    }, 40);
+
+    return () => clearTimeout(timer);
+  }, [previewTab]);
+
   // Audio pronunciation simulation
   const [audioPlaying, setAudioPlaying] = useState(false);
   const playSampleAudio = (text: string) => {
@@ -427,14 +458,14 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       {/* 3. INTERACTIVE PRODUCT PREVIEW SECTION */}
       <section id="preview" className="welcome-preview-section">
         <div className="section-container">
-          <div className="section-header animate-fade-in-up">
+          <div className="section-header scroll-reveal">
             <span className="section-kicker">AMALIY TAJRIBA</span>
             <h2>Platformaning haqiqiy imkoniyatlarini sinab ko‘ring</h2>
             <p>Ro‘yxatdan o‘tishdan avval asosiy 3 ta modulimiz qanday ishlashini amalda ko‘ring.</p>
           </div>
 
           {/* Interactive preview tabs */}
-          <div className="preview-tabs">
+          <div className="preview-tabs scroll-reveal delay-100">
             <button
               className={`preview-tab-btn ${previewTab === 'vocab' ? 'active' : ''}`}
               onClick={() => setPreviewTab('vocab')}
@@ -460,8 +491,8 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
 
           {/* Tab Content 1: Vocabulary */}
           {previewTab === 'vocab' && (
-            <div className="preview-content-card animate-fade-in">
-              <div className="vocab-demo-grid">
+            <div className="preview-content-card scroll-reveal-scale delay-200">
+              <div className="vocab-demo-grid scroll-stagger-parent revealed">
                 {[
                   { word: 'Achieve', tr: 'Erishmoq, zabt etmoq', lvl: 'B1', ex: 'You can achieve any language goal with daily practice.', topic: 'Motivatsiya' },
                   { word: 'Curious', tr: 'Qiziquvchan, yangilikka intiluvchan', lvl: 'A2', ex: 'Children are naturally curious about the world.', topic: 'Xarakter' },
@@ -490,8 +521,8 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
 
           {/* Tab Content 2: Sample Lesson */}
           {previewTab === 'lesson' && (
-            <div className="preview-content-card animate-fade-in">
-              <div className="lesson-preview-container">
+            <div className="preview-content-card scroll-reveal-scale delay-200">
+              <div className="lesson-preview-container scroll-stagger-parent revealed">
                 <div className="lesson-text-block">
                   <div className="lesson-text-head">
                     <span className="demo-level-pill">CEFR B1 · READING</span>
@@ -523,8 +554,8 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
 
           {/* Tab Content 3: Progress & CEFR */}
           {previewTab === 'progress' && (
-            <div className="preview-content-card animate-fade-in">
-              <div className="progress-preview-grid">
+            <div className="preview-content-card scroll-reveal-scale delay-200">
+              <div className="progress-preview-grid scroll-stagger-parent revealed">
                 <div className="progress-card-item">
                   <span className="progress-caption">HAFTALIK O‘RGANISH VAQTI</span>
                   <div className="progress-big-number">4 soat 25 min</div>
@@ -559,13 +590,13 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       {/* 4. CEFR ROADMAP SECTION */}
       <section id="cefr" className="welcome-cefr-section">
         <div className="section-container">
-          <div className="section-header animate-fade-in-up">
+          <div className="section-header scroll-reveal">
             <span className="section-kicker">XALQARO METODIKA</span>
             <h2>CEFR bo‘yicha aniq yo‘l xaritasi (A1–C2)</h2>
             <p>O‘zingizga mos boshlang‘ich nuqtani tanlang va bosqichma-bosqich yuksaling.</p>
           </div>
 
-          <div className="cefr-cards-grid">
+          <div className="cefr-cards-grid scroll-stagger-parent">
             {[
               { code: 'A1', name: 'Boshlang‘ich', desc: 'Oddiy so‘zlar, tanishuv va kundalik eng muhim iboralar.', color: '#3b82f6' },
               { code: 'A2', name: 'Elementar', desc: 'Xarid, transport va oddiy kundalik vaziyatlarda muloqot.', color: '#0ea5e9' },
@@ -599,13 +630,13 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       {/* 5. LEARNING SKILLS SECTION */}
       <section id="skills" className="welcome-skills-section">
         <div className="section-container">
-          <div className="section-header animate-fade-in-up">
+          <div className="section-header scroll-reveal">
             <span className="section-kicker">MUVOZANATLI RIVOJLANISH</span>
             <h2>5 ta asosiy til ko‘nikmasini mustahkamlang</h2>
             <p>Faqat qoidalar yodlash emas — har tomonlama tabiiy o‘rganish uslubi.</p>
           </div>
 
-          <div className="skills-grid">
+          <div className="skills-grid scroll-stagger-parent">
             {[
               { icon: BookOpen, title: 'O‘qish (Reading)', desc: 'Darajangizga moslangan qiziqarli hikoyalar, badiiy parchalar va zamonaviy maqolalar.', color: '#356cf6' },
               { icon: PenLine, title: 'Yozish (Writing)', desc: 'Insho va xatlar yozish, grammatik xatolarni sun’iy intellekt orqali darhol tekshirish.', color: '#8b5cf6' },
@@ -631,13 +662,13 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       {/* 6. HOW IT WORKS SECTION */}
       <section id="how-it-works" className="welcome-steps-section">
         <div className="section-container">
-          <div className="section-header animate-fade-in-up">
+          <div className="section-header scroll-reveal">
             <span className="section-kicker">ODDIY VA TUSHUNARLI</span>
             <h2>O‘rganish jarayoni qanday kechadi?</h2>
             <p>5 ta oson qadam orqali maqsadingiz sari ishonch bilan yo‘l oling.</p>
           </div>
 
-          <div className="steps-flow-grid">
+          <div className="steps-flow-grid scroll-stagger-parent">
             {[
               { step: '01', title: 'Til va maqsadni tanlaysiz', desc: 'Ingliz, rus, nemis yoki boshqa tillar hamda kunlik shug‘ullanish vaqti.' },
               { step: '02', title: 'Boshlang‘ich daraja aniqlanadi', desc: 'CEFR A1 dan C2 gacha bo‘lgan aniq darajangiz belgilanadi.' },
@@ -658,13 +689,13 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       {/* 7. FEATURES & INNOVATION */}
       <section id="features" className="welcome-features-section">
         <div className="section-container">
-          <div className="section-header animate-fade-in-up">
+          <div className="section-header scroll-reveal">
             <span className="section-kicker">ILG‘OR IMKONIYATLAR</span>
             <h2>Zamonaviy texnologiyalar xizmatingizda</h2>
             <p>Biz til o‘rganishni nafaqat samarali, balki maroqli jarayonga aylantiramiz.</p>
           </div>
 
-          <div className="features-grid">
+          <div className="features-grid scroll-stagger-parent">
             <div className="feature-box">
               <div className="feature-icon-box purple"><Sparkles size={22} /></div>
               <h3>24/7 AI Til Repetitori</h3>
@@ -693,7 +724,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       <section id="about" className="welcome-about-section">
         <div className="section-container">
           <div className="about-wrapper">
-            <div className="about-left">
+            <div className="about-left scroll-reveal-left">
               <span className="section-kicker">BIZ HAQIMIZDA</span>
               <h2>{aboutShort}</h2>
               <p style={{ marginTop: '16px', lineHeight: '1.7', color: 'var(--muted)', fontSize: '15px' }}>
@@ -708,9 +739,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
             </div>
 
             {/* Team / Leadership spotlight */}
-            <div className="about-team-box">
+            <div className="about-team-box scroll-reveal-right delay-100">
               <h3 className="team-box-title">Loyiha Faollari va Yetakchilari</h3>
-              <div className="team-cards-list">
+              <div className="team-cards-list scroll-stagger-parent">
                 {teamMembers.map(member => (
                   <div key={member.name} className="team-member-item">
                     <div className="member-avatar">
@@ -732,13 +763,13 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       {/* 9. FAQ SECTION */}
       <section id="faq" className="welcome-faq-section">
         <div className="section-container">
-          <div className="section-header animate-fade-in-up">
+          <div className="section-header scroll-reveal">
             <span className="section-kicker">SAVOLLARGA JAVOBLAR</span>
             <h2>Ko‘p beriladigan savollar (FAQ)</h2>
             <p>Platformadan foydalanish, to‘lovlar va ta’lim jarayoni haqidagi eng muhim ma’lumotlar.</p>
           </div>
 
-          <div className="faq-accordion-list">
+          <div className="faq-accordion-list scroll-stagger-parent">
             {faqs.map((faq, index) => {
               const isOpen = openFaqIndex === index;
               return (
@@ -765,7 +796,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
 
       {/* 10. FINAL SIGNUP CALL-TO-ACTION */}
       <section className="welcome-final-cta">
-        <div className="cta-container">
+        <div className="cta-container scroll-reveal-scale">
           <div className="cta-content">
             <span className="cta-kicker"><Sparkles size={14} /> HOZIROQ BOSHLANG</span>
             <h2>Yangi tilni erkin gapirish vaqti keldi</h2>
@@ -786,7 +817,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       {/* 11. DETAILED FOOTER (With Founder and Dynamic Contacts) */}
       <footer className="welcome-footer">
         <div className="footer-container">
-          <div className="footer-grid">
+          <div className="footer-grid scroll-stagger-parent">
             {/* Col 1: Brand & Founder */}
             <div className="footer-col brand-col">
               <div className="footer-brand">

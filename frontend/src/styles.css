@@ -1440,10 +1440,108 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-in-up, .animate-fade-in, .product-showcase-card {
+  .animate-fade-in-up, .animate-fade-in, .product-showcase-card,
+  .scroll-reveal, .scroll-reveal-scale, .scroll-reveal-left, .scroll-reveal-right,
+  .scroll-stagger-parent > * {
     animation: none !important;
     transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
+}
+
+/* =====================================================================
+   PREMIUM SCROLL REVEAL ANIMATIONS
+===================================================================== */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(34px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reveal-scale {
+  opacity: 0;
+  transform: translateY(28px) scale(0.96);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal-scale.revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.scroll-reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal-left.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal-right.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Automatic Stagger for children inside a staggered container */
+.scroll-stagger-parent > * {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+  will-change: opacity, transform;
+}
+
+.scroll-stagger-parent.revealed > *:nth-child(1) { transition-delay: 0.04s; opacity: 1; transform: translateY(0); }
+.scroll-stagger-parent.revealed > *:nth-child(2) { transition-delay: 0.12s; opacity: 1; transform: translateY(0); }
+.scroll-stagger-parent.revealed > *:nth-child(3) { transition-delay: 0.20s; opacity: 1; transform: translateY(0); }
+.scroll-stagger-parent.revealed > *:nth-child(4) { transition-delay: 0.28s; opacity: 1; transform: translateY(0); }
+.scroll-stagger-parent.revealed > *:nth-child(5) { transition-delay: 0.36s; opacity: 1; transform: translateY(0); }
+.scroll-stagger-parent.revealed > *:nth-child(6) { transition-delay: 0.44s; opacity: 1; transform: translateY(0); }
+.scroll-stagger-parent.revealed > *:nth-child(7) { transition-delay: 0.52s; opacity: 1; transform: translateY(0); }
+.scroll-stagger-parent.revealed > *:nth-child(8) { transition-delay: 0.60s; opacity: 1; transform: translateY(0); }
+
+/* Explicit Delay Helpers */
+.delay-50 { transition-delay: 0.05s !important; }
+.delay-100 { transition-delay: 0.1s !important; }
+.delay-150 { transition-delay: 0.15s !important; }
+.delay-200 { transition-delay: 0.2s !important; }
+.delay-250 { transition-delay: 0.25s !important; }
+.delay-300 { transition-delay: 0.3s !important; }
+.delay-350 { transition-delay: 0.35s !important; }
+.delay-400 { transition-delay: 0.4s !important; }
+.delay-500 { transition-delay: 0.5s !important; }
+
+/* Enhanced hover micro-interactions for revealed cards */
+.scroll-stagger-parent.revealed .cefr-card:hover,
+.scroll-stagger-parent.revealed .skill-card:hover,
+.scroll-stagger-parent.revealed .step-card:hover,
+.scroll-stagger-parent.revealed .feature-box:hover {
+  transform: translateY(-5px);
 }
 
 
