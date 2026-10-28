@@ -89,6 +89,98 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
     cta: 'Bepul boshlash',
     secondaryCta: 'Platformani o‘rganish',
     header: 'Imkoniyatlar, Biz haqimizda, Kirish',
+    metrics: {
+      useLiveStats: true,
+      metric1Value: '6 M',
+      metric1Label: 'App Downloads',
+      metric2Value: '8.24 M',
+      metric2Label: 'Learned monthly',
+      metric3Value: '4.8 ★',
+      metric3Label: '177k Rating'
+    },
+    floatingBadge1: {
+      flag: '🇬🇧',
+      title: 'Basic English',
+      subtitle: '103 Darslik'
+    },
+    floatingBadge2: {
+      title: '9 / 12 Quiz',
+      subtitle: 'Speaking ✓'
+    },
+    previewSection: {
+      kicker: 'AMALIY TAJRIBA',
+      title: 'Platformaning haqiqiy imkoniyatlarini sinab ko‘ring',
+      subtitle: 'Ro‘yxatdan o‘tishdan avval asosiy 3 ta modulimiz qanday ishlashini amalda ko‘ring.',
+      vocabItems: [
+        { word: 'Achieve', tr: 'Erishmoq, zabt etmoq', lvl: 'B1', ex: 'You can achieve any language goal with daily practice.', topic: 'Motivatsiya' },
+        { word: 'Curious', tr: 'Qiziquvchan, yangilikka intiluvchan', lvl: 'A2', ex: 'Children are naturally curious about the world.', topic: 'Xarakter' },
+        { word: 'Resilience', tr: 'Sabr-bardosh, chidamlilik', lvl: 'B2', ex: 'She showed great resilience in learning pronunciation.', topic: 'Psixologiya' }
+      ],
+      sampleLesson: {
+        level: 'CEFR B1 · READING',
+        time: '5 daqiqa',
+        title: 'The Power of Tiny Daily Habits',
+        article: 'Consistency is far more powerful than intensity. When learning a new language, practicing for just 15 minutes every single day wires the brain more effectively than studying for 4 hours once a week. The secret lies in frequent retrieval: each time you actively recall a word, the neural pathway strengthens.',
+        question: 'Matnga ko‘ra, til o‘rganishda eng muhim omil nima?',
+        choiceA: 'Har kuni muntazam 15 daqiqa shug‘ullanish (To‘g‘ri ✓)',
+        choiceB: 'Faqat haftada bir marta 4 soat o‘rganish'
+      }
+    },
+    cefrSection: {
+      kicker: 'XALQARO METODIKA',
+      title: 'CEFR bo‘yicha aniq yo‘l xaritasi (A1–C2)',
+      subtitle: 'O‘zingizga mos boshlang‘ich nuqtani tanlang va bosqichma-bosqich yuksaling.',
+      levels: [
+        { code: 'A1', name: 'Boshlang‘ich', desc: 'Oddiy so‘zlar, tanishuv va kundalik eng muhim iboralar.', color: '#3b82f6' },
+        { code: 'A2', name: 'Elementar', desc: 'Xarid, transport va oddiy kundalik vaziyatlarda muloqot.', color: '#0ea5e9' },
+        { code: 'B1', name: 'O‘rta daraja', desc: 'Sayohat, fikr bildirish va o‘z tajribasini erkin tushuntirish.', color: '#10b981' },
+        { code: 'B2', name: 'Mustaqil', desc: 'Murakkab matnlar, insholar va mavzular bo‘yicha erkin bahslashish.', color: '#8b5cf6' },
+        { code: 'C1', name: 'Ilg‘or', desc: 'Akademik va kasbiy darajada chuqur fikrlash hamda tahlil.', color: '#f59e0b' },
+        { code: 'C2', name: 'Mukammal', desc: 'Ona tili darajasidagi ravonlik va nozik ma’nolarni anglash.', color: '#ec4899' }
+      ]
+    },
+    skillsSection: {
+      kicker: 'MUVOZANATLI RIVOJLANISH',
+      title: '5 ta asosiy til ko‘nikmasini mustahkamlang',
+      subtitle: 'Faqat qoidalar yodlash emas — har tomonlama tabiiy o‘rganish uslubi.',
+      skills: [
+        { key: 'reading', title: 'O‘qish (Reading)', desc: 'Darajangizga moslangan qiziqarli hikoyalar, badiiy parchalar va zamonaviy maqolalar.', color: '#356cf6' },
+        { key: 'writing', title: 'Yozish (Writing)', desc: 'Insho va xatlar yozish, grammatik xatolarni sun’iy intellekt orqali darhol tekshirish.', color: '#8b5cf6' },
+        { key: 'listening', title: 'Tinglash (Listening)', desc: 'Tabiiy tezlikdagi audio podkastlar, kundalik muloqot dialoglari va transkriptlar.', color: '#0ea5e9' },
+        { key: 'speaking', title: 'Gapirish (Speaking)', desc: 'To‘g‘ri talaffuz va intonatsiya mashqlari bilan muloqotdagi to‘siqlarni yengish.', color: '#10b981' },
+        { key: 'vocab', title: 'Lug‘at (Vocabulary)', desc: 'Shaxsiy so‘z daftari, kontekstual misollar va intervalli takrorlash metodikasi.', color: '#f59e0b' }
+      ]
+    },
+    stepsSection: {
+      kicker: 'ODDIY VA TUSHUNARLI',
+      title: 'O‘rganish jarayoni qanday kechadi?',
+      subtitle: '5 ta oson qadam orqali maqsadingiz sari ishonch bilan yo‘l oling.',
+      steps: [
+        { step: '01', title: 'Til va maqsadni tanlaysiz', desc: 'Ingliz, rus, nemis yoki boshqa tillar hamda kunlik shug‘ullanish vaqti.' },
+        { step: '02', title: 'Boshlang‘ich daraja aniqlanadi', desc: 'CEFR A1 dan C2 gacha bo‘lgan aniq darajangiz belgilanadi.' },
+        { step: '03', title: 'Shaxsiy reja tuziladi', desc: 'Dashboardda har kungi yangi so‘zlar va mashqlar tartibli aks etadi.' },
+        { step: '04', title: 'Amaliyot va so‘z o‘yinlari', desc: 'Typing, so‘z zanjiri va 1v1 bellashuvlar orqali bilim mustahkamlanadi.' },
+        { step: '05', title: 'Natijalar va o‘sish', desc: 'O‘zlashtirilgan so‘zlar va yuqori CEFR darajalariga o‘tish.' }
+      ]
+    },
+    featuresSection: {
+      kicker: 'ILG‘OR IMKONIYATLAR',
+      title: 'Zamonaviy texnologiyalar xizmatingizda',
+      subtitle: 'Biz til o‘rganishni nafaqat samarali, balki maroqli jarayonga aylantiramiz.',
+      features: [
+        { key: 'ai', color: 'purple', title: '24/7 AI Til Repetitori', desc: 'Istalgan savolingizni bering, grammatik xatolaringizni aniqlang va muloyim tushuntirishlar oling.' },
+        { key: 'pvp', color: 'orange', title: '1v1 So‘z Bellashuvi', desc: 'Boshqa o‘quvchilar bilan real vaqtda so‘z boyligingizni sinang, XP to‘plang va yetakchilar safiga kiring.' },
+        { key: 'anticheat', color: 'green', title: 'Anti-Cheat & Spaced Repetition', desc: 'So‘zlar tasodifiy takrorlanmaydi — ilmiy tasdiqlangan intervallar bilan uzoq muddatli xotiraga ko‘chadi.' },
+        { key: 'teachers', color: 'blue', title: 'Malakali Ustozlar Nazorati', desc: 'Maxsus o‘qituvchilar tizimda sizning yozma insho va vazifalaringizni tekshirib, shaxsiy baho beradi.' }
+      ]
+    },
+    finalCta: {
+      kicker: 'HOZIROQ BOSHLANG',
+      title: 'Yangi tilni erkin gapirish vaqti keldi',
+      desc: 'Bir necha soniyada bepul ro‘yxatdan o‘ting va birinchi darsingizni bugunoq boshlang.',
+      btnRegister: 'Bepul hisob yaratish',
+      btnLogin: 'Tizimga kirish'
+    },
     about: 'TILSHUNOS til o‘rganishni tartibli, qiziqarli va shaxsiy maqsadlaringizga mos qilish uchun yaratilayotgan ilg‘or platforma.',
     aboutButton: 'Batafsil ma’lumot',
     aboutDetailed: 'TILSHUNOS — xalqaro CEFR (A1–C2) standartlariga moslashtirilgan, sun’iy intellekt va professional ustozlar metodikasini o‘zida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvchiga murakkab grammatik qoidalarsiz, interaktiv so‘z o‘yinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy o‘zlashtirish imkoniyatini taqdim etishdir.',
@@ -114,7 +206,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
       { q: 'O‘qituvchi bilan qanday bog‘lanaman?', a: 'Platformadagi O‘qituvchilar bo‘limi orqali tasdiqlangan ustozlar bilan bog‘lanib, shaxsiy topshiriqlar olishingiz mumkin.' }
     ]
   });
-  const [cmsTab, setCmsTab] = useState<'hero' | 'about' | 'faq' | 'footer'>('hero');
+  const [cmsTab, setCmsTab] = useState<'hero' | 'stats' | 'preview' | 'curriculum' | 'features' | 'about' | 'faq' | 'footer'>('hero');
   const [newTeamMember, setNewTeamMember] = useState({ name: '', role: '', bio: '', avatar: '' });
   const [newFaq, setNewFaq] = useState({ q: '', a: '' });
 
@@ -183,6 +275,54 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
         setCms((prev: any) => ({
           ...prev,
           ...cmsRes.value,
+          metrics: {
+            useLiveStats: true,
+            metric1Value: '6 M',
+            metric1Label: 'App Downloads',
+            metric2Value: '8.24 M',
+            metric2Label: 'Learned monthly',
+            metric3Value: '4.8 ★',
+            metric3Label: '177k Rating',
+            ...(prev?.metrics || {}),
+            ...(cmsRes.value?.metrics || {})
+          },
+          floatingBadge1: {
+            flag: '🇬🇧',
+            title: 'Basic English',
+            subtitle: '103 Darslik',
+            ...(prev?.floatingBadge1 || {}),
+            ...(cmsRes.value?.floatingBadge1 || {})
+          },
+          floatingBadge2: {
+            title: '9 / 12 Quiz',
+            subtitle: 'Speaking ✓',
+            ...(prev?.floatingBadge2 || {}),
+            ...(cmsRes.value?.floatingBadge2 || {})
+          },
+          previewSection: {
+            ...(prev?.previewSection || {}),
+            ...(cmsRes.value?.previewSection || {})
+          },
+          cefrSection: {
+            ...(prev?.cefrSection || {}),
+            ...(cmsRes.value?.cefrSection || {})
+          },
+          skillsSection: {
+            ...(prev?.skillsSection || {}),
+            ...(cmsRes.value?.skillsSection || {})
+          },
+          stepsSection: {
+            ...(prev?.stepsSection || {}),
+            ...(cmsRes.value?.stepsSection || {})
+          },
+          featuresSection: {
+            ...(prev?.featuresSection || {}),
+            ...(cmsRes.value?.featuresSection || {})
+          },
+          finalCta: {
+            ...(prev?.finalCta || {}),
+            ...(cmsRes.value?.finalCta || {})
+          },
           contacts: {
             ...prev?.contacts,
             ...(cmsRes.value?.contacts || {})
@@ -1680,6 +1820,10 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {[
                     { id: 'hero', label: '🚀 Hero & Tugmalar' },
+                    { id: 'stats', label: '📊 Statistika & Metrikalar' },
+                    { id: 'preview', label: '💻 Interaktiv Preview' },
+                    { id: 'curriculum', label: '🗺️ CEFR, Ko‘nikma & Qadamlar' },
+                    { id: 'features', label: '⚡ Ilg‘or Imkoniyatlar' },
                     { id: 'about', label: '👥 Biz Haqimizda & Jamoa' },
                     { id: 'faq', label: '❓ FAQ Savol-Javoblar' },
                     { id: 'footer', label: '🌐 Footer, Asoschi & Kontaktlar' }
@@ -2011,7 +2155,736 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 </div>
               )}
 
-              {/* TAB 2: BIZ HAQIMIZDA & JAMOA */}
+              {/* TAB 2: STATISTIKA & METRIKALAR */}
+              {cmsTab === 'stats' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {/* Real Live Database Counters Panel */}
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                      <div>
+                        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 4px' }}>
+                          <Database size={19} style={{ color: 'var(--purple)' }} /> Supabase Jonli Hisoblagichlari (Hozirgi paytdagi holat)
+                        </h3>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
+                          Ushbu ko‘rsatkichlar Supabase PostgreSQL bazasidan real vaqt rejimida avtomatik hisoblab chiqilgan.
+                        </p>
+                      </div>
+                      <span className="badge-role-learner" style={{ padding: '6px 12px', fontSize: '11px' }}>
+                        ● Jonli PostgreSQL aloqasi
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px', marginBottom: '16px' }}>
+                      <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700 }}>JAMI O‘QUVCHILAR</span>
+                        <h2 style={{ fontSize: '26px', margin: '8px 0 2px', fontWeight: 800, color: 'var(--purple)' }}>
+                          {cms.liveStats?.usersCount ?? stats.totalUsers ?? 0}
+                        </h2>
+                        <small style={{ fontSize: '11px', color: 'var(--muted)' }}>nafar foydalanuvchi</small>
+                      </div>
+
+                      <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700 }}>LUG‘ATDAGI SO‘ZLAR</span>
+                        <h2 style={{ fontSize: '26px', margin: '8px 0 2px', fontWeight: 800, color: '#10b981' }}>
+                          {cms.liveStats?.wordsCount ?? stats.totalVocabularyEntries ?? 0}
+                        </h2>
+                        <small style={{ fontSize: '11px', color: 'var(--muted)' }}>ta lug‘at boyligi</small>
+                      </div>
+
+                      <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700 }}>BAJARILGAN MASHQLAR</span>
+                        <h2 style={{ fontSize: '26px', margin: '8px 0 2px', fontWeight: 800, color: '#3b82f6' }}>
+                          {cms.liveStats?.practicesCount ?? stats.totalPracticeSessions ?? 0}
+                        </h2>
+                        <small style={{ fontSize: '11px', color: 'var(--muted)' }}>marta mashq qilindi</small>
+                      </div>
+
+                      <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700 }}>O‘QUV MATERIALLARI</span>
+                        <h2 style={{ fontSize: '26px', margin: '8px 0 2px', fontWeight: 800, color: '#f59e0b' }}>
+                          {cms.liveStats?.materialsCount ?? stats.totalMaterials ?? 0}
+                        </h2>
+                        <small style={{ fontSize: '11px', color: 'var(--muted)' }}>reading & listening</small>
+                      </div>
+
+                      <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700 }}>USTOZLAR</span>
+                        <h2 style={{ fontSize: '26px', margin: '8px 0 2px', fontWeight: 800, color: '#ec4899' }}>
+                          {cms.liveStats?.teachersCount ?? stats.activeTeachers ?? 0}
+                        </h2>
+                        <small style={{ fontSize: '11px', color: 'var(--muted)' }}>tasdiqlangan mutaxassis</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mode Selector: Live vs Manual Numbers */}
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', marginBottom: '20px', padding: '14px 18px', background: 'var(--soft)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                      <div>
+                        <strong style={{ fontSize: '14px', display: 'block', marginBottom: '2px' }}>
+                          Haqiqiy Supabase statistikasidan foydalanish (Avtomatik hisoblash)
+                        </strong>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
+                          Yoqilgan bo‘lsa, Welcome sahifasida yuqoridagi haqiqiy raqamlar dinamik chiqadi. O‘chirsangiz, pastda o‘zingiz kiritgan raqamlar aks etadi.
+                        </p>
+                      </div>
+                      <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }}>
+                        <input
+                          type="checkbox"
+                          checked={cms.metrics?.useLiveStats ?? true}
+                          onChange={e => setCms({
+                            ...cms,
+                            metrics: {
+                              ...cms.metrics,
+                              useLiveStats: e.target.checked
+                            }
+                          })}
+                          style={{ width: '18px', height: '18px', accentColor: 'var(--purple)' }}
+                        />
+                        <span>{(cms.metrics?.useLiveStats ?? true) ? 'Haqiqiy Statistika (Faol)' : 'Qo‘lda kiritilgan'}</span>
+                      </label>
+                    </div>
+
+                    <h3 style={{ marginBottom: '14px', fontSize: '14px' }}>Welcome Sahifasi 3 ta Metrikasi (Pastki chiziq)</h3>
+                    <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                      {/* Metric 1 */}
+                      <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '8px' }}>1-METRIKA (Chap)</span>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+                          <b style={{ fontSize: '11px' }}>Qiymat (agar qo‘lda bo‘lsa):</b>
+                          <input
+                            value={cms.metrics?.metric1Value || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              metrics: { ...cms.metrics, metric1Value: e.target.value }
+                            })}
+                            placeholder="6 M yoki 1200+"
+                          />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <b style={{ fontSize: '11px' }}>Yozuv / Nom:</b>
+                          <input
+                            value={cms.metrics?.metric1Label || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              metrics: { ...cms.metrics, metric1Label: e.target.value }
+                            })}
+                            placeholder="App Downloads yoki Faol O‘quvchi"
+                          />
+                        </label>
+                      </div>
+
+                      {/* Metric 2 */}
+                      <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#10b981', display: 'block', marginBottom: '8px' }}>2-METRIKA (O‘rta)</span>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+                          <b style={{ fontSize: '11px' }}>Qiymat (agar qo‘lda bo‘lsa):</b>
+                          <input
+                            value={cms.metrics?.metric2Value || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              metrics: { ...cms.metrics, metric2Value: e.target.value }
+                            })}
+                            placeholder="8.24 M yoki 5000+"
+                          />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <b style={{ fontSize: '11px' }}>Yozuv / Nom:</b>
+                          <input
+                            value={cms.metrics?.metric2Label || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              metrics: { ...cms.metrics, metric2Label: e.target.value }
+                            })}
+                            placeholder="Learned monthly yoki Yodlangan So‘z"
+                          />
+                        </label>
+                      </div>
+
+                      {/* Metric 3 */}
+                      <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#f59e0b', display: 'block', marginBottom: '8px' }}>3-METRIKA (O‘ng)</span>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+                          <b style={{ fontSize: '11px' }}>Qiymat (agar qo‘lda bo‘lsa):</b>
+                          <input
+                            value={cms.metrics?.metric3Value || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              metrics: { ...cms.metrics, metric3Value: e.target.value }
+                            })}
+                            placeholder="4.8 ★ yoki 10K+"
+                          />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <b style={{ fontSize: '11px' }}>Yozuv / Nom:</b>
+                          <input
+                            value={cms.metrics?.metric3Label || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              metrics: { ...cms.metrics, metric3Label: e.target.value }
+                            })}
+                            placeholder="177k Rating yoki Mashq Bajarildi"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <h3 style={{ marginBottom: '14px', fontSize: '14px' }}>Suzuvchi Kartochkalar (Noutbuk va Smartfon atrofida)</h3>
+                    <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '8px' }}>1-SUZUVCHI KARTA (Kurs / Darslik)</span>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' }}>
+                          <b style={{ fontSize: '11px' }}>Bayroq belgisi (Emoji):</b>
+                          <input
+                            value={cms.floatingBadge1?.flag || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              floatingBadge1: { ...cms.floatingBadge1, flag: e.target.value }
+                            })}
+                            placeholder="🇬🇧"
+                          />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' }}>
+                          <b style={{ fontSize: '11px' }}>Sarlavha:</b>
+                          <input
+                            value={cms.floatingBadge1?.title || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              floatingBadge1: { ...cms.floatingBadge1, title: e.target.value }
+                            })}
+                            placeholder="Basic English"
+                          />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <b style={{ fontSize: '11px' }}>Taglavha (Darslar soni):</b>
+                          <input
+                            value={cms.floatingBadge1?.subtitle || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              floatingBadge1: { ...cms.floatingBadge1, subtitle: e.target.value }
+                            })}
+                            placeholder="103 Darslik"
+                          />
+                        </label>
+                      </div>
+
+                      <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', display: 'block', marginBottom: '8px' }}>2-SUZUVCHI KARTA (Progress & Quiz)</span>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' }}>
+                          <b style={{ fontSize: '11px' }}>Sarlavha / Natija:</b>
+                          <input
+                            value={cms.floatingBadge2?.title || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              floatingBadge2: { ...cms.floatingBadge2, title: e.target.value }
+                            })}
+                            placeholder="9 / 12 Quiz"
+                          />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <b style={{ fontSize: '11px' }}>Qo‘shimcha tasdiq:</b>
+                          <input
+                            value={cms.floatingBadge2?.subtitle || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              floatingBadge2: { ...cms.floatingBadge2, subtitle: e.target.value }
+                            })}
+                            placeholder="Speaking ✓"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: INTERAKTIV PREVIEW */}
+              {cmsTab === 'preview' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <h3 style={{ marginBottom: '14px' }}>Bo‘lim Sarlavhalari</h3>
+                    <div className="form-grid" style={{ gap: '14px' }}>
+                      <label>
+                        <b style={{ fontSize: '12px' }}>Yuqori Kicker:</b>
+                        <input
+                          value={cms.previewSection?.kicker || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            previewSection: { ...cms.previewSection, kicker: e.target.value }
+                          })}
+                          placeholder="AMALIY TAJRIBA"
+                        />
+                      </label>
+                      <label>
+                        <b style={{ fontSize: '12px' }}>Asosiy Sarlavha:</b>
+                        <input
+                          value={cms.previewSection?.title || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            previewSection: { ...cms.previewSection, title: e.target.value }
+                          })}
+                          placeholder="Platformaning haqiqiy imkoniyatlarini sinab ko‘ring"
+                        />
+                      </label>
+                      <label className="span-two">
+                        <b style={{ fontSize: '12px' }}>Tavsif (Subtitle):</b>
+                        <input
+                          value={cms.previewSection?.subtitle || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            previewSection: { ...cms.previewSection, subtitle: e.target.value }
+                          })}
+                          placeholder="Ro‘yxatdan o‘tishdan avval asosiy 3 ta modulimiz qanday ishlashini amalda ko‘ring."
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* 3 Vocab Demo Items */}
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <h3 style={{ marginBottom: '14px' }}>1-Modul: Lug‘at & Namuna So‘zlar (3 ta karta)</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                      {(cms.previewSection?.vocabItems || []).map((item: any, idx: number) => (
+                        <div key={idx} style={{ background: 'var(--bg)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '8px' }}>
+                            {idx + 1}-NAMUNA SO‘Z
+                          </span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <b style={{ fontSize: '11px' }}>Inglizcha so‘z:</b>
+                              <input
+                                value={item.word || ''}
+                                onChange={e => {
+                                  const updated = [...(cms.previewSection?.vocabItems || [])];
+                                  updated[idx] = { ...updated[idx], word: e.target.value };
+                                  setCms({ ...cms, previewSection: { ...cms.previewSection, vocabItems: updated } });
+                                }}
+                                placeholder="Achieve"
+                              />
+                            </label>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <b style={{ fontSize: '11px' }}>O‘zbekcha tarjimasi:</b>
+                              <input
+                                value={item.tr || ''}
+                                onChange={e => {
+                                  const updated = [...(cms.previewSection?.vocabItems || [])];
+                                  updated[idx] = { ...updated[idx], tr: e.target.value };
+                                  setCms({ ...cms, previewSection: { ...cms.previewSection, vocabItems: updated } });
+                                }}
+                                placeholder="Erishmoq, zabt etmoq"
+                              />
+                            </label>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <b style={{ fontSize: '11px' }}>Daraja:</b>
+                                <input
+                                  value={item.lvl || ''}
+                                  onChange={e => {
+                                    const updated = [...(cms.previewSection?.vocabItems || [])];
+                                    updated[idx] = { ...updated[idx], lvl: e.target.value };
+                                    setCms({ ...cms, previewSection: { ...cms.previewSection, vocabItems: updated } });
+                                  }}
+                                  placeholder="B1"
+                                />
+                              </label>
+                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <b style={{ fontSize: '11px' }}>Mavzu:</b>
+                                <input
+                                  value={item.topic || ''}
+                                  onChange={e => {
+                                    const updated = [...(cms.previewSection?.vocabItems || [])];
+                                    updated[idx] = { ...updated[idx], topic: e.target.value };
+                                    setCms({ ...cms, previewSection: { ...cms.previewSection, vocabItems: updated } });
+                                  }}
+                                  placeholder="Motivatsiya"
+                                />
+                              </label>
+                            </div>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <b style={{ fontSize: '11px' }}>Misol jumla:</b>
+                              <textarea
+                                value={item.ex || ''}
+                                onChange={e => {
+                                  const updated = [...(cms.previewSection?.vocabItems || [])];
+                                  updated[idx] = { ...updated[idx], ex: e.target.value };
+                                  setCms({ ...cms, previewSection: { ...cms.previewSection, vocabItems: updated } });
+                                }}
+                                rows={2}
+                                placeholder="You can achieve any language goal..."
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sample Reading Lesson */}
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <h3 style={{ marginBottom: '14px' }}>2-Modul: Namuna Dars & Reading Matni</h3>
+                    <div className="form-grid" style={{ gap: '14px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <label>
+                          <b style={{ fontSize: '11px' }}>Daraja / Rukn:</b>
+                          <input
+                            value={cms.previewSection?.sampleLesson?.level || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              previewSection: {
+                                ...cms.previewSection,
+                                sampleLesson: { ...cms.previewSection?.sampleLesson, level: e.target.value }
+                              }
+                            })}
+                            placeholder="CEFR B1 · READING"
+                          />
+                        </label>
+                        <label>
+                          <b style={{ fontSize: '11px' }}>Vaqt:</b>
+                          <input
+                            value={cms.previewSection?.sampleLesson?.time || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              previewSection: {
+                                ...cms.previewSection,
+                                sampleLesson: { ...cms.previewSection?.sampleLesson, time: e.target.value }
+                              }
+                            })}
+                            placeholder="5 daqiqa"
+                          />
+                        </label>
+                      </div>
+                      <label className="span-two">
+                        <b style={{ fontSize: '11px' }}>Dars Sarlavhasi:</b>
+                        <input
+                          value={cms.previewSection?.sampleLesson?.title || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            previewSection: {
+                              ...cms.previewSection,
+                              sampleLesson: { ...cms.previewSection?.sampleLesson, title: e.target.value }
+                            }
+                          })}
+                          placeholder="The Power of Tiny Daily Habits"
+                        />
+                      </label>
+                      <label className="span-two">
+                        <b style={{ fontSize: '11px' }}>O‘qish Matni (Story / Article):</b>
+                        <textarea
+                          value={cms.previewSection?.sampleLesson?.article || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            previewSection: {
+                              ...cms.previewSection,
+                              sampleLesson: { ...cms.previewSection?.sampleLesson, article: e.target.value }
+                            }
+                          })}
+                          rows={4}
+                          placeholder="Reading matni..."
+                        />
+                      </label>
+                      <label className="span-two">
+                        <b style={{ fontSize: '11px' }}>Tushunishni tekshirish savoli:</b>
+                        <input
+                          value={cms.previewSection?.sampleLesson?.question || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            previewSection: {
+                              ...cms.previewSection,
+                              sampleLesson: { ...cms.previewSection?.sampleLesson, question: e.target.value }
+                            }
+                          })}
+                          placeholder="Matnga ko‘ra, til o‘rganishda eng muhim omil nima?"
+                        />
+                      </label>
+                      <label>
+                        <b style={{ fontSize: '11px', color: '#10b981' }}>Variant A (To‘g‘ri javob):</b>
+                        <input
+                          value={cms.previewSection?.sampleLesson?.choiceA || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            previewSection: {
+                              ...cms.previewSection,
+                              sampleLesson: { ...cms.previewSection?.sampleLesson, choiceA: e.target.value }
+                            }
+                          })}
+                          placeholder="Har kuni muntazam 15 daqiqa shug‘ullanish"
+                        />
+                      </label>
+                      <label>
+                        <b style={{ fontSize: '11px', color: '#e05656' }}>Variant B (Noto‘g‘ri javob):</b>
+                        <input
+                          value={cms.previewSection?.sampleLesson?.choiceB || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            previewSection: {
+                              ...cms.previewSection,
+                              sampleLesson: { ...cms.previewSection?.sampleLesson, choiceB: e.target.value }
+                            }
+                          })}
+                          placeholder="Faqat haftada bir marta 4 soat o‘rganish"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: CEFR, KO‘NIKMALAR & QADAMLAR */}
+              {cmsTab === 'curriculum' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {/* CEFR Levels */}
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <h3 style={{ marginBottom: '14px' }}>1. CEFR Xalqaro Yo‘l Xaritasi (A1–C2)</h3>
+                    <div className="form-grid" style={{ gap: '12px', marginBottom: '16px' }}>
+                      <label>
+                        <b style={{ fontSize: '11px' }}>Kicker:</b>
+                        <input
+                          value={cms.cefrSection?.kicker || ''}
+                          onChange={e => setCms({ ...cms, cefrSection: { ...cms.cefrSection, kicker: e.target.value } })}
+                          placeholder="XALQARO METODIKA"
+                        />
+                      </label>
+                      <label>
+                        <b style={{ fontSize: '11px' }}>Sarlavha:</b>
+                        <input
+                          value={cms.cefrSection?.title || ''}
+                          onChange={e => setCms({ ...cms, cefrSection: { ...cms.cefrSection, title: e.target.value } })}
+                          placeholder="CEFR bo‘yicha aniq yo‘l xaritasi (A1–C2)"
+                        />
+                      </label>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                      {(cms.cefrSection?.levels || []).map((lvl: any, idx: number) => (
+                        <div key={lvl.code || idx} style={{ background: 'var(--bg)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                            <span style={{ padding: '2px 8px', borderRadius: '6px', background: `${lvl.color || '#3b82f6'}20`, color: lvl.color || '#3b82f6', fontWeight: 800, fontSize: '12px' }}>
+                              {lvl.code}
+                            </span>
+                            <input
+                              value={lvl.name || ''}
+                              onChange={e => {
+                                const updated = [...(cms.cefrSection?.levels || [])];
+                                updated[idx] = { ...updated[idx], name: e.target.value };
+                                setCms({ ...cms, cefrSection: { ...cms.cefrSection, levels: updated } });
+                              }}
+                              style={{ fontWeight: 700, fontSize: '12px' }}
+                              placeholder="Daraja nomi"
+                            />
+                          </div>
+                          <textarea
+                            value={lvl.desc || ''}
+                            onChange={e => {
+                              const updated = [...(cms.cefrSection?.levels || [])];
+                              updated[idx] = { ...updated[idx], desc: e.target.value };
+                              setCms({ ...cms, cefrSection: { ...cms.cefrSection, levels: updated } });
+                            }}
+                            rows={2}
+                            style={{ fontSize: '11px' }}
+                            placeholder="Daraja tavsifi..."
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 5 Learning Skills */}
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <h3 style={{ marginBottom: '14px' }}>2. 5 Ta Asosiy Til Ko‘nikmasi</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                      {(cms.skillsSection?.skills || []).map((skill: any, idx: number) => (
+                        <div key={skill.key || idx} style={{ background: 'var(--bg)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
+                            <b style={{ fontSize: '11px', color: 'var(--purple)' }}>{idx + 1}-Ko‘nikma Sarlavhasi:</b>
+                            <input
+                              value={skill.title || ''}
+                              onChange={e => {
+                                const updated = [...(cms.skillsSection?.skills || [])];
+                                updated[idx] = { ...updated[idx], title: e.target.value };
+                                setCms({ ...cms, skillsSection: { ...cms.skillsSection, skills: updated } });
+                              }}
+                              placeholder="Ko‘nikma nomi"
+                            />
+                          </label>
+                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <b style={{ fontSize: '11px' }}>Tavsifi:</b>
+                            <textarea
+                              value={skill.desc || ''}
+                              onChange={e => {
+                                const updated = [...(cms.skillsSection?.skills || [])];
+                                updated[idx] = { ...updated[idx], desc: e.target.value };
+                                setCms({ ...cms, skillsSection: { ...cms.skillsSection, skills: updated } });
+                              }}
+                              rows={3}
+                              placeholder="Ko‘nikma tavsifi..."
+                            />
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 5 Steps */}
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <h3 style={{ marginBottom: '14px' }}>3. O‘rganish Jarayoni: 5 Ta Oson Qadam</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                      {(cms.stepsSection?.steps || []).map((step: any, idx: number) => (
+                        <div key={step.step || idx} style={{ background: 'var(--bg)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '6px' }}>
+                            {step.step || `0${idx + 1}`}-Qadam
+                          </span>
+                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
+                            <b style={{ fontSize: '11px' }}>Qadam Sarlavhasi:</b>
+                            <input
+                              value={step.title || ''}
+                              onChange={e => {
+                                const updated = [...(cms.stepsSection?.steps || [])];
+                                updated[idx] = { ...updated[idx], title: e.target.value };
+                                setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                              }}
+                              placeholder="Qadam nomi"
+                            />
+                          </label>
+                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <b style={{ fontSize: '11px' }}>Qadam Tavsifi:</b>
+                            <textarea
+                              value={step.desc || ''}
+                              onChange={e => {
+                                const updated = [...(cms.stepsSection?.steps || [])];
+                                updated[idx] = { ...updated[idx], desc: e.target.value };
+                                setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                              }}
+                              rows={2}
+                              placeholder="Qadam tavsifi..."
+                            />
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 5: ILG‘OR IMKONIYATLAR & FINAL CTA */}
+              {cmsTab === 'features' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <h3 style={{ marginBottom: '14px' }}>Bo‘lim Sarlavhalari</h3>
+                    <div className="form-grid" style={{ gap: '12px', marginBottom: '16px' }}>
+                      <label>
+                        <b style={{ fontSize: '11px' }}>Kicker:</b>
+                        <input
+                          value={cms.featuresSection?.kicker || ''}
+                          onChange={e => setCms({ ...cms, featuresSection: { ...cms.featuresSection, kicker: e.target.value } })}
+                          placeholder="ILG‘OR IMKONIYATLAR"
+                        />
+                      </label>
+                      <label>
+                        <b style={{ fontSize: '11px' }}>Sarlavha:</b>
+                        <input
+                          value={cms.featuresSection?.title || ''}
+                          onChange={e => setCms({ ...cms, featuresSection: { ...cms.featuresSection, title: e.target.value } })}
+                          placeholder="Zamonaviy texnologiyalar xizmatingizda"
+                        />
+                      </label>
+                      <label className="span-two">
+                        <b style={{ fontSize: '11px' }}>Tavsif (Subtitle):</b>
+                        <input
+                          value={cms.featuresSection?.subtitle || ''}
+                          onChange={e => setCms({ ...cms, featuresSection: { ...cms.featuresSection, subtitle: e.target.value } })}
+                          placeholder="Biz til o‘rganishni nafaqat samarali, balki maroqli jarayonga aylantiramiz."
+                        />
+                      </label>
+                    </div>
+
+                    <h4 style={{ margin: '18px 0 12px', fontSize: '13px' }}>4 Ta Asosiy Innovatsion Karta</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                      {(cms.featuresSection?.features || []).map((feat: any, idx: number) => (
+                        <div key={feat.key || idx} style={{ background: 'var(--bg)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '6px' }}>
+                            {idx + 1}-XUSUSIYAT ({feat.key?.toUpperCase()})
+                          </span>
+                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
+                            <b style={{ fontSize: '11px' }}>Sarlavha:</b>
+                            <input
+                              value={feat.title || ''}
+                              onChange={e => {
+                                const updated = [...(cms.featuresSection?.features || [])];
+                                updated[idx] = { ...updated[idx], title: e.target.value };
+                                setCms({ ...cms, featuresSection: { ...cms.featuresSection, features: updated } });
+                              }}
+                              placeholder="Xususiyat nomi"
+                            />
+                          </label>
+                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <b style={{ fontSize: '11px' }}>Tavsifi:</b>
+                            <textarea
+                              value={feat.desc || ''}
+                              onChange={e => {
+                                const updated = [...(cms.featuresSection?.features || [])];
+                                updated[idx] = { ...updated[idx], desc: e.target.value };
+                                setCms({ ...cms, featuresSection: { ...cms.featuresSection, features: updated } });
+                              }}
+                              rows={3}
+                              placeholder="Xususiyat haqida tavsif..."
+                            />
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Final Call to Action */}
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <h3 style={{ marginBottom: '14px' }}>Pastki Ro‘yxatdan O‘tish Chaqiruvi (Final CTA)</h3>
+                    <div className="form-grid" style={{ gap: '14px' }}>
+                      <label>
+                        <b style={{ fontSize: '11px' }}>Kicker:</b>
+                        <input
+                          value={cms.finalCta?.kicker || ''}
+                          onChange={e => setCms({ ...cms, finalCta: { ...cms.finalCta, kicker: e.target.value } })}
+                          placeholder="HOZIROQ BOSHLANG"
+                        />
+                      </label>
+                      <label>
+                        <b style={{ fontSize: '11px' }}>Asosiy Sarlavha:</b>
+                        <input
+                          value={cms.finalCta?.title || ''}
+                          onChange={e => setCms({ ...cms, finalCta: { ...cms.finalCta, title: e.target.value } })}
+                          placeholder="Yangi tilni erkin gapirish vaqti keldi"
+                        />
+                      </label>
+                      <label className="span-two">
+                        <b style={{ fontSize: '11px' }}>Tavsif:</b>
+                        <textarea
+                          value={cms.finalCta?.desc || ''}
+                          onChange={e => setCms({ ...cms, finalCta: { ...cms.finalCta, desc: e.target.value } })}
+                          rows={2}
+                          placeholder="Bir necha soniyada bepul ro‘yxatdan o‘ting..."
+                        />
+                      </label>
+                      <label>
+                        <b style={{ fontSize: '11px' }}>Asosiy Tugma (Ro‘yxatdan o‘tish):</b>
+                        <input
+                          value={cms.finalCta?.btnRegister || ''}
+                          onChange={e => setCms({ ...cms, finalCta: { ...cms.finalCta, btnRegister: e.target.value } })}
+                          placeholder="Bepul hisob yaratish"
+                        />
+                      </label>
+                      <label>
+                        <b style={{ fontSize: '11px' }}>Ikkinchi Tugma (Kirish):</b>
+                        <input
+                          value={cms.finalCta?.btnLogin || ''}
+                          onChange={e => setCms({ ...cms, finalCta: { ...cms.finalCta, btnLogin: e.target.value } })}
+                          placeholder="Tizimga kirish"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 6: BIZ HAQIMIZDA & JAMOA */}
               {cmsTab === 'about' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <div className="panel" style={{ padding: '24px' }}>

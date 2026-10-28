@@ -15,6 +15,89 @@ export interface CmsConfig {
   description?: string;
   cta?: string;
   secondaryCta?: string;
+  header?: string;
+  metrics?: {
+    useLiveStats?: boolean;
+    metric1Value?: string;
+    metric1Label?: string;
+    metric2Value?: string;
+    metric2Label?: string;
+    metric3Value?: string;
+    metric3Label?: string;
+  };
+  floatingBadge1?: {
+    flag?: string;
+    title?: string;
+    subtitle?: string;
+  };
+  floatingBadge2?: {
+    title?: string;
+    subtitle?: string;
+  };
+  previewSection?: {
+    kicker?: string;
+    title?: string;
+    subtitle?: string;
+    vocabItems?: Array<{
+      word: string;
+      tr: string;
+      lvl: string;
+      ex: string;
+      topic: string;
+    }>;
+    sampleLesson?: {
+      level?: string;
+      time?: string;
+      title?: string;
+      article?: string;
+      question?: string;
+      choiceA?: string;
+      choiceB?: string;
+    };
+  };
+  cefrSection?: {
+    kicker?: string;
+    title?: string;
+    subtitle?: string;
+    levels?: Array<{
+      code: string;
+      name: string;
+      desc: string;
+      color: string;
+    }>;
+  };
+  skillsSection?: {
+    kicker?: string;
+    title?: string;
+    subtitle?: string;
+    skills?: Array<{
+      key: string;
+      title: string;
+      desc: string;
+      color?: string;
+    }>;
+  };
+  stepsSection?: {
+    kicker?: string;
+    title?: string;
+    subtitle?: string;
+    steps?: Array<{
+      step: string;
+      title: string;
+      desc: string;
+    }>;
+  };
+  featuresSection?: {
+    kicker?: string;
+    title?: string;
+    subtitle?: string;
+    features?: Array<{
+      key: string;
+      color?: string;
+      title: string;
+      desc: string;
+    }>;
+  };
   about?: string;
   aboutDetailed?: string;
   aboutButton?: string;
@@ -32,6 +115,20 @@ export interface CmsConfig {
   footer?: string;
   contact?: string;
   faqs?: Array<{ q: string; a: string }>;
+  finalCta?: {
+    kicker?: string;
+    title?: string;
+    desc?: string;
+    btnRegister?: string;
+    btnLogin?: string;
+  };
+  liveStats?: {
+    usersCount?: number;
+    wordsCount?: number;
+    practicesCount?: number;
+    materialsCount?: number;
+    teachersCount?: number;
+  };
 }
 
 interface WelcomePageProps {
@@ -133,13 +230,124 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
     }
   };
 
-  // Safe defaults
+  // Safe defaults & Hero texts
   const heroBadge = cms?.heroBadge || 'TILSHUNOS 2.0 · ILG‘OR TIL O‘RGANISH EKOTIZIMI';
   const heroTitle = cms?.hero || 'Yangi til. Yangi imkoniyatlar.';
   const heroDesc = cms?.description || 'TILSHUNOS bilan har kuni tizimli o‘rganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga chiqing.';
   const primaryCta = cms?.cta || 'Bepul boshlash';
   const secondaryCta = cms?.secondaryCta || 'Platformani o‘rganish';
 
+  // Dynamic Real or Admin-Configured Statistics
+  const liveStats = cms?.liveStats;
+  const useLive = cms?.metrics?.useLiveStats ?? true;
+
+  const metric1Val = useLive
+    ? `${(liveStats?.usersCount ?? 0) > 0 ? liveStats?.usersCount : 100}+`
+    : (cms?.metrics?.metric1Value || '6 M');
+  const metric1Lbl = useLive ? (cms?.metrics?.metric1Label || 'Faol O‘quvchi') : (cms?.metrics?.metric1Label || 'App Downloads');
+
+  const metric2Val = useLive
+    ? `${(liveStats?.wordsCount ?? 0) > 0 ? liveStats?.wordsCount : 500}+`
+    : (cms?.metrics?.metric2Value || '8.24 M');
+  const metric2Lbl = useLive ? (cms?.metrics?.metric2Label || 'Yodlangan So‘z') : (cms?.metrics?.metric2Label || 'Learned monthly');
+
+  const metric3Val = useLive
+    ? `${(liveStats?.practicesCount ?? 0) > 0 ? liveStats?.practicesCount : 120}+`
+    : (cms?.metrics?.metric3Value || '4.8 ★');
+  const metric3Lbl = useLive ? (cms?.metrics?.metric3Label || 'Mashq Bajarildi') : (cms?.metrics?.metric3Label || '177k Rating');
+
+  const flBadge1 = cms?.floatingBadge1 || { flag: '🇬🇧', title: 'Basic English', subtitle: '103 Darslik' };
+  const flBadge2 = cms?.floatingBadge2 || { title: '9 / 12 Quiz', subtitle: 'Speaking ✓' };
+
+  // Preview Section Data
+  const previewKicker = cms?.previewSection?.kicker || 'AMALIY TAJRIBA';
+  const previewTitle = cms?.previewSection?.title || 'Platformaning haqiqiy imkoniyatlarini sinab ko‘ring';
+  const previewSubtitle = cms?.previewSection?.subtitle || 'Ro‘yxatdan o‘tishdan avval asosiy 3 ta modulimiz qanday ishlashini amalda ko‘ring.';
+
+  const defaultVocabItems = [
+    { word: 'Achieve', tr: 'Erishmoq, zabt etmoq', lvl: 'B1', ex: 'You can achieve any language goal with daily practice.', topic: 'Motivatsiya' },
+    { word: 'Curious', tr: 'Qiziquvchan, yangilikka intiluvchan', lvl: 'A2', ex: 'Children are naturally curious about the world.', topic: 'Xarakter' },
+    { word: 'Resilience', tr: 'Sabr-bardosh, chidamlilik', lvl: 'B2', ex: 'She showed great resilience in learning pronunciation.', topic: 'Psixologiya' }
+  ];
+  const vocabItems = (cms?.previewSection?.vocabItems && cms.previewSection.vocabItems.length > 0)
+    ? cms.previewSection.vocabItems
+    : defaultVocabItems;
+
+  const defaultSampleLesson = {
+    level: 'CEFR B1 · READING',
+    time: '5 daqiqa',
+    title: 'The Power of Tiny Daily Habits',
+    article: 'Consistency is far more powerful than intensity. When learning a new language, practicing for just 15 minutes every single day wires the brain more effectively than studying for 4 hours once a week. The secret lies in frequent retrieval: each time you actively recall a word, the neural pathway strengthens.',
+    question: 'Matnga ko‘ra, til o‘rganishda eng muhim omil nima?',
+    choiceA: 'Har kuni muntazam 15 daqiqa shug‘ullanish (To‘g‘ri ✓)',
+    choiceB: 'Faqat haftada bir marta 4 soat o‘rganish'
+  };
+  const sampleLesson = {
+    ...defaultSampleLesson,
+    ...(cms?.previewSection?.sampleLesson || {})
+  };
+
+  // CEFR Section Data
+  const cefrKicker = cms?.cefrSection?.kicker || 'XALQARO METODIKA';
+  const cefrTitle = cms?.cefrSection?.title || 'CEFR bo‘yicha aniq yo‘l xaritasi (A1–C2)';
+  const cefrSubtitle = cms?.cefrSection?.subtitle || 'O‘zingizga mos boshlang‘ich nuqtani tanlang va bosqichma-bosqich yuksaling.';
+  const defaultCefrLevels = [
+    { code: 'A1', name: 'Boshlang‘ich', desc: 'Oddiy so‘zlar, tanishuv va kundalik eng muhim iboralar.', color: '#3b82f6' },
+    { code: 'A2', name: 'Elementar', desc: 'Xarid, transport va oddiy kundalik vaziyatlarda muloqot.', color: '#0ea5e9' },
+    { code: 'B1', name: 'O‘rta daraja', desc: 'Sayohat, fikr bildirish va o‘z tajribasini erkin tushuntirish.', color: '#10b981' },
+    { code: 'B2', name: 'Mustaqil', desc: 'Murakkab matnlar, insholar va mavzular bo‘yicha erkin bahslashish.', color: '#8b5cf6' },
+    { code: 'C1', name: 'Ilg‘or', desc: 'Akademik va kasbiy darajada chuqur fikrlash hamda tahlil.', color: '#f59e0b' },
+    { code: 'C2', name: 'Mukammal', desc: 'Ona tili darajasidagi ravonlik va nozik ma’nolarni anglash.', color: '#ec4899' }
+  ];
+  const cefrLevelsList = (cms?.cefrSection?.levels && cms.cefrSection.levels.length > 0)
+    ? cms.cefrSection.levels
+    : defaultCefrLevels;
+
+  // 5 Skills Data
+  const skillsKicker = cms?.skillsSection?.kicker || 'MUVOZANATLI RIVOJLANISH';
+  const skillsTitle = cms?.skillsSection?.title || '5 ta asosiy til ko‘nikmasini mustahkamlang';
+  const skillsSubtitle = cms?.skillsSection?.subtitle || 'Faqat qoidalar yodlash emas — har tomonlama tabiiy o‘rganish uslubi.';
+  const defaultSkills = [
+    { key: 'reading', title: 'O‘qish (Reading)', desc: 'Darajangizga moslangan qiziqarli hikoyalar, badiiy parchalar va zamonaviy maqolalar.', color: '#356cf6' },
+    { key: 'writing', title: 'Yozish (Writing)', desc: 'Insho va xatlar yozish, grammatik xatolarni sun’iy intellekt orqali darhol tekshirish.', color: '#8b5cf6' },
+    { key: 'listening', title: 'Tinglash (Listening)', desc: 'Tabiiy tezlikdagi audio podkastlar, kundalik muloqot dialoglari va transkriptlar.', color: '#0ea5e9' },
+    { key: 'speaking', title: 'Gapirish (Speaking)', desc: 'To‘g‘ri talaffuz va intonatsiya mashqlari bilan muloqotdagi to‘siqlarni yengish.', color: '#10b981' },
+    { key: 'vocab', title: 'Lug‘at (Vocabulary)', desc: 'Shaxsiy so‘z daftari, kontekstual misollar va intervalli takrorlash metodikasi.', color: '#f59e0b' }
+  ];
+  const skillsList = (cms?.skillsSection?.skills && cms.skillsSection.skills.length > 0)
+    ? cms.skillsSection.skills
+    : defaultSkills;
+
+  // 5 Steps Data
+  const stepsKicker = cms?.stepsSection?.kicker || 'ODDIY VA TUSHUNARLI';
+  const stepsTitle = cms?.stepsSection?.title || 'O‘rganish jarayoni qanday kechadi?';
+  const stepsSubtitle = cms?.stepsSection?.subtitle || '5 ta oson qadam orqali maqsadingiz sari ishonch bilan yo‘l oling.';
+  const defaultSteps = [
+    { step: '01', title: 'Til va maqsadni tanlaysiz', desc: 'Ingliz, rus, nemis yoki boshqa tillar hamda kunlik shug‘ullanish vaqti.' },
+    { step: '02', title: 'Boshlang‘ich daraja aniqlanadi', desc: 'CEFR A1 dan C2 gacha bo‘lgan aniq darajangiz belgilanadi.' },
+    { step: '03', title: 'Shaxsiy reja tuziladi', desc: 'Dashboardda har kungi yangi so‘zlar va mashqlar tartibli aks etadi.' },
+    { step: '04', title: 'Amaliyot va so‘z o‘yinlari', desc: 'Typing, so‘z zanjiri va 1v1 bellashuvlar orqali bilim mustahkamlanadi.' },
+    { step: '05', title: 'Natijalar va o‘sish', desc: 'O‘zlashtirilgan so‘zlar va yuqori CEFR darajalariga o‘tish.' }
+  ];
+  const stepsList = (cms?.stepsSection?.steps && cms.stepsSection.steps.length > 0)
+    ? cms.stepsSection.steps
+    : defaultSteps;
+
+  // Features Data
+  const featuresKicker = cms?.featuresSection?.kicker || 'ILG‘OR IMKONIYATLAR';
+  const featuresTitle = cms?.featuresSection?.title || 'Zamonaviy texnologiyalar xizmatingizda';
+  const featuresSubtitle = cms?.featuresSection?.subtitle || 'Biz til o‘rganishni nafaqat samarali, balki maroqli jarayonga aylantiramiz.';
+  const defaultFeatures = [
+    { key: 'ai', color: 'purple', title: '24/7 AI Til Repetitori', desc: 'Istalgan savolingizni bering, grammatik xatolaringizni aniqlang va muloyim tushuntirishlar oling.' },
+    { key: 'pvp', color: 'orange', title: '1v1 So‘z Bellashuvi', desc: 'Boshqa o‘quvchilar bilan real vaqtda so‘z boyligingizni sinang, XP to‘plang va yetakchilar safiga kiring.' },
+    { key: 'anticheat', color: 'green', title: 'Anti-Cheat & Spaced Repetition', desc: 'So‘zlar tasodifiy takrorlanmaydi — ilmiy tasdiqlangan intervallar bilan uzoq muddatli xotiraga ko‘chadi.' },
+    { key: 'teachers', color: 'blue', title: 'Malakali Ustozlar Nazorati', desc: 'Maxsus o‘qituvchilar tizimda sizning yozma insho va vazifalaringizni tekshirib, shaxsiy baho beradi.' }
+  ];
+  const featuresList = (cms?.featuresSection?.features && cms.featuresSection.features.length > 0)
+    ? cms.featuresSection.features
+    : defaultFeatures;
+
+  // About, Founder, Contacts
   const aboutShort = cms?.about || 'TILSHUNOS til o‘rganishni tartibli, qiziqarli va shaxsiy maqsadlaringizga mos qilish uchun yaratilayotgan ilg‘or platforma.';
   const aboutDetailed = cms?.aboutDetailed || 'TILSHUNOS — xalqaro CEFR (A1–C2) standartlariga moslashtirilgan, sun’iy intellekt va professional ustozlar metodikasini o‘zida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvchiga murakkab grammatik qoidalarsiz, interaktiv so‘z o‘yinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy o‘zlashtirish imkoniyatini taqdim etishdir.';
   const aboutBtn = cms?.aboutButton || 'Batafsil ma’lumot';
@@ -169,6 +377,13 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
     { q: 'O‘qituvchi bilan qanday bog‘lanaman?', a: 'Platformadagi O‘qituvchilar bo‘limi orqali tasdiqlangan ustozlar bilan bog‘lanib, shaxsiy topshiriqlar olishingiz mumkin.' }
   ];
   const faqs = cms?.faqs && cms.faqs.length > 0 ? cms.faqs : defaultFaqs;
+
+  // Final CTA Data
+  const finalCtaKicker = cms?.finalCta?.kicker || 'HOZIROQ BOSHLANG';
+  const finalCtaTitle = cms?.finalCta?.title || 'Yangi tilni erkin gapirish vaqti keldi';
+  const finalCtaDesc = cms?.finalCta?.desc || 'Bir necha soniyada bepul ro‘yxatdan o‘ting va birinchi darsingizni bugunoq boshlang.';
+  const finalCtaBtnRegister = cms?.finalCta?.btnRegister || 'Bepul hisob yaratish';
+  const finalCtaBtnLogin = cms?.finalCta?.btnLogin || 'Tizimga kirish';
 
   return (
     <div className={`welcome-root ${dark ? 'dark' : ''}`}>
@@ -318,20 +533,21 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               {/* Bottom Metrics Bar */}
               <div className="holo-metrics-bar">
                 <div className="holo-metric-item">
-                  <span className="metric-val">6 M</span>
-                  <span className="metric-lbl">App Downloads</span>
+                  <span className="metric-val">{metric1Val}</span>
+                  <span className="metric-lbl">{metric1Lbl}</span>
                 </div>
                 <div className="holo-metric-divider" />
                 <div className="holo-metric-item">
-                  <span className="metric-val">8.24 M</span>
-                  <span className="metric-lbl">Learned monthly</span>
+                  <span className="metric-val">{metric2Val}</span>
+                  <span className="metric-lbl">{metric2Lbl}</span>
                 </div>
                 <div className="holo-metric-divider" />
                 <div className="holo-metric-item">
                   <span className="metric-val">
-                    4.8 <Star size={15} fill="#fbbf24" color="#fbbf24" style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '2px', marginBottom: '3px' }} />
+                    {metric3Val}{' '}
+                    <Star size={15} fill="#fbbf24" color="#fbbf24" style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '2px', marginBottom: '3px' }} />
                   </span>
-                  <span className="metric-lbl">177k Rating</span>
+                  <span className="metric-lbl">{metric3Lbl}</span>
                 </div>
               </div>
             </div>
@@ -345,13 +561,13 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                   <div className="card-popular-badge">POPULAR</div>
                   <div className="card-course-top">
                     <span className="course-label">COURSE</span>
-                    <span className="course-badge">103 Lesson</span>
+                    <span className="course-badge">{flBadge1.subtitle || '103 Darslik'}</span>
                   </div>
                   <div className="card-course-body">
-                    <span className="course-flag">🇬🇧</span>
+                    <span className="course-flag">{flBadge1.flag || '🇬🇧'}</span>
                     <div>
-                      <strong>Basic English</strong>
-                      <small>Conversation Practice</small>
+                      <strong>{flBadge1.title || 'Basic English'}</strong>
+                      <small>{flBadge1.subtitle || 'Conversation Practice'}</small>
                     </div>
                   </div>
                 </div>
@@ -385,8 +601,8 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                     </svg>
                   </div>
                   <div className="progress-info">
-                    <strong>9 <small>/ 12</small></strong>
-                    <span>Quiz Joined</span>
+                    <strong>{flBadge2.title || '9 / 12 Quiz'}</strong>
+                    <span>{flBadge2.subtitle || 'Speaking ✓'}</span>
                   </div>
                 </div>
 
@@ -410,18 +626,18 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               <div className="holo-phone-scene mobile-only-scene">
                 {/* Floating mini badges around the phone */}
                 <div className="phone-floating-badge badge-top-left animate-float-slow">
-                  <span className="badge-fl-flag">🇬🇧</span>
+                  <span className="badge-fl-flag">{flBadge1.flag || '🇬🇧'}</span>
                   <div>
-                    <strong>Basic English</strong>
-                    <small>103 Lesson</small>
+                    <strong>{flBadge1.title || 'Basic English'}</strong>
+                    <small>{flBadge1.subtitle || '103 Lesson'}</small>
                   </div>
                 </div>
 
                 <div className="phone-floating-badge badge-bottom-right animate-float-medium">
                   <div className="verified-dot-circle"><Check size={11} strokeWidth={3} /></div>
                   <div>
-                    <strong>9 / 12 Quiz</strong>
-                    <small>Speaking ✓</small>
+                    <strong>{flBadge2.title || '9 / 12 Quiz'}</strong>
+                    <small>{flBadge2.subtitle || 'Speaking ✓'}</small>
                   </div>
                 </div>
 
@@ -459,9 +675,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       <section id="preview" className="welcome-preview-section">
         <div className="section-container">
           <div className="section-header scroll-reveal">
-            <span className="section-kicker">AMALIY TAJRIBA</span>
-            <h2>Platformaning haqiqiy imkoniyatlarini sinab ko‘ring</h2>
-            <p>Ro‘yxatdan o‘tishdan avval asosiy 3 ta modulimiz qanday ishlashini amalda ko‘ring.</p>
+            <span className="section-kicker">{previewKicker}</span>
+            <h2>{previewTitle}</h2>
+            <p>{previewSubtitle}</p>
           </div>
 
           {/* Interactive preview tabs */}
@@ -493,11 +709,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
           {previewTab === 'vocab' && (
             <div className="preview-content-card scroll-reveal-scale delay-200">
               <div className="vocab-demo-grid scroll-stagger-parent revealed">
-                {[
-                  { word: 'Achieve', tr: 'Erishmoq, zabt etmoq', lvl: 'B1', ex: 'You can achieve any language goal with daily practice.', topic: 'Motivatsiya' },
-                  { word: 'Curious', tr: 'Qiziquvchan, yangilikka intiluvchan', lvl: 'A2', ex: 'Children are naturally curious about the world.', topic: 'Xarakter' },
-                  { word: 'Resilience', tr: 'Sabr-bardosh, chidamlilik', lvl: 'B2', ex: 'She showed great resilience in learning pronunciation.', topic: 'Psixologiya' }
-                ].map(item => (
+                {vocabItems.map(item => (
                   <div key={item.word} className="demo-word-card">
                     <div className="demo-word-top">
                       <span className="demo-level-pill">{item.lvl}</span>
@@ -525,26 +737,23 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               <div className="lesson-preview-container scroll-stagger-parent revealed">
                 <div className="lesson-text-block">
                   <div className="lesson-text-head">
-                    <span className="demo-level-pill">CEFR B1 · READING</span>
-                    <span className="lesson-time"><Clock size={14} /> 5 daqiqa</span>
+                    <span className="demo-level-pill">{sampleLesson.level || 'CEFR B1 · READING'}</span>
+                    <span className="lesson-time"><Clock size={14} /> {sampleLesson.time || '5 daqiqa'}</span>
                   </div>
-                  <h3>The Power of Tiny Daily Habits</h3>
+                  <h3>{sampleLesson.title || 'The Power of Tiny Daily Habits'}</h3>
                   <p className="lesson-article">
-                    Consistency is far more powerful than intensity. When learning a new language, practicing
-                    for just <strong>15 minutes every single day</strong> wires the brain more effectively than studying
-                    for 4 hours once a week. The secret lies in frequent retrieval: each time you actively recall a word,
-                    the neural pathway strengthens.
+                    {sampleLesson.article || 'Consistency is far more powerful than intensity...'}
                   </p>
                 </div>
                 <div className="lesson-interactive-box">
                   <span className="interactive-title">TUSHUNISHNI TEKSHIRISH TESTI</span>
-                  <p>Matnga ko‘ra, til o‘rganishda eng muhim omil nima?</p>
+                  <p>{sampleLesson.question || 'Matnga ko‘ra, til o‘rganishda eng muhim omil nima?'}</p>
                   <div className="lesson-choices">
                     <button className="choice-btn correct">
-                      <Check size={16} /> A) Har kuni muntazam 15 daqiqa shug‘ullanish (To‘g‘ri ✓)
+                      <Check size={16} /> A) {sampleLesson.choiceA || 'Har kuni muntazam 15 daqiqa shug‘ullanish (To‘g‘ri ✓)'}
                     </button>
                     <button className="choice-btn">
-                      B) Faqat haftada bir marta 4 soat o‘rganish
+                      B) {sampleLesson.choiceB || 'Faqat haftada bir marta 4 soat o‘rganish'}
                     </button>
                   </div>
                 </div>
@@ -591,20 +800,13 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       <section id="cefr" className="welcome-cefr-section">
         <div className="section-container">
           <div className="section-header scroll-reveal">
-            <span className="section-kicker">XALQARO METODIKA</span>
-            <h2>CEFR bo‘yicha aniq yo‘l xaritasi (A1–C2)</h2>
-            <p>O‘zingizga mos boshlang‘ich nuqtani tanlang va bosqichma-bosqich yuksaling.</p>
+            <span className="section-kicker">{cefrKicker}</span>
+            <h2>{cefrTitle}</h2>
+            <p>{cefrSubtitle}</p>
           </div>
 
           <div className="cefr-cards-grid scroll-stagger-parent">
-            {[
-              { code: 'A1', name: 'Boshlang‘ich', desc: 'Oddiy so‘zlar, tanishuv va kundalik eng muhim iboralar.', color: '#3b82f6' },
-              { code: 'A2', name: 'Elementar', desc: 'Xarid, transport va oddiy kundalik vaziyatlarda muloqot.', color: '#0ea5e9' },
-              { code: 'B1', name: 'O‘rta daraja', desc: 'Sayohat, fikr bildirish va o‘z tajribasini erkin tushuntirish.', color: '#10b981' },
-              { code: 'B2', name: 'Mustaqil', desc: 'Murakkab matnlar, insholar va mavzular bo‘yicha erkin bahslashish.', color: '#8b5cf6' },
-              { code: 'C1', name: 'Ilg‘or', desc: 'Akademik va kasbiy darajada chuqur fikrlash hamda tahlil.', color: '#f59e0b' },
-              { code: 'C2', name: 'Mukammal', desc: 'Ona tili darajasidagi ravonlik va nozik ma’nolarni anglash.', color: '#ec4899' }
-            ].map(lvl => (
+            {cefrLevelsList.map(lvl => (
               <div key={lvl.code} className="cefr-card">
                 <div className="cefr-badge" style={{ background: `${lvl.color}15`, color: lvl.color, borderColor: `${lvl.color}40` }}>
                   {lvl.code}
@@ -631,23 +833,25 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       <section id="skills" className="welcome-skills-section">
         <div className="section-container">
           <div className="section-header scroll-reveal">
-            <span className="section-kicker">MUVOZANATLI RIVOJLANISH</span>
-            <h2>5 ta asosiy til ko‘nikmasini mustahkamlang</h2>
-            <p>Faqat qoidalar yodlash emas — har tomonlama tabiiy o‘rganish uslubi.</p>
+            <span className="section-kicker">{skillsKicker}</span>
+            <h2>{skillsTitle}</h2>
+            <p>{skillsSubtitle}</p>
           </div>
 
           <div className="skills-grid scroll-stagger-parent">
-            {[
-              { icon: BookOpen, title: 'O‘qish (Reading)', desc: 'Darajangizga moslangan qiziqarli hikoyalar, badiiy parchalar va zamonaviy maqolalar.', color: '#356cf6' },
-              { icon: PenLine, title: 'Yozish (Writing)', desc: 'Insho va xatlar yozish, grammatik xatolarni sun’iy intellekt orqali darhol tekshirish.', color: '#8b5cf6' },
-              { icon: Headphones, title: 'Tinglash (Listening)', desc: 'Tabiiy tezlikdagi audio podkastlar, kundalik muloqot dialoglari va transkriptlar.', color: '#0ea5e9' },
-              { icon: Mic2, title: 'Gapirish (Speaking)', desc: 'To‘g‘ri talaffuz va intonatsiya mashqlari bilan muloqotdagi to‘siqlarni yengish.', color: '#10b981' },
-              { icon: Layers, title: 'Lug‘at (Vocabulary)', desc: 'Shaxsiy so‘z daftari, kontekstual misollar va intervalli takrorlash metodikasi.', color: '#f59e0b' }
-            ].map(skill => {
-              const Icon = skill.icon;
+            {skillsList.map((skill, idx) => {
+              const iconMap: Record<string, any> = {
+                reading: BookOpen,
+                writing: PenLine,
+                listening: Headphones,
+                speaking: Mic2,
+                vocab: Layers
+              };
+              const Icon = iconMap[skill.key] || [BookOpen, PenLine, Headphones, Mic2, Layers][idx % 5];
+              const color = skill.color || ['#356cf6', '#8b5cf6', '#0ea5e9', '#10b981', '#f59e0b'][idx % 5];
               return (
-                <div key={skill.title} className="skill-card">
-                  <div className="skill-icon-wrap" style={{ background: `${skill.color}15`, color: skill.color }}>
+                <div key={skill.title || idx} className="skill-card">
+                  <div className="skill-icon-wrap" style={{ background: `${color}15`, color }}>
                     <Icon size={24} />
                   </div>
                   <h3>{skill.title}</h3>
@@ -663,19 +867,13 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       <section id="how-it-works" className="welcome-steps-section">
         <div className="section-container">
           <div className="section-header scroll-reveal">
-            <span className="section-kicker">ODDIY VA TUSHUNARLI</span>
-            <h2>O‘rganish jarayoni qanday kechadi?</h2>
-            <p>5 ta oson qadam orqali maqsadingiz sari ishonch bilan yo‘l oling.</p>
+            <span className="section-kicker">{stepsKicker}</span>
+            <h2>{stepsTitle}</h2>
+            <p>{stepsSubtitle}</p>
           </div>
 
           <div className="steps-flow-grid scroll-stagger-parent">
-            {[
-              { step: '01', title: 'Til va maqsadni tanlaysiz', desc: 'Ingliz, rus, nemis yoki boshqa tillar hamda kunlik shug‘ullanish vaqti.' },
-              { step: '02', title: 'Boshlang‘ich daraja aniqlanadi', desc: 'CEFR A1 dan C2 gacha bo‘lgan aniq darajangiz belgilanadi.' },
-              { step: '03', title: 'Shaxsiy reja tuziladi', desc: 'Dashboardda har kungi yangi so‘zlar va mashqlar tartibli aks etadi.' },
-              { step: '04', title: 'Amaliyot va so‘z o‘yinlari', desc: 'Typing, so‘z zanjiri va 1v1 bellashuvlar orqali bilim mustahkamlanadi.' },
-              { step: '05', title: 'Natijalar va o‘sish', desc: 'O‘zlashtirilgan so‘zlar va yuqori CEFR darajalariga o‘tish.' }
-            ].map(item => (
+            {stepsList.map(item => (
               <div key={item.step} className="step-card">
                 <div className="step-number">{item.step}</div>
                 <h3>{item.title}</h3>
@@ -690,32 +888,30 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       <section id="features" className="welcome-features-section">
         <div className="section-container">
           <div className="section-header scroll-reveal">
-            <span className="section-kicker">ILG‘OR IMKONIYATLAR</span>
-            <h2>Zamonaviy texnologiyalar xizmatingizda</h2>
-            <p>Biz til o‘rganishni nafaqat samarali, balki maroqli jarayonga aylantiramiz.</p>
+            <span className="section-kicker">{featuresKicker}</span>
+            <h2>{featuresTitle}</h2>
+            <p>{featuresSubtitle}</p>
           </div>
 
           <div className="features-grid scroll-stagger-parent">
-            <div className="feature-box">
-              <div className="feature-icon-box purple"><Sparkles size={22} /></div>
-              <h3>24/7 AI Til Repetitori</h3>
-              <p>Istalgan savolingizni bering, grammatik xatolaringizni aniqlang va muloyim tushuntirishlar oling.</p>
-            </div>
-            <div className="feature-box">
-              <div className="feature-icon-box orange"><Gamepad2 size={22} /></div>
-              <h3>1v1 So‘z Bellashuvi</h3>
-              <p>Boshqa o‘quvchilar bilan real vaqtda so‘z boyligingizni sinang, XP to‘plang va yetakchilar safiga kiring.</p>
-            </div>
-            <div className="feature-box">
-              <div className="feature-icon-box green"><ShieldCheck size={22} /></div>
-              <h3>Anti-Cheat & Spaced Repetition</h3>
-              <p>So‘zlar tasodifiy takrorlanmaydi — ilmiy tasdiqlangan intervallar bilan uzoq muddatli xotiraga ko‘chadi.</p>
-            </div>
-            <div className="feature-box">
-              <div className="feature-icon-box blue"><Users size={22} /></div>
-              <h3>Malakali Ustozlar Nazorati</h3>
-              <p>Maxsus o‘qituvchilar tizimda sizning yozma insho va vazifalaringizni tekshirib, shaxsiy baho beradi.</p>
-            </div>
+            {featuresList.map(item => {
+              const iconMap: Record<string, any> = {
+                ai: Sparkles,
+                pvp: Gamepad2,
+                anticheat: ShieldCheck,
+                teachers: Users
+              };
+              const Icon = iconMap[item.key] || Sparkles;
+              return (
+                <div key={item.key || item.title} className="feature-box">
+                  <div className={`feature-icon-box ${item.color || 'purple'}`}>
+                    <Icon size={22} />
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p>{item.desc}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -798,16 +994,16 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       <section className="welcome-final-cta">
         <div className="cta-container scroll-reveal-scale">
           <div className="cta-content">
-            <span className="cta-kicker"><Sparkles size={14} /> HOZIROQ BOSHLANG</span>
-            <h2>Yangi tilni erkin gapirish vaqti keldi</h2>
-            <p>Bir necha soniyada bepul ro‘yxatdan o‘ting va birinchi darsingizni bugunoq boshlang.</p>
+            <span className="cta-kicker"><Sparkles size={14} /> {finalCtaKicker}</span>
+            <h2>{finalCtaTitle}</h2>
+            <p>{finalCtaDesc}</p>
             <div className="cta-buttons-row">
               <button className="cta-main-btn" onClick={() => onBegin('register')}>
-                <span>Bepul hisob yaratish</span>
+                <span>{finalCtaBtnRegister}</span>
                 <ArrowRight size={18} />
               </button>
               <button className="cta-secondary-btn" onClick={() => onBegin('login')}>
-                Tizimga kirish
+                {finalCtaBtnLogin}
               </button>
             </div>
           </div>
