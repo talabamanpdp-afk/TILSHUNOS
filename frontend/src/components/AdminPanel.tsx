@@ -521,7 +521,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
           <div className="avatar" style={{ background: '#7869f5', color: '#fff' }}>A</div>
           <div className="profile-copy">
             <strong>Super Admin</strong>
-            <span><span className="online-dot" /> Supabase Ulangan</span>
+            <span><span className="online-dot" /> Onlayn</span>
           </div>
         </div>
 
@@ -565,11 +565,6 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
             </div>
           </div>
           <div className="topbar-right" style={{ gap: '12px' }}>
-            {/* Supabase live badge */}
-            <div className="supabase-live-badge" title="Supabase Cloud PostgreSQL bazasiga to‘g‘ridan-to‘g‘ri ulangan">
-              <span className="pulse-dot" />
-              <span>Supabase: Faol</span>
-            </div>
 
             {/* Manual refresh button */}
             <button
@@ -616,7 +611,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 <div className="stat-card">
                   <div className="stat-top">
                     <div className="stat-icon purple"><Users size={19} /></div>
-                    <span className="badge-role-learner">Real Supabase</span>
+                    <span className="badge-role-learner">Faol</span>
                   </div>
                   <div className="stat-value">{stats.totalUsers}</div>
                   <div className="stat-label">Jami Foydalanuvchilar</div>
