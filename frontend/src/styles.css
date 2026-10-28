@@ -1740,14 +1740,18 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   background-repeat: no-repeat;
   transition: opacity 0.3s ease;
 }
+/* Shaffof va ozgina blur - fon rasmi aniq va chiroyli ko'rinadi */
 .holo-custom-bg-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.90) 100%);
-  backdrop-filter: blur(2px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.45) 100%);
+  backdrop-filter: blur(0.5px);
+  -webkit-backdrop-filter: blur(0.5px);
 }
 .welcome-root.dark .holo-custom-bg-overlay {
-  background: linear-gradient(180deg, rgba(11, 19, 43, 0.76) 0%, rgba(11, 19, 43, 0.93) 100%);
+  background: linear-gradient(180deg, rgba(11, 19, 43, 0.25) 0%, rgba(11, 19, 43, 0.55) 100%);
+  backdrop-filter: blur(0.5px);
+  -webkit-backdrop-filter: blur(0.5px);
 }
 .desktop-only-bg {
   display: block;
@@ -1762,6 +1766,33 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   .mobile-only-bg {
     display: block !important;
   }
+}
+
+/* Fon rasmi bilan birga matnlar doimo tiniq o'qilishi uchun kontrast */
+.holo-hero-wrapper.has-custom-bg .holo-headline {
+  text-shadow: 0 2px 12px rgba(255, 255, 255, 0.6);
+}
+.welcome-root.dark .holo-hero-wrapper.has-custom-bg .holo-headline {
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7);
+}
+.holo-hero-wrapper.has-custom-bg .holo-description {
+  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.5);
+}
+.welcome-root.dark .holo-hero-wrapper.has-custom-bg .holo-description {
+  color: #f1f5f9;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75);
+}
+.holo-hero-wrapper.has-custom-bg .holo-stats-group {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 16px;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.welcome-root.dark .holo-hero-wrapper.has-custom-bg .holo-stats-group {
+  background: rgba(15, 23, 42, 0.55);
+  border-color: rgba(51, 65, 85, 0.5);
 }
 
 .holo-bg-split {
