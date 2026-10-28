@@ -241,6 +241,17 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
           <div className="holo-hero-grid">
             {/* Left Hero Column */}
             <div className="holo-hero-copy animate-fade-in-up">
+              {/* Mobile Centered Large Brand Emblem (below navbar) */}
+              <div className="mobile-center-brand-banner mobile-only-block animate-fade-in">
+                <div className="mobile-brand-icon-large">
+                  <Languages size={28} />
+                </div>
+                <div className="mobile-brand-title-large">
+                  TILSHUNOS<span className="brand-dot">.</span>
+                </div>
+                <span className="mobile-brand-subtag">ILG‘OR TIL O‘RGANISH PLATFORMASI</span>
+              </div>
+
               <h1 className="holo-headline">
                 Yangi tilni{' '}
                 <span className="holo-pill-badge">{heroBadge?.includes('PERCENT') ? heroBadge : '99 PERCENT'}</span>
