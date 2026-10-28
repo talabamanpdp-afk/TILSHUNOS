@@ -289,10 +289,14 @@ public class GamesController : ControllerBase
 public class CmsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IConfiguration _config;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public CmsController(AppDbContext db)
+    public CmsController(AppDbContext db, IConfiguration config, IHttpClientFactory httpClientFactory)
     {
         _db = db;
+        _config = config;
+        _httpClientFactory = httpClientFactory;
     }
 
     private static readonly string DefaultCmsJson = System.Text.Json.JsonSerializer.Serialize(new
@@ -617,13 +621,66 @@ public class CmsController : ControllerBase
 
         try
         {
+            var mediaId = "media_" + Guid.NewGuid().ToString("N")[..12];
+            var contentType = string.IsNullOrWhiteSpace(request.ContentType) ? "image/jpeg" : request.ContentType;
+            var ext = contentType switch
+            {
+                "image/png" => ".png",
+                "image/webp" => ".webp",
+                "image/svg+xml" => ".svg",
+                _ => ".jpg"
+            };
+            var fileName = string.IsNullOrWhiteSpace(request.FileName) 
+                ? $"{mediaId}{ext}" 
+                : $"{Path.GetFileNameWithoutExtension(request.FileName)}_{Guid.NewGuid().ToString("N")[..6]}{ext}";
+
+            // Extract byte array from DataBase64
+            var base64Data = request.DataBase64;
+            if (base64Data.Contains(','))
+            {
+                base64Data = base64Data.Substring(base64Data.IndexOf(',') + 1);
+            }
+            var fileBytes = Convert.FromBase64String(base64Data);
+
+            // 1. Upload to Supabase Storage Bucket ('tilshunos-media')
+            var supabaseUrl = _config["Supabase:Url"] ?? "https://yipexommqztxnvpckqyi.supabase.co";
+            var anonKey = _config["Supabase:AnonKey"];
+            var bucketName = _config["Supabase:BucketName"] ?? "tilshunos-media";
+
+            string? supabaseCdnUrl = null;
+
+            if (!string.IsNullOrWhiteSpace(anonKey))
+            {
+                try
+                {
+                    var client = _httpClientFactory.CreateClient();
+                    var uploadUrl = $"{supabaseUrl.TrimEnd('/')}/storage/v1/object/{bucketName}/{fileName}";
+                    using var content = new ByteArrayContent(fileBytes);
+                    content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+
+                    using var req = new HttpRequestMessage(HttpMethod.Post, uploadUrl)
+                    {
+                        Content = content
+                    };
+                    req.Headers.Add("Authorization", $"Bearer {anonKey}");
+                    req.Headers.Add("apikey", anonKey);
+
+                    var response = await client.SendAsync(req);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        supabaseCdnUrl = $"{supabaseUrl.TrimEnd('/')}/storage/v1/object/public/{bucketName}/{fileName}";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Supabase Storage upload error: {ex.Message}");
+                }
+            }
+
+            // 2. Also save record in uploaded_media for fallback
             await _db.Database.ExecuteSqlRawAsync(
                 "CREATE TABLE IF NOT EXISTS uploaded_media (id character varying(64) PRIMARY KEY, file_name character varying(255) NOT NULL, content_type character varying(64) NOT NULL, data_base64 text NOT NULL, created_at_utc timestamp with time zone NOT NULL);"
             );
-
-            var mediaId = "media_" + Guid.NewGuid().ToString("N")[..12];
-            var contentType = string.IsNullOrWhiteSpace(request.ContentType) ? "image/jpeg" : request.ContentType;
-            var fileName = string.IsNullOrWhiteSpace(request.FileName) ? $"{mediaId}.jpg" : request.FileName;
 
             var paramId = new Npgsql.NpgsqlParameter("@id", mediaId);
             var paramName = new Npgsql.NpgsqlParameter("@fileName", fileName);
@@ -637,15 +694,19 @@ public class CmsController : ControllerBase
             );
 
             var baseUrl = $"{Request.Scheme}://{Request.Host}";
-            var mediaUrl = $"{baseUrl}/api/v1/cms/media/{mediaId}";
+            var fallbackUrl = $"{baseUrl}/api/v1/cms/media/{mediaId}";
+            var finalUrl = supabaseCdnUrl ?? fallbackUrl;
 
             return Ok(new
             {
                 success = true,
                 id = mediaId,
-                url = mediaUrl,
-                relativeUrl = $"/api/v1/cms/media/{mediaId}",
-                message = "Rasm Supabase bazasiga muvaffaqiyatli yuklandi!"
+                url = finalUrl,
+                relativeUrl = fallbackUrl,
+                bucketUrl = supabaseCdnUrl,
+                message = supabaseCdnUrl != null 
+                    ? "Rasm Supabase Storage 'tilshunos-media' bucketiga muvaffaqiyatli yuklandi!" 
+                    : "Rasm saqlandi."
             });
         }
         catch (Exception ex)

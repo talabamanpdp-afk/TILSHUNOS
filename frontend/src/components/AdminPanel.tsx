@@ -516,7 +516,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
         return next;
       });
 
-      notify('Rasm qurilmadan tanlandi va Supabasega yuklandi! ✓');
+      notify('Rasm qurilmadan tanlandi va Supabase Storage "tilshunos-media" bucketiga yuklandi! ✓');
     } catch (err: any) {
       notify(err.message || 'Rasm yuklashda xatolik yuz berdi');
     } finally {
