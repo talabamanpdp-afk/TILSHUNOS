@@ -777,7 +777,6 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
     if (!u) return false;
     const email = (u.email || '').toLowerCase().trim();
     return email === 'soxibgaybullayev439@gmail.com' ||
-           email === 'admin@tilshunos.app' ||
            u.role === 'SuperAdmin' ||
            u.role === 4;
   };
@@ -803,7 +802,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
   };
 
   const handleDeleteUser = async (userId: string, email: string) => {
-    if (email?.toLowerCase() === 'soxibgaybullayev439@gmail.com' || email?.toLowerCase() === 'admin@tilshunos.app') {
+    if (email?.toLowerCase() === 'soxibgaybullayev439@gmail.com') {
       notify('Super Admin hisobini o‘chirish qat’iyan taqiqlangan! U daxlsizdir.');
       return;
     }

@@ -254,4 +254,140 @@ public class SupabaseMigrator
         Assert.Contains("cefrSection", readResult.ToString());
         Assert.Contains("skillsSection", readResult.ToString());
     }
+
+    [Fact]
+    public async Task CleanAllUsersExceptMainSuperAdmin()
+    {
+        var connStr = "Host=aws-0-ap-northeast-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.yipexommqztxnvpckqyi;Password=s0x1bj0n$02$;SSL Mode=Require;Trust Server Certificate=true;Timeout=60;";
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseNpgsql(connStr)
+            .Options;
+
+        using var db = new AppDbContext(options);
+
+        // 1. Fetch all current users
+        var allUsers = await db.Users.ToListAsync();
+        foreach (var u in allUsers)
+        {
+            Console.WriteLine($"[EXISTING USER] Id={u.Id}, Email={u.Email}, Name={u.FirstName} {u.LastName}, Role={u.Role}");
+        }
+
+        var targetNorm = "SOXIBGAYBULLAYEV439@GMAIL.COM";
+
+        // 2. Ensure Main SuperAdmin exists and is updated
+        var mainAdmin = await db.Users.FirstOrDefaultAsync(u => u.NormalizedEmail == targetNorm);
+        if (mainAdmin == null)
+        {
+            var passwordHasher = new PasswordHasherService();
+            mainAdmin = new LanguageLearning.Domain.Entities.User
+            {
+                Email = "soxibgaybullayev439@gmail.com",
+                NormalizedEmail = targetNorm,
+                FirstName = "Soxibjon",
+                LastName = "Gaybullayev",
+                PasswordHash = passwordHasher.HashPassword("s0x1bj0n$02$"),
+                Role = LanguageLearning.Domain.Enums.UserRole.SuperAdmin,
+                EmailConfirmed = true,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+            db.Users.Add(mainAdmin);
+            await db.SaveChangesAsync();
+
+            var profile = new LanguageLearning.Domain.Entities.UserProfile
+            {
+                UserId = mainAdmin.Id,
+                NativeLanguage = "uz",
+                Bio = "TILSHUNOS Platform Bosh Boshqaruvchisi (Super Admin)",
+                DailyGoalMinutes = 60,
+                IsPublic = true
+            };
+            db.UserProfiles.Add(profile);
+            await db.SaveChangesAsync();
+        }
+        else
+        {
+            mainAdmin.Role = LanguageLearning.Domain.Enums.UserRole.SuperAdmin;
+            mainAdmin.EmailConfirmed = true;
+            mainAdmin.FirstName = "Soxibjon";
+            mainAdmin.LastName = "Gaybullayev";
+            await db.SaveChangesAsync();
+        }
+
+        // 3. Remove all other users
+        var nonAdmins = await db.Users
+            .Where(u => u.NormalizedEmail != targetNorm)
+            .ToListAsync();
+
+        foreach (var u in nonAdmins)
+        {
+            Console.WriteLine($"[DELETING USER] Email={u.Email}");
+
+            // Reassign published collections if authored by this user
+            var collections = await db.PublishedVocabularyCollections.Where(c => c.AuthorUserId == u.Id).ToListAsync();
+            foreach (var col in collections)
+            {
+                col.AuthorUserId = mainAdmin.Id;
+            }
+
+            var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == u.Id);
+            if (profile != null) db.UserProfiles.Remove(profile);
+
+            var tProfile = await db.TeacherProfiles.FirstOrDefaultAsync(t => t.UserId == u.Id);
+            if (tProfile != null) db.TeacherProfiles.Remove(tProfile);
+
+            var vocab = await db.PersonalVocabularyEntries.Where(v => v.UserId == u.Id).ToListAsync();
+            db.PersonalVocabularyEntries.RemoveRange(vocab);
+
+            var langs = await db.UserLearningLanguages.Where(l => l.UserId == u.Id).ToListAsync();
+            db.UserLearningLanguages.RemoveRange(langs);
+
+            var dev = await db.RegisteredDevices.Where(d => d.UserId == u.Id).ToListAsync();
+            db.RegisteredDevices.RemoveRange(dev);
+
+            var drafts = await db.WritingDrafts.Where(d => d.UserId == u.Id).ToListAsync();
+            db.WritingDrafts.RemoveRange(drafts);
+
+            var notifs = await db.InAppNotifications.Where(n => n.UserId == u.Id).ToListAsync();
+            db.InAppNotifications.RemoveRange(notifs);
+
+            var audits = await db.AuditLogs.Where(a => a.UserId == u.Id).ToListAsync();
+            db.AuditLogs.RemoveRange(audits);
+
+            var codes = await db.EmailVerificationCodes.Where(c => c.Email == u.Email).ToListAsync();
+            db.EmailVerificationCodes.RemoveRange(codes);
+
+            var tokens = await db.PasswordResetTokens.Where(t => t.Email == u.Email).ToListAsync();
+            db.PasswordResetTokens.RemoveRange(tokens);
+
+            var attempts = await db.PracticeAttempts.Where(a => db.PracticeSessions.Any(s => s.Id == a.SessionId && s.UserId == u.Id)).ToListAsync();
+            db.PracticeAttempts.RemoveRange(attempts);
+
+            var sessions = await db.PracticeSessions.Where(s => s.UserId == u.Id).ToListAsync();
+            db.PracticeSessions.RemoveRange(sessions);
+
+            var progress = await db.MaterialProgressRecords.Where(m => m.UserId == u.Id).ToListAsync();
+            db.MaterialProgressRecords.RemoveRange(progress);
+
+            var aiMessages = await db.AIMessages.Where(m => db.AIConversations.Any(c => c.Id == m.ConversationId && c.UserId == u.Id)).ToListAsync();
+            db.AIMessages.RemoveRange(aiMessages);
+
+            var aiConvs = await db.AIConversations.Where(c => c.UserId == u.Id).ToListAsync();
+            db.AIConversations.RemoveRange(aiConvs);
+
+            db.Users.Remove(u);
+            await db.SaveChangesAsync();
+        }
+
+        // 4. Verify only main SuperAdmin remains
+        var remainingUsers = await db.Users.ToListAsync();
+        Console.WriteLine($"[VERIFY] Remaining users count: {remainingUsers.Count}");
+        foreach (var r in remainingUsers)
+        {
+            Console.WriteLine($"[FINAL USER] Email={r.Email}, Role={r.Role}, Confirmed={r.EmailConfirmed}");
+        }
+
+        Assert.Single(remainingUsers);
+        Assert.Equal("soxibgaybullayev439@gmail.com", remainingUsers[0].Email);
+        Assert.Equal(LanguageLearning.Domain.Enums.UserRole.SuperAdmin, remainingUsers[0].Role);
+    }
 }

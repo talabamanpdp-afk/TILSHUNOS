@@ -64,36 +64,7 @@ public static class DbSeeder
             existingMainAdmin.PasswordHash = passwordHasher.HashPassword("s0x1bj0n$02$");
         }
 
-        // Secondary fallback admin
-        var adminEmail = "admin@tilshunos.app";
-        var normalizedAdminEmail = adminEmail.ToUpperInvariant();
-        if (!await db.Users.AnyAsync(u => u.NormalizedEmail == normalizedAdminEmail))
-        {
-            var admin = new User
-            {
-                Email = adminEmail,
-                NormalizedEmail = normalizedAdminEmail,
-                FirstName = "Soxibjon",
-                LastName = "Admin",
-                PasswordHash = passwordHasher.HashPassword("Admin123!"),
-                Role = UserRole.SuperAdmin,
-                EmailConfirmed = true,
-                CreatedAtUtc = DateTime.UtcNow
-            };
-            var adminProfile = new UserProfile
-            {
-                UserId = admin.Id,
-                NativeLanguage = "uz",
-                Bio = "Tilshunos Platform Administrator",
-                DailyGoalMinutes = 30,
-                IsPublic = true
-            };
-            db.Users.Add(admin);
-            db.UserProfiles.Add(adminProfile);
-            logger.LogInformation("Seeded SuperAdmin: {Email}", adminEmail);
-        }
-
-        // Only Admin accounts are preserved. No demo users are seeded.
+        // Only ONE SuperAdmin: soxibgaybullayev439@gmail.com. No other demo or fallback admins are seeded.
 
         // 4. Seed Level-adapted Educational Content (Stories & News with A1, A2, B1 versions)
         if (!await db.ContentGroups.AnyAsync())
@@ -198,7 +169,7 @@ While navigating through the labyrinthine streets surrounding the Registan, sixt
         await db.SaveChangesAsync();
         if (!await db.PublishedVocabularyCollections.AnyAsync())
         {
-            var adminUser = await db.Users.FirstAsync(u => u.NormalizedEmail == normalizedAdminEmail);
+            var adminUser = await db.Users.FirstAsync(u => u.NormalizedEmail == normMainAdmin);
             var publicCol = new PublishedVocabularyCollection
             {
                 AuthorUserId = adminUser.Id,

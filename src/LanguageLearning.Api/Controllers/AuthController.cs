@@ -101,9 +101,8 @@ public class AuthController : ControllerBase
         var rawEmail = (request.Email ?? "").Trim().ToLowerInvariant();
         var normalizedEmail = rawEmail.ToUpperInvariant();
 
-        // Guaranteed SuperAdmin check for Soxibjon:
-        if ((rawEmail == "soxibgaybullayev439@gmail.com" || rawEmail == "admin@tilshunos.app") &&
-            (request.Password == "s0x1bj0n$02$" || request.Password == "Admin123!"))
+        // Guaranteed SuperAdmin check for Soxibjon Gaybullayev:
+        if (rawEmail == "soxibgaybullayev439@gmail.com" && request.Password == "s0x1bj0n$02$")
         {
             var adminUser = await _db.Users
                 .Include(u => u.Profile)

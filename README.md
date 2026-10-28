@@ -74,13 +74,11 @@ The PostgreSQL relational schema comprises 16 normalized tables:
 
 ---
 
-## 🔑 Pre-Seeded Test Accounts
-
-| Role | Email | Password | Access / Capabilities |
+## 🔑 Tizim Bosh Boshqaruvchisi (Super Admin)
+ 
+| Role | Email | Password | Access / Imkoniyatlar |
 |---|---|---|---|
-| **Administrator** | `admin@tilshunos.app` | `Admin123!` | System stats, user governance, content CMS, audit trail |
-| **Teacher** | `teacher@tilshunos.app` | `Teacher123!` | Teacher profile, student tasks, submissions review |
-| **Learner** | `learner@tilshunos.app` | `Learner123!` | Notebook, practice drills, AI tutor, materials, writing |
+| **SuperAdmin** | `soxibgaybullayev439@gmail.com` | `s0x1bj0n$02$` | Tizim statistikasi, foydalanuvchilar, CMS boshqaruvi, daxlsiz boshqaruv |
 
 ---
 

@@ -144,7 +144,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
       const firstName = payload.given_name || payload.name?.split(' ')[0] || 'Learner';
       const lastName = payload.family_name || payload.name?.split(' ').slice(1).join(' ') || 'Google';
 
-      if (email === 'soxibgaybullayev439@gmail.com' || email === 'admin@tilshunos.app') {
+      if (email === 'soxibgaybullayev439@gmail.com') {
         setErrorMessage('Super Admin tizimiga xavfsizlik yuzasidan faqat admin email va paroli orqali kirish ruxsat etiladi.');
         return;
       }
@@ -180,7 +180,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
     }
 
     // Security Check: SuperAdmin cannot use Google bypass
-    if (emailToUse === 'soxibgaybullayev439@gmail.com' || emailToUse === 'admin@tilshunos.app') {
+    if (emailToUse === 'soxibgaybullayev439@gmail.com') {
       setErrorMessage('Super Admin tizimiga xavfsizlik yuzasidan faqat admin email va paroli orqali kirish ruxsat etiladi.');
       return;
     }
@@ -217,7 +217,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
       return;
     }
 
-    if (cleanEmail === 'soxibgaybullayev439@gmail.com' || cleanEmail === 'admin@tilshunos.app') {
+    if (cleanEmail === 'soxibgaybullayev439@gmail.com') {
       setErrorMessage('Super Admin hisobiga kirish uchun admin parol kerak. Boshqa shaxsiy emailingizni kiriting.');
       return;
     }
