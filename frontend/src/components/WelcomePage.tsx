@@ -20,6 +20,9 @@ export interface CmsConfig {
   cta?: string;
   secondaryCta?: string;
   header?: string;
+  heroFlags?: string[];
+  heroFlagsCount?: string;
+  heroFlagsLabel?: string;
   metrics?: {
     useLiveStats?: boolean;
     metric1Value?: string;
@@ -305,6 +308,11 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   const secondaryCta = cms?.secondaryCta || 'Platformani o‘rganish';
   const heroBgDesktop = cms?.heroBgDesktop || cms?.headerBgDesktop || '';
   const heroBgMobile = cms?.heroBgMobile || cms?.headerBgMobile || '';
+  const heroFlags = (cms?.heroFlags && cms.heroFlags.length > 0)
+    ? cms.heroFlags
+    : ['🇬🇧', '🇷🇺', '🇩🇪', '🇺🇿'];
+  const heroFlagsCount = cms?.heroFlagsCount || '150+';
+  const heroFlagsLabel = cms?.heroFlagsLabel || 'Tillarda';
 
   // Dynamic top menu anchor links from cms.header
   const rawNavHeader = cms?.header?.trim() || 'Imkoniyatlar, Biz haqimizda, Kirish';
@@ -718,14 +726,13 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
 
                 <div className="holo-flags-group">
                   <div className="holo-flags-stack">
-                    <span className="holo-flag">🇬🇧</span>
-                    <span className="holo-flag">🇪🇸</span>
-                    <span className="holo-flag">🇩🇪</span>
-                    <span className="holo-flag">🇺🇿</span>
+                    {heroFlags.map((flag, idx) => (
+                      <span key={idx} className="holo-flag">{flag}</span>
+                    ))}
                   </div>
                   <div className="holo-flags-text">
-                    <strong>150+</strong>
-                    <span>Tillarda</span>
+                    <strong>{heroFlagsCount}</strong>
+                    <span>{heroFlagsLabel}</span>
                   </div>
                 </div>
               </div>

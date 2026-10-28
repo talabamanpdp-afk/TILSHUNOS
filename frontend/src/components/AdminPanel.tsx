@@ -95,6 +95,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     cta: 'Bepul boshlash',
     secondaryCta: 'Platformani o‘rganish',
     header: 'Imkoniyatlar, Biz haqimizda, Kirish',
+    heroFlags: ['🇬🇧', '🇷🇺', '🇩🇪', '🇺🇿'],
+    heroFlagsCount: '150+',
+    heroFlagsLabel: 'Tillarda',
     metrics: {
       useLiveStats: true,
       metric1Value: '6 M',
@@ -1973,6 +1976,41 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         Saytning eng yuqori navigatsiya panelidagi menyu bo‘limlari nomlari.
                       </span>
                     </label>
+
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+                      <b style={{ fontSize: '12px' }}>Bosh Sahifa Bayroqlari (Emoji yoki kodlar, vergul bilan):</b>
+                      <input
+                        value={Array.isArray(cms.heroFlags) ? cms.heroFlags.join(', ') : (cms.heroFlags || '🇬🇧, 🇷🇺, 🇩🇪, 🇺🇿')}
+                        onChange={e => {
+                          const val = e.target.value;
+                          const flagsArr = val.split(',').map(s => s.trim()).filter(Boolean);
+                          setCms({ ...cms, heroFlags: flagsArr });
+                        }}
+                        placeholder="🇬🇧, 🇷🇺, 🇩🇪, 🇺🇿"
+                      />
+                      <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                        Tugmalar yonidagi bayroqlar ro‘yxati (xohlagan bayroqni qo‘shishingiz yoki o‘chirishingiz mumkin).
+                      </span>
+                    </label>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <b style={{ fontSize: '12px' }}>Bayroqlar hisoblagichi (Count):</b>
+                        <input
+                          value={cms.heroFlagsCount !== undefined ? cms.heroFlagsCount : '150+'}
+                          onChange={e => setCms({ ...cms, heroFlagsCount: e.target.value })}
+                          placeholder="150+"
+                        />
+                      </label>
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <b style={{ fontSize: '12px' }}>Bayroqlar izohi (Label):</b>
+                        <input
+                          value={cms.heroFlagsLabel !== undefined ? cms.heroFlagsLabel : 'Tillarda'}
+                          onChange={e => setCms({ ...cms, heroFlagsLabel: e.target.value })}
+                          placeholder="Tillarda"
+                        />
+                      </label>
+                    </div>
                     <div style={{ marginTop: '20px', padding: '12px', background: 'var(--soft)', borderRadius: '10px', fontSize: '11px', color: 'var(--muted)' }}>
                       💡 <em>Barcha tugmalar real harakatlarga ulangan: Asosiy tugma ro‘yxatdan o‘tishga, ikkinchi tugma interaktiv demonstratsiyaga yo‘naltiradi.</em>
                     </div>
