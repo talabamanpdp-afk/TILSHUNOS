@@ -396,20 +396,27 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
 
                 {/* Smartphone Hardware Frame */}
                 <div className="holo-mobile-device">
-                  <div className="phone-dynamic-island" />
-                  <div className="phone-inner-bezel">
-                    <div className="phone-screen">
-                      <img
-                        src={mobileTutorImg}
-                        alt="Tilshunos mobil ilova"
-                        className="phone-tutor-img"
-                      />
-                      <div className="phone-screen-overlay">
-                        <span className="phone-screen-tag">TILSHUNOS APP</span>
-                      </div>
+                  <div className="phone-screen">
+                    <img
+                      src={mobileTutorImg}
+                      alt="Tilshunos mobil ilova"
+                      className="phone-tutor-img"
+                    />
+
+                    {/* Dynamic Island Overlay - directly on top of the image */}
+                    <div className="phone-dynamic-island">
+                      <span className="island-lens" />
+                      <span className="island-sensor" />
                     </div>
+
+                    {/* App badge tag overlay */}
+                    <div className="phone-screen-overlay">
+                      <span className="phone-screen-tag">TILSHUNOS APP</span>
+                    </div>
+
+                    {/* Modern iOS Home Indicator Bar - on top of image */}
+                    <div className="phone-home-indicator" />
                   </div>
-                  <div className="phone-home-indicator" />
                 </div>
               </div>
             </div>

@@ -1963,21 +1963,46 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                             📱 SMARTFON KO‘RINISHI (PREVIEW):
                           </span>
                           <div style={{
+                            position: 'relative',
                             width: '110px',
                             margin: '0 auto',
-                            aspectRatio: '9/16',
-                            borderRadius: '16px',
+                            aspectRatio: '9/18.8',
+                            borderRadius: '18px',
                             overflow: 'hidden',
                             border: '3px solid #0f172a',
-                            boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                            boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
                             background: '#000'
                           }}>
                             <img
                               src={cms.heroMobileImage || cms.heroImage || '/hero-tutor.jpg'}
                               alt="Mobile phone preview"
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                               onError={(e) => { (e.target as any).src = '/hero-tutor.jpg'; }}
                             />
+                            {/* Dynamic Island Overlay */}
+                            <div style={{
+                              position: 'absolute',
+                              top: '5px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              width: '34px',
+                              height: '9px',
+                              background: '#000',
+                              borderRadius: '8px',
+                              zIndex: 2
+                            }} />
+                            {/* Home Indicator Overlay */}
+                            <div style={{
+                              position: 'absolute',
+                              bottom: '3px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              width: '38px',
+                              height: '2px',
+                              background: 'rgba(255,255,255,0.8)',
+                              borderRadius: '2px',
+                              zIndex: 2
+                            }} />
                           </div>
                         </div>
                       </div>
