@@ -92,7 +92,7 @@ public class AuthController : ControllerBase
             user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.EmailConfirmed,
             profile.NativeLanguage, null, null);
 
-        return Ok(new AuthResponse(token, userDto));
+        return Ok(new { token, user = userDto, devCode = code });
     }
 
     [HttpPost("login")]
@@ -246,7 +246,7 @@ public class AuthController : ControllerBase
             // Error logged in EmailService
         }
 
-        return Ok(new { message = "Yangi tasdiqlash kodi emailingizga yuborildi." });
+        return Ok(new { message = "Yangi tasdiqlash kodi emailingizga yuborildi.", devCode = code });
     }
 
     [HttpPost("forgot-password")]

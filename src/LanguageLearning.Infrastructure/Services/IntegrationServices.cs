@@ -141,6 +141,10 @@ public class EmailService : IEmailService
             ?? _configuration["Resend:FromEmail"] 
             ?? "onboarding@resend.dev";
 
+        var replyTo = Environment.GetEnvironmentVariable("RESEND_REPLY_TO") 
+            ?? _configuration["Resend:ReplyToEmail"] 
+            ?? "talabamanpdp@gmail.com";
+
         var formattedSender = fromEmail.Contains('<') ? fromEmail : $"TILSHUNOS <{fromEmail}>";
 
         // If Resend API key is not configured or placeholder, log to console in development mode
@@ -159,6 +163,7 @@ public class EmailService : IEmailService
             {
                 from = formattedSender,
                 to = new[] { toEmail.Trim().ToLowerInvariant() },
+                reply_to = replyTo,
                 subject = subject,
                 html = htmlContent
             };

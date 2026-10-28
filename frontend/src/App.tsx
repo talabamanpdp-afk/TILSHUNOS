@@ -1622,7 +1622,13 @@ function App() {
 
       setPage('verify');
       setResendCooldown(60);
-      setMessage(`Tasdiqlash kodi ${email} manziliga yuborildi!`);
+      if (email.trim().toLowerCase() === 'talabamanpdp@gmail.com') {
+        setMessage('Tasdiqlash kodi talabamanpdp@gmail.com emailingizga Resend orqali yuborildi! Pochtani tekshiring.');
+      } else if (res.devCode) {
+        setMessage(`Tasdiqlash kodi yuborildi! (Resend sinov kodi: ${res.devCode})`);
+      } else {
+        setMessage(`Tasdiqlash kodi ${email} manziliga yuborildi! Pochtani tekshiring.`);
+      }
     } catch (err: any) {
       setMessage(err.message || 'Ro‘yxatdan o‘tishda xatolik yuz berdi.');
     } finally {
@@ -1694,9 +1700,15 @@ function App() {
     if (resendCooldown > 0) return;
     setLoading(true);
     try {
-      await api.resendCode(email.trim().toLowerCase());
+      const res = await api.resendCode(email.trim().toLowerCase());
       setResendCooldown(60);
-      setMessage('Yangi tasdiqlash kodi emailingizga yuborildi! (Resend xizmati)');
+      if (email.trim().toLowerCase() === 'talabamanpdp@gmail.com') {
+        setMessage('Yangi tasdiqlash kodi talabamanpdp@gmail.com emailingizga yuborildi! (Resend)');
+      } else if ((res as any)?.devCode) {
+        setMessage(`Yangi kod yuborildi! (Resend sinov kodi: ${(res as any).devCode})`);
+      } else {
+        setMessage('Yangi tasdiqlash kodi emailingizga yuborildi! (Resend xizmati)');
+      }
     } catch (err: any) {
       setMessage(err.message || 'Kodni yuborishda xatolik. Birozdan so‘ng urinib ko‘ring.');
     } finally {

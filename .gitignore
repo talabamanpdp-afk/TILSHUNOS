@@ -7,6 +7,9 @@
 *.userprefs
 *.pidb
 *.booproj
+**/appsettings.Development.json
+*.env*
+.env
 
 ## Node / Frontend
 **/node_modules/
