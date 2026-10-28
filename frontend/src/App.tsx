@@ -1980,6 +1980,8 @@ function App() {
         isOpen={showGoogleModal}
         onClose={() => setShowGoogleModal(false)}
         onSuccess={handleGoogleSuccess}
+        initialEmail={email}
+        initialName={name}
       />
     </div>
   );

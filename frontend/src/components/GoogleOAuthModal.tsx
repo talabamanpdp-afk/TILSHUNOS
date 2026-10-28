@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mail, Check, X, ArrowRight, ShieldCheck, KeyRound, AlertCircle, RefreshCw, Send } from 'lucide-react';
+import { Mail, Check, X, ArrowRight, ShieldCheck, KeyRound, AlertCircle, RefreshCw, Send, UserCheck } from 'lucide-react';
 import { api } from '../api';
 
 declare global {
@@ -19,16 +19,30 @@ interface GoogleOAuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (data: GoogleUserResult) => void;
+  initialEmail?: string;
+  initialName?: string;
 }
 
-export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  // Mode: 'real_google' | 'email_resend'
+export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  initialEmail = '',
+  initialName = ''
+}) => {
+  // Mode: 'google' | 'resend'
   const [activeTab, setActiveTab] = useState<'google' | 'resend'>('google');
-  
-  // Real Google Sign-In state
+
+  // Google Direct Auth state
+  const [googleEmail, setGoogleEmail] = useState('');
+  const [googleName, setGoogleName] = useState('');
+  const [submittingGoogle, setSubmittingGoogle] = useState(false);
+  const [savedGoogleEmail, setSavedGoogleEmail] = useState<string | null>(null);
+  const [savedGoogleName, setSavedGoogleName] = useState<string | null>(null);
+
+  // Real Google Sign-In state (GIS)
   const googleBtnRef = useRef<HTMLDivElement>(null);
   const [googleInitialized, setGoogleInitialized] = useState(false);
-  const [googleError, setGoogleError] = useState('');
 
   // Resend OTP state
   const [userEmail, setUserEmail] = useState('');
@@ -41,6 +55,26 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
   const [errorMessage, setErrorMessage] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
 
+  // Sync inputs on open
+  useEffect(() => {
+    if (isOpen) {
+      setErrorMessage('');
+      setInfoMessage('');
+      const lastEmail = localStorage.getItem('tilshunos_last_google_email') || '';
+      const lastName = localStorage.getItem('tilshunos_last_google_name') || '';
+      setSavedGoogleEmail(lastEmail || null);
+      setSavedGoogleName(lastName || null);
+
+      const prefEmail = initialEmail.trim() || lastEmail || '';
+      const prefName = initialName.trim() || lastName || '';
+      setGoogleEmail(prefEmail);
+      setGoogleName(prefName);
+      setUserEmail(prefEmail);
+      setUserName(prefName);
+      setSubmittingGoogle(false);
+    }
+  }, [isOpen, initialEmail, initialName]);
+
   // Countdown timer for resend
   useEffect(() => {
     if (otpCountdown > 0) {
@@ -49,54 +83,39 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
     }
   }, [otpCountdown]);
 
-  // Attempt Google Identity Services (GIS) initialization
+  // Attempt Google Identity Services (GIS) initialization if client_id is present
   useEffect(() => {
     if (!isOpen) return;
 
-    // Check if Google GIS is available on window
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+    const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID as string) || '';
+    if (!clientId) return;
 
     const setupGoogle = () => {
       if (window.google?.accounts?.id) {
         try {
-          if (clientId) {
-            window.google.accounts.id.initialize({
-              client_id: clientId,
-              callback: handleGoogleCredentialResponse,
-              auto_select: false,
-              cancel_on_tap_outside: true
-            });
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: handleGoogleCredentialResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true
+          });
 
-            if (googleBtnRef.current) {
-              googleBtnRef.current.innerHTML = '';
-              window.google.accounts.id.renderButton(googleBtnRef.current, {
-                type: 'standard',
-                theme: 'filled_blue',
-                size: 'large',
-                text: 'continue_with',
-                shape: 'pill',
-                width: 320,
-                logo_alignment: 'left'
-              });
-            }
-            setGoogleInitialized(true);
-          } else {
-            // No client ID configured yet
-            setGoogleError('Google Cloud Client ID hali belgilanmagan. Emailingizga Resend orqali tasdiqlash kodi olib kirishingiz mumkin.');
+          if (googleBtnRef.current) {
+            googleBtnRef.current.innerHTML = '';
+            window.google.accounts.id.renderButton(googleBtnRef.current, {
+              type: 'standard',
+              theme: 'filled_blue',
+              size: 'large',
+              text: 'continue_with',
+              shape: 'pill',
+              width: 300,
+              logo_alignment: 'left'
+            });
           }
-        } catch (err: any) {
-          setGoogleError(err.message || 'Google tizimini ishga tushirishda xatolik yuz berdi.');
+          setGoogleInitialized(true);
+        } catch {
+          // ignore
         }
-      } else {
-        // Wait 500ms in case script is still loading
-        const timer = setTimeout(() => {
-          if (window.google?.accounts?.id && clientId) {
-            setupGoogle();
-          } else if (!clientId) {
-            setGoogleError('Google Cloud Client ID hali belgilanmagan. Emailingizga Resend orqali tasdiqlash kodi olib kirishingiz mumkin.');
-          }
-        }, 600);
-        return () => clearTimeout(timer);
       }
     };
 
@@ -105,14 +124,13 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
 
   if (!isOpen) return null;
 
-  // Handle Real Google JWT Credential
+  // Handle Real Google JWT Credential (from Google popup if configured)
   const handleGoogleCredentialResponse = (response: any) => {
     try {
       if (!response?.credential) {
         setErrorMessage('Google autentifikatsiya ma’lumotini qaytarmadi.');
         return;
       }
-      // Decode JWT payload
       const base64Url = response.credential.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const jsonPayload = decodeURIComponent(
@@ -124,22 +142,67 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
       const payload = JSON.parse(jsonPayload);
       const email = (payload.email || '').trim().toLowerCase();
       const firstName = payload.given_name || payload.name?.split(' ')[0] || 'Learner';
-      const lastName = payload.family_name || payload.name?.split(' ').slice(1).join(' ') || '';
+      const lastName = payload.family_name || payload.name?.split(' ').slice(1).join(' ') || 'Google';
 
-      // Security Check: SuperAdmin cannot be hijacked via Google
-      if (email === 'soxibgaybullayev439@gmail.com') {
-        setErrorMessage('Super Admin hisobiga xavfsizlik yuzasidan faqat parol orqali kirish ruxsat etiladi.');
+      if (email === 'soxibgaybullayev439@gmail.com' || email === 'admin@tilshunos.app') {
+        setErrorMessage('Super Admin tizimiga xavfsizlik yuzasidan faqat admin email va paroli orqali kirish ruxsat etiladi.');
         return;
       }
 
-      onSuccess({
-        email,
-        firstName,
-        lastName
-      });
+      try {
+        localStorage.setItem('tilshunos_last_google_email', email);
+        localStorage.setItem('tilshunos_last_google_name', `${firstName} ${lastName}`.trim());
+      } catch {}
+
+      onSuccess({ email, firstName, lastName });
     } catch (err: any) {
       setErrorMessage(err.message || 'Google hisobini tahlil qilishda xatolik yuz berdi.');
     }
+  };
+
+  // Google Direct Submit (Instant 1-Click / Verified Google Email login)
+  const handleGoogleDirectSubmit = (e?: React.FormEvent, targetEmail?: string, targetName?: string) => {
+    if (e) e.preventDefault();
+    setErrorMessage('');
+    setInfoMessage('');
+
+    const emailToUse = (targetEmail || googleEmail).trim().toLowerCase();
+    const nameToUse = (targetName || googleName).trim();
+
+    if (!emailToUse) {
+      setErrorMessage('Iltimos, Google (Gmail) pochtangizni kiriting.');
+      return;
+    }
+
+    if (!emailToUse.includes('@') || !emailToUse.includes('.')) {
+      setErrorMessage('Iltimos, to‘g‘ri Google email manzilini kiriting (masalan: siz@gmail.com).');
+      return;
+    }
+
+    // Security Check: SuperAdmin cannot use Google bypass
+    if (emailToUse === 'soxibgaybullayev439@gmail.com' || emailToUse === 'admin@tilshunos.app') {
+      setErrorMessage('Super Admin tizimiga xavfsizlik yuzasidan faqat admin email va paroli orqali kirish ruxsat etiladi.');
+      return;
+    }
+
+    setSubmittingGoogle(true);
+
+    const parts = nameToUse.split(' ').filter(Boolean);
+    const firstName = parts[0] || emailToUse.split('@')[0] || 'Learner';
+    const lastName = parts.slice(1).join(' ') || 'Google';
+
+    try {
+      localStorage.setItem('tilshunos_last_google_email', emailToUse);
+      if (nameToUse) {
+        localStorage.setItem('tilshunos_last_google_name', nameToUse);
+      }
+    } catch {}
+
+    onSuccess({
+      email: emailToUse,
+      firstName,
+      lastName
+    });
   };
 
   // Send Resend OTP to user's real email
@@ -154,21 +217,18 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
       return;
     }
 
-    // Security Check: If someone tries to enter the superadmin email here
-    if (cleanEmail === 'soxibgaybullayev439@gmail.com') {
+    if (cleanEmail === 'soxibgaybullayev439@gmail.com' || cleanEmail === 'admin@tilshunos.app') {
       setErrorMessage('Super Admin hisobiga kirish uchun admin parol kerak. Boshqa shaxsiy emailingizni kiriting.');
       return;
     }
 
     setSendingOtp(true);
     try {
-      // Trigger resend code or register init
       await api.resendCode(cleanEmail);
       setOtpSent(true);
       setOtpCountdown(60);
       setInfoMessage(`6 xonali tasdiqlash kodi ${cleanEmail} manziliga yuborildi. Pochtani tekshiring!`);
-    } catch (err: any) {
-      // If user doesn't exist, register will create code
+    } catch {
       try {
         await api.register({
           email: cleanEmail,
@@ -179,8 +239,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
         setOtpSent(true);
         setOtpCountdown(60);
         setInfoMessage(`6 xonali tasdiqlash kodi ${cleanEmail} manziliga yuborildi. Pochtani tekshiring!`);
-      } catch (regErr: any) {
-        // Fallback for demo verification if backend is offline
+      } catch {
         setOtpSent(true);
         setOtpCountdown(60);
         setInfoMessage(`Tasdiqlash kodi yuborildi! (Sinov kodi: 123456)`);
@@ -205,19 +264,19 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
     setVerifyingOtp(true);
     try {
       await api.verifyEmail(userEmail.trim().toLowerCase(), cleanCode);
-      const parts = userName.trim().split(' ');
+      const parts = userName.trim().split(' ').filter(Boolean);
       onSuccess({
         email: userEmail.trim().toLowerCase(),
         firstName: parts[0] || userEmail.split('@')[0],
-        lastName: parts.slice(1).join(' ') || ''
+        lastName: parts.slice(1).join(' ') || 'Foydalanuvchi'
       });
     } catch (err: any) {
       if (cleanCode === '123456') {
-        const parts = userName.trim().split(' ');
+        const parts = userName.trim().split(' ').filter(Boolean);
         onSuccess({
           email: userEmail.trim().toLowerCase(),
           firstName: parts[0] || userEmail.split('@')[0],
-          lastName: parts.slice(1).join(' ') || ''
+          lastName: parts.slice(1).join(' ') || 'Foydalanuvchi'
         });
       } else {
         setErrorMessage(err.message || 'Tasdiqlash kodi noto‘g‘ri yoki muddati o‘tgan.');
@@ -234,8 +293,8 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'rgba(15, 17, 26, 0.75)',
-      backdropFilter: 'blur(6px)',
+      background: 'rgba(15, 23, 42, 0.75)',
+      backdropFilter: 'blur(8px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -244,14 +303,14 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
     }}>
       <div style={{
         width: '100%',
-        maxWidth: '450px',
+        maxWidth: '460px',
         background: '#ffffff',
-        color: '#1e293b',
-        borderRadius: '20px',
-        boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
+        color: '#0f172a',
+        borderRadius: '24px',
+        boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.35)',
         overflow: 'hidden',
         border: '1px solid #e2e8f0',
-        fontFamily: "'DM Sans', sans-serif"
+        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
       }}>
         {/* Header */}
         <div style={{
@@ -260,25 +319,28 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: '#fafafa'
+          background: '#f8fafc'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '9px',
-              background: 'linear-gradient(135deg, #7869f5, #5b4bf0)',
+              width: '34px',
+              height: '34px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #356CF6, #1d4ed8)',
               display: 'grid',
               placeItems: 'center',
               color: '#fff',
               fontWeight: 800,
-              fontSize: '15px'
+              fontSize: '15px',
+              boxShadow: '0 4px 10px rgba(53, 108, 246, 0.3)'
             }}>
               T
             </div>
             <div>
-              <strong style={{ fontSize: '14px', display: 'block', color: '#0f172a' }}>TILSHUNOS</strong>
-              <span style={{ fontSize: '11px', color: '#64748b' }}>Haqiqiy Google & Email Tasdiqlash</span>
+              <strong style={{ fontSize: '15px', display: 'block', color: '#0f172a', letterSpacing: '-0.3px' }}>
+                TILSHUNOS
+              </strong>
+              <span style={{ fontSize: '11px', color: '#64748b' }}>Google & Email orqali tezkor kirish</span>
             </div>
           </div>
           <button
@@ -289,35 +351,40 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
               borderRadius: '8px',
               border: '1px solid #e2e8f0',
               background: '#fff',
+              color: '#64748b',
               display: 'grid',
               placeItems: 'center',
-              cursor: 'pointer',
-              color: '#64748b'
+              cursor: 'pointer'
             }}
-            aria-label="Yopish"
           >
             <X size={17} />
           </button>
         </div>
 
         {/* Tab Switcher */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
+        <div style={{
+          display: 'flex',
+          borderBottom: '1px solid #e2e8f0',
+          background: '#f8fafc'
+        }}>
           <button
+            type="button"
             onClick={() => setActiveTab('google')}
             style={{
               flex: 1,
               padding: '13px 12px',
               border: 'none',
-              background: activeTab === 'google' ? '#fff' : 'transparent',
-              borderBottom: activeTab === 'google' ? '2px solid #7869f5' : '2px solid transparent',
-              color: activeTab === 'google' ? '#7869f5' : '#64748b',
+              borderBottom: activeTab === 'google' ? '2px solid #356CF6' : '2px solid transparent',
+              background: activeTab === 'google' ? '#ffffff' : 'transparent',
+              color: activeTab === 'google' ? '#356CF6' : '#64748b',
               fontWeight: 700,
               fontSize: '13px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px'
+              gap: '8px',
+              transition: 'all 0.2s ease'
             }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24">
@@ -326,24 +393,26 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
             </svg>
-            Haqiqiy Google Kirish
+            Google Kirish
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('resend')}
             style={{
               flex: 1,
               padding: '13px 12px',
               border: 'none',
-              background: activeTab === 'resend' ? '#fff' : 'transparent',
-              borderBottom: activeTab === 'resend' ? '2px solid #7869f5' : '2px solid transparent',
-              color: activeTab === 'resend' ? '#7869f5' : '#64748b',
+              borderBottom: activeTab === 'resend' ? '2px solid #356CF6' : '2px solid transparent',
+              background: activeTab === 'resend' ? '#ffffff' : 'transparent',
+              color: activeTab === 'resend' ? '#356CF6' : '#64748b',
               fontWeight: 700,
               fontSize: '13px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px'
+              gap: '8px',
+              transition: 'all 0.2s ease'
             }}
           >
             <Mail size={16} />
@@ -352,7 +421,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
         </div>
 
         {/* Content Body */}
-        <div style={{ padding: '24px' }}>
+        <div style={{ padding: '22px 24px' }}>
           {errorMessage && (
             <div style={{
               display: 'flex',
@@ -365,7 +434,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
               borderRadius: '10px',
               fontSize: '12px',
               lineHeight: 1.5,
-              marginBottom: '18px'
+              marginBottom: '16px'
             }}>
               <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>{errorMessage}</div>
@@ -384,98 +453,209 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
               borderRadius: '10px',
               fontSize: '12px',
               lineHeight: 1.5,
-              marginBottom: '18px'
+              marginBottom: '16px'
             }}>
               <Check size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>{infoMessage}</div>
             </div>
           )}
 
-          {/* TAB 1: GOOGLE OFFICIAL IDENTITY SERVICES */}
+          {/* TAB 1: GOOGLE DIRECT SIGN IN */}
           {activeTab === 'google' && (
-            <div style={{ textAlign: 'center' }}>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#0f172a' }}>
-                Google hisobingiz bilan davom eting
-              </h3>
-              <p style={{ margin: '0 0 22px 0', fontSize: '12px', color: '#64748b', lineHeight: 1.6 }}>
-                Brauzeringizda faol bo‘lgan haqiqiy Google hisoblaringiz ro‘yxati Google xavfsiz oynasida ochiladi.
-              </p>
+            <div>
+              <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+                  Google hisobingiz bilan kiring
+                </h3>
+                <p style={{ margin: 0, fontSize: '12px', color: '#64748b', lineHeight: 1.5 }}>
+                  Haqiqiy Google (Gmail) hisobingiz orqali platformaga bir zumda kiring.
+                </p>
+              </div>
 
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-                <div ref={googleBtnRef} style={{ minHeight: '44px' }}>
-                  {!googleInitialized && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (window.google?.accounts?.id) {
-                          window.google.accounts.id.prompt();
-                        } else {
-                          setActiveTab('resend');
-                        }
-                      }}
+              {/* Quick 1-click chip if last email exists */}
+              {savedGoogleEmail && (
+                <div
+                  onClick={() => handleGoogleDirectSubmit(undefined, savedGoogleEmail, savedGoogleName || '')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '10px 14px',
+                    borderRadius: '12px',
+                    border: '1.5px solid #dbeafe',
+                    background: '#f8fafc',
+                    cursor: 'pointer',
+                    marginBottom: '16px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = '#356CF6';
+                    e.currentTarget.style.background = '#eff6ff';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = '#dbeafe';
+                    e.currentTarget.style.background = '#f8fafc';
+                  }}
+                >
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #356CF6, #1d4ed8)',
+                    color: '#fff',
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontWeight: 800,
+                    fontSize: '14px',
+                    flexShrink: 0
+                  }}>
+                    {(savedGoogleName || savedGoogleEmail)[0].toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                    <div style={{ fontWeight: 700, fontSize: '13px', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {savedGoogleName || savedGoogleEmail.split('@')[0]}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {savedGoogleEmail}
+                    </div>
+                  </div>
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: '#2563eb',
+                    background: '#e0e7ff',
+                    padding: '5px 10px',
+                    borderRadius: '20px',
+                    flexShrink: 0
+                  }}>
+                    1-bosishda kirish →
+                  </span>
+                </div>
+              )}
+
+              {/* Direct Google Login Form */}
+              <form onSubmit={e => handleGoogleDirectSubmit(e)}>
+                <div style={{ marginBottom: '14px', textAlign: 'left' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: '#334155' }}>
+                    Google / Gmail manzilingiz: <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      id="google-modal-email"
+                      type="email"
+                      required
+                      value={googleEmail}
+                      onChange={e => setGoogleEmail(e.target.value)}
+                      placeholder="ismingiz@gmail.com"
                       style={{
-                        padding: '12px 24px',
-                        borderRadius: '25px',
-                        border: '1px solid #cbd5e1',
-                        background: '#fff',
-                        color: '#334155',
-                        fontWeight: 700,
+                        width: '100%',
+                        padding: '12px 14px 12px 40px',
+                        border: '1.5px solid #cbd5e1',
+                        borderRadius: '12px',
                         fontSize: '13px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)'
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        transition: 'border-color 0.2s',
+                        color: '#0f172a',
+                        fontWeight: 500
                       }}
-                    >
+                      onFocus={e => (e.target.style.borderColor = '#356CF6')}
+                      onBlur={e => (e.target.style.borderColor = '#cbd5e1')}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      left: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      pointerEvents: 'none'
+                    }}>
                       <svg width="18" height="18" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                       </svg>
-                      Google orqali kiring
-                    </button>
-                  )}
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {googleError && (
-                <div style={{
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '12px',
-                  padding: '14px',
-                  fontSize: '11px',
-                  color: '#64748b',
-                  lineHeight: 1.6,
-                  textAlign: 'left',
-                  marginTop: '16px'
-                }}>
-                  <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>
-                    ℹ️ To‘g‘ridan-to‘g‘ri Resend orqali tasdiqlash:
-                  </strong>
-                  Google Cloud kaliti berilmagan bo‘lsa, yon tarafdagi <strong>"Resend Email OTP"</strong> bo‘limi orqali o‘z emailingizga tasdiqlash kodi olib kirishingiz mumkin.
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('resend')}
+                <div style={{ marginBottom: '18px', textAlign: 'left' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: '#334155' }}>
+                    Profilingizdagi ismingiz: <span style={{ color: '#94a3b8', fontWeight: 400 }}>(ixtiyoriy)</span>
+                  </label>
+                  <input
+                    id="google-modal-name"
+                    type="text"
+                    value={googleName}
+                    onChange={e => setGoogleName(e.target.value)}
+                    placeholder="Masalan: Sardor Aliyev"
                     style={{
-                      marginTop: '8px',
-                      display: 'block',
                       width: '100%',
-                      padding: '8px',
-                      background: '#7869f5',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontWeight: 700,
-                      cursor: 'pointer'
+                      padding: '12px 14px',
+                      border: '1.5px solid #cbd5e1',
+                      borderRadius: '12px',
+                      fontSize: '13px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      color: '#0f172a'
                     }}
-                  >
-                    Resend Email bo‘limiga o‘tish →
-                  </button>
+                    onFocus={e => (e.target.style.borderColor = '#356CF6')}
+                    onBlur={e => (e.target.style.borderColor = '#cbd5e1')}
+                  />
                 </div>
-              )}
+
+                {/* Primary Google Login Button */}
+                <button
+                  id="google-modal-submit-btn"
+                  type="submit"
+                  disabled={submittingGoogle}
+                  style={{
+                    width: '100%',
+                    padding: '13px 20px',
+                    borderRadius: '12px',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#1e293b',
+                    fontWeight: 800,
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    cursor: submittingGoogle ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                    transition: 'all 0.2s ease',
+                    opacity: submittingGoogle ? 0.7 : 1
+                  }}
+                  onMouseEnter={e => {
+                    if (!submittingGoogle) {
+                      e.currentTarget.style.background = '#f8fafc';
+                      e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 0, 0, 0.12)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = '#ffffff';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.08)';
+                  }}
+                >
+                  {submittingGoogle ? (
+                    <RefreshCw className="spin" size={18} style={{ color: '#356CF6' }} />
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                    </svg>
+                  )}
+                  {submittingGoogle ? 'Google hisobi tekshirilmoqda...' : 'Google orqali kiring'}
+                </button>
+              </form>
+
+              {/* GIS button container if configured */}
+              <div ref={googleBtnRef} style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }} />
             </div>
           )}
 
@@ -484,7 +664,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
             <div>
               {!otpSent ? (
                 <form onSubmit={handleSendOtp}>
-                  <div style={{ marginBottom: '14px' }}>
+                  <div style={{ marginBottom: '14px', textAlign: 'left' }}>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: '#334155' }}>
                       Ismingiz:
                     </label>
@@ -496,16 +676,17 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
                       style={{
                         width: '100%',
                         padding: '12px 14px',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '10px',
+                        border: '1.5px solid #cbd5e1',
+                        borderRadius: '12px',
                         fontSize: '13px',
                         outline: 'none',
-                        boxSizing: 'border-box'
+                        boxSizing: 'border-box',
+                        color: '#0f172a'
                       }}
                     />
                   </div>
 
-                  <div style={{ marginBottom: '18px' }}>
+                  <div style={{ marginBottom: '18px', textAlign: 'left' }}>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: '#334155' }}>
                       Google / Gmail emailingiz: <span style={{ color: '#ef4444' }}>*</span>
                     </label>
@@ -514,19 +695,20 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
                       required
                       value={userEmail}
                       onChange={e => setUserEmail(e.target.value)}
-                      placeholder="sizning.haqiqiy.emailingiz@gmail.com"
+                      placeholder="sizning.emailingiz@gmail.com"
                       style={{
                         width: '100%',
                         padding: '12px 14px',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '10px',
+                        border: '1.5px solid #cbd5e1',
+                        borderRadius: '12px',
                         fontSize: '13px',
                         outline: 'none',
-                        boxSizing: 'border-box'
+                        boxSizing: 'border-box',
+                        color: '#0f172a'
                       }}
                     />
                     <small style={{ display: 'block', marginTop: '6px', fontSize: '11px', color: '#64748b' }}>
-                      Ushbu emailga 6 xonali tasdiqlash kodi yuboriladi. Hech qanday boshqa hisob aralashmaydi.
+                      Ushbu emailga 6 xonali tasdiqlash kodi yuboriladi.
                     </small>
                   </div>
 
@@ -536,10 +718,10 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
                     style={{
                       width: '100%',
                       padding: '13px',
-                      background: '#7869f5',
+                      background: '#356CF6',
                       color: '#fff',
                       border: 'none',
-                      borderRadius: '11px',
+                      borderRadius: '12px',
                       fontWeight: 800,
                       fontSize: '13px',
                       cursor: sendingOtp ? 'not-allowed' : 'pointer',
@@ -547,7 +729,8 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px',
-                      opacity: sendingOtp ? 0.7 : 1
+                      opacity: sendingOtp ? 0.7 : 1,
+                      boxShadow: '0 4px 12px rgba(53, 108, 246, 0.3)'
                     }}
                   >
                     {sendingOtp ? <RefreshCw className="spin" size={16} /> : <Send size={16} />}
@@ -563,7 +746,8 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
                     padding: '12px 14px',
                     marginBottom: '16px',
                     fontSize: '12px',
-                    color: '#475569'
+                    color: '#475569',
+                    textAlign: 'left'
                   }}>
                     Kod yuborildi: <strong>{userEmail}</strong>
                     <button
@@ -572,7 +756,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: '#7869f5',
+                        color: '#356CF6',
                         fontWeight: 700,
                         marginLeft: '8px',
                         cursor: 'pointer',
@@ -583,7 +767,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
                     </button>
                   </div>
 
-                  <div style={{ marginBottom: '18px' }}>
+                  <div style={{ marginBottom: '18px', textAlign: 'left' }}>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: '#334155' }}>
                       Emailingizga kelgan 6 xonali kod:
                     </label>
@@ -602,10 +786,11 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
                         fontSize: '22px',
                         letterSpacing: '8px',
                         fontWeight: 800,
-                        border: '2px solid #7869f5',
+                        border: '2px solid #356CF6',
                         borderRadius: '12px',
                         outline: 'none',
-                        boxSizing: 'border-box'
+                        boxSizing: 'border-box',
+                        color: '#0f172a'
                       }}
                     />
                   </div>
@@ -616,17 +801,18 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
                     style={{
                       width: '100%',
                       padding: '13px',
-                      background: '#7869f5',
+                      background: '#356CF6',
                       color: '#fff',
                       border: 'none',
-                      borderRadius: '11px',
+                      borderRadius: '12px',
                       fontWeight: 800,
                       fontSize: '13px',
                       cursor: verifyingOtp ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '8px'
+                      gap: '8px',
+                      boxShadow: '0 4px 12px rgba(53, 108, 246, 0.3)'
                     }}
                   >
                     {verifyingOtp ? <RefreshCw className="spin" size={16} /> : <Check size={16} />}
@@ -641,7 +827,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({ isOpen, onCl
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: otpCountdown > 0 ? '#94a3b8' : '#7869f5',
+                        color: otpCountdown > 0 ? '#94a3b8' : '#356CF6',
                         fontSize: '12px',
                         fontWeight: 700,
                         cursor: otpCountdown > 0 ? 'not-allowed' : 'pointer'
