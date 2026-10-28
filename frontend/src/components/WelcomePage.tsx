@@ -570,7 +570,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
             <div className="holo-nav-left">
               <a href="#" className="holo-brand">
                 <span className="holo-brand-icon">
-                  <Languages size={24} />
+                  <img src="/brand_logo.png" alt="TILSHUNOS" className="brand-logo-img" />
                 </span>
                 <span className="holo-brand-name">TILSHUNOS</span>
               </a>
@@ -1378,7 +1378,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
             <div className="footer-col brand-col">
               <div className="footer-brand">
                 <span className="brand-icon-box small">
-                  <Languages size={18} />
+                  <img src="/brand_logo.png" alt="TILSHUNOS" className="brand-logo-img" />
                 </span>
                 <span className="brand-main">TILSHUNOS<span>.</span></span>
               </div>

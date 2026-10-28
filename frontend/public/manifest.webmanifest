@@ -6,6 +6,13 @@
   "scope": "/",
   "display": "standalone",
   "background_color": "#f6f7fb",
-  "theme_color": "#7869f5",
-  "icons": [{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/brand_logo.png",
+      "sizes": "192x192 512x512 1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }

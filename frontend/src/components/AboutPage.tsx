@@ -55,7 +55,7 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
             <div className="nav-divider-v" />
             <button className="about-nav-brand" onClick={handleBack}>
               <span className="brand-icon-box">
-                <Languages size={20} />
+                <img src="/brand_logo.png" alt="TILSHUNOS" className="brand-logo-img" />
               </span>
               <span className="brand-main">TILSHUNOS<span className="brand-dot">.</span></span>
             </button>

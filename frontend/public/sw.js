@@ -1,5 +1,5 @@
 // TILSHUNOS Service Worker - Network First with auto-update
-const CACHE_NAME = 'tilshunos-live-v3';
+const CACHE_NAME = 'tilshunos-live-v4';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

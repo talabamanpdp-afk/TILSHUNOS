@@ -232,15 +232,13 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
             width: '40px',
             height: '40px',
             borderRadius: '12px',
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#fff',
-            fontWeight: 800,
-            fontSize: '18px'
+            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)'
           }}>
-            T
+            <img src="/brand_logo.png" alt="TILSHUNOS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -396,7 +396,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
     <div className={dark ? 'app dark' : 'app'}>
       <aside className={`sidebar ${mobileNav ? 'mobile-open' : ''}`}>
         <div className="brand">
-          <div className="brand-mark"><Languages size={23} /></div>
+          <div className="brand-mark"><img src="/brand_logo.png" alt="TILSHUNOS" className="brand-logo-img" /></div>
           <div>
             <div className="brand-name">TILSHUNOS<span>.</span></div>
             <div className="brand-caption">LEARN YOUR WAY</div>
@@ -1817,7 +1817,7 @@ function App() {
     <div className={`entry-shell ${dark ? 'dark' : ''}`}>
       <header className="entry-header">
         <button className="entry-brand" onClick={() => setPage('welcome')}>
-          <span className="entry-logo"><Languages size={23} /></span>
+          <span className="entry-logo"><img src="/brand_logo.png" alt="TILSHUNOS" className="brand-logo-img" /></span>
           <span>TILSHUNOS<span className="entry-dot">.</span><small>LEARN YOUR WAY</small></span>
         </button>
         <nav>
@@ -1956,7 +1956,7 @@ function App() {
         <section className="onboarding-wrap">
           <div className="onboarding-card">
             <div className="onboarding-step">01 <span>—</span> 02</div>
-            <div className="onboarding-symbol"><Languages size={28} /></div>
+            <div className="onboarding-symbol"><img src="/brand_logo.png" alt="TILSHUNOS" className="brand-logo-img" /></div>
             <span className="entry-kicker">SHAXSIY O‘QUV REJANGIZ</span>
             <h1>Qaysi tilni <span>o‘rganmoqchisiz?</span></h1>
             <p>Tanlovingiz bo‘yicha dashboard va lug‘at tavsiyalari moslashtiriladi.</p>
