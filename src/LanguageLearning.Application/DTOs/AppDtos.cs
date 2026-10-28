@@ -275,6 +275,17 @@ public record AiWritingAnalysisRequest(string Text, WritingGenre Genre, string T
 public record AiWritingAnalysisDto(string FeedbackMarkdown, int ScoreEstimate, List<string> Suggestions);
 
 // --- Admin ---
+public record AdminRecentUserDto(
+    Guid Id,
+    string Email,
+    string FirstName,
+    string LastName,
+    string Role,
+    bool EmailConfirmed,
+    bool IsActive,
+    DateTime CreatedAtUtc
+);
+
 public record AdminDashboardStatsDto(
     int TotalUsers,
     int VerifiedUsers,
@@ -283,7 +294,14 @@ public record AdminDashboardStatsDto(
     int TotalMaterials,
     int TotalAssignments,
     int TotalPracticeSessions,
-    Dictionary<string, int>? StudentsByLevel
+    Dictionary<string, int>? StudentsByLevel,
+    int LearnersCount = 0,
+    int TotalAiConversations = 0,
+    int ReadingMaterialsCount = 0,
+    int WritingMaterialsCount = 0,
+    int ListeningMaterialsCount = 0,
+    int VideoMaterialsCount = 0,
+    List<AdminRecentUserDto>? RecentUsers = null
 );
 
 public record CreateTeacherAccountRequest(string FirstName, string LastName, string Email, string Password, string Specialty, string? Bio);

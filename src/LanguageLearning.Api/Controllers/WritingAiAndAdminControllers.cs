@@ -176,29 +176,81 @@ public class AdminController : ControllerBase
         var totalUsers = await _db.Users.CountAsync();
         var verifiedUsers = await _db.Users.CountAsync(u => u.EmailConfirmed);
         var activeTeachers = await _db.TeacherProfiles.CountAsync(t => t.IsApproved);
+        var learnersCount = await _db.Users.CountAsync(u => u.Role == UserRole.Learner);
         var totalVocab = await _db.PersonalVocabularyEntries.CountAsync();
         var totalMaterials = await _db.LearningMaterials.CountAsync();
         var totalAssignments = await _db.Assignments.CountAsync();
         var totalSessions = await _db.PracticeSessions.CountAsync();
+        var totalAiConversations = await _db.AIConversations.CountAsync();
 
-        // Level distribution
+        // Content breakdown by type
+        var readingCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.Story);
+        var writingCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.GrammarLesson);
+        var listeningCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.AudioPodcast);
+        var videoCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.VideoLesson);
+
+        // Real Level distribution from active learners
         var levels = await _db.UserLearningLanguages
             .GroupBy(l => l.CurrentLevel)
             .Select(g => new { Level = g.Key.ToString(), Count = g.Count() })
             .ToDictionaryAsync(x => x.Level, x => x.Count);
 
+        var a1Count = levels.GetValueOrDefault("A1", 0);
+        var a2Count = levels.GetValueOrDefault("A2", 0);
+        var b1Count = levels.GetValueOrDefault("B1", 0);
+        var b2Count = levels.GetValueOrDefault("B2", 0);
+        var c1Count = levels.GetValueOrDefault("C1", 0);
+        var c2Count = levels.GetValueOrDefault("C2", 0);
+
+        // If total users exceeds mapped learning language profiles, allocate remainder to A1 beginners
+        var mappedTotal = a1Count + a2Count + b1Count + b2Count + c1Count + c2Count;
+        if (totalUsers > mappedTotal)
+        {
+            a1Count += (totalUsers - mappedTotal);
+        }
+
         var levelDistribution = new Dictionary<string, int>
         {
-            ["A1"] = levels.GetValueOrDefault("A1", 420),
-            ["A2"] = levels.GetValueOrDefault("A2", 310),
-            ["B1"] = levels.GetValueOrDefault("B1", 280),
-            ["B2"] = levels.GetValueOrDefault("B2", 150),
-            ["C1"] = levels.GetValueOrDefault("C1", 60),
-            ["C2"] = levels.GetValueOrDefault("C2", 28)
+            ["A1"] = a1Count,
+            ["A2"] = a2Count,
+            ["B1"] = b1Count,
+            ["B2"] = b2Count,
+            ["C1"] = c1Count,
+            ["C2"] = c2Count
         };
 
+        // Recent users from Supabase
+        var recentUsers = await _db.Users
+            .OrderByDescending(u => u.CreatedAtUtc)
+            .Take(6)
+            .Select(u => new AdminRecentUserDto(
+                u.Id,
+                u.Email,
+                u.FirstName,
+                u.LastName,
+                u.Role.ToString(),
+                u.EmailConfirmed,
+                u.IsActive,
+                u.CreatedAtUtc
+            ))
+            .ToListAsync();
+
         return Ok(new AdminDashboardStatsDto(
-            totalUsers, verifiedUsers, activeTeachers, totalVocab, totalMaterials, totalAssignments, totalSessions, levelDistribution
+            totalUsers,
+            verifiedUsers,
+            activeTeachers,
+            totalVocab,
+            totalMaterials,
+            totalAssignments,
+            totalSessions,
+            levelDistribution,
+            learnersCount,
+            totalAiConversations,
+            readingCount,
+            writingCount,
+            listeningCount,
+            videoCount,
+            recentUsers
         ));
     }
 
@@ -215,14 +267,14 @@ public class AdminController : ControllerBase
 
         var users = await query
             .OrderByDescending(u => u.CreatedAtUtc)
-            .Take(100)
+            .Take(150)
             .Select(u => new
             {
                 u.Id,
                 u.Email,
                 u.FirstName,
                 u.LastName,
-                u.Role,
+                Role = u.Role.ToString(),
                 u.EmailConfirmed,
                 u.IsActive,
                 u.CreatedAtUtc,
@@ -231,6 +283,71 @@ public class AdminController : ControllerBase
             .ToListAsync();
 
         return Ok(users);
+    }
+
+    [HttpPut("users/{id:guid}/role")]
+    public async Task<IActionResult> UpdateUserRole(Guid id, [FromBody] AdminUpdateUserRoleRequest request)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
+        if (user == null) return NotFound(new { message = "Foydalanuvchi topilmadi." });
+
+        user.Role = request.Role;
+        user.IsActive = request.IsActive;
+        await _db.SaveChangesAsync();
+
+        return Ok(new { success = true, message = "Foydalanuvchi roli va holati yangilandi." });
+    }
+
+    [HttpDelete("users/{id:guid}")]
+    public async Task<IActionResult> DeleteUser(Guid id)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
+        if (user == null) return NotFound(new { message = "Foydalanuvchi topilmadi." });
+
+        _db.Users.Remove(user);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { success = true, message = "Foydalanuvchi o‘chirildi." });
+    }
+
+    [HttpGet("vocabulary")]
+    public async Task<IActionResult> GetAdminVocabulary([FromQuery] string? search)
+    {
+        var query = _db.PersonalVocabularyEntries.AsQueryable();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(v => v.TargetWord.ToLower().Contains(term) || v.NativeTranslation.ToLower().Contains(term));
+        }
+
+        var list = await query
+            .OrderByDescending(v => v.CreatedAtUtc)
+            .Take(100)
+            .Select(v => new
+            {
+                v.Id,
+                Word = v.TargetWord,
+                Translation = v.NativeTranslation,
+                Topic = v.Topic ?? "General",
+                Level = "B1",
+                Example = v.ExampleSentence,
+                v.CreatedAtUtc
+            })
+            .ToListAsync();
+
+        return Ok(list);
+    }
+
+    [HttpDelete("vocabulary/{id:guid}")]
+    public async Task<IActionResult> DeleteVocabulary(Guid id)
+    {
+        var entry = await _db.PersonalVocabularyEntries.FirstOrDefaultAsync(v => v.Id == id);
+        if (entry == null) return NotFound(new { message = "So‘z topilmadi." });
+
+        _db.PersonalVocabularyEntries.Remove(entry);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { success = true, message = "So‘z bazadan o‘chirildi." });
     }
 
     [HttpPost("teachers")]

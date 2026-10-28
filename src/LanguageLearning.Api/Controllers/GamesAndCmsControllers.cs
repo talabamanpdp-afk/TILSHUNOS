@@ -287,27 +287,120 @@ public class GamesController : ControllerBase
 [Route("api/v1/cms")]
 public class CmsController : ControllerBase
 {
-    private static CmsDataDto CurrentCms = new(
-        Hero: "Yangi til. Yangi imkoniyatlar.",
-        Description: "TILSHUNOS bilan har kuni oz-ozdan o‘rganing, bilimlaringizni amalda sinang va maqsadingizga ishonch bilan yaqinlashing.",
-        Cta: "Bepul boshlash",
-        About: "TILSHUNOS til o‘rganishni tartibli, qiziqarli va shaxsiy maqsadlaringizga mos qilish uchun yaratilayotgan ilg‘or platforma.",
-        Header: "Imkoniyatlar, Biz haqimizda, Kirish",
-        Footer: "© 2026 TILSHUNOS · Barcha huquqlar himoyalangan",
-        Contact: "hello@tilshunos.uz"
-    );
+    private readonly AppDbContext _db;
+
+    public CmsController(AppDbContext db)
+    {
+        _db = db;
+    }
+
+    private static readonly string DefaultCmsJson = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        hero = "Yangi til. Yangi imkoniyatlar.",
+        heroBadge = "TILSHUNOS 2.0 · ILG‘OR TIL O‘RGANISH EKOTIZIMI",
+        description = "TILSHUNOS bilan har kuni tizimli o‘rganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga chiqing.",
+        cta = "Bepul boshlash",
+        secondaryCta = "Platformani o‘rganish",
+        header = "Imkoniyatlar, Biz haqimizda, Kirish",
+        about = "TILSHUNOS til o‘rganishni tartibli, qiziqarli va shaxsiy maqsadlaringizga mos qilish uchun yaratilayotgan ilg‘or platforma.",
+        aboutDetailed = "TILSHUNOS — xalqaro CEFR (A1–C2) standartlariga moslashtirilgan, sun’iy intellekt va professional ustozlar metodikasini o‘zida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvchiga murakkab grammatik qoidalarsiz, interaktiv so‘z o‘yinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy o‘zlashtirish imkoniyatini taqdim etishdir.",
+        aboutButton = "Batafsil ma’lumot",
+        team = new[]
+        {
+            new { name = "Soxibjon Gaybullayev", role = "Asoschi & Bosh Muhandis", bio = "Til o‘rganish texnologiyalari va raqamli ta’lim bo‘yicha mutaxassis.", avatar = "S" },
+            new { name = "Dilnoza Karimova", role = "Bosh O‘qituvchi & Metodist", bio = "IELTS va CEFR standartlari bo‘yicha 8 yillik tajribaga ega ustoz.", avatar = "D" },
+            new { name = "Jasur Aliyev", role = "Ta’lim Koordinator", bio = "Talabalar bilan ishlash va interaktiv mashqlar mutaxassisi.", avatar = "J" }
+        },
+        founderName = "Soxibjon Gaybullayev",
+        founderBio = "TILSHUNOS platformasi asoschisi. O‘zbekiston yoshlariga jahon tillarini eng samarali va qulay usulda o‘rganish uchun innovatsion ekotizim yaratish ustida ishlaydi.",
+        contacts = new
+        {
+            telegram = "@tilshunos",
+            instagram = "tilshunos_app",
+            email = "soxibgaybullayev439@gmail.com",
+            phone = "+998 90 123 45 67"
+        },
+        footer = "© 2026 TILSHUNOS · Barcha huquqlar himoyalangan",
+        contact = "hello@tilshunos.uz",
+        faqs = new[]
+        {
+            new { q = "TILSHUNOS platformasidan foydalanish bepulmi?", a = "Ha, asosiy funksiyalar — so‘z yodlash, mashqlar, CEFR reading va listening materiallari barcha uchun bepul." },
+            new { q = "CEFR darajalarini qanday aniqlayman?", a = "Ro‘yxatdan o‘tish chog‘ida darajangizni (A1–C2) o‘zingiz belgilashingiz yoki qisqa diagnostik test orqali aniqlab olishingiz mumkin." },
+            new { q = "Mobil qurilmalarda ishlaydimi?", a = "Ha, TILSHUNOS responsive veb-ilova va PWA (Progressive Web App) sifatida smartfon va planshetlarda qulay ishlaydi." },
+            new { q = "O‘qituvchi bilan qanday bog‘lanaman?", a = "Platformadagi O‘qituvchilar bo‘limi orqali tasdiqlangan ustozlar bilan bog‘lanib, shaxsiy topshiriqlar olishingiz mumkin." }
+        }
+    });
 
     [HttpGet]
-    public IActionResult GetCms()
+    public async Task<IActionResult> GetCms()
     {
-        return Ok(CurrentCms);
+        try
+        {
+            await _db.Database.ExecuteSqlRawAsync(
+                "CREATE TABLE IF NOT EXISTS system_settings (key character varying(128) PRIMARY KEY, value_json text NOT NULL, updated_at_utc timestamp with time zone NOT NULL);"
+            );
+
+            var setting = await _db.SystemSettings.FirstOrDefaultAsync(s => s.Key == "welcome_cms");
+            if (setting != null && !string.IsNullOrWhiteSpace(setting.ValueJson))
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(setting.ValueJson);
+                return Ok(doc.RootElement.Clone());
+            }
+
+            var newSetting = new SystemSetting
+            {
+                Key = "welcome_cms",
+                ValueJson = DefaultCmsJson,
+                UpdatedAtUtc = DateTime.UtcNow
+            };
+            _db.SystemSettings.Add(newSetting);
+            await _db.SaveChangesAsync();
+
+            using var defaultDoc = System.Text.Json.JsonDocument.Parse(DefaultCmsJson);
+            return Ok(defaultDoc.RootElement.Clone());
+        }
+        catch
+        {
+            using var fallbackDoc = System.Text.Json.JsonDocument.Parse(DefaultCmsJson);
+            return Ok(fallbackDoc.RootElement.Clone());
+        }
     }
 
     [Authorize(Roles = "Admin,SuperAdmin")]
     [HttpPut]
-    public IActionResult UpdateCms([FromBody] CmsDataDto updated)
+    public async Task<IActionResult> UpdateCms([FromBody] System.Text.Json.JsonElement updated)
     {
-        CurrentCms = updated;
-        return Ok(new { success = true, message = "CMS ma’lumotlari muvaffaqiyatli saqlandi.", data = CurrentCms });
+        try
+        {
+            await _db.Database.ExecuteSqlRawAsync(
+                "CREATE TABLE IF NOT EXISTS system_settings (key character varying(128) PRIMARY KEY, value_json text NOT NULL, updated_at_utc timestamp with time zone NOT NULL);"
+            );
+
+            var setting = await _db.SystemSettings.FirstOrDefaultAsync(s => s.Key == "welcome_cms");
+            var jsonString = updated.GetRawText();
+
+            if (setting == null)
+            {
+                setting = new SystemSetting
+                {
+                    Key = "welcome_cms",
+                    ValueJson = jsonString,
+                    UpdatedAtUtc = DateTime.UtcNow
+                };
+                _db.SystemSettings.Add(setting);
+            }
+            else
+            {
+                setting.ValueJson = jsonString;
+                setting.UpdatedAtUtc = DateTime.UtcNow;
+            }
+
+            await _db.SaveChangesAsync();
+            return Ok(new { success = true, message = "CMS ma’lumotlari Supabasega muvaffaqiyatli saqlandi.", data = updated });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Supabasega saqlashda xatolik: " + ex.Message });
+        }
     }
 }

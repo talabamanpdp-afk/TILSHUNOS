@@ -2,6 +2,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { TeacherPanel } from './components/TeacherPanel';
 import { DuelMatchModal } from './components/DuelMatchModal';
 import { GoogleOAuthModal } from './components/GoogleOAuthModal';
+import { WelcomePage } from './components/WelcomePage';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Award, BookA, BookOpen, Bookmark, Brain,
@@ -1548,7 +1549,14 @@ function App() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [cmsContent, setCmsContent] = useState<any>(null);
+  const [cmsContent, setCmsContent] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('tilshunos_cms_data');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [dark, setDark] = useState<boolean>(() => {
     const saved = localStorage.getItem('tilshunos_theme');
@@ -1565,10 +1573,17 @@ function App() {
     }
   }, [dark]);
 
-  // Load public CMS content
+  // Load public CMS content from Supabase
   useEffect(() => {
     api.getCms()
-      .then(c => setCmsContent(c))
+      .then(c => {
+        if (c) {
+          setCmsContent(c);
+          try {
+            localStorage.setItem('tilshunos_cms_data', JSON.stringify(c));
+          } catch {}
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -1767,6 +1782,21 @@ function App() {
     return <Dashboard onLogout={handleLogout} dark={dark} setDark={setDark} />;
   }
 
+  if (page === 'welcome') {
+    return (
+      <WelcomePage
+        cms={cmsContent}
+        onBegin={begin}
+        dark={dark}
+        setDark={setDark}
+        onSelectLevel={(lvl) => {
+          setLevel(lvl);
+          begin('register');
+        }}
+      />
+    );
+  }
+
   return (
     <div className={`entry-shell ${dark ? 'dark' : ''}`}>
       <header className="entry-header">
@@ -1775,96 +1805,14 @@ function App() {
           <span>TILSHUNOS<span className="entry-dot">.</span><small>LEARN YOUR WAY</small></span>
         </button>
         <nav>
-          <a href="#features">Imkoniyatlar</a>
-          <a href="#about">Biz haqimizda</a>
           <button className="entry-theme-toggle" onClick={() => setDark(!dark)} title="Mavzuni almashtirish">
             {dark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-          <button className="entry-login" onClick={() => begin('login')}>
-            Kirish <ArrowRight size={16} />
+          <button className="entry-login" onClick={() => begin(page === 'login' ? 'register' : 'login')}>
+            {page === 'login' ? 'Ro‘yxatdan o‘tish' : 'Kirish'} <ArrowRight size={16} />
           </button>
         </nav>
       </header>
-
-      {page === 'welcome' && (
-        <>
-          <section className="entry-hero">
-            <div className="entry-hero-copy">
-              <div className="entry-kicker"><Sparkles size={15} /> SIZNING TIL O‘RGANISH SAYOHATINGIZ</div>
-              <h1>{cmsContent?.hero ? cmsContent.hero.split('.')[0] + '.' : 'Yangi til.'}<br /><span>{cmsContent?.hero?.split('.')[1] || 'Yangi imkoniyatlar.'}</span></h1>
-              <p>{cmsContent?.description || 'TILSHUNOS bilan har kuni oz-ozdan o‘rganing, bilimlaringizni amalda sinang va maqsadingizga ishonch bilan yaqinlashing.'}</p>
-              <div className="entry-actions">
-                <button className="entry-primary" onClick={() => begin('register')}>
-                  {cmsContent?.cta || 'Bepul boshlash'} <ArrowRight size={18} />
-                </button>
-                <button className="entry-secondary" onClick={() => begin('login')}>
-                  Hisobim bor
-                </button>
-              </div>
-              <div className="entry-proof">
-                <b>✦</b>
-                <span><strong>O‘rganishni bugun boshlang</strong><small>O‘z sur’atingizda, o‘z maqsadingiz sari</small></span>
-              </div>
-            </div>
-            <div className="entry-hero-art">
-              <div className="entry-glass-card">
-                <span>BUGUNGI MAQSAD</span>
-                <div className="glass-big">20 <small>daqiqa</small></div>
-                <p>Bugun ham maqsad sari bir qadam!</p>
-                <div className="glass-progress"><i style={{ width: '65%' }} /></div>
-                <div className="glass-tags">
-                  <span>✦ Lug‘at</span>
-                  <span>◉ Tinglash</span>
-                  <span>↗ Speaking</span>
-                </div>
-              </div>
-              <div className="floating-word word-one">curiosity <b>qiziquvchanlik</b></div>
-              <div className="floating-word word-two">✦ Har kuni rivojlaning</div>
-            </div>
-          </section>
-
-          <section id="features" className="entry-features">
-            <div className="entry-section-title">
-              <span>HAMMASI BIR JOYDA</span>
-              <h2>Til o‘rganish — <em>sizga mos usulda</em></h2>
-              <p>Kerakli vositalar, aniq yo‘l xaritasi va kuzatib boriladigan natijalar.</p>
-            </div>
-            <div className="entry-feature-grid">
-              {[
-                ['Darajangizga mos', 'A1 dan C2 gacha materiallar, reading va grammar mashqlari.'],
-                ['Shaxsiy lug‘at', 'Yangi so‘zlarni saqlang va anti-fraud mashqlar bilan mustahkamlang.'],
-                ['So‘z o‘yinlari & Musobaqa', 'Typing, so‘z zanjiri va rasmli topshiriqlar bilan XP to‘plang.'],
-                ['AI Tutor & Repetitor', 'Har qanday vaqtda savol bering, xatolaringizni aniqlang va to‘g‘rilang.']
-              ].map(([a, b], i) => (
-                <article key={a}>
-                  <span className="feature-icon lilac">
-                    {[<BookOpen key="b" />, <Languages key="l" />, <Trophy key="t" />, <Sparkles key="s" />][i]}
-                  </span>
-                  <h3>{a}</h3>
-                  <p>{b}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section id="about" className="entry-about">
-            <div>
-              <span className="entry-kicker">BIZ HAQIMIZDA</span>
-              <h2>Har bir yangi so‘z — <span>katta maqsad sari qadam.</span></h2>
-            </div>
-            <p>{cmsContent?.about || 'TILSHUNOS til o‘rganishni tartibli, qiziqarli va shaxsiy maqsadlaringizga mos qilish uchun yaratilayotgan ilg‘or platforma.'}</p>
-          </section>
-
-          <footer className="entry-footer">
-            <b>TILSHUNOS<span className="entry-dot">.</span></b>
-            <div>
-              <a href="mailto:hello@tilshunos.uz">Bog‘lanish</a>
-              <a href="#about">Biz haqimizda</a>
-              <span>{cmsContent?.footer || '© 2026 TILSHUNOS'}</span>
-            </div>
-          </footer>
-        </>
-      )}
 
       {(page === 'login' || page === 'register' || page === 'verify') && (
         <section className="auth-wrap">
