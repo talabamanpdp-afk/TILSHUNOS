@@ -450,11 +450,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
         reader.readAsDataURL(file);
       });
 
-      // 2. Compress image using Canvas to optimal size (max 1400px width/height)
+      // 2. Compress image using Canvas to strictly stay under 100 KB (max ~95 KB)
       const compressedDataUrl = await new Promise<string>((resolve) => {
         const img = new Image();
         img.onload = () => {
-          const maxDim = 1400;
+          let maxDim = 1000;
           let w = img.width;
           let h = img.height;
           if (w > maxDim || h > maxDim) {
@@ -470,12 +470,33 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
           canvas.width = w;
           canvas.height = h;
           const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', 0.88));
-          } else {
+          if (!ctx) {
             resolve(dataUrl);
+            return;
           }
+          ctx.drawImage(img, 0, 0, w, h);
+
+          // Iterate quality to guarantee binary size is strictly under 96 KB
+          let quality = 0.82;
+          let result = canvas.toDataURL('image/jpeg', quality);
+          const maxByteLimit = 96 * 1024; // 96 KB
+          while (result.length * 0.75 > maxByteLimit && quality > 0.35) {
+            quality -= 0.1;
+            result = canvas.toDataURL('image/jpeg', quality);
+          }
+
+          if (result.length * 0.75 > maxByteLimit) {
+            const smallerCanvas = document.createElement('canvas');
+            smallerCanvas.width = Math.round(w * 0.75);
+            smallerCanvas.height = Math.round(h * 0.75);
+            const sCtx = smallerCanvas.getContext('2d');
+            if (sCtx) {
+              sCtx.drawImage(canvas, 0, 0, smallerCanvas.width, smallerCanvas.height);
+              result = smallerCanvas.toDataURL('image/jpeg', 0.75);
+            }
+          }
+
+          resolve(result);
         };
         img.onerror = () => resolve(dataUrl);
         img.src = dataUrl;
