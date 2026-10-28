@@ -238,6 +238,57 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   const heroBgDesktop = cms?.heroBgDesktop || cms?.headerBgDesktop || '';
   const heroBgMobile = cms?.heroBgMobile || cms?.headerBgMobile || '';
 
+  // Dynamic top menu anchor links from cms.header
+  const rawNavHeader = cms?.header?.trim() || 'Imkoniyatlar, Biz haqimizda, Kirish';
+  const navItems = rawNavHeader
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean)
+    .map((text, idx) => {
+      const lower = text.toLowerCase();
+      let href = '#features';
+      let icon = <Sparkles size={15} />;
+      let action: (() => void) | null = null;
+
+      if (lower.includes('imkoniyat') || lower.includes('xususiyat') || lower.includes('feature')) {
+        href = '#features';
+        icon = <Sparkles size={15} />;
+      } else if (lower.includes('haqimizda') || lower.includes('biz') || lower.includes('about')) {
+        href = '#about';
+        icon = <BookOpen size={15} />;
+        action = () => onOpenAbout();
+      } else if (lower.includes('kirish') || lower.includes('login') || lower.includes('sign in')) {
+        href = '#login';
+        icon = <ArrowRight size={15} />;
+        action = () => onBegin('login');
+      } else if (lower.includes('boshlash') || lower.includes('start') || lower.includes('ro‘yxat')) {
+        href = '#register';
+        icon = <Sparkles size={15} />;
+        action = () => onBegin('register');
+      } else if (lower.includes('o‘qituvchi') || lower.includes('oqituvchi') || lower.includes('teacher') || lower.includes('topish') || lower.includes('bo‘lish')) {
+        href = '#features';
+        icon = <Search size={15} />;
+      } else if (lower.includes('hamjamiyat') || lower.includes('community') || lower.includes('ko‘nikma')) {
+        href = '#skills';
+        icon = <Users size={15} />;
+      } else if (lower.includes('namoyish') || lower.includes('preview') || lower.includes('interfeys') || lower.includes('o‘rganish')) {
+        href = '#preview';
+        icon = <Play size={15} />;
+      } else if (lower.includes('cefr') || lower.includes('daraja')) {
+        href = '#cefr';
+        icon = <Target size={15} />;
+      } else if (lower.includes('savol') || lower.includes('faq')) {
+        href = '#faq';
+        icon = <HelpCircle size={15} />;
+      } else {
+        if (idx === 0) { href = '#features'; icon = <Sparkles size={15} />; }
+        else if (idx === 1) { href = '#about'; icon = <BookOpen size={15} />; action = () => onOpenAbout(); }
+        else { href = '#preview'; icon = <Play size={15} />; }
+      }
+
+      return { text, href, icon, action };
+    });
+
   // Dynamic Real or Admin-Configured Statistics
   const liveStats = cms?.liveStats;
   const useLive = cms?.metrics?.useLiveStats ?? true;
@@ -434,18 +485,29 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               </a>
 
               <nav className="holo-nav-links">
-                <a href="#teachers" className="holo-nav-link">
-                  <Search size={15} />
-                  <span>O‘qituvchi topish</span>
-                </a>
-                <a href="#skills" className="holo-nav-link">
-                  <Users size={15} />
-                  <span>Hamjamiyat</span>
-                </a>
-                <a href="#about" className="holo-nav-link">
-                  <BookOpen size={15} />
-                  <span>O‘qituvchi bo‘lish</span>
-                </a>
+                {navItems.map((item, idx) => (
+                  <a
+                    key={idx}
+                    href={item.href}
+                    className="holo-nav-link"
+                    onClick={(e) => {
+                      if (item.action) {
+                        e.preventDefault();
+                        item.action();
+                      } else if (item.href.startsWith('#')) {
+                        const targetId = item.href.slice(1);
+                        const el = document.getElementById(targetId);
+                        if (el) {
+                          e.preventDefault();
+                          el.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }
+                    }}
+                  >
+                    {item.icon}
+                    <span>{item.text}</span>
+                  </a>
+                ))}
               </nav>
             </div>
 
@@ -483,9 +545,28 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
           {mobileMenuOpen && (
             <div className="mobile-drawer animate-fade-in">
               <nav className="mobile-nav-links">
-                <a href="#teachers" onClick={() => setMobileMenuOpen(false)}>O‘qituvchi topish</a>
-                <a href="#skills" onClick={() => setMobileMenuOpen(false)}>Hamjamiyat</a>
-                <a href="#about" onClick={() => setMobileMenuOpen(false)}>O‘qituvchi bo‘lish</a>
+                {navItems.map((item, idx) => (
+                  <a
+                    key={`m-${idx}`}
+                    href={item.href}
+                    onClick={(e) => {
+                      setMobileMenuOpen(false);
+                      if (item.action) {
+                        e.preventDefault();
+                        item.action();
+                      } else if (item.href.startsWith('#')) {
+                        const targetId = item.href.slice(1);
+                        const el = document.getElementById(targetId);
+                        if (el) {
+                          e.preventDefault();
+                          el.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }
+                    }}
+                  >
+                    {item.text}
+                  </a>
+                ))}
                 <a href="#preview" onClick={() => setMobileMenuOpen(false)}>Interfeys ko‘rinishi</a>
                 <a href="#cefr" onClick={() => setMobileMenuOpen(false)}>CEFR Xaritasi</a>
                 <a href="#faq" onClick={() => setMobileMenuOpen(false)}>Ko‘p beriladigan savollar</a>
@@ -518,12 +599,31 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                 {heroDesc || 'Har kuni bor-yo‘g‘i 20–30 daqiqa vaqt ajrating, real kerakli so‘zlarni o‘rganing va so‘z boyligingizni oshiring.'}
               </p>
 
-              {/* Action row with Green Button and Flags */}
+              {/* Action row with Primary CTA, Secondary CTA and Flags */}
               <div className="holo-cta-row">
-                <button className="holo-start-btn" onClick={() => onBegin('register')}>
-                  <span>{primaryCta || 'Start Learning'}</span>
-                  <ChevronRight size={18} />
-                </button>
+                <div className="holo-cta-buttons">
+                  <button className="holo-start-btn" onClick={() => onBegin('register')}>
+                    <span>{primaryCta || 'Start Learning'}</span>
+                    <ChevronRight size={18} />
+                  </button>
+
+                  {secondaryCta && (
+                    <a
+                      href="#preview"
+                      className="holo-secondary-btn"
+                      onClick={(e) => {
+                        const el = document.getElementById('preview');
+                        if (el) {
+                          e.preventDefault();
+                          el.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                    >
+                      <Play size={13} style={{ fill: 'currentColor', marginRight: '2px' }} />
+                      <span>{secondaryCta}</span>
+                    </a>
+                  )}
+                </div>
 
                 <div className="holo-flags-group">
                   <div className="holo-flags-stack">

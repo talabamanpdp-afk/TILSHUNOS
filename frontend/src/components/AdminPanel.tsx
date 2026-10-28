@@ -1963,12 +1963,15 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       />
                     </label>
                     <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
-                      <b style={{ fontSize: '12px' }}>Yuqori Menyu Anchor Matnlari:</b>
+                      <b style={{ fontSize: '12px' }}>Yuqori Menyu Anchor Matnlari (Vergul bilan ajrating):</b>
                       <input
                         value={cms.header || ''}
                         onChange={e => setCms({ ...cms, header: e.target.value })}
                         placeholder="Imkoniyatlar, Biz haqimizda, Kirish"
                       />
+                      <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                        Saytning eng yuqori navigatsiya panelidagi menyu bo‘limlari nomlari.
+                      </span>
                     </label>
                     <div style={{ marginTop: '20px', padding: '12px', background: 'var(--soft)', borderRadius: '10px', fontSize: '11px', color: 'var(--muted)' }}>
                       💡 <em>Barcha tugmalar real harakatlarga ulangan: Asosiy tugma ro‘yxatdan o‘tishga, ikkinchi tugma interaktiv demonstratsiyaga yo‘naltiradi.</em>
