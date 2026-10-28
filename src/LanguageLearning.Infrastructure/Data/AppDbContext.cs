@@ -43,8 +43,9 @@ public class AppDbContext : DbContext
         {
             entity.ToTable("system_settings");
             entity.HasKey(e => e.Key);
-            entity.Property(e => e.Key).HasMaxLength(128);
-            entity.Property(e => e.ValueJson).IsRequired();
+            entity.Property(e => e.Key).HasColumnName("key").HasMaxLength(128);
+            entity.Property(e => e.ValueJson).HasColumnName("value_json").IsRequired();
+            entity.Property(e => e.UpdatedAtUtc).HasColumnName("updated_at_utc").IsRequired();
         });
 
         // User

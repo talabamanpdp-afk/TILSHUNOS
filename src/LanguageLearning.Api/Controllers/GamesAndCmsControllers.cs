@@ -343,21 +343,40 @@ public class CmsController : ControllerBase
                 "CREATE TABLE IF NOT EXISTS system_settings (key character varying(128) PRIMARY KEY, value_json text NOT NULL, updated_at_utc timestamp with time zone NOT NULL);"
             );
 
-            var setting = await _db.SystemSettings.FirstOrDefaultAsync(s => s.Key == "welcome_cms");
-            if (setting != null && !string.IsNullOrWhiteSpace(setting.ValueJson))
+            var conn = _db.Database.GetDbConnection();
+            if (conn.State != System.Data.ConnectionState.Open)
             {
-                using var doc = System.Text.Json.JsonDocument.Parse(setting.ValueJson);
-                return Ok(doc.RootElement.Clone());
+                await conn.OpenAsync();
             }
 
-            var newSetting = new SystemSetting
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT value_json FROM system_settings WHERE key = 'welcome_cms' LIMIT 1;";
+            var result = await cmd.ExecuteScalarAsync();
+
+            if (result != null && result != DBNull.Value)
             {
-                Key = "welcome_cms",
-                ValueJson = DefaultCmsJson,
-                UpdatedAtUtc = DateTime.UtcNow
-            };
-            _db.SystemSettings.Add(newSetting);
-            await _db.SaveChangesAsync();
+                var val = result.ToString();
+                if (!string.IsNullOrWhiteSpace(val))
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(val);
+                    return Ok(doc.RootElement.Clone());
+                }
+            }
+
+            // If not found, insert default
+            using var insertCmd = conn.CreateCommand();
+            insertCmd.CommandText = "INSERT INTO system_settings (key, value_json, updated_at_utc) VALUES ('welcome_cms', @val, @date) ON CONFLICT (key) DO NOTHING;";
+            var pVal = insertCmd.CreateParameter();
+            pVal.ParameterName = "@val";
+            pVal.Value = DefaultCmsJson;
+            insertCmd.Parameters.Add(pVal);
+
+            var pDate = insertCmd.CreateParameter();
+            pDate.ParameterName = "@date";
+            pDate.Value = DateTime.UtcNow;
+            insertCmd.Parameters.Add(pDate);
+
+            await insertCmd.ExecuteNonQueryAsync();
 
             using var defaultDoc = System.Text.Json.JsonDocument.Parse(DefaultCmsJson);
             return Ok(defaultDoc.RootElement.Clone());
@@ -369,36 +388,50 @@ public class CmsController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Admin,SuperAdmin")]
+    [Authorize]
     [HttpPut]
     public async Task<IActionResult> UpdateCms([FromBody] System.Text.Json.JsonElement updated)
     {
+        var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value?.ToLowerInvariant();
+        if (role != "admin" && role != "superadmin")
+        {
+            return Forbid();
+        }
+
         try
         {
             await _db.Database.ExecuteSqlRawAsync(
                 "CREATE TABLE IF NOT EXISTS system_settings (key character varying(128) PRIMARY KEY, value_json text NOT NULL, updated_at_utc timestamp with time zone NOT NULL);"
             );
 
-            var setting = await _db.SystemSettings.FirstOrDefaultAsync(s => s.Key == "welcome_cms");
             var jsonString = updated.GetRawText();
-
-            if (setting == null)
+            var conn = _db.Database.GetDbConnection();
+            if (conn.State != System.Data.ConnectionState.Open)
             {
-                setting = new SystemSetting
-                {
-                    Key = "welcome_cms",
-                    ValueJson = jsonString,
-                    UpdatedAtUtc = DateTime.UtcNow
-                };
-                _db.SystemSettings.Add(setting);
-            }
-            else
-            {
-                setting.ValueJson = jsonString;
-                setting.UpdatedAtUtc = DateTime.UtcNow;
+                await conn.OpenAsync();
             }
 
-            await _db.SaveChangesAsync();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                INSERT INTO system_settings (key, value_json, updated_at_utc) 
+                VALUES ('welcome_cms', @valueJson, @updatedAt)
+                ON CONFLICT (key) DO UPDATE 
+                SET value_json = EXCLUDED.value_json, 
+                    updated_at_utc = EXCLUDED.updated_at_utc;
+            ";
+
+            var pVal = cmd.CreateParameter();
+            pVal.ParameterName = "@valueJson";
+            pVal.Value = jsonString;
+            cmd.Parameters.Add(pVal);
+
+            var pDate = cmd.CreateParameter();
+            pDate.ParameterName = "@updatedAt";
+            pDate.Value = DateTime.UtcNow;
+            cmd.Parameters.Add(pDate);
+
+            await cmd.ExecuteNonQueryAsync();
+
             return Ok(new { success = true, message = "CMS ma’lumotlari Supabasega muvaffaqiyatli saqlandi.", data = updated });
         }
         catch (Exception ex)
@@ -407,10 +440,16 @@ public class CmsController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Admin,SuperAdmin")]
+    [Authorize]
     [HttpPost("upload-image")]
     public async Task<IActionResult> UploadImage([FromBody] UploadImageRequest request)
     {
+        var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value?.ToLowerInvariant();
+        if (role != "admin" && role != "superadmin")
+        {
+            return Forbid();
+        }
+
         if (string.IsNullOrWhiteSpace(request?.DataBase64))
         {
             return BadRequest(new { error = "Rasm ma'lumotlari topilmadi." });
