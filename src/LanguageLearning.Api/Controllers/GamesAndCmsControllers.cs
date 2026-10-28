@@ -298,6 +298,8 @@ public class CmsController : ControllerBase
     {
         hero = "Yangi til. Yangi imkoniyatlar.",
         heroBadge = "TILSHUNOS 2.0 · ILG‘OR TIL O‘RGANISH EKOTIZIMI",
+        heroImage = "/hero-tutor.jpg",
+        heroMobileImage = "/hero-tutor.jpg",
         description = "TILSHUNOS bilan har kuni tizimli o‘rganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga chiqing.",
         cta = "Bepul boshlash",
         secondaryCta = "Platformani o‘rganish",

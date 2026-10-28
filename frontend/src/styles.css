@@ -2339,6 +2339,187 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   color: #94a3b8;
 }
 
+/* Responsive display toggles for Desktop Laptop vs Mobile Smartphone */
+.desktop-only-scene {
+  display: block;
+}
+
+.mobile-only-scene {
+  display: none;
+}
+
+/* Mobile Smartphone Device Styling */
+.holo-phone-scene {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  margin: 10px auto 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.holo-mobile-device {
+  position: relative;
+  width: 270px;
+  background: #0f172a;
+  border-radius: 46px;
+  padding: 12px 10px 10px;
+  box-shadow:
+    0 25px 60px -15px rgba(0, 0, 0, 0.55),
+    0 0 0 3px #334155,
+    0 0 0 6px #0f172a,
+    0 12px 30px rgba(37, 99, 235, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.holo-mobile-device:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow:
+    0 30px 70px -15px rgba(0, 0, 0, 0.65),
+    0 0 0 3px #3b82f6,
+    0 0 0 6px #0f172a,
+    0 16px 36px rgba(37, 99, 235, 0.25);
+}
+
+.phone-dynamic-island {
+  width: 82px;
+  height: 22px;
+  background: #000000;
+  border-radius: 20px;
+  margin-bottom: 8px;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 10px;
+  z-index: 10;
+}
+
+.phone-inner-bezel {
+  width: 100%;
+  border-radius: 36px;
+  overflow: hidden;
+  background: #020617;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.phone-screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  background: #1e293b;
+  overflow: hidden;
+}
+
+.phone-tutor-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%;
+  display: block;
+}
+
+.phone-screen-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 30px 14px 14px;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.85) 100%);
+  display: flex;
+  justify-content: center;
+}
+
+.phone-screen-tag {
+  background: rgba(37, 99, 235, 0.9);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  backdrop-filter: blur(6px);
+}
+
+.phone-home-indicator {
+  width: 96px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 4px;
+  margin: 10px auto 4px;
+}
+
+/* Floating Badges for Mobile Smartphone */
+.phone-floating-badge {
+  position: absolute;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  z-index: 12;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.welcome-root.dark .phone-floating-badge {
+  background: #14243a;
+  color: #f8fafc;
+  border-color: #1e3352;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+}
+
+.phone-floating-badge strong {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.phone-floating-badge small {
+  display: block;
+  font-size: 9px;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.welcome-root.dark .phone-floating-badge small {
+  color: #94a3b8;
+}
+
+.badge-top-left {
+  top: 14px;
+  left: -20px;
+}
+
+.badge-bottom-right {
+  bottom: 28px;
+  right: -20px;
+}
+
+.badge-fl-flag {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.verified-dot-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Responsive adjustments for Holo Split layout */
 @media (max-width: 1180px) {
   .holo-headline { font-size: 50px; }
@@ -2362,6 +2543,15 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   .card-progress { left: 0; }
 }
 
+@media (max-width: 768px) {
+  .desktop-only-scene {
+    display: none !important;
+  }
+  .mobile-only-scene {
+    display: flex !important;
+  }
+}
+
 @media (max-width: 640px) {
   .holo-headline { font-size: 34px; }
   .holo-pill-badge { font-size: 10px; padding: 4px 10px; margin-left: 8px; }
@@ -2372,8 +2562,6 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   .holo-metric-divider { display: none; }
   .holo-cta-row { flex-direction: column; align-items: flex-start; gap: 18px; }
   .holo-start-btn { width: 100%; justify-content: center; }
-  .card-course, .card-skills, .card-progress { position: static; width: 100%; margin-bottom: 12px; }
-  .holo-laptop-scene { display: flex; flex-direction: column; gap: 12px; }
 }
 
 /* ==========================================================================

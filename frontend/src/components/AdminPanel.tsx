@@ -4,7 +4,8 @@ import {
   LogOut, Plus, Settings, ShieldCheck, Users, Video, GraduationCap, ClipboardList,
   Search, Trash2, Edit3, Save, UserCog, Headphones, PenLine, BookMarked, ChartNoAxesCombined,
   Check, Sun, Moon, Sparkles, ArrowRight, Menu, X, RefreshCw, Database, CheckCircle2,
-  AlertCircle, ExternalLink, ShieldAlert, Clock, Layers, MessageSquare, Zap
+  AlertCircle, ExternalLink, ShieldAlert, Clock, Layers, MessageSquare, Zap,
+  Smartphone, Laptop, Image as ImageIcon
 } from 'lucide-react';
 import { api, authStorage } from '../api';
 
@@ -80,6 +81,8 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
   // CMS Content from Supabase
   const [cms, setCms] = useState<any>({
+    heroImage: '/hero-tutor.jpg',
+    heroMobileImage: '/hero-tutor.jpg',
     heroBadge: 'TILSHUNOS 2.0 · ILG‘OR TIL O‘RGANISH EKOTIZIMI',
     hero: 'Yangi til. Yangi imkoniyatlar.',
     description: 'TILSHUNOS bilan har kuni tizimli o‘rganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga chiqing.',
@@ -1672,6 +1675,166 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                     </label>
                     <div style={{ marginTop: '20px', padding: '12px', background: 'var(--soft)', borderRadius: '10px', fontSize: '11px', color: 'var(--muted)' }}>
                       💡 <em>Barcha tugmalar real harakatlarga ulangan: Asosiy tugma ro‘yxatdan o‘tishga, ikkinchi tugma interaktiv demonstratsiyaga yo‘naltiradi.</em>
+                    </div>
+                  </div>
+
+                  {/* 3. HERO IMAGES (MAC LAPTOP & MOBILE PHONE) */}
+                  <div className="panel" style={{ padding: '24px', gridColumn: '1 / -1' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                      <div>
+                        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 4px' }}>
+                          <ImageIcon size={19} style={{ color: 'var(--purple)' }} /> Hero Rasmlari (Desktop Mac & Mobile Telefon)
+                        </h3>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
+                          Desktop ekranda Mac noutbuk, mobil smartfonlarda esa iPhone korpusidagi rasm chiqadi. Har ikkalasini erkin o‘zgartiring.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Presets Row */}
+                    <div style={{ marginBottom: '20px', padding: '12px 16px', background: 'var(--soft)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        ⚡ 1-Bosishda Tayyor Rasm Variantlari:
+                      </span>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="ghost-btn"
+                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          onClick={() => setCms({ ...cms, heroImage: '/hero-tutor.jpg', heroMobileImage: '/hero-tutor.jpg' })}
+                        >
+                          👔 Standart Erkak Ustoz
+                        </button>
+                        <button
+                          type="button"
+                          className="ghost-btn"
+                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          onClick={() => {
+                            const img = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1000&q=80';
+                            setCms({ ...cms, heroImage: img, heroMobileImage: img });
+                          }}
+                        >
+                          👩‍🏫 Professional Ayol Ustoz
+                        </button>
+                        <button
+                          type="button"
+                          className="ghost-btn"
+                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          onClick={() => {
+                            const img = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80';
+                            setCms({ ...cms, heroImage: img, heroMobileImage: img });
+                          }}
+                        >
+                          🌍 Chet El Mutaxassisi
+                        </button>
+                        <button
+                          type="button"
+                          className="ghost-btn"
+                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          onClick={() => {
+                            const img = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1000&q=80';
+                            setCms({ ...cms, heroImage: img, heroMobileImage: img });
+                          }}
+                        >
+                          📱 Talabalar & Dars Jarayoni
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                      {/* Desktop Mac Image */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <b style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Laptop size={15} style={{ color: '#2563eb' }} /> Desktop Mac Rasmi (Havola / URL):
+                          </b>
+                          <input
+                            value={cms.heroImage || ''}
+                            onChange={e => setCms({ ...cms, heroImage: e.target.value })}
+                            placeholder="/hero-tutor.jpg yoki https://..."
+                          />
+                        </label>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                          Mac noutbuk ekrani uchun gorizontal yoki kvadrat rasm tavsiya etiladi.
+                        </span>
+                        {/* Desktop Preview */}
+                        <div style={{
+                          marginTop: '4px',
+                          border: '2px dashed var(--border)',
+                          borderRadius: '10px',
+                          padding: '10px',
+                          background: 'var(--soft)',
+                          textAlign: 'center'
+                        }}>
+                          <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>
+                            💻 MAC KO‘RINISHI (PREVIEW):
+                          </span>
+                          <div style={{
+                            width: '100%',
+                            maxWidth: '240px',
+                            margin: '0 auto',
+                            aspectRatio: '16/11',
+                            borderRadius: '6px',
+                            overflow: 'hidden',
+                            boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                            background: '#000'
+                          }}>
+                            <img
+                              src={cms.heroImage || '/hero-tutor.jpg'}
+                              alt="Mac preview"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onError={(e) => { (e.target as any).src = '/hero-tutor.jpg'; }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Mobile Smartphone Image */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <b style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Smartphone size={15} style={{ color: '#10b981' }} /> Mobile Telefon Rasmi (Havola / URL):
+                          </b>
+                          <input
+                            value={cms.heroMobileImage || ''}
+                            onChange={e => setCms({ ...cms, heroMobileImage: e.target.value })}
+                            placeholder="Bo‘sh qolsa Desktop rasmi ishlatiladi..."
+                          />
+                        </label>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                          Smartfon ekrani (9:16) uchun vertikal portret rasm eng chiroyli ko‘rinadi.
+                        </span>
+                        {/* Mobile Preview */}
+                        <div style={{
+                          marginTop: '4px',
+                          border: '2px dashed var(--border)',
+                          borderRadius: '10px',
+                          padding: '10px',
+                          background: 'var(--soft)',
+                          textAlign: 'center'
+                        }}>
+                          <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>
+                            📱 SMARTFON KO‘RINISHI (PREVIEW):
+                          </span>
+                          <div style={{
+                            width: '110px',
+                            margin: '0 auto',
+                            aspectRatio: '9/16',
+                            borderRadius: '16px',
+                            overflow: 'hidden',
+                            border: '3px solid #0f172a',
+                            boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                            background: '#000'
+                          }}>
+                            <img
+                              src={cms.heroMobileImage || cms.heroImage || '/hero-tutor.jpg'}
+                              alt="Mobile phone preview"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onError={(e) => { (e.target as any).src = '/hero-tutor.jpg'; }}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

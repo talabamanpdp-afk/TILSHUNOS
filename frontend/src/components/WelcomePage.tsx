@@ -10,6 +10,8 @@ import {
 export interface CmsConfig {
   hero?: string;
   heroBadge?: string;
+  heroImage?: string;
+  heroMobileImage?: string;
   description?: string;
   cta?: string;
   secondaryCta?: string;
@@ -42,6 +44,8 @@ interface WelcomePageProps {
 }
 
 export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelectLevel }: WelcomePageProps) {
+  const desktopTutorImg = cms?.heroImage || '/hero-tutor.jpg';
+  const mobileTutorImg = cms?.heroMobileImage || cms?.heroImage || '/hero-tutor.jpg';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [previewTab, setPreviewTab] = useState<'vocab' | 'lesson' | 'progress'>('vocab');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
@@ -290,9 +294,10 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               </div>
             </div>
 
-            {/* Right Hero Column: Laptop & Floating UI Cards */}
+            {/* Right Hero Column: Laptop on Desktop, Smartphone on Mobile */}
             <div className="holo-hero-visual animate-fade-in-up delay-200">
-              <div className="holo-laptop-scene">
+              {/* DESKTOP VIEW: MAC LAPTOP & FLOATING CARDS */}
+              <div className="holo-laptop-scene desktop-only-scene">
                 {/* Floating Card 1: Popular Course Card */}
                 <div className="holo-floating-card card-course animate-float-slow">
                   <div className="card-popular-badge">POPULAR</div>
@@ -347,7 +352,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                 <div className="holo-laptop-device">
                   <div className="laptop-screen">
                     <img
-                      src="/hero-tutor.jpg"
+                      src={desktopTutorImg}
                       alt="Tilshunos professional o‘qituvchi"
                       className="laptop-tutor-img"
                     />
@@ -356,6 +361,44 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                     <div className="laptop-notch" />
                   </div>
                   <div className="laptop-reflection" />
+                </div>
+              </div>
+
+              {/* MOBILE VIEW: SMARTPHONE DEVICE */}
+              <div className="holo-phone-scene mobile-only-scene">
+                {/* Floating mini badges around the phone */}
+                <div className="phone-floating-badge badge-top-left animate-float-slow">
+                  <span className="badge-fl-flag">🇬🇧</span>
+                  <div>
+                    <strong>Basic English</strong>
+                    <small>103 Lesson</small>
+                  </div>
+                </div>
+
+                <div className="phone-floating-badge badge-bottom-right animate-float-medium">
+                  <div className="verified-dot-circle"><Check size={11} strokeWidth={3} /></div>
+                  <div>
+                    <strong>9 / 12 Quiz</strong>
+                    <small>Speaking ✓</small>
+                  </div>
+                </div>
+
+                {/* Smartphone Hardware Frame */}
+                <div className="holo-mobile-device">
+                  <div className="phone-dynamic-island" />
+                  <div className="phone-inner-bezel">
+                    <div className="phone-screen">
+                      <img
+                        src={mobileTutorImg}
+                        alt="Tilshunos mobil ilova"
+                        className="phone-tutor-img"
+                      />
+                      <div className="phone-screen-overlay">
+                        <span className="phone-screen-tag">TILSHUNOS APP</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="phone-home-indicator" />
                 </div>
               </div>
             </div>
