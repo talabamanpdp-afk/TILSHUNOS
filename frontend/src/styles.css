@@ -1433,39 +1433,29 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
 
 
 /* =====================================================================
-   HOLO-STYLE SPLIT BLUE & DARK HERO & HEADER
+   HOLO-STYLE CLEAN WHITE & DARK HERO & HEADER
 ===================================================================== */
 .holo-hero-wrapper {
   position: relative;
   width: 100%;
-  min-height: 740px;
+  min-height: 720px;
   overflow: hidden;
+  background: radial-gradient(circle at 85% 20%, rgba(37, 99, 235, 0.05) 0%, transparent 45%),
+              radial-gradient(circle at 15% 70%, rgba(16, 185, 129, 0.04) 0%, transparent 45%),
+              #ffffff;
+  color: #0f172a;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.welcome-root.dark .holo-hero-wrapper {
+  background: radial-gradient(circle at 85% 20%, rgba(37, 99, 235, 0.12) 0%, transparent 45%),
+              radial-gradient(circle at 15% 70%, rgba(16, 185, 129, 0.08) 0%, transparent 45%),
+              #0b132b;
+  color: #f8fafc;
 }
 
 .holo-bg-split {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.holo-bg-left {
-  width: 64%;
-  background: linear-gradient(145deg, #2A56F6 0%, #1F4BE5 100%);
-}
-
-.holo-bg-right {
-  width: 36%;
-  background: #1C202D;
-  position: relative;
-  overflow: hidden;
-}
-
-.holo-radial-mesh {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 120% 50%, transparent 18%, rgba(255, 255, 255, 0.05) 19%, transparent 20%, transparent 32%, rgba(255, 255, 255, 0.05) 33%, transparent 34%, transparent 46%, rgba(255, 255, 255, 0.05) 47%, transparent 48%, transparent 60%, rgba(255, 255, 255, 0.05) 61%, transparent 62%);
+  display: none;
 }
 
 /* Nav Header - Smart Sticky Header */
@@ -1619,22 +1609,24 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  color: #ffffff;
+  color: #0f172a;
   font-weight: 800;
   font-size: 24px;
   letter-spacing: -0.5px;
+  transition: color 0.2s ease;
 }
 
 .holo-brand-icon {
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.22);
+  background: #2563eb;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transition: all 0.2s ease;
 }
 
 .holo-nav-links {
@@ -1647,15 +1639,15 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   display: flex;
   align-items: center;
   gap: 8px;
-  color: rgba(255, 255, 255, 0.94);
+  color: #475569;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  transition: opacity 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .holo-nav-link:hover {
-  opacity: 0.8;
+  color: #2563eb;
 }
 
 .holo-nav-right {
@@ -1668,9 +1660,9 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   width: 38px;
   height: 38px;
   border-radius: 9px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  background: rgba(241, 245, 249, 0.8);
+  color: #475569;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1679,49 +1671,102 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
 }
 
 .holo-theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: #ffffff;
+  color: #2563eb;
+  border-color: #cbd5e1;
 }
 
 .holo-sign-in {
-  background: none;
-  border: none;
-  color: #ffffff;
-  font-size: 15px;
+  background: transparent;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  color: #1e293b;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  padding: 8px 12px;
-  transition: opacity 0.2s ease;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .holo-sign-in:hover {
-  opacity: 0.85;
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .holo-get-started {
-  background: #50D890;
-  color: #0B2414;
+  background: #2563eb;
+  color: #ffffff;
   font-weight: 700;
   font-size: 14px;
-  padding: 10px 24px;
+  padding: 10px 22px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(80, 216, 144, 0.35);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
 }
 
 .holo-get-started:hover {
+  background: #1d4ed8;
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(80, 216, 144, 0.45);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
 }
 
 .holo-mobile-hamburger {
   display: none;
   background: none;
   border: none;
-  color: #ffffff;
+  color: #0f172a;
   cursor: pointer;
   padding: 6px;
+}
+
+/* Dark mode for default nav */
+.welcome-root.dark .holo-brand {
+  color: #f8fafc;
+}
+
+.welcome-root.dark .holo-brand-icon {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.welcome-root.dark .holo-nav-link {
+  color: #cbd5e1;
+}
+
+.welcome-root.dark .holo-nav-link:hover {
+  color: #60a5fa;
+}
+
+.welcome-root.dark .holo-theme-toggle {
+  border-color: rgba(51, 65, 85, 0.8);
+  background: rgba(30, 41, 59, 0.8);
+  color: #94a3b8;
+}
+
+.welcome-root.dark .holo-theme-toggle:hover {
+  color: #60a5fa;
+  background: rgba(51, 65, 85, 0.9);
+}
+
+.welcome-root.dark .holo-sign-in {
+  color: #f1f5f9;
+  border-color: rgba(71, 85, 105, 0.6);
+}
+
+.welcome-root.dark .holo-sign-in:hover {
+  background: rgba(30, 41, 59, 0.8);
+  color: #ffffff;
+}
+
+.welcome-root.dark .holo-get-started {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.welcome-root.dark .holo-mobile-hamburger {
+  color: #f8fafc;
 }
 
 /* Hero Content */
@@ -1744,7 +1789,7 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   font-size: 64px;
   line-height: 1.12;
   font-weight: 800;
-  color: #ffffff;
+  color: #0f172a;
   letter-spacing: -1.5px;
   margin: 0 0 20px;
 }
@@ -1753,21 +1798,22 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   display: inline-block;
   vertical-align: middle;
   margin-left: 14px;
-  background: #ffffff;
-  color: #2B59FF;
+  background: rgba(37, 99, 235, 0.08);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.2);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.8px;
   padding: 6px 14px;
   border-radius: 6px;
   text-transform: uppercase;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: none;
 }
 
 .holo-description {
   font-size: 17px;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.88);
+  color: #475569;
   max-width: 520px;
   margin: 0 0 32px;
 }
@@ -1781,24 +1827,25 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
 }
 
 .holo-start-btn {
-  background: #50D890;
-  color: #0B2414;
+  background: #2563eb;
+  color: #ffffff;
   font-size: 16px;
   font-weight: 700;
   padding: 15px 32px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   transition: all 0.2s ease;
-  box-shadow: 0 6px 20px rgba(80, 216, 144, 0.35);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
 }
 
 .holo-start-btn:hover {
+  background: #1d4ed8;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(80, 216, 144, 0.5);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
 }
 
 .holo-flags-group {
@@ -1820,9 +1867,9 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   align-items: center;
   justify-content: center;
   margin-left: -8px;
-  background: #ffffff;
-  border: 2px solid #2B59FF;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  background: #eff6ff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .holo-flag:first-child {
@@ -1830,7 +1877,7 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
 }
 
 .holo-flags-text {
-  color: #ffffff;
+  color: #0f172a;
   display: flex;
   flex-direction: column;
   line-height: 1.25;
@@ -1839,11 +1886,46 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
 .holo-flags-text strong {
   font-size: 15px;
   font-weight: 800;
+  color: #0f172a;
 }
 
 .holo-flags-text span {
   font-size: 12px;
-  opacity: 0.85;
+  color: #64748b;
+}
+
+/* Dark mode for hero elements */
+.welcome-root.dark .holo-headline {
+  color: #f8fafc;
+}
+
+.welcome-root.dark .holo-pill-badge {
+  background: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.welcome-root.dark .holo-description {
+  color: #94a3b8;
+}
+
+.welcome-root.dark .holo-start-btn {
+  background: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.welcome-root.dark .holo-flag {
+  background: #1e293b;
+  border-color: #0b132b;
+}
+
+.welcome-root.dark .holo-flags-text strong {
+  color: #f8fafc;
+}
+
+.welcome-root.dark .holo-flags-text span {
+  color: #94a3b8;
 }
 
 .holo-available-block {
@@ -1909,14 +1991,14 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   align-items: center;
   gap: 32px;
   padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-top: 1px solid #e2e8f0;
   max-width: 580px;
 }
 
 .holo-metric-item {
   display: flex;
   flex-direction: column;
-  color: #ffffff;
+  color: #0f172a;
 }
 
 .metric-val {
@@ -1925,18 +2007,36 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   letter-spacing: -0.5px;
   line-height: 1;
   margin-bottom: 4px;
+  color: #0f172a;
 }
 
 .metric-lbl {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #64748b;
   font-weight: 500;
 }
 
 .holo-metric-divider {
   width: 1px;
   height: 32px;
-  background: rgba(255, 255, 255, 0.2);
+  background: #e2e8f0;
+}
+
+.welcome-root.dark .holo-metrics-bar {
+  border-top-color: #1e3352;
+}
+
+.welcome-root.dark .holo-metric-item,
+.welcome-root.dark .metric-val {
+  color: #f8fafc;
+}
+
+.welcome-root.dark .metric-lbl {
+  color: #94a3b8;
+}
+
+.welcome-root.dark .holo-metric-divider {
+  background: #1e3352;
 }
 
 /* Right Side: Laptop Scene & Floating Cards */
@@ -2182,6 +2282,46 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   font-size: 11px;
   color: #64748b;
   font-weight: 500;
+}
+/* Floating cards & Laptop Dark Mode support */
+.welcome-root.dark .holo-laptop-device {
+  background: #14243a;
+  border-color: #1e3352;
+  box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.7);
+}
+
+.welcome-root.dark .laptop-screen {
+  background: #090e17;
+}
+
+.welcome-root.dark .laptop-base {
+  background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.welcome-root.dark .holo-floating-card {
+  background: #14243a;
+  border: 1px solid #1e3352;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+  color: #f8fafc;
+}
+
+.welcome-root.dark .course-label,
+.welcome-root.dark .card-course-body strong,
+.welcome-root.dark .skills-lbl,
+.welcome-root.dark .progress-info strong {
+  color: #f8fafc;
+}
+
+.welcome-root.dark .course-badge {
+  color: #cbd5e1;
+  border-color: #334155;
+  background: #0b132b;
+}
+
+.welcome-root.dark .card-course-body small,
+.welcome-root.dark .progress-info span {
+  color: #94a3b8;
 }
 
 /* Responsive adjustments for Holo Split layout */

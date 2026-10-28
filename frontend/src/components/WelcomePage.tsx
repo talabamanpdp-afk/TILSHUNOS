@@ -182,6 +182,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
             {/* Right Nav Auth & Controls (on dark side) */}
             <div className="holo-nav-right">
               <button
+                id="welcome-theme-toggle"
                 className="holo-theme-toggle"
                 onClick={() => setDark(!dark)}
                 title={dark ? 'Yorug‘ mavzuga o‘tish' : 'Tungi mavzuga o‘tish'}
