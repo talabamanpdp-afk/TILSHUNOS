@@ -630,9 +630,10 @@ public class CmsController : ControllerBase
                 "image/svg+xml" => ".svg",
                 _ => ".jpg"
             };
-            var fileName = string.IsNullOrWhiteSpace(request.FileName) 
-                ? $"{mediaId}{ext}" 
-                : $"{Path.GetFileNameWithoutExtension(request.FileName)}_{Guid.NewGuid().ToString("N")[..6]}{ext}";
+            var cleanBaseName = string.IsNullOrWhiteSpace(request.FileName)
+                ? mediaId
+                : Path.GetFileNameWithoutExtension(request.FileName).Trim().Replace(" ", "_");
+            var fileName = $"{cleanBaseName}_{Guid.NewGuid().ToString("N")[..6]}{ext}";
 
             // Extract byte array from DataBase64
             var base64Data = request.DataBase64;
@@ -642,116 +643,57 @@ public class CmsController : ControllerBase
             }
             var fileBytes = Convert.FromBase64String(base64Data);
 
-            // 1. Upload to Supabase Storage Bucket ('tilshunos-media')
+            // Upload directly and exclusively to Supabase Storage Bucket ('tilshunos-media')
             var supabaseUrl = _config["Supabase:Url"] ?? "https://yipexommqztxnvpckqyi.supabase.co";
             var anonKey = _config["Supabase:AnonKey"];
             var bucketName = _config["Supabase:BucketName"] ?? "tilshunos-media";
 
-            string? supabaseCdnUrl = null;
-
-            if (!string.IsNullOrWhiteSpace(anonKey))
+            if (string.IsNullOrWhiteSpace(anonKey))
             {
-                try
-                {
-                    var client = _httpClientFactory.CreateClient();
-                    var uploadUrl = $"{supabaseUrl.TrimEnd('/')}/storage/v1/object/{bucketName}/{fileName}";
-                    using var content = new ByteArrayContent(fileBytes);
-                    content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
-
-                    using var req = new HttpRequestMessage(HttpMethod.Post, uploadUrl)
-                    {
-                        Content = content
-                    };
-                    req.Headers.Add("Authorization", $"Bearer {anonKey}");
-                    req.Headers.Add("apikey", anonKey);
-
-                    var response = await client.SendAsync(req);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        supabaseCdnUrl = $"{supabaseUrl.TrimEnd('/')}/storage/v1/object/public/{bucketName}/{fileName}";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Supabase Storage upload error: {ex.Message}");
-                }
+                return StatusCode(500, new { error = "Supabase AnonKey sozlanmagan." });
             }
 
-            // 2. Also save record in uploaded_media for fallback
-            await _db.Database.ExecuteSqlRawAsync(
-                "CREATE TABLE IF NOT EXISTS uploaded_media (id character varying(64) PRIMARY KEY, file_name character varying(255) NOT NULL, content_type character varying(64) NOT NULL, data_base64 text NOT NULL, created_at_utc timestamp with time zone NOT NULL);"
-            );
+            var client = _httpClientFactory.CreateClient();
+            var uploadUrl = $"{supabaseUrl.TrimEnd('/')}/storage/v1/object/{bucketName}/{fileName}";
+            using var content = new ByteArrayContent(fileBytes);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
 
-            var paramId = new Npgsql.NpgsqlParameter("@id", mediaId);
-            var paramName = new Npgsql.NpgsqlParameter("@fileName", fileName);
-            var paramType = new Npgsql.NpgsqlParameter("@contentType", contentType);
-            var paramData = new Npgsql.NpgsqlParameter("@data", request.DataBase64);
-            var paramDate = new Npgsql.NpgsqlParameter("@date", DateTime.UtcNow);
+            using var req = new HttpRequestMessage(HttpMethod.Post, uploadUrl)
+            {
+                Content = content
+            };
+            req.Headers.Add("Authorization", $"Bearer {anonKey}");
+            req.Headers.Add("apikey", anonKey);
 
-            await _db.Database.ExecuteSqlRawAsync(
-                "INSERT INTO uploaded_media (id, file_name, content_type, data_base64, created_at_utc) VALUES (@id, @fileName, @contentType, @data, @date);",
-                paramId, paramName, paramType, paramData, paramDate
-            );
+            var response = await client.SendAsync(req);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errBody = await response.Content.ReadAsStringAsync();
+                return StatusCode((int)response.StatusCode, new { error = $"Supabase Storage xatoligi: {errBody}" });
+            }
 
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
-            var fallbackUrl = $"{baseUrl}/api/v1/cms/media/{mediaId}";
-            var finalUrl = supabaseCdnUrl ?? fallbackUrl;
+            var supabaseCdnUrl = $"{supabaseUrl.TrimEnd('/')}/storage/v1/object/public/{bucketName}/{fileName}";
 
             return Ok(new
             {
                 success = true,
                 id = mediaId,
-                url = finalUrl,
-                relativeUrl = fallbackUrl,
+                url = supabaseCdnUrl,
+                relativeUrl = supabaseCdnUrl,
                 bucketUrl = supabaseCdnUrl,
-                message = supabaseCdnUrl != null 
-                    ? "Rasm Supabase Storage 'tilshunos-media' bucketiga muvaffaqiyatli yuklandi!" 
-                    : "Rasm saqlandi."
+                message = "Rasm to‘g‘ridan-to‘g‘ri Supabase Storage 'tilshunos-media' bucketiga yuklandi!"
             });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "Supabasega yuklashda xatolik: " + ex.Message });
+            return StatusCode(500, new { error = "Supabase bucketga yuklashda xatolik: " + ex.Message });
         }
     }
 
     [AllowAnonymous]
     [HttpGet("media/{id}")]
-    public async Task<IActionResult> GetMedia(string id)
+    public IActionResult GetMedia(string id)
     {
-        try
-        {
-            var conn = _db.Database.GetDbConnection();
-            if (conn.State != System.Data.ConnectionState.Open)
-            {
-                await conn.OpenAsync();
-            }
-
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT content_type, data_base64 FROM uploaded_media WHERE id = @id LIMIT 1;";
-            var p = cmd.CreateParameter();
-            p.ParameterName = "@id";
-            p.Value = id;
-            cmd.Parameters.Add(p);
-
-            using var reader = await cmd.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                var contentType = reader.GetString(0);
-                var base64 = reader.GetString(1);
-                if (base64.Contains(','))
-                {
-                    base64 = base64.Substring(base64.IndexOf(',') + 1);
-                }
-                var bytes = Convert.FromBase64String(base64);
-                Response.Headers["Cache-Control"] = "public, max-age=31536000";
-                return File(bytes, contentType);
-            }
-            return NotFound();
-        }
-        catch
-        {
-            return NotFound();
-        }
+        return NotFound();
     }
 }

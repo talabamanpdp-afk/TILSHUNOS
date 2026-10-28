@@ -502,20 +502,16 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
         img.src = dataUrl;
       });
 
-      // 3. Upload to Supabase through the backend
-      let finalUrl = compressedDataUrl;
-      try {
-        const res = await api.uploadCmsImage({
-          dataBase64: compressedDataUrl,
-          fileName: file.name,
-          contentType: 'image/jpeg'
-        });
-        if (res && (res.url || res.relativeUrl)) {
-          finalUrl = res.url || res.relativeUrl;
-        }
-      } catch (err: any) {
-        console.warn('Backend Supabase direct upload failed, falling back to optimized data URL:', err);
+      // 3. Upload exclusively to Supabase Storage Bucket ('tilshunos-media')
+      const res = await api.uploadCmsImage({
+        dataBase64: compressedDataUrl,
+        fileName: file.name,
+        contentType: 'image/jpeg'
+      });
+      if (!res || !res.url) {
+        throw new Error('Supabase Storage bucketiga rasm yuklanmadi');
       }
+      const finalUrl = res.url;
 
       // 4. Update CMS state and local cache
       const fieldKey = target === 'desktop'
