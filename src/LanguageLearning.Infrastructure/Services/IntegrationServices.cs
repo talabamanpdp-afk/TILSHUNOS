@@ -23,32 +23,106 @@ public class EmailService : IEmailService
 
     public async Task<bool> SendVerificationEmailAsync(string email, string code, CancellationToken cancellationToken = default)
     {
-        var subject = "Your Tilshunos Verification Code";
+        var subject = $"{code} — TILSHUNOS tasdiqlash kodi";
         var html = $@"
-            <div style='font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;'>
-                <h2 style='color: #2563eb; margin-top: 0;'>Welcome to Tilshunos!</h2>
-                <p style='color: #475569;'>Please use the verification code below to confirm your email address and activate your account:</p>
-                <div style='background-color: #f1f5f9; padding: 16px; border-radius: 8px; text-align: center; margin: 20px 0;'>
-                    <span style='font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #0f172a;'>{code}</span>
+<!DOCTYPE html>
+<html lang=""uz"">
+<head>
+  <meta charset=""UTF-8"" />
+  <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" />
+  <title>TILSHUNOS Tasdiqlash Kodi</title>
+</head>
+<body style=""margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1e293b;"">
+  <table role=""presentation"" width=""100%"" cellspacing=""0"" cellpadding=""0"" border=""0"" style=""background-color:#f8fafc;padding:36px 16px;"">
+    <tr>
+      <td align=""center"">
+        <table role=""presentation"" width=""100%"" cellspacing=""0"" cellpadding=""0"" border=""0"" style=""max-width:520px;background-color:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.06);border:1px solid #e2e8f0;"">
+          <!-- Header Banner -->
+          <tr>
+            <td style=""background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);padding:36px 32px;text-align:center;"">
+              <div style=""display:inline-block;background:rgba(255,255,255,0.18);border-radius:12px;padding:8px 18px;margin-bottom:12px;"">
+                <span style=""font-size:20px;font-weight:800;letter-spacing:2px;color:#ffffff;"">TILSHUNOS</span>
+              </div>
+              <h1 style=""color:#ffffff;font-size:24px;font-weight:800;margin:0;letter-spacing:-0.5px;"">Email manzilingizni tasdiqlang</h1>
+              <p style=""color:#e0e7ff;font-size:14px;margin:8px 0 0;"">Til o‘rganishning zamonaviy platformasiga xush kelibsiz!</p>
+            </td>
+          </tr>
+          
+          <!-- Content Body -->
+          <tr>
+            <td style=""padding:36px 32px;"">
+              <p style=""margin:0 0 16px;font-size:15px;line-height:1.6;color:#334155;"">
+                Assalomu alaykum! <strong>TILSHUNOS</strong> platformasida ro‘yxatdan o‘tganingiz uchun tashakkur.
+              </p>
+              <p style=""margin:0 0 24px;font-size:14px;line-height:1.6;color:#64748b;"">
+                Shaxsiy o‘rganish profilingizni faollashtirish uchun quyidagi 6 xonali bir martalik tasdiqlash kodini platformaga kiriting:
+              </p>
+
+              <!-- Verification Code Box -->
+              <div style=""background:#f1f5f9;border:2px dashed #6366f1;border-radius:16px;padding:24px;text-align:center;margin:24px 0;"">
+                <div style=""font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#4f46e5;margin-bottom:8px;"">
+                  Bir martalik tasdiqlash kodi
                 </div>
-                <p style='color: #64748b; font-size: 13px;'>This code will expire in 15 minutes. If you did not create an account, please ignore this email.</p>
-            </div>";
+                <div style=""font-size:40px;font-weight:800;letter-spacing:8px;color:#1e1b4b;font-family:'Courier New',Courier,monospace;"">
+                  {code}
+                </div>
+              </div>
+
+              <div style=""background-color:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:8px;margin:24px 0;"">
+                <p style=""margin:0;font-size:13px;color:#92400e;line-height:1.5;"">
+                  ⏳ <strong>Eslatma:</strong> Ushbu kod <strong>15 daqiqa</strong> davomida amal qiladi. Xavfsizlik yuzasidan uni boshqalarga bermang.
+                </p>
+              </div>
+
+              <p style=""margin:0;font-size:13px;line-height:1.6;color:#94a3b8;"">
+                Agar siz ushbu amalni bajarmagan bo‘lsangiz, xavotir olmang — hisobingiz xavfsiz va bu xabarni shunchaki e’tiborsiz qoldirishingiz mumkin.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style=""background-color:#f8fafc;padding:20px 32px;text-align:center;border-top:1px solid #e2e8f0;"">
+              <p style=""margin:0;font-size:12px;color:#94a3b8;"">
+                © 2026 TILSHUNOS — Learn Your Way. Barcha huquqlar himoyalangan.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>";
 
         return await SendEmailAsync(email, subject, html, cancellationToken);
     }
 
     public async Task<bool> SendPasswordResetEmailAsync(string email, string token, CancellationToken cancellationToken = default)
     {
-        var subject = "Reset your Tilshunos Password";
+        var subject = "TILSHUNOS parolini tiklash so‘rovi";
         var html = $@"
-            <div style='font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;'>
-                <h2 style='color: #2563eb;'>Password Reset Request</h2>
-                <p style='color: #475569;'>Use the reset token below in the app to set a new password:</p>
-                <div style='background-color: #f1f5f9; padding: 12px; border-radius: 6px; font-family: monospace; word-break: break-all;'>
-                    {token}
-                </div>
-                <p style='color: #64748b; font-size: 13px;'>If you did not request this, your account is still secure and you can disregard this email.</p>
-            </div>";
+<!DOCTYPE html>
+<html lang=""uz"">
+<head>
+  <meta charset=""UTF-8"" />
+  <title>TILSHUNOS Parolni tiklash</title>
+</head>
+<body style=""margin:0;padding:0;background-color:#f8fafc;font-family:sans-serif;color:#1e293b;"">
+  <div style=""max-width:500px;margin:30px auto;background:#fff;padding:28px;border-radius:16px;border:1px solid #e2e8f0;"">
+    <h2 style=""color:#4f46e5;margin-top:0;"">Parolni tiklash so‘rovi</h2>
+    <p style=""color:#475569;font-size:14px;line-height:1.6;"">
+      TILSHUNOS akkauntingiz parolini tiklash uchun quyidagi tokendan foydalaning:
+    </p>
+    <div style=""background-color:#f1f5f9;padding:14px;border-radius:8px;font-family:monospace;word-break:break-all;color:#0f172a;font-size:13px;margin:18px 0;"">
+      {token}
+    </div>
+    <p style=""color:#94a3b8;font-size:12px;line-height:1.5;"">
+      Ushbu havola 1 soat davomida amal qiladi. Agar siz so‘rov yubormagan bo‘lsangiz, ushbu xabarni e’tiborsiz qoldiring.
+    </p>
+  </div>
+</body>
+</html>";
 
         return await SendEmailAsync(email, subject, html, cancellationToken);
     }
@@ -60,25 +134,31 @@ public class EmailService : IEmailService
 
     private async Task<bool> SendEmailAsync(string toEmail, string subject, string htmlContent, CancellationToken cancellationToken)
     {
-        var apiKey = _configuration["Resend:ApiKey"];
-        var fromEmail = _configuration["Resend:FromEmail"] ?? "onboarding@resend.dev";
+        var apiKey = Environment.GetEnvironmentVariable("RESEND_API_KEY") 
+            ?? _configuration["Resend:ApiKey"];
+        
+        var fromEmail = Environment.GetEnvironmentVariable("RESEND_FROM_EMAIL") 
+            ?? _configuration["Resend:FromEmail"] 
+            ?? "onboarding@resend.dev";
 
-        // If Resend API key is not configured, log to console in development mode
+        var formattedSender = fromEmail.Contains('<') ? fromEmail : $"TILSHUNOS <{fromEmail}>";
+
+        // If Resend API key is not configured or placeholder, log to console in development mode
         if (string.IsNullOrWhiteSpace(apiKey) || apiKey.StartsWith("re_placeholder"))
         {
-            _logger.LogInformation("[DEV EMAIL SANDBOX] To: {Email} | Subject: {Subject}\nContent: {Html}", toEmail, subject, htmlContent);
+            _logger.LogInformation("[DEV EMAIL SANDBOX] To: {Email} | Subject: {Subject} | Sender: {Sender}\nContent: {Html}", toEmail, subject, formattedSender, htmlContent);
             return true;
         }
 
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.resend.com/emails");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey.Trim());
 
             var payload = new
             {
-                from = fromEmail,
-                to = new[] { toEmail },
+                from = formattedSender,
+                to = new[] { toEmail.Trim().ToLowerInvariant() },
                 subject = subject,
                 html = htmlContent
             };
@@ -88,12 +168,13 @@ public class EmailService : IEmailService
 
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInformation("Resend email sent successfully to {Email}", toEmail);
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogInformation("Resend email sent successfully to {Email}. Resend Response: {Body}", toEmail, body);
                 return true;
             }
 
             var err = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogWarning("Resend email failed: {Error}", err);
+            _logger.LogError("Resend email failed with HTTP {Status}: {Error}", response.StatusCode, err);
             return false;
         }
         catch (Exception ex)

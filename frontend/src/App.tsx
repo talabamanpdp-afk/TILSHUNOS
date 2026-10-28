@@ -1,7 +1,6 @@
 import { AdminPanel } from './components/AdminPanel';
 import { TeacherPanel } from './components/TeacherPanel';
 import { DuelMatchModal } from './components/DuelMatchModal';
-import { GoogleOAuthModal } from './components/GoogleOAuthModal';
 import { WelcomePage } from './components/WelcomePage';
 import { AboutPage } from './components/AboutPage';
 import { useEffect, useMemo, useState } from 'react';
@@ -1558,7 +1557,6 @@ function App() {
       return null;
     }
   });
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [dark, setDark] = useState<boolean>(() => {
     const saved = localStorage.getItem('tilshunos_theme');
     if (saved) return saved === 'dark';
@@ -1706,43 +1704,6 @@ function App() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    setShowGoogleModal(true);
-    setMessage('');
-  };
-
-  const handleGoogleSuccess = async (data: { email: string; firstName: string; lastName: string; birthDate?: string }) => {
-    setShowGoogleModal(false);
-    setLoading(true);
-    setMessage('');
-    try {
-      const res = await api.googleAuth({
-        idToken: 'google_oauth_token',
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName
-      });
-      const userRole = res.user?.role;
-      const roleStr = typeof userRole === 'string' ? userRole.toLowerCase() : userRole === 1 ? 'admin' : userRole === 2 ? 'teacher' : 'user';
-      const cleanRole = roleStr === 'superadmin' ? 'admin' : roleStr === 'learner' ? 'user' : roleStr;
-      setRole(cleanRole);
-
-      // QAT'IYAN: Agar yangi foydalanuvchi bo'lsa yoki til/daraja belgilanmagan bo'lsa, ONBOARDING ochiladi!
-      if (cleanRole === 'user') {
-        const isNew = (res as any).isNewUser;
-        const hasLang = !isNew && (res.user?.targetLanguage || localStorage.getItem('tilshunos_language'));
-        if (!hasLang) {
-          setPage('onboarding');
-          return;
-        }
-      }
-      setPage('dashboard');
-    } catch (err: any) {
-      setMessage(err.message || 'Google orqali kirishda xatolik yuz berdi.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const finishOnboarding = async () => {
     const levelMap: Record<string, number> = { A1: 0, A2: 1, B1: 2, B2: 3, C1: 4, C2: 5 };
@@ -1876,11 +1837,7 @@ function App() {
                   <input id="auth-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Kamida 6 belgili parol" />
                 </label>
 
-                <button type="button" className="google-demo" onClick={handleGoogleLogin} disabled={loading}>
-                  <b>G</b> Google orqali davom etish
-                </button>
-
-                <div className="auth-divider">yoki email orqali</div>
+                <div style={{ height: '8px' }} />
 
                 <button id="auth-submit-btn" type="submit" className="entry-primary auth-submit" disabled={loading}>
                   {loading ? 'Bajarilmoqda...' : page === 'login' ? 'Kirish' : 'Tasdiqlash kodini yuborish'} <ArrowRight size={17} />
@@ -1926,7 +1883,30 @@ function App() {
               </>
             )}
 
-            {message && <p className="auth-message">{message}</p>}
+            {message && (
+              <div className="auth-message" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                <span>{message}</span>
+                {message.toLowerCase().includes('allaqachon') && page === 'register' && (
+                  <button
+                    type="button"
+                    onClick={() => begin('login')}
+                    style={{
+                      background: '#7c3aed',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '7px 16px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      marginTop: '4px'
+                    }}
+                  >
+                    Hisobga kirishga o‘tish →
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -1975,14 +1955,6 @@ function App() {
         </section>
       )}
 
-      {/* Rasmiy Google OAuth Modal (Akkaunt tanlash, Consent va Tasdiqlash) */}
-      <GoogleOAuthModal
-        isOpen={showGoogleModal}
-        onClose={() => setShowGoogleModal(false)}
-        onSuccess={handleGoogleSuccess}
-        initialEmail={email}
-        initialName={name}
-      />
     </div>
   );
 }

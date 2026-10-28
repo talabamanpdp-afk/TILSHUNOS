@@ -40,7 +40,7 @@ public class AuthController : ControllerBase
         var normalizedEmail = request.Email.Trim().ToUpperInvariant();
         if (await _db.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail))
         {
-            return BadRequest(new { message = "An account with this email address already exists." });
+            return BadRequest(new { message = "Ushbu email bilan allaqachon ro‘yxatdan o‘tilgan. Iltimos, hisobingizga kiring." });
         }
 
         var user = new User
@@ -77,8 +77,15 @@ public class AuthController : ControllerBase
 
         await _db.SaveChangesAsync();
 
-        // Send email in background
-        _ = _emailService.SendVerificationEmailAsync(user.Email, code);
+        // Send verification email via Resend
+        try
+        {
+            await _emailService.SendVerificationEmailAsync(user.Email, code);
+        }
+        catch
+        {
+            // Logging is handled inside EmailService
+        }
 
         var token = _jwtService.GenerateToken(user);
         var userDto = new UserDto(
@@ -155,12 +162,12 @@ public class AuthController : ControllerBase
 
         if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
         {
-            return Unauthorized(new { message = "Invalid email or password." });
+            return Unauthorized(new { message = "Email yoki parol noto‘g‘ri. Agar hisobingiz bo‘lmasa, avval ro‘yxatdan o‘ting." });
         }
 
         if (!user.IsActive)
         {
-            return Unauthorized(new { message = "Account has been suspended. Please contact support." });
+            return Unauthorized(new { message = "Hisobingiz faoliyati to‘xtatilgan. Iltimos, ma’muriyat bilan bog‘laning." });
         }
 
         user.LastLoginAtUtc = DateTime.UtcNow;
@@ -176,75 +183,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("google")]
-    public async Task<IActionResult> GoogleAuth([FromBody] GoogleAuthRequest request)
+    public IActionResult GoogleAuth()
     {
-        var email = !string.IsNullOrWhiteSpace(request.Email)
-            ? request.Email.Trim().ToLowerInvariant()
-            : (request.IdToken.Contains("@") ? request.IdToken.Trim().ToLowerInvariant() : "google.user@tilshunos.app");
-        
-        var firstName = !string.IsNullOrWhiteSpace(request.FirstName) ? request.FirstName.Trim() : "Learner";
-        var lastName = !string.IsNullOrWhiteSpace(request.LastName) ? request.LastName.Trim() : "Google";
-
-        var isSuperAdminAccount = email == "soxibgaybullayev439@gmail.com" || email == "admin@tilshunos.app";
-        if (isSuperAdminAccount)
-        {
-            return Unauthorized(new { message = "Super Admin tizimiga xavfsizlik yuzasidan faqat admin email va paroli orqali kirish mumkin." });
-        }
-
-        var normalizedEmail = email.ToUpperInvariant();
-        var user = await _db.Users
-            .Include(u => u.Profile)
-            .Include(u => u.LearningLanguages)
-            .FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
-
-        bool isNewUser = false;
-        if (user == null)
-        {
-            isNewUser = true;
-            user = new User
-            {
-                Email = email,
-                NormalizedEmail = normalizedEmail,
-                FirstName = firstName,
-                LastName = lastName,
-                PasswordHash = _passwordHasher.HashPassword(Guid.NewGuid().ToString("N")),
-                Role = isSuperAdminAccount ? UserRole.SuperAdmin : UserRole.Learner,
-                EmailConfirmed = true // Verified by Google OAuth
-            };
-
-            var profile = new UserProfile
-            {
-                UserId = user.Id,
-                NativeLanguage = "uz",
-                DailyGoalMinutes = isSuperAdminAccount ? 60 : 20,
-                IsPublic = true
-            };
-
-            _db.Users.Add(user);
-            _db.UserProfiles.Add(profile);
-            await _db.SaveChangesAsync();
-        }
-        else if (isSuperAdminAccount && user.Role != UserRole.SuperAdmin)
-        {
-            user.Role = UserRole.SuperAdmin;
-            user.EmailConfirmed = true;
-            await _db.SaveChangesAsync();
-        }
-
-        var token = _jwtService.GenerateToken(user);
-        var primaryLang = user.LearningLanguages.FirstOrDefault(l => l.IsPrimary);
-        
-        // If user has not chosen language/level, treat as requiring onboarding
-        if (primaryLang == null)
-        {
-            isNewUser = true;
-        }
-
-        var userDto = new UserDto(
-            user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.EmailConfirmed,
-            user.Profile?.NativeLanguage, primaryLang?.LanguageCode, primaryLang?.CurrentLevel);
-
-        return Ok(new AuthResponse(token, userDto, isNewUser));
+        return BadRequest(new { message = "Google orqali kirish butunlay olib tashlangan. Iltimos, email va parol orqali kiring yoki ro‘yxatdan o‘ting." });
     }
 
     [HttpPost("verify-email")]
@@ -257,12 +198,12 @@ public class AuthController : ControllerBase
 
         if (record == null || record.Code != request.Code.Trim())
         {
-            return BadRequest(new { message = "Invalid verification code." });
+            return BadRequest(new { message = "Tasdiqlash kodi noto‘g‘ri. Iltimos, qaytadan tekshirib kiriting." });
         }
 
         if (record.ExpiresAtUtc < DateTime.UtcNow)
         {
-            return BadRequest(new { message = "Verification code has expired. Please request a new code." });
+            return BadRequest(new { message = "Tasdiqlash kodining amal qilish muddati tugagan (15 daqiqa). Iltimos, yangi kod so‘rang." });
         }
 
         record.IsUsed = true;
@@ -273,7 +214,7 @@ public class AuthController : ControllerBase
         }
 
         await _db.SaveChangesAsync();
-        return Ok(new { message = "Email verified successfully." });
+        return Ok(new { message = "Email muvaffaqiyatli tasdiqlandi." });
     }
 
     [HttpPost("resend-code")]
@@ -283,7 +224,7 @@ public class AuthController : ControllerBase
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null)
         {
-            return Ok(new { message = "If your account exists, a new code has been sent." });
+            return Ok(new { message = "Agar ushbu email ro‘yxatdan o‘tgan bo‘lsa, yangi kod yuborildi." });
         }
 
         var code = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
@@ -296,8 +237,16 @@ public class AuthController : ControllerBase
         _db.EmailVerificationCodes.Add(record);
         await _db.SaveChangesAsync();
 
-        _ = _emailService.SendVerificationEmailAsync(email, code);
-        return Ok(new { message = "Verification code resent." });
+        try
+        {
+            await _emailService.SendVerificationEmailAsync(email, code);
+        }
+        catch
+        {
+            // Error logged in EmailService
+        }
+
+        return Ok(new { message = "Yangi tasdiqlash kodi emailingizga yuborildi." });
     }
 
     [HttpPost("forgot-password")]

@@ -3496,7 +3496,8 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '18px' }}>
                   {[
                     ['Email tasdiqlash kodi (Resend OTP Tranzaksiyali Email)', true],
-                    ['Google OAuth 2.0 orqali bir bosqichli tezkor kirish', true],
+                    ['Standart Email & Parol orqali xavfsiz kirish va ro‘yxatdan o‘tish', true],
+                    ['Mavjud hisobni tekshirish (Duplicate email protection)', true],
                     ['1v1 So‘z bellashuvlarida CEFR daraja filtri', true],
                     ['Yangi materiallarni avtomatik nashr qilish (IsPublished)', true],
                     ['Anti-Cheat / Anti-Fraud tekshiruvi (Test mashqlarida)', true]
@@ -3506,6 +3507,24 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                       <input type="checkbox" defaultChecked={Boolean(checked)} style={{ width: '16px', height: '16px', accentColor: 'var(--purple)' }} />
                     </label>
                   ))}
+                </div>
+
+                {/* RESEND EMAIL MA’LUMOT QUTISI */}
+                <div style={{
+                  marginTop: '20px',
+                  padding: '16px',
+                  background: 'rgba(99, 102, 241, 0.06)',
+                  border: '1px solid rgba(99, 102, 241, 0.25)',
+                  borderRadius: '12px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '16px' }}>✉️</span>
+                    <strong style={{ fontSize: '13px', color: 'var(--text)' }}>Resend Email Xizmati (OTP Tasdiqlash)</strong>
+                    <span style={{ fontSize: '10px', background: '#22c55e', color: '#fff', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>Faol Ulanish</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '11px', color: 'var(--muted)', lineHeight: '1.6' }}>
+                    Foydalanuvchi ro‘yxatdan o‘tganda yoki kodni qayta so‘raganda 6 xonali tasdiqlash kodi Resend API orqali yuboriladi. Sozlamalar: <code>Resend:ApiKey</code> (re_...) va <code>Resend:FromEmail</code> (masalan: <code>onboarding@resend.dev</code> yoki shaxsiy domen).
+                  </p>
                 </div>
               </div>
             </div>
