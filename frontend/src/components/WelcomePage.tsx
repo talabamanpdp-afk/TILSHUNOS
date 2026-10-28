@@ -352,7 +352,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   const aboutDetailed = cms?.aboutDetailed || 'TILSHUNOS — xalqaro CEFR (A1–C2) standartlariga moslashtirilgan, sun’iy intellekt va professional ustozlar metodikasini o‘zida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvchiga murakkab grammatik qoidalarsiz, interaktiv so‘z o‘yinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy o‘zlashtirish imkoniyatini taqdim etishdir.';
   const aboutBtn = cms?.aboutButton || 'Batafsil ma’lumot';
 
-  const teamMembers = cms?.team && cms.team.length > 0 ? cms.team : [
+  const teamMembers = Array.isArray(cms?.team) ? cms.team : [
     { name: 'Soxibjon Gaybullayev', role: 'Asoschi & Bosh Muhandis', bio: 'Til o‘rganish texnologiyalari va raqamli ta’lim bo‘yicha mutaxassis.', avatar: 'S' },
     { name: 'Dilnoza Karimova', role: 'Bosh O‘qituvchi & Metodist', bio: 'IELTS va CEFR standartlari bo‘yicha 8 yillik tajribaga ega ustoz.', avatar: 'D' },
     { name: 'Jasur Aliyev', role: 'Ta’lim Koordinatori', bio: 'Talabalar bilan ishlash va interaktiv mashqlar mutaxassisi.', avatar: 'J' }
@@ -376,7 +376,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
     { q: 'Mobil qurilmalarda ishlaydimi?', a: 'Ha, TILSHUNOS responsive veb-ilova va PWA (Progressive Web App) sifatida smartfon va planshetlarda qulay ishlaydi.' },
     { q: 'O‘qituvchi bilan qanday bog‘lanaman?', a: 'Platformadagi O‘qituvchilar bo‘limi orqali tasdiqlangan ustozlar bilan bog‘lanib, shaxsiy topshiriqlar olishingiz mumkin.' }
   ];
-  const faqs = cms?.faqs && cms.faqs.length > 0 ? cms.faqs : defaultFaqs;
+  const faqs = Array.isArray(cms?.faqs) ? cms.faqs : defaultFaqs;
 
   // Final CTA Data
   const finalCtaKicker = cms?.finalCta?.kicker || 'HOZIROQ BOSHLANG';
@@ -919,7 +919,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       {/* 8. ABOUT US SECTION (With "Batafsil ma'lumot" modal/view) */}
       <section id="about" className="welcome-about-section">
         <div className="section-container">
-          <div className="about-wrapper">
+          <div className={`about-wrapper ${(!teamMembers || teamMembers.length === 0) ? 'no-team' : ''}`}>
             <div className="about-left scroll-reveal-left">
               <span className="section-kicker">BIZ HAQIMIZDA</span>
               <h2>{aboutShort}</h2>
@@ -935,23 +935,25 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
             </div>
 
             {/* Team / Leadership spotlight */}
-            <div className="about-team-box scroll-reveal-right delay-100">
-              <h3 className="team-box-title">Loyiha Faollari va Yetakchilari</h3>
-              <div className="team-cards-list scroll-stagger-parent">
-                {teamMembers.map(member => (
-                  <div key={member.name} className="team-member-item">
-                    <div className="member-avatar">
-                      {member.avatar || member.name[0]}
+            {teamMembers && teamMembers.length > 0 && (
+              <div className="about-team-box scroll-reveal-right delay-100">
+                <h3 className="team-box-title">Loyiha Faollari va Yetakchilari</h3>
+                <div className="team-cards-list scroll-stagger-parent">
+                  {teamMembers.map(member => (
+                    <div key={member.name} className="team-member-item">
+                      <div className="member-avatar">
+                        {member.avatar || member.name[0]}
+                      </div>
+                      <div className="member-info">
+                        <strong>{member.name}</strong>
+                        <span className="member-role">{member.role}</span>
+                        <p className="member-bio">{member.bio}</p>
+                      </div>
                     </div>
-                    <div className="member-info">
-                      <strong>{member.name}</strong>
-                      <span className="member-role">{member.role}</span>
-                      <p className="member-bio">{member.bio}</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>

@@ -27,7 +27,7 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
   const founderName = cms?.founderName || 'Soxibjon Gaybullayev';
   const founderBio = cms?.founderBio || `TILSHUNOS platformasi asoschisi. O‘zbekiston yoshlariga jahon tillarini eng samarali va qulay usulda o‘rganish uchun innovatsion ekotizim yaratish ustida ishlaydi.`;
 
-  const teamMembers = cms?.team && cms.team.length > 0 ? cms.team : [
+  const teamMembers = Array.isArray(cms?.team) ? cms.team : [
     { name: 'Soxibjon Gaybullayev', role: 'Asoschi & Bosh Muhandis', bio: 'Til o‘rganish texnologiyalari va raqamli ta’lim bo‘yicha mutaxassis.', avatar: 'S' },
     { name: 'Dilnoza Karimova', role: 'Bosh O‘qituvchi & Metodist', bio: 'IELTS va CEFR standartlari bo‘yicha 8 yillik tajribaga ega ustoz.', avatar: 'D' },
     { name: 'Jasur Aliyev', role: 'Ta’lim Koordinatori', bio: 'Talabalar bilan ishlash va interaktiv mashqlar mutaxassisi.', avatar: 'J' }
@@ -133,30 +133,32 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
           </article>
 
           {/* Team / Contributors Section */}
-          <section className="about-team-section animate-fade-in-up">
-            <div className="section-heading-centered">
-              <span className="section-kicker">BIZNING JAMOA</span>
-              <h2>Loyiha Faollari va Mutaxassislari</h2>
-              <p>Platforma ta’lim metodikasi, texnologik infratuzilmasi va sifatini ta’minlab kelayotgan yetakchilar.</p>
-            </div>
+          {teamMembers && teamMembers.length > 0 && (
+            <section className="about-team-section animate-fade-in-up">
+              <div className="section-heading-centered">
+                <span className="section-kicker">BIZNING JAMOA</span>
+                <h2>Loyiha Faollari va Mutaxassislari</h2>
+                <p>Platforma ta’lim metodikasi, texnologik infratuzilmasi va sifatini ta’minlab kelayotgan yetakchilar.</p>
+              </div>
 
-            <div className="about-team-grid">
-              {teamMembers.map(member => (
-                <div key={member.name} className="team-profile-card">
-                  <div className="profile-card-top">
-                    <div className="profile-avatar">
-                      {member.avatar || member.name[0]?.toUpperCase() || 'F'}
+              <div className="about-team-grid">
+                {teamMembers.map(member => (
+                  <div key={member.name} className="team-profile-card">
+                    <div className="profile-card-top">
+                      <div className="profile-avatar">
+                        {member.avatar || member.name[0]?.toUpperCase() || 'F'}
+                      </div>
+                      <div className="profile-meta">
+                        <strong className="profile-name">{member.name}</strong>
+                        <span className="profile-role">{member.role}</span>
+                      </div>
                     </div>
-                    <div className="profile-meta">
-                      <strong className="profile-name">{member.name}</strong>
-                      <span className="profile-role">{member.role}</span>
-                    </div>
+                    <p className="profile-bio">{member.bio}</p>
                   </div>
-                  <p className="profile-bio">{member.bio}</p>
-                </div>
-              ))}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Founder Section */}
           <section className="about-founder-spotlight animate-fade-in-up">

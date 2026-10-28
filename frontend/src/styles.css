@@ -4006,4 +4006,19 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   color: #94a3b8;
 }
 
+/* When team members are removed, center the about content */
+.about-wrapper.no-team {
+  grid-template-columns: 1fr !important;
+  max-width: 780px !important;
+  margin: 0 auto !important;
+}
+
+.about-wrapper.no-team .about-left {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
 

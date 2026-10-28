@@ -80,8 +80,13 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
   });
 
   // CMS Content from Supabase
-  const [cms, setCms] = useState<any>({
-    heroImage: '/hero-tutor.jpg',
+  const [cms, setCms] = useState<any>(() => {
+    try {
+      const cached = localStorage.getItem('tilshunos_cms_data');
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return {
+      heroImage: '/hero-tutor.jpg',
     heroMobileImage: '/hero-tutor.jpg',
     heroBadge: 'TILSHUNOS 2.0 · ILG‘OR TIL O‘RGANISH EKOTIZIMI',
     hero: 'Yangi til. Yangi imkoniyatlar.',
@@ -205,7 +210,8 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
       { q: 'Mobil qurilmalarda ishlaydimi?', a: 'Ha, TILSHUNOS responsive veb-ilova va PWA (Progressive Web App) sifatida smartfon va planshetlarda qulay ishlaydi.' },
       { q: 'O‘qituvchi bilan qanday bog‘lanaman?', a: 'Platformadagi O‘qituvchilar bo‘limi orqali tasdiqlangan ustozlar bilan bog‘lanib, shaxsiy topshiriqlar olishingiz mumkin.' }
     ]
-  });
+  };
+});
   const [cmsTab, setCmsTab] = useState<'hero' | 'stats' | 'preview' | 'curriculum' | 'features' | 'about' | 'faq' | 'footer'>('hero');
   const [newTeamMember, setNewTeamMember] = useState({ name: '', role: '', bio: '', avatar: '' });
   const [newFaq, setNewFaq] = useState({ q: '', a: '' });
@@ -327,8 +333,8 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
             ...prev?.contacts,
             ...(cmsRes.value?.contacts || {})
           },
-          team: Array.isArray(cmsRes.value?.team) && cmsRes.value.team.length > 0 ? cmsRes.value.team : prev?.team,
-          faqs: Array.isArray(cmsRes.value?.faqs) && cmsRes.value.faqs.length > 0 ? cmsRes.value.faqs : prev?.faqs
+          team: Array.isArray(cmsRes.value?.team) ? cmsRes.value.team : (prev?.team || []),
+          faqs: Array.isArray(cmsRes.value?.faqs) ? cmsRes.value.faqs : (prev?.faqs || [])
         }));
       }
 
@@ -517,39 +523,67 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
     }
   };
 
-  const handleAddTeamMember = () => {
+  const handleAddTeamMember = async () => {
     if (!newTeamMember.name || !newTeamMember.role) {
       notify('Ism va lavozimni kiriting');
       return;
     }
     const avatar = newTeamMember.avatar || newTeamMember.name.trim()[0].toUpperCase();
     const updatedTeam = [...(cms.team || []), { ...newTeamMember, avatar }];
-    setCms({ ...cms, team: updatedTeam });
+    const updatedCms = { ...cms, team: updatedTeam };
+    setCms(updatedCms);
     setNewTeamMember({ name: '', role: '', bio: '', avatar: '' });
-    notify('Jamoa a’zosi ro‘yxatga qo‘shildi. Saqlash tugmasini bosing! ✓');
+    try {
+      localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+      await api.saveCms(updatedCms);
+      notify('Yangi a’zo qo‘shildi va Supabasega saqlandi! ✓');
+    } catch {
+      notify('Jamoa a’zosi ro‘yxatga qo‘shildi. Saqlash tugmasini bosing! ✓');
+    }
   };
 
-  const handleDeleteTeamMember = (index: number) => {
+  const handleDeleteTeamMember = async (index: number) => {
     const updatedTeam = (cms.team || []).filter((_: any, i: number) => i !== index);
-    setCms({ ...cms, team: updatedTeam });
-    notify('A’zo olib tashlandi. Saqlash tugmasini bosing! ✓');
+    const updatedCms = { ...cms, team: updatedTeam };
+    setCms(updatedCms);
+    try {
+      localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+      await api.saveCms(updatedCms);
+      notify('A’zo o‘chirildi va Supabasega saqlandi! ✓');
+    } catch {
+      notify('A’zo olib tashlandi. Saqlash tugmasini bosing! ✓');
+    }
   };
 
-  const handleAddFaq = () => {
+  const handleAddFaq = async () => {
     if (!newFaq.q || !newFaq.a) {
       notify('Savol va javob matnini kiriting');
       return;
     }
     const updatedFaqs = [...(cms.faqs || []), { ...newFaq }];
-    setCms({ ...cms, faqs: updatedFaqs });
+    const updatedCms = { ...cms, faqs: updatedFaqs };
+    setCms(updatedCms);
     setNewFaq({ q: '', a: '' });
-    notify('FAQ savoli qo‘shildi. Saqlash tugmasini bosing! ✓');
+    try {
+      localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+      await api.saveCms(updatedCms);
+      notify('FAQ savoli qo‘shildi va Supabasega saqlandi! ✓');
+    } catch {
+      notify('FAQ savoli qo‘shildi. Saqlash tugmasini bosing! ✓');
+    }
   };
 
-  const handleDeleteFaq = (index: number) => {
+  const handleDeleteFaq = async (index: number) => {
     const updatedFaqs = (cms.faqs || []).filter((_: any, i: number) => i !== index);
-    setCms({ ...cms, faqs: updatedFaqs });
-    notify('FAQ olib tashlandi. Saqlash tugmasini bosing! ✓');
+    const updatedCms = { ...cms, faqs: updatedFaqs };
+    setCms(updatedCms);
+    try {
+      localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+      await api.saveCms(updatedCms);
+      notify('FAQ o‘chirildi va Supabasega saqlandi! ✓');
+    } catch {
+      notify('FAQ olib tashlandi. Saqlash tugmasini bosing! ✓');
+    }
   };
 
   const handleCreateTeacher = async () => {
@@ -2921,13 +2955,16 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
                   {/* Team Members List */}
                   <div className="panel" style={{ padding: '24px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                       <div>
                         <h3>Sayt Faollari va Jamoa A’zolari</h3>
                         <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
                           Welcome sahifasida "Biz haqimizda" bo‘limida ko‘rinadigan faollar va mutaxassislar ro‘yxati.
                         </p>
                       </div>
+                      <button className="primary-btn" onClick={saveCmsChanges} style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 700 }}>
+                        <Save size={15} /> Supabasega Saqlash
+                      </button>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px', marginBottom: '24px' }}>
