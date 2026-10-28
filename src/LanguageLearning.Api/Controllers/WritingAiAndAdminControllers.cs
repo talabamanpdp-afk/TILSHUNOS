@@ -173,21 +173,69 @@ public class AdminController : ControllerBase
     [HttpGet("stats")]
     public async Task<IActionResult> GetAdminStats()
     {
-        var totalUsers = await _db.Users.CountAsync();
-        var verifiedUsers = await _db.Users.CountAsync(u => u.EmailConfirmed);
-        var activeTeachers = await _db.TeacherProfiles.CountAsync(t => t.IsApproved);
-        var learnersCount = await _db.Users.CountAsync(u => u.Role == UserRole.Learner);
-        var totalVocab = await _db.PersonalVocabularyEntries.CountAsync();
-        var totalMaterials = await _db.LearningMaterials.CountAsync();
-        var totalAssignments = await _db.Assignments.CountAsync();
-        var totalSessions = await _db.PracticeSessions.CountAsync();
-        var totalAiConversations = await _db.AIConversations.CountAsync();
+        int totalUsers = 0, verifiedUsers = 0, activeTeachers = 0, learnersCount = 0;
+        int totalVocab = 0, totalMaterials = 0, totalAssignments = 0, totalSessions = 0, totalAiConversations = 0;
+        int readingCount = 0, writingCount = 0, listeningCount = 0, videoCount = 0;
 
-        // Content breakdown by type
-        var readingCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.Story);
-        var writingCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.GrammarLesson);
-        var listeningCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.AudioPodcast);
-        var videoCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.VideoLesson);
+        try
+        {
+            var conn = _db.Database.GetDbConnection();
+            if (conn.State != System.Data.ConnectionState.Open)
+                await conn.OpenAsync();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT
+                    (SELECT COUNT(*) FROM users) as total_users,
+                    (SELECT COUNT(*) FROM users WHERE email_confirmed = true) as verified_users,
+                    (SELECT COUNT(*) FROM teacher_profiles WHERE is_approved = true) as active_teachers,
+                    (SELECT COUNT(*) FROM users WHERE role = 0) as learners_count,
+                    (SELECT COUNT(*) FROM personal_vocabulary_entries) as total_vocab,
+                    (SELECT COUNT(*) FROM learning_materials) as total_materials,
+                    (SELECT COUNT(*) FROM assignments) as total_assignments,
+                    (SELECT COUNT(*) FROM practice_sessions) as total_sessions,
+                    (SELECT COUNT(*) FROM ai_conversations) as total_ai,
+                    (SELECT COUNT(*) FROM learning_materials WHERE content_type = 0) as reading_cnt,
+                    (SELECT COUNT(*) FROM learning_materials WHERE content_type = 1) as writing_cnt,
+                    (SELECT COUNT(*) FROM learning_materials WHERE content_type = 2) as listening_cnt,
+                    (SELECT COUNT(*) FROM learning_materials WHERE content_type = 3) as video_cnt;
+            ";
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                totalUsers = Convert.ToInt32(reader[0]);
+                verifiedUsers = Convert.ToInt32(reader[1]);
+                activeTeachers = Convert.ToInt32(reader[2]);
+                learnersCount = Convert.ToInt32(reader[3]);
+                totalVocab = Convert.ToInt32(reader[4]);
+                totalMaterials = Convert.ToInt32(reader[5]);
+                totalAssignments = Convert.ToInt32(reader[6]);
+                totalSessions = Convert.ToInt32(reader[7]);
+                totalAiConversations = Convert.ToInt32(reader[8]);
+                readingCount = Convert.ToInt32(reader[9]);
+                writingCount = Convert.ToInt32(reader[10]);
+                listeningCount = Convert.ToInt32(reader[11]);
+                videoCount = Convert.ToInt32(reader[12]);
+            }
+        }
+        catch
+        {
+            // Fallback to EF Core if needed
+            totalUsers = await _db.Users.CountAsync();
+            verifiedUsers = await _db.Users.CountAsync(u => u.EmailConfirmed);
+            activeTeachers = await _db.TeacherProfiles.CountAsync(t => t.IsApproved);
+            learnersCount = await _db.Users.CountAsync(u => u.Role == UserRole.Learner);
+            totalVocab = await _db.PersonalVocabularyEntries.CountAsync();
+            totalMaterials = await _db.LearningMaterials.CountAsync();
+            totalAssignments = await _db.Assignments.CountAsync();
+            totalSessions = await _db.PracticeSessions.CountAsync();
+            totalAiConversations = await _db.AIConversations.CountAsync();
+            readingCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.Story);
+            writingCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.GrammarLesson);
+            listeningCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.AudioPodcast);
+            videoCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.VideoLesson);
+        }
 
         // Real Level distribution from active learners
         var levels = await _db.UserLearningLanguages

@@ -33,32 +33,50 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const [refreshing, setRefreshing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<string>('');
 
-  // Statistics & Level Distribution from Supabase
-  const [stats, setStats] = useState<any>({
-    totalUsers: 0,
-    verifiedUsers: 0,
-    activeTeachers: 0,
-    learnersCount: 0,
-    totalVocabularyEntries: 0,
-    totalMaterials: 0,
-    totalAssignments: 0,
-    totalPracticeSessions: 0,
-    totalAiConversations: 0,
-    readingMaterialsCount: 0,
-    writingMaterialsCount: 0,
-    listeningMaterialsCount: 0,
-    videoMaterialsCount: 0,
-    studentsByLevel: { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 },
-    recentUsers: []
+  // Statistics & Level Distribution with Instant Local Cache
+  const [stats, setStats] = useState<any>(() => {
+    try {
+      const cached = localStorage.getItem('tilshunos_admin_stats_cache');
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return {
+      totalUsers: 0,
+      verifiedUsers: 0,
+      activeTeachers: 0,
+      learnersCount: 0,
+      totalVocabularyEntries: 0,
+      totalMaterials: 0,
+      totalAssignments: 0,
+      totalPracticeSessions: 0,
+      totalAiConversations: 0,
+      readingMaterialsCount: 0,
+      writingMaterialsCount: 0,
+      listeningMaterialsCount: 0,
+      videoMaterialsCount: 0,
+      studentsByLevel: { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 },
+      recentUsers: []
+    };
   });
 
-  // Students & All Users from Supabase
-  const [users, setUsers] = useState<any[]>([]);
+  // Students & All Users with Instant Local Cache
+  const [users, setUsers] = useState<any[]>(() => {
+    try {
+      const cached = localStorage.getItem('tilshunos_admin_users_cache');
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return [];
+  });
   const [userRoleFilter, setUserRoleFilter] = useState<string>('all');
   const [selectedUserForEdit, setSelectedUserForEdit] = useState<any | null>(null);
 
-  // Teachers from Supabase
-  const [teachers, setTeachers] = useState<any[]>([]);
+  // Teachers with Instant Local Cache
+  const [teachers, setTeachers] = useState<any[]>(() => {
+    try {
+      const cached = localStorage.getItem('tilshunos_admin_teachers_cache');
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return [];
+  });
 
   // CMS Content from Supabase
   const [cms, setCms] = useState<any>({
@@ -125,45 +143,30 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
     setTimeout(() => setToast(''), 3000);
   };
 
-  // Load all real data from Supabase backend
+  // Load real data from Supabase with two-stage priority loading
   const loadSupabaseData = async (isManualRefresh = false) => {
     if (isManualRefresh) setRefreshing(true);
-    else setLoading(true);
 
     try {
-      const [statsRes, usersRes, teachersRes, cmsRes, materialsRes, topicsRes, vocabRes] = await Promise.allSettled([
+      // Stage 1: Critical Dashboard Data (Stats, Users, CMS) - instant updates
+      const [statsRes, usersRes, cmsRes] = await Promise.allSettled([
         api.getAdminStats(),
         api.getAdminUsers(),
-        api.getTeachers(),
-        api.getCms(),
-        api.getAllAdminMaterials(),
-        api.getGameTopics(),
-        api.getAdminVocabulary()
+        api.getCms()
       ]);
 
       if (statsRes.status === 'fulfilled' && statsRes.value) {
         setStats(statsRes.value);
+        try {
+          localStorage.setItem('tilshunos_admin_stats_cache', JSON.stringify(statsRes.value));
+        } catch {}
       }
 
       if (usersRes.status === 'fulfilled' && Array.isArray(usersRes.value)) {
         setUsers(usersRes.value);
-      }
-
-      if (teachersRes.status === 'fulfilled' && Array.isArray(teachersRes.value)) {
-        setTeachers(teachersRes.value);
-      } else if (usersRes.status === 'fulfilled' && Array.isArray(usersRes.value)) {
-        // Fallback filter from users list for teachers
-        const teacherUsers = usersRes.value
-          .filter((u: any) => u.role === 'Teacher' || u.role === 2)
-          .map((u: any) => ({
-            id: u.id,
-            name: `${u.firstName} ${u.lastName}`.trim() || u.email,
-            email: u.email,
-            specialty: 'Ingliz tili mutaxassisi',
-            students: 0,
-            status: u.isActive ? 'Faol' : 'Nofaol'
-          }));
-        setTeachers(teacherUsers);
+        try {
+          localStorage.setItem('tilshunos_admin_users_cache', JSON.stringify(usersRes.value));
+        } catch {}
       }
 
       if (cmsRes.status === 'fulfilled' && cmsRes.value) {
@@ -179,24 +182,54 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
         }));
       }
 
-      if (materialsRes.status === 'fulfilled' && Array.isArray(materialsRes.value)) {
-        setMaterials(materialsRes.value);
-      }
-
-      if (topicsRes.status === 'fulfilled' && Array.isArray(topicsRes.value) && topicsRes.value.length > 0) {
-        setTopics(topicsRes.value.map((x: any) => typeof x === 'string' ? x : x.topic));
-      }
-
-      if (vocabRes.status === 'fulfilled' && Array.isArray(vocabRes.value)) {
-        setGeneralVocab(vocabRes.value);
-      }
-
       const now = new Date();
       setLastSyncTime(now.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setLoading(false);
 
       if (isManualRefresh) {
-        notify('Supabase ma’lumotlari real vaqtda yangilandi! ✓');
+        notify('Ma’lumotlar yangilandi! ✓');
       }
+
+      // Stage 2: Background Secondary Modules (Teachers, Materials, Topics, Vocab)
+      // Loaded asynchronously so they never block the main dashboard!
+      Promise.allSettled([
+        api.getTeachers(),
+        api.getAllAdminMaterials(),
+        api.getGameTopics(),
+        api.getAdminVocabulary()
+      ]).then(([teachersRes, materialsRes, topicsRes, vocabRes]) => {
+        if (teachersRes.status === 'fulfilled' && Array.isArray(teachersRes.value)) {
+          setTeachers(teachersRes.value);
+          try {
+            localStorage.setItem('tilshunos_admin_teachers_cache', JSON.stringify(teachersRes.value));
+          } catch {}
+        } else if (usersRes.status === 'fulfilled' && Array.isArray(usersRes.value)) {
+          const teacherUsers = usersRes.value
+            .filter((u: any) => u.role === 'Teacher' || u.role === 2)
+            .map((u: any) => ({
+              id: u.id,
+              name: `${u.firstName} ${u.lastName}`.trim() || u.email,
+              email: u.email,
+              specialty: 'Ingliz tili mutaxassisi',
+              students: 0,
+              status: u.isActive ? 'Faol' : 'Nofaol'
+            }));
+          setTeachers(teacherUsers);
+        }
+
+        if (materialsRes.status === 'fulfilled' && Array.isArray(materialsRes.value)) {
+          setMaterials(materialsRes.value);
+        }
+
+        if (topicsRes.status === 'fulfilled' && Array.isArray(topicsRes.value) && topicsRes.value.length > 0) {
+          setTopics(topicsRes.value.map((x: any) => typeof x === 'string' ? x : x.topic));
+        }
+
+        if (vocabRes.status === 'fulfilled' && Array.isArray(vocabRes.value)) {
+          setGeneralVocab(vocabRes.value);
+        }
+      }).catch(() => {});
+
     } catch (err: any) {
       if (isManualRefresh) {
         notify('Ma’lumotlarni yangilashda xatolik yuz berdi.');
