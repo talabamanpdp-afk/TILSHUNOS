@@ -1036,28 +1036,31 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               </div>
             </div>
 
-            {/* Col 2: Navigation Links */}
-            <div className="footer-col">
-              <h4>Platforma</h4>
-              <ul className="footer-links-list">
-                <li><a href="#preview">Interfeys ko‘rinishi</a></li>
-                <li><a href="#cefr">CEFR Standartlari</a></li>
-                <li><a href="#skills">5 ta Ko‘nikma</a></li>
-                <li><a href="#how-it-works">Qanday ishlaydi?</a></li>
-                <li><a href="#features">Imkoniyatlar</a></li>
-              </ul>
-            </div>
+            {/* Group Col 2 & Col 3: Side-by-side on mobile */}
+            <div className="footer-links-duo">
+              {/* Col 2: Navigation Links */}
+              <div className="footer-col footer-col-nav">
+                <h4>Platforma</h4>
+                <ul className="footer-links-list">
+                  <li><a href="#preview">Interfeys ko‘rinishi</a></li>
+                  <li><a href="#cefr">CEFR Standartlari</a></li>
+                  <li><a href="#skills">5 ta Ko‘nikma</a></li>
+                  <li><a href="#how-it-works">Qanday ishlaydi?</a></li>
+                  <li><a href="#features">Imkoniyatlar</a></li>
+                </ul>
+              </div>
 
-            {/* Col 3: About & Help */}
-            <div className="footer-col">
-              <h4>Ma’lumotlar</h4>
-              <ul className="footer-links-list">
-                <li><a href="#about" onClick={(e) => { e.preventDefault(); onOpenAbout(); }}>Biz haqimizda (Batafsil)</a></li>
-                <li><a href="#faq">Ko‘p beriladigan savollar</a></li>
-                <li><a href="#features">O‘qituvchilar bilan ishlash</a></li>
-                <li><button className="footer-text-btn" onClick={() => onBegin('login')}>Hisobga kirish</button></li>
-                <li><button className="footer-text-btn" onClick={() => onBegin('register')}>Ro‘yxatdan o‘tish</button></li>
-              </ul>
+              {/* Col 3: About & Help */}
+              <div className="footer-col footer-col-info">
+                <h4>Ma’lumotlar</h4>
+                <ul className="footer-links-list">
+                  <li><a href="#about" onClick={(e) => { e.preventDefault(); onOpenAbout(); }}>Biz haqimizda (Batafsil)</a></li>
+                  <li><a href="#faq">Ko‘p beriladigan savollar</a></li>
+                  <li><a href="#features">O‘qituvchilar bilan ishlash</a></li>
+                  <li><button className="footer-text-btn" onClick={() => onBegin('login')}>Hisobga kirish</button></li>
+                  <li><button className="footer-text-btn" onClick={() => onBegin('register')}>Ro‘yxatdan o‘tish</button></li>
+                </ul>
+              </div>
             </div>
 
             {/* Col 4: Dynamic Contacts (Only shows what Admin enters!) */}
