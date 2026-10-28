@@ -3,6 +3,7 @@ import { TeacherPanel } from './components/TeacherPanel';
 import { DuelMatchModal } from './components/DuelMatchModal';
 import { GoogleOAuthModal } from './components/GoogleOAuthModal';
 import { WelcomePage } from './components/WelcomePage';
+import { AboutPage } from './components/AboutPage';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Award, BookA, BookOpen, Bookmark, Brain,
@@ -1528,7 +1529,7 @@ function Stat({ icon: Icon, label, value, note, color, trend }: { icon: LucideIc
 }
 
 function App() {
-  const [page, setPage] = useState<'welcome' | 'login' | 'register' | 'verify' | 'onboarding' | 'dashboard'>(() => {
+  const [page, setPage] = useState<'welcome' | 'about' | 'login' | 'register' | 'verify' | 'onboarding' | 'dashboard'>(() => {
     const token = authStorage.getToken();
     if (!token) return 'welcome';
     const currentRole = localStorage.getItem('tilshunos_role') || 'user';
@@ -1787,12 +1788,25 @@ function App() {
       <WelcomePage
         cms={cmsContent}
         onBegin={begin}
+        onOpenAbout={() => setPage('about')}
         dark={dark}
         setDark={setDark}
         onSelectLevel={(lvl) => {
           setLevel(lvl);
           begin('register');
         }}
+      />
+    );
+  }
+
+  if (page === 'about') {
+    return (
+      <AboutPage
+        cms={cmsContent}
+        onBack={() => setPage('welcome')}
+        onBegin={begin}
+        dark={dark}
+        setDark={setDark}
       />
     );
   }

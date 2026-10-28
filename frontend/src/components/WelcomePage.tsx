@@ -35,16 +35,16 @@ export interface CmsConfig {
 interface WelcomePageProps {
   cms: CmsConfig | null;
   onBegin: (intent: 'login' | 'register') => void;
+  onOpenAbout: () => void;
   dark: boolean;
   setDark: (val: boolean) => void;
   onSelectLevel?: (lvl: string) => void;
 }
 
-export function WelcomePage({ cms, onBegin, dark, setDark, onSelectLevel }: WelcomePageProps) {
+export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelectLevel }: WelcomePageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [previewTab, setPreviewTab] = useState<'vocab' | 'lesson' | 'progress'>('vocab');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-  const [aboutModalOpen, setAboutModalOpen] = useState(false);
 
   // Audio pronunciation simulation
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -223,32 +223,6 @@ export function WelcomePage({ cms, onBegin, dark, setDark, onSelectLevel }: Welc
                     <strong>150+</strong>
                     <span>Tillarda</span>
                   </div>
-                </div>
-              </div>
-
-              {/* Also Available at */}
-              <div className="holo-available-block">
-                <span className="holo-available-label">Also Available at</span>
-                <div className="holo-app-badges">
-                  <a href="#pwa" className="holo-store-badge" onClick={(e) => { e.preventDefault(); onBegin('register'); }}>
-                    <svg className="badge-svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.63-.77 1.06-1.84.94-2.91-.91.04-2.02.61-2.67 1.38-.58.67-1.09 1.76-.95 2.8.02 0 .04 0 .06 0 .96 0 1.99-.5 2.62-1.27z" />
-                    </svg>
-                    <div className="badge-text">
-                      <small>Available on the</small>
-                      <strong>App Store</strong>
-                    </div>
-                  </a>
-
-                  <a href="#pwa" className="holo-store-badge" onClick={(e) => { e.preventDefault(); onBegin('register'); }}>
-                    <svg className="badge-svg" viewBox="0 0 24 24" width="22" height="22">
-                      <path d="M3.609 1.814L13.792 12 3.61 22.186c-.305-.286-.484-.71-.484-1.186V3c0-.476.179-.9.483-1.186zm11.238 11.24l2.128 2.128-11.83 6.83 9.702-8.958zm0-2.108L5.145 1.988l11.83 6.83-2.128 2.128zm1.094 1.054l2.84 1.64c.82.473.82 1.246 0 1.72l-2.84 1.64-1.66-1.66 1.66-1.66z" fill="#4285F4" />
-                    </svg>
-                    <div className="badge-text">
-                      <small>GET IT ON</small>
-                      <strong>Google Play</strong>
-                    </div>
-                  </a>
                 </div>
               </div>
 
@@ -623,7 +597,7 @@ export function WelcomePage({ cms, onBegin, dark, setDark, onSelectLevel }: Welc
                 intellekt yordamida tilni erkin o‘zlashtirishi uchun ishlab chiqilgan.
               </p>
 
-              <button className="about-readmore-btn" onClick={() => setAboutModalOpen(true)}>
+              <button className="about-readmore-btn" onClick={() => onOpenAbout()}>
                 <span>{aboutBtn}</span>
                 <ArrowRight size={16} />
               </button>
@@ -745,7 +719,7 @@ export function WelcomePage({ cms, onBegin, dark, setDark, onSelectLevel }: Welc
             <div className="footer-col">
               <h4>Ma’lumotlar</h4>
               <ul className="footer-links-list">
-                <li><a href="#about" onClick={(e) => { e.preventDefault(); setAboutModalOpen(true); }}>Biz haqimizda (Batafsil)</a></li>
+                <li><a href="#about" onClick={(e) => { e.preventDefault(); onOpenAbout(); }}>Biz haqimizda (Batafsil)</a></li>
                 <li><a href="#faq">Ko‘p beriladigan savollar</a></li>
                 <li><a href="#features">O‘qituvchilar bilan ishlash</a></li>
                 <li><button className="footer-text-btn" onClick={() => onBegin('login')}>Hisobga kirish</button></li>
@@ -800,63 +774,14 @@ export function WelcomePage({ cms, onBegin, dark, setDark, onSelectLevel }: Welc
           <div className="footer-bottom-bar">
             <span>{footerText}</span>
             <div className="footer-bottom-links">
-              <a href="#about" onClick={(e) => { e.preventDefault(); setAboutModalOpen(true); }}>Maxfiylik siyosati</a>
+              <a href="#about" onClick={(e) => { e.preventDefault(); onOpenAbout(); }}>Maxfiylik siyosati</a>
               <span className="dot-sep">·</span>
-              <a href="#about" onClick={(e) => { e.preventDefault(); setAboutModalOpen(true); }}>Foydalanish shartlari</a>
+              <a href="#about" onClick={(e) => { e.preventDefault(); onOpenAbout(); }}>Foydalanish shartlari</a>
             </div>
           </div>
         </div>
       </footer>
 
-      {/* DEDICATED ABOUT US MODAL / VIEW */}
-      {aboutModalOpen && (
-        <div className="modal-backdrop" onClick={() => setAboutModalOpen(false)}>
-          <div className="modal about-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-heading">
-              <div>
-                <span className="section-kicker">TILSHUNOS HAQIDA</span>
-                <h2>Platforma Missiyasi va Tarixi</h2>
-              </div>
-              <button className="icon-btn" onClick={() => setAboutModalOpen(false)} aria-label="Yopish">
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="about-modal-body">
-              <div className="about-rich-article">
-                <p>{aboutDetailed}</p>
-
-                <h4 style={{ margin: '22px 0 10px', fontSize: '15px' }}>Bizning Asosiy Tamoyillarimiz:</h4>
-                <ul style={{ paddingLeft: '20px', lineHeight: '1.8', color: 'var(--muted)', fontSize: '14px' }}>
-                  <li><strong>Haqiqiy foyda:</strong> Grammatika quruq yodlanmaydi, kundalik muloqotda sinab ko‘riladi.</li>
-                  <li><strong>O‘zbekona yondashuv:</strong> Izohlar va tarjimalar ona tilimizning nozik xususiyatlariga mos holda tayyorlangan.</li>
-                  <li><strong>O‘yinlashtirish:</strong> Musobaqalar va yutuqlar o‘rganish ishtiyoqini so‘ndirmaydi.</li>
-                </ul>
-
-                <h4 style={{ margin: '26px 0 14px', fontSize: '15px' }}>Loyiha Rahbariyati va Faollari:</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
-                  {teamMembers.map(m => (
-                    <div key={m.name} style={{ background: 'var(--bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <strong style={{ display: 'block', fontSize: '13px' }}>{m.name}</strong>
-                      <span style={{ fontSize: '11px', color: 'var(--purple)', fontWeight: 700 }}>{m.role}</span>
-                      <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--muted)', lineHeight: '1.5' }}>{m.bio}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="modal-footer" style={{ marginTop: '24px' }}>
-              <button className="outline-btn" onClick={() => setAboutModalOpen(false)}>
-                Yopish
-              </button>
-              <button className="primary-btn" onClick={() => { setAboutModalOpen(false); onBegin('register'); }}>
-                Bizga qo‘shiling <ArrowRight size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
