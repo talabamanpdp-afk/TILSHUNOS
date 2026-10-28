@@ -267,8 +267,9 @@ public class AdminController : ControllerBase
             ["C2"] = c2Count
         };
 
-        // Recent users from Supabase
+        // Recent users from Supabase (Super Admin excluded)
         var recentUsers = await _db.Users
+            .Where(u => u.NormalizedEmail != "SOXIBGAYBULLAYEV439@GMAIL.COM" && u.Role != UserRole.SuperAdmin)
             .OrderByDescending(u => u.CreatedAtUtc)
             .Take(6)
             .Select(u => new AdminRecentUserDto(
@@ -305,7 +306,11 @@ public class AdminController : ControllerBase
     [HttpGet("users")]
     public async Task<IActionResult> GetUsers([FromQuery] string? search)
     {
-        var query = _db.Users.Include(u => u.Profile).AsQueryable();
+        // Super Admin is never exposed in the general user tables
+        var query = _db.Users
+            .Include(u => u.Profile)
+            .Where(u => u.NormalizedEmail != "SOXIBGAYBULLAYEV439@GMAIL.COM" && u.Role != UserRole.SuperAdmin)
+            .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -339,6 +344,16 @@ public class AdminController : ControllerBase
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user == null) return NotFound(new { message = "Foydalanuvchi topilmadi." });
 
+        if (user.NormalizedEmail == "SOXIBGAYBULLAYEV439@GMAIL.COM" || user.Role == UserRole.SuperAdmin)
+        {
+            return BadRequest(new { message = "Super Admin hisobini o‘zgartirib bo‘lmaydi. U daxlsizdir." });
+        }
+
+        if (request.Role == UserRole.SuperAdmin)
+        {
+            return BadRequest(new { message = "Tizimda faqat 1 ta yagona Super Admin bo‘lishi mumkin." });
+        }
+
         user.Role = request.Role;
         user.IsActive = request.IsActive;
         await _db.SaveChangesAsync();
@@ -351,6 +366,11 @@ public class AdminController : ControllerBase
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user == null) return NotFound(new { message = "Foydalanuvchi topilmadi." });
+
+        if (user.NormalizedEmail == "SOXIBGAYBULLAYEV439@GMAIL.COM" || user.Role == UserRole.SuperAdmin)
+        {
+            return BadRequest(new { message = "Super Admin hisobini o‘chirib bo‘lmaydi. U daxlsizdir." });
+        }
 
         _db.Users.Remove(user);
         await _db.SaveChangesAsync();
