@@ -88,7 +88,8 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
     return {
       heroImage: '/hero-tutor.jpg',
     heroMobileImage: '/hero-tutor.jpg',
-    heroBadge: 'TILSHUNOS 2.0 · ILG‘OR TIL O‘RGANISH EKOTIZIMI',
+    heroBgDesktop: '',
+    heroBgMobile: '',
     hero: 'Yangi til. Yangi imkoniyatlar.',
     description: 'TILSHUNOS bilan har kuni tizimli o‘rganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga chiqing.',
     cta: 'Bepul boshlash',
@@ -419,10 +420,14 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
   const desktopFileInputRef = useRef<HTMLInputElement | null>(null);
   const mobileFileInputRef = useRef<HTMLInputElement | null>(null);
+  const bgDesktopFileInputRef = useRef<HTMLInputElement | null>(null);
+  const bgMobileFileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingDesktop, setUploadingDesktop] = useState(false);
   const [uploadingMobile, setUploadingMobile] = useState(false);
+  const [uploadingBgDesktop, setUploadingBgDesktop] = useState(false);
+  const [uploadingBgMobile, setUploadingBgMobile] = useState(false);
 
-  const handleDeviceFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'desktop' | 'mobile') => {
+  const handleDeviceFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'desktop' | 'mobile' | 'bgDesktop' | 'bgMobile') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -432,7 +437,9 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
     }
 
     if (target === 'desktop') setUploadingDesktop(true);
-    else setUploadingMobile(true);
+    else if (target === 'mobile') setUploadingMobile(true);
+    else if (target === 'bgDesktop') setUploadingBgDesktop(true);
+    else if (target === 'bgMobile') setUploadingBgMobile(true);
 
     try {
       // 1. Read file as Data URL
@@ -490,10 +497,18 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
       }
 
       // 4. Update CMS state and local cache
+      const fieldKey = target === 'desktop'
+        ? 'heroImage'
+        : target === 'mobile'
+        ? 'heroMobileImage'
+        : target === 'bgDesktop'
+        ? 'heroBgDesktop'
+        : 'heroBgMobile';
+
       setCms((prev: any) => {
         const next = {
           ...prev,
-          [target === 'desktop' ? 'heroImage' : 'heroMobileImage']: finalUrl
+          [fieldKey]: finalUrl
         };
         try {
           localStorage.setItem('tilshunos_cms_data', JSON.stringify(next));
@@ -506,7 +521,9 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
       notify(err.message || 'Rasm yuklashda xatolik yuz berdi');
     } finally {
       if (target === 'desktop') setUploadingDesktop(false);
-      else setUploadingMobile(false);
+      else if (target === 'mobile') setUploadingMobile(false);
+      else if (target === 'bgDesktop') setUploadingBgDesktop(false);
+      else if (target === 'bgMobile') setUploadingBgMobile(false);
       if (e.target) e.target.value = '';
     }
   };
@@ -1891,14 +1908,6 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                       <Sparkles size={18} style={{ color: 'var(--purple)' }} /> Asosiy Hero Matnlari
                     </h3>
                     <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
-                      <b style={{ fontSize: '12px' }}>Yuqori Badge / Kicker:</b>
-                      <input
-                        value={cms.heroBadge || ''}
-                        onChange={e => setCms({ ...cms, heroBadge: e.target.value })}
-                        placeholder="Masalan, TILSHUNOS 2.0 · ILG‘OR TIL O‘RGANISH EKOTIZIMI"
-                      />
-                    </label>
-                    <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
                       <b style={{ fontSize: '12px' }}>Bosh Sarlavha (Headline):</b>
                       <input
                         value={cms.hero || ''}
@@ -1947,6 +1956,271 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                     </label>
                     <div style={{ marginTop: '20px', padding: '12px', background: 'var(--soft)', borderRadius: '10px', fontSize: '11px', color: 'var(--muted)' }}>
                       💡 <em>Barcha tugmalar real harakatlarga ulangan: Asosiy tugma ro‘yxatdan o‘tishga, ikkinchi tugma interaktiv demonstratsiyaga yo‘naltiradi.</em>
+                    </div>
+                  </div>
+
+                  {/* 2. HEADER & HERO BACKGROUND IMAGES (DESKTOP & MOBILE) */}
+                  <div className="panel" style={{ padding: '24px', gridColumn: '1 / -1' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                      <div>
+                        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 4px' }}>
+                          <ImageIcon size={19} style={{ color: 'var(--purple)' }} /> Header & Hero Orqa Fon Rasmlari (Desktop & Mobile)
+                        </h3>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
+                          Header va bosh sahifa kirish qismi uchun orqa fon rasmini o‘rnating. Desktop va smartfonlar uchun alohida rasm yuklashingiz mumkin.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Presets Row for Background */}
+                    <div style={{ marginBottom: '20px', padding: '12px 16px', background: 'var(--soft)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        ⚡ 1-Bosishda Zamonaviy Fon Variantlari:
+                      </span>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="ghost-btn"
+                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          onClick={() => setCms({
+                            ...cms,
+                            heroBgDesktop: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80',
+                            heroBgMobile: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=750&q=80'
+                          })}
+                        >
+                          🌌 Yulduzli Tog‘lar (Tungi Fon)
+                        </button>
+                        <button
+                          type="button"
+                          className="ghost-btn"
+                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          onClick={() => setCms({
+                            ...cms,
+                            heroBgDesktop: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1920&q=80',
+                            heroBgMobile: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=750&q=80'
+                          })}
+                        >
+                          📚 Kitoblar & Zamonaviy Kutubxona
+                        </button>
+                        <button
+                          type="button"
+                          className="ghost-btn"
+                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          onClick={() => setCms({
+                            ...cms,
+                            heroBgDesktop: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80',
+                            heroBgMobile: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=750&q=80'
+                          })}
+                        >
+                          💼 Jamoaviy Hamkorlik & Ofis
+                        </button>
+                        <button
+                          type="button"
+                          className="ghost-btn"
+                          style={{ fontSize: '12px', padding: '6px 12px', color: '#ef4444' }}
+                          onClick={() => setCms({ ...cms, heroBgDesktop: '', heroBgMobile: '' })}
+                        >
+                          ❌ Standart Toza Fonga Qaytarish (O‘chirish)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                      {/* Desktop Background Image */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                          <b style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Laptop size={15} style={{ color: '#2563eb' }} /> Desktop Orqa Fon Rasmi:
+                          </b>
+                          <input
+                            type="file"
+                            ref={bgDesktopFileInputRef}
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleDeviceFileUpload(e, 'bgDesktop')}
+                          />
+                          <button
+                            type="button"
+                            className="secondary-btn"
+                            disabled={uploadingBgDesktop}
+                            onClick={() => bgDesktopFileInputRef.current?.click()}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontSize: '11px',
+                              padding: '5px 11px',
+                              borderRadius: '7px',
+                              fontWeight: 700
+                            }}
+                          >
+                            <Upload size={13} />
+                            {uploadingBgDesktop ? 'Yuklanmoqda...' : '📁 Qurilmadan Fon Yuklash'}
+                          </button>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input
+                            style={{ flex: 1 }}
+                            value={cms.heroBgDesktop || ''}
+                            onChange={e => setCms({ ...cms, heroBgDesktop: e.target.value })}
+                            placeholder="https://... yoki qurilmadan yuklangan havola"
+                          />
+                          {cms.heroBgDesktop && (
+                            <button
+                              type="button"
+                              className="ghost-btn"
+                              style={{ padding: '6px 10px', color: '#ef4444', fontSize: '12px' }}
+                              onClick={() => setCms({ ...cms, heroBgDesktop: '' })}
+                              title="O‘chirish"
+                            >
+                              O‘chirish
+                            </button>
+                          )}
+                        </div>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                          Katta ekranlar uchun keng (1920x1080 va undan yuqori) rasm tavsiya etiladi.
+                        </span>
+                        {/* Preview */}
+                        {cms.heroBgDesktop ? (
+                          <div style={{
+                            marginTop: '4px',
+                            height: '110px',
+                            borderRadius: '10px',
+                            overflow: 'hidden',
+                            border: '1px solid var(--border)',
+                            position: 'relative'
+                          }}>
+                            <img
+                              src={cms.heroBgDesktop}
+                              alt="Desktop Background Preview"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                            <div style={{
+                              position: 'absolute',
+                              bottom: '6px',
+                              left: '8px',
+                              background: 'rgba(0,0,0,0.65)',
+                              color: '#fff',
+                              fontSize: '10px',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontWeight: 700
+                            }}>
+                              Desktop Fon Ko‘rinishi
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{
+                            marginTop: '4px',
+                            padding: '16px',
+                            border: '1px dashed var(--border)',
+                            borderRadius: '10px',
+                            textAlign: 'center',
+                            fontSize: '11px',
+                            color: 'var(--muted)'
+                          }}>
+                            Standart oq/qora fon qo‘llanilmoqda
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Mobile Background Image */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                          <b style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Smartphone size={15} style={{ color: '#10b981' }} /> Mobil Orqa Fon Rasmi:
+                          </b>
+                          <input
+                            type="file"
+                            ref={bgMobileFileInputRef}
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleDeviceFileUpload(e, 'bgMobile')}
+                          />
+                          <button
+                            type="button"
+                            className="secondary-btn"
+                            disabled={uploadingBgMobile}
+                            onClick={() => bgMobileFileInputRef.current?.click()}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontSize: '11px',
+                              padding: '5px 11px',
+                              borderRadius: '7px',
+                              fontWeight: 700
+                            }}
+                          >
+                            <Upload size={13} />
+                            {uploadingBgMobile ? 'Yuklanmoqda...' : '📱 Mobil Fon Yuklash'}
+                          </button>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input
+                            style={{ flex: 1 }}
+                            value={cms.heroBgMobile || ''}
+                            onChange={e => setCms({ ...cms, heroBgMobile: e.target.value })}
+                            placeholder="https://... yoki smartfon uchun havola"
+                          />
+                          {cms.heroBgMobile && (
+                            <button
+                              type="button"
+                              className="ghost-btn"
+                              style={{ padding: '6px 10px', color: '#ef4444', fontSize: '12px' }}
+                              onClick={() => setCms({ ...cms, heroBgMobile: '' })}
+                              title="O‘chirish"
+                            >
+                              O‘chirish
+                            </button>
+                          )}
+                        </div>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                          Smartfonlar uchun vertikal (masalan: 1080x1920) rasm yuklang. Bo‘sh qolsa, desktop foni ishlatiladi.
+                        </span>
+                        {/* Preview */}
+                        {cms.heroBgMobile ? (
+                          <div style={{
+                            marginTop: '4px',
+                            height: '110px',
+                            borderRadius: '10px',
+                            overflow: 'hidden',
+                            border: '1px solid var(--border)',
+                            position: 'relative'
+                          }}>
+                            <img
+                              src={cms.heroBgMobile}
+                              alt="Mobile Background Preview"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                            <div style={{
+                              position: 'absolute',
+                              bottom: '6px',
+                              left: '8px',
+                              background: 'rgba(0,0,0,0.65)',
+                              color: '#fff',
+                              fontSize: '10px',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontWeight: 700
+                            }}>
+                              Mobil Fon Ko‘rinishi
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{
+                            marginTop: '4px',
+                            padding: '16px',
+                            border: '1px dashed var(--border)',
+                            borderRadius: '10px',
+                            textAlign: 'center',
+                            fontSize: '11px',
+                            color: 'var(--muted)'
+                          }}>
+                            Desktop foni mobilga ham avtomatik moslashadi
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 

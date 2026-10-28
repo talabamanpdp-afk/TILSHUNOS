@@ -231,11 +231,12 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   };
 
   // Safe defaults & Hero texts
-  const heroBadge = cms?.heroBadge || 'TILSHUNOS 2.0 · ILG‘OR TIL O‘RGANISH EKOTIZIMI';
   const heroTitle = cms?.hero || 'Yangi til. Yangi imkoniyatlar.';
   const heroDesc = cms?.description || 'TILSHUNOS bilan har kuni tizimli o‘rganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga chiqing.';
   const primaryCta = cms?.cta || 'Bepul boshlash';
   const secondaryCta = cms?.secondaryCta || 'Platformani o‘rganish';
+  const heroBgDesktop = cms?.heroBgDesktop || cms?.headerBgDesktop || '';
+  const heroBgMobile = cms?.heroBgMobile || cms?.headerBgMobile || '';
 
   // Dynamic Real or Admin-Configured Statistics
   const liveStats = cms?.liveStats;
@@ -388,7 +389,26 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   return (
     <div className={`welcome-root ${dark ? 'dark' : ''}`}>
       {/* 1. TOP SPLIT HEADER & HERO WRAPPER */}
-      <section className="holo-hero-wrapper">
+      <section className={`holo-hero-wrapper ${(heroBgDesktop || heroBgMobile) ? 'has-custom-bg' : ''}`}>
+        {/* Dynamic Header & Hero Background Images (Desktop & Mobile) */}
+        {(heroBgDesktop || heroBgMobile) && (
+          <div className="holo-custom-bg-layer">
+            {heroBgDesktop && (
+              <div
+                className={`holo-custom-bg holo-custom-bg-desktop ${heroBgMobile ? 'desktop-only-bg' : ''}`}
+                style={{ backgroundImage: `url(${heroBgDesktop})` }}
+              />
+            )}
+            {heroBgMobile && (
+              <div
+                className="holo-custom-bg holo-custom-bg-mobile mobile-only-bg"
+                style={{ backgroundImage: `url(${heroBgMobile})` }}
+              />
+            )}
+            <div className="holo-custom-bg-overlay" />
+          </div>
+        )}
+
         {/* Split Background Layers */}
         <div className="holo-bg-split">
           <div className="holo-bg-left" />
@@ -487,20 +507,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
           <div className="holo-hero-grid">
             {/* Left Hero Column */}
             <div className="holo-hero-copy animate-fade-in-up">
-              {/* Mobile Centered Large Brand Emblem (below navbar) */}
-              <div className="mobile-center-brand-banner mobile-only-block animate-fade-in">
-                <div className="mobile-brand-icon-large">
-                  <Languages size={28} />
-                </div>
-                <div className="mobile-brand-title-large">
-                  TILSHUNOS<span className="brand-dot">.</span>
-                </div>
-                <span className="mobile-brand-subtag">ILG‘OR TIL O‘RGANISH PLATFORMASI</span>
-              </div>
-
               <h1 className="holo-headline">
                 Yangi tilni{' '}
-                <span className="holo-pill-badge">{heroBadge?.includes('PERCENT') ? heroBadge : '99 PERCENT'}</span>
+                <span className="holo-pill-badge">99 PERCENT</span>
                 <br />
                 erkin gapiring
               </h1>
