@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity, BookOpen, Boxes, FileAudio, FileText, Gamepad2, Globe, LayoutDashboard,
   LogOut, Plus, Settings, ShieldCheck, Users, Video, GraduationCap, ClipboardList,
   Search, Trash2, Edit3, Save, UserCog, Headphones, PenLine, BookMarked, ChartNoAxesCombined,
   Check, Sun, Moon, Sparkles, ArrowRight, Menu, X, RefreshCw, Database, CheckCircle2,
   AlertCircle, ExternalLink, ShieldAlert, Clock, Layers, MessageSquare, Zap,
-  Smartphone, Laptop, Image as ImageIcon
+  Smartphone, Laptop, Image as ImageIcon, Upload
 } from 'lucide-react';
 import { api, authStorage } from '../api';
 
@@ -268,6 +268,100 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
       notify('Aloqa tekshirishda xatolik');
     } finally {
       setTestingPing(false);
+    }
+  };
+
+  const desktopFileInputRef = useRef<HTMLInputElement | null>(null);
+  const mobileFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingDesktop, setUploadingDesktop] = useState(false);
+  const [uploadingMobile, setUploadingMobile] = useState(false);
+
+  const handleDeviceFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'desktop' | 'mobile') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      notify('Faqat rasm fayllari (JPG, PNG, WebP) yuklanishi mumkin!');
+      return;
+    }
+
+    if (target === 'desktop') setUploadingDesktop(true);
+    else setUploadingMobile(true);
+
+    try {
+      // 1. Read file as Data URL
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Faylni o‘qishda xatolik yuz berdi'));
+        reader.readAsDataURL(file);
+      });
+
+      // 2. Compress image using Canvas to optimal size (max 1400px width/height)
+      const compressedDataUrl = await new Promise<string>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1400;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.88));
+          } else {
+            resolve(dataUrl);
+          }
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      });
+
+      // 3. Upload to Supabase through the backend
+      let finalUrl = compressedDataUrl;
+      try {
+        const res = await api.uploadCmsImage({
+          dataBase64: compressedDataUrl,
+          fileName: file.name,
+          contentType: 'image/jpeg'
+        });
+        if (res && (res.url || res.relativeUrl)) {
+          finalUrl = res.url || res.relativeUrl;
+        }
+      } catch (err: any) {
+        console.warn('Backend Supabase direct upload failed, falling back to optimized data URL:', err);
+      }
+
+      // 4. Update CMS state and local cache
+      setCms((prev: any) => {
+        const next = {
+          ...prev,
+          [target === 'desktop' ? 'heroImage' : 'heroMobileImage']: finalUrl
+        };
+        try {
+          localStorage.setItem('tilshunos_cms_data', JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+
+      notify('Rasm qurilmadan tanlandi va Supabasega yuklandi! ✓');
+    } catch (err: any) {
+      notify(err.message || 'Rasm yuklashda xatolik yuz berdi');
+    } finally {
+      if (target === 'desktop') setUploadingDesktop(false);
+      else setUploadingMobile(false);
+      if (e.target) e.target.value = '';
     }
   };
 
@@ -1744,16 +1838,42 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                       {/* Desktop Mac Image */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                           <b style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Laptop size={15} style={{ color: '#2563eb' }} /> Desktop Mac Rasmi (Havola / URL):
+                            <Laptop size={15} style={{ color: '#2563eb' }} /> Desktop Mac Rasmi:
                           </b>
+                          {/* Device file upload button for desktop */}
                           <input
-                            value={cms.heroImage || ''}
-                            onChange={e => setCms({ ...cms, heroImage: e.target.value })}
-                            placeholder="/hero-tutor.jpg yoki https://..."
+                            type="file"
+                            ref={desktopFileInputRef}
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleDeviceFileUpload(e, 'desktop')}
                           />
-                        </label>
+                          <button
+                            type="button"
+                            className="secondary-btn"
+                            disabled={uploadingDesktop}
+                            onClick={() => desktopFileInputRef.current?.click()}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontSize: '11px',
+                              padding: '5px 11px',
+                              borderRadius: '7px',
+                              fontWeight: 700
+                            }}
+                          >
+                            <Upload size={13} />
+                            {uploadingDesktop ? 'Yuklanmoqda...' : '📁 Qurilmadan Rasm Yuklash'}
+                          </button>
+                        </div>
+                        <input
+                          value={cms.heroImage || ''}
+                          onChange={e => setCms({ ...cms, heroImage: e.target.value })}
+                          placeholder="/hero-tutor.jpg yoki qurilmadan yuklangan havola..."
+                        />
                         <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
                           Mac noutbuk ekrani uchun gorizontal yoki kvadrat rasm tavsiya etiladi.
                         </span>
@@ -1791,16 +1911,42 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
                       {/* Mobile Smartphone Image */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                           <b style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Smartphone size={15} style={{ color: '#10b981' }} /> Mobile Telefon Rasmi (Havola / URL):
+                            <Smartphone size={15} style={{ color: '#10b981' }} /> Mobile Telefon Rasmi:
                           </b>
+                          {/* Device file upload button for mobile */}
                           <input
-                            value={cms.heroMobileImage || ''}
-                            onChange={e => setCms({ ...cms, heroMobileImage: e.target.value })}
-                            placeholder="Bo‘sh qolsa Desktop rasmi ishlatiladi..."
+                            type="file"
+                            ref={mobileFileInputRef}
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleDeviceFileUpload(e, 'mobile')}
                           />
-                        </label>
+                          <button
+                            type="button"
+                            className="secondary-btn"
+                            disabled={uploadingMobile}
+                            onClick={() => mobileFileInputRef.current?.click()}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontSize: '11px',
+                              padding: '5px 11px',
+                              borderRadius: '7px',
+                              fontWeight: 700
+                            }}
+                          >
+                            <Upload size={13} />
+                            {uploadingMobile ? 'Yuklanmoqda...' : '📁 Qurilmadan Rasm Yuklash'}
+                          </button>
+                        </div>
+                        <input
+                          value={cms.heroMobileImage || ''}
+                          onChange={e => setCms({ ...cms, heroMobileImage: e.target.value })}
+                          placeholder="Bo‘sh qolsa Desktop rasmi ishlatiladi..."
+                        />
                         <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
                           Smartfon ekrani (9:16) uchun vertikal portret rasm eng chiroyli ko‘rinadi.
                         </span>

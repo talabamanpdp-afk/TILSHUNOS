@@ -15,6 +15,7 @@ public record DuelChallengeRequest(string Topic, string OpponentName);
 public record DuelSubmitRequest(string RoomId, string Word, int Round);
 public record CreateGameTopicRequest(string TopicName);
 public record AddTopicWordRequest(string Word);
+public record UploadImageRequest(string DataBase64, string? FileName, string? ContentType);
 
 [ApiController]
 [Route("api/v1/games")]
@@ -403,6 +404,94 @@ public class CmsController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "Supabasega saqlashda xatolik: " + ex.Message });
+        }
+    }
+
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    [HttpPost("upload-image")]
+    public async Task<IActionResult> UploadImage([FromBody] UploadImageRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request?.DataBase64))
+        {
+            return BadRequest(new { error = "Rasm ma'lumotlari topilmadi." });
+        }
+
+        try
+        {
+            await _db.Database.ExecuteSqlRawAsync(
+                "CREATE TABLE IF NOT EXISTS uploaded_media (id character varying(64) PRIMARY KEY, file_name character varying(255) NOT NULL, content_type character varying(64) NOT NULL, data_base64 text NOT NULL, created_at_utc timestamp with time zone NOT NULL);"
+            );
+
+            var mediaId = "media_" + Guid.NewGuid().ToString("N")[..12];
+            var contentType = string.IsNullOrWhiteSpace(request.ContentType) ? "image/jpeg" : request.ContentType;
+            var fileName = string.IsNullOrWhiteSpace(request.FileName) ? $"{mediaId}.jpg" : request.FileName;
+
+            var paramId = new Npgsql.NpgsqlParameter("@id", mediaId);
+            var paramName = new Npgsql.NpgsqlParameter("@fileName", fileName);
+            var paramType = new Npgsql.NpgsqlParameter("@contentType", contentType);
+            var paramData = new Npgsql.NpgsqlParameter("@data", request.DataBase64);
+            var paramDate = new Npgsql.NpgsqlParameter("@date", DateTime.UtcNow);
+
+            await _db.Database.ExecuteSqlRawAsync(
+                "INSERT INTO uploaded_media (id, file_name, content_type, data_base64, created_at_utc) VALUES (@id, @fileName, @contentType, @data, @date);",
+                paramId, paramName, paramType, paramData, paramDate
+            );
+
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            var mediaUrl = $"{baseUrl}/api/v1/cms/media/{mediaId}";
+
+            return Ok(new
+            {
+                success = true,
+                id = mediaId,
+                url = mediaUrl,
+                relativeUrl = $"/api/v1/cms/media/{mediaId}",
+                message = "Rasm Supabase bazasiga muvaffaqiyatli yuklandi!"
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Supabasega yuklashda xatolik: " + ex.Message });
+        }
+    }
+
+    [AllowAnonymous]
+    [HttpGet("media/{id}")]
+    public async Task<IActionResult> GetMedia(string id)
+    {
+        try
+        {
+            var conn = _db.Database.GetDbConnection();
+            if (conn.State != System.Data.ConnectionState.Open)
+            {
+                await conn.OpenAsync();
+            }
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT content_type, data_base64 FROM uploaded_media WHERE id = @id LIMIT 1;";
+            var p = cmd.CreateParameter();
+            p.ParameterName = "@id";
+            p.Value = id;
+            cmd.Parameters.Add(p);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                var contentType = reader.GetString(0);
+                var base64 = reader.GetString(1);
+                if (base64.Contains(','))
+                {
+                    base64 = base64.Substring(base64.IndexOf(',') + 1);
+                }
+                var bytes = Convert.FromBase64String(base64);
+                Response.Headers["Cache-Control"] = "public, max-age=31536000";
+                return File(bytes, contentType);
+            }
+            return NotFound();
+        }
+        catch
+        {
+            return NotFound();
         }
     }
 }

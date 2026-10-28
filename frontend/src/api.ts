@@ -338,6 +338,13 @@ export const api = {
     });
   },
 
+  async uploadCmsImage(data: { dataBase64: string; fileName?: string; contentType?: string }) {
+    return request<{ success: boolean; id: string; url: string; relativeUrl: string; message: string }>('/cms/upload-image', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
   // Admin
   async getAdminStats() {
     return request<any>('/admin/stats');
