@@ -916,9 +916,10 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
           {/* Tab Content 1: Vocabulary & Flashcards */}
           {previewTab === 'vocab' && (
             <div className="preview-content-card scroll-reveal-scale delay-200">
-              {/* Interactive Toolbar: Multilingual Pills + Flashcard Mode Toggle */}
+              {/* Interactive Toolbar: Multilingual Pills on Desktop / Stylish Select on Mobile */}
               <div className="vocab-demo-toolbar">
-                <div className="demo-lang-pills">
+                {/* Desktop: Full Horizontal Language Pills */}
+                <div className="demo-lang-pills desktop-pills">
                   {(['en', 'de', 'tr', 'ru', 'uz'] as SupportedLang[]).map((lng) => (
                     <button
                       key={lng}
@@ -937,6 +938,32 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                   ))}
                 </div>
 
+                {/* Mobile: Compact & Elegant Language Select Dropdown */}
+                <div className="demo-lang-select-mobile">
+                  <div className="demo-select-box">
+                    <span className="demo-select-flag">{LANG_LABELS[selectedDemoLang]?.flag}</span>
+                    <select
+                      value={selectedDemoLang}
+                      onChange={(e) => {
+                        setSelectedDemoLang(e.target.value as SupportedLang);
+                        setFlippedCards({});
+                        setPronunciationResults({});
+                        stopSpeech();
+                      }}
+                      className="demo-native-select"
+                      aria-label="O‘rganish tilini tanlang"
+                    >
+                      {(['en', 'de', 'tr', 'ru', 'uz'] as SupportedLang[]).map((lng) => (
+                        <option key={lng} value={lng}>
+                          {LANG_LABELS[lng]?.flag} {LANG_LABELS[lng]?.nativeName} ({LANG_LABELS[lng]?.name})
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={15} className="demo-select-chevron" />
+                  </div>
+                </div>
+
+                {/* Action: Flashcard Toggle */}
                 <div className="demo-toolbar-actions">
                   <button
                     className={`demo-flip-toggle ${flipMode ? 'active' : ''}`}
@@ -947,8 +974,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                     title="Flashcard rejimida kartani bosganda tarjimasi ochiladi"
                     type="button"
                   >
-                    <span>⚡</span>
-                    <span>{flipMode ? 'Flashcard: Faol ✓' : 'Flashcard rejimi'}</span>
+                    <span className="demo-flip-icon">⚡</span>
+                    <span className="demo-flip-text-desktop">{flipMode ? 'Flashcard: Faol ✓' : 'Flashcard rejimi'}</span>
+                    <span className="demo-flip-text-mobile">{flipMode ? 'Flashcard: Faol' : 'Flashcard'}</span>
                   </button>
                 </div>
               </div>
