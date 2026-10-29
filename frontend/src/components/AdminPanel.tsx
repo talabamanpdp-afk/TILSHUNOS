@@ -446,8 +446,19 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
 
     try {
       // Direct upload exclusively to Supabase Storage Bucket ('tilshunos-media')
+      let dataBase64 = '';
+      try {
+        dataBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(file);
+        });
+      } catch {}
+
       const res = await api.uploadCmsImage({
         file,
+        dataBase64,
         fileName: file.name,
         contentType: file.type || 'image/jpeg'
       });

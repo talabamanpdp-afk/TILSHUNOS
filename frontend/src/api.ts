@@ -361,12 +361,15 @@ export const api = {
     const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcGV4b21tcXp0eG52cGNrcXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwODU0MDYsImV4cCI6MjEwODY2MTQwNn0.P17uUwPdlEJnOxorTav-wIExlfzUJGPEIqryrvGvfPI';
     const bucketName = 'tilshunos-media';
 
+    let originalName = data.fileName || (data.file as any)?.name || 'image.jpg';
+    const ext = (originalName.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanExt = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) ? ext : 'jpg';
+    // Strictly alphanumeric ASCII S3 key to avoid Supabase 400 InvalidKey error with apostrophes like 'o‘rganish'
+    const uniqueName = `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${cleanExt}`;
+    let contentType = data.contentType || (data.file as any)?.type || (cleanExt === 'png' ? 'image/png' : 'image/jpeg');
+
     try {
       let bodyData: any = data.file;
-      let contentType = data.contentType || (data.file as any)?.type || 'image/jpeg';
-      let originalName = data.fileName || (data.file as any)?.name || 'image.jpg';
-      const cleanName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const uniqueName = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${cleanName}`;
 
       if (!bodyData && data.dataBase64) {
         const base64Clean = data.dataBase64.includes(',') ? data.dataBase64.split(',')[1] : data.dataBase64;
@@ -398,6 +401,9 @@ export const api = {
             relativeUrl: publicUrl,
             message: 'Rasm to‘g‘ridan-to‘g‘ri Supabase "tilshunos-media" bucketiga muvaffaqiyatli yuklandi!'
           };
+        } else {
+          const errText = await res.text();
+          console.warn('Supabase direct bucket upload response:', res.status, errText);
         }
       }
     } catch (err) {
@@ -405,9 +411,27 @@ export const api = {
     }
 
     // 2. Fallback to backend /cms/upload-image
+    let payload = {
+      dataBase64: data.dataBase64,
+      fileName: uniqueName,
+      contentType
+    };
+
+    if (!payload.dataBase64 && data.file) {
+      try {
+        const b64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(data.file as File);
+        });
+        payload.dataBase64 = b64;
+      } catch {}
+    }
+
     return request<{ success: boolean; id: string; url: string; relativeUrl: string; message: string }>('/cms/upload-image', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(payload)
     });
   },
 

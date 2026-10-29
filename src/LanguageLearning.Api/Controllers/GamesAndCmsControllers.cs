@@ -630,10 +630,7 @@ public class CmsController : ControllerBase
                 "image/svg+xml" => ".svg",
                 _ => ".jpg"
             };
-            var cleanBaseName = string.IsNullOrWhiteSpace(request.FileName)
-                ? mediaId
-                : Path.GetFileNameWithoutExtension(request.FileName).Trim().Replace(" ", "_");
-            var fileName = $"{cleanBaseName}_{Guid.NewGuid().ToString("N")[..6]}{ext}";
+            var fileName = $"img_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}_{Guid.NewGuid().ToString("N")[..8]}{ext}";
 
             // Extract byte array from DataBase64
             var base64Data = request.DataBase64;
