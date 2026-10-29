@@ -29,8 +29,31 @@ public class TeachersController : ControllerBase
         [FromQuery] string? language,
         [FromQuery] string? search)
     {
+        // 1. Auto-sync: Ensure every User with Role == Teacher has an approved TeacherProfile
+        var teachersWithoutProfile = await _db.Users
+            .Where(u => u.Role == UserRole.Teacher && !_db.TeacherProfiles.Any(t => t.UserId == u.Id))
+            .ToListAsync();
+
+        if (teachersWithoutProfile.Count != 0)
+        {
+            foreach (var u in teachersWithoutProfile)
+            {
+                _db.TeacherProfiles.Add(new TeacherProfile
+                {
+                    UserId = u.Id,
+                    Bio = "Ingliz tili va xalqaro imtihonlar (IELTS / CEFR) bo‘yicha tajribali o‘qituvchi.",
+                    Qualifications = "English · B1–C1 Mutaxassisi",
+                    LanguagesTaught = "English",
+                    CefrLevelsTaught = "A1,A2,B1,B2,C1",
+                    IsApproved = true
+                });
+            }
+            await _db.SaveChangesAsync();
+        }
+
         var query = _db.TeacherProfiles
             .Include(t => t.User)
+            .ThenInclude(u => u.Profile)
             .Where(t => t.IsApproved);
 
         if (!string.IsNullOrWhiteSpace(language))
@@ -45,19 +68,26 @@ public class TeachersController : ControllerBase
         }
 
         var teachers = await query
-            .Select(t => new TeacherProfileDto(
-                t.UserId,
-                $"{t.User.FirstName} {t.User.LastName}",
-                t.User.Profile != null ? t.User.Profile.AvatarUrl : null,
-                t.Bio,
-                t.Qualifications,
-                t.LanguagesTaught,
-                t.CefrLevelsTaught,
-                t.ExternalContactUrl,
-                t.HourlyRate,
-                t.TeachingExperienceYears,
-                t.IsApproved
-            ))
+            .Select(t => new
+            {
+                id = t.UserId,
+                userId = t.UserId,
+                name = ($"{t.User.FirstName} {t.User.LastName}".Trim() != "" ? $"{t.User.FirstName} {t.User.LastName}".Trim() : t.User.Email),
+                fullName = ($"{t.User.FirstName} {t.User.LastName}".Trim() != "" ? $"{t.User.FirstName} {t.User.LastName}".Trim() : t.User.Email),
+                email = t.User.Email,
+                avatarUrl = t.User.Profile != null ? t.User.Profile.AvatarUrl : null,
+                bio = t.Bio,
+                specialty = t.Qualifications,
+                qualifications = t.Qualifications,
+                languagesTaught = t.LanguagesTaught,
+                cefrLevelsTaught = t.CefrLevelsTaught,
+                externalContactUrl = t.ExternalContactUrl,
+                hourlyRate = t.HourlyRate,
+                teachingExperienceYears = t.TeachingExperienceYears,
+                isApproved = t.IsApproved,
+                students = _db.TeacherStudentConnections.Count(c => c.TeacherId == t.UserId),
+                status = t.User.IsActive ? "Faol" : "Nofaol"
+            })
             .ToListAsync();
 
         return Ok(teachers);
@@ -203,14 +233,26 @@ public class TeachersController : ControllerBase
         if (profile == null)
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            profile = new TeacherProfile
+            {
+                UserId = userId.Value,
+                Bio = "O‘quvchilarga ingliz tili grammatikasi va so‘z boyligini oshirish bo‘yicha amaliy darslar beraman.",
+                Qualifications = "English · B1–C1 Mutaxassisi",
+                LanguagesTaught = "English",
+                CefrLevelsTaught = "A1,A2,B1,B2,C1",
+                IsApproved = true
+            };
+            _db.TeacherProfiles.Add(profile);
+            await _db.SaveChangesAsync();
+
             return Ok(new
             {
-                fullName = user != null ? $"{user.FirstName} {user.LastName}" : "O'qituvchi",
+                fullName = (user != null && $"{user.FirstName} {user.LastName}".Trim() != "") ? $"{user.FirstName} {user.LastName}".Trim() : user?.Email ?? "O'qituvchi",
                 email = user?.Email ?? "",
-                bio = "Til o'rgatish bo'yicha mutaxassis",
-                specialty = "IELTS / CEFR General English",
-                telegram = "https://t.me/tilshunos_teacher",
-                instagram = "https://instagram.com/tilshunos",
+                bio = profile.Bio,
+                specialty = profile.Qualifications,
+                telegram = "https://t.me/tilshunos_ustoz",
+                instagram = "https://instagram.com/tilshunos_teacher",
                 facebook = ""
             });
         }
@@ -236,7 +278,7 @@ public class TeachersController : ControllerBase
 
         return Ok(new
         {
-            fullName = $"{profile.User.FirstName} {profile.User.LastName}",
+            fullName = ($"{profile.User.FirstName} {profile.User.LastName}".Trim() != "") ? $"{profile.User.FirstName} {profile.User.LastName}".Trim() : profile.User.Email,
             email = profile.User.Email,
             bio = profile.Bio,
             specialty = profile.Qualifications,
@@ -290,7 +332,7 @@ public class TeachersController : ControllerBase
             .Select(c => c.StudentId)
             .ToListAsync();
 
-        // If no connections, fetch up to 10 learner users so teacher immediately has students to work with
+        // If no explicit connections yet, fetch learners so teacher immediately has students to work with
         List<User> students;
         if (studentIds.Any())
         {
@@ -305,8 +347,8 @@ public class TeachersController : ControllerBase
             students = await _db.Users
                 .Include(u => u.Profile)
                 .Include(u => u.LearningLanguages)
-                .Where(u => u.Role == UserRole.Learner && u.Id != teacherId.Value)
-                .Take(10)
+                .Where(u => u.Id != teacherId.Value && u.Role != UserRole.Teacher && u.Role != UserRole.SuperAdmin)
+                .Take(25)
                 .ToListAsync();
         }
 
@@ -321,7 +363,7 @@ public class TeachersController : ControllerBase
             result.Add(new
             {
                 id = s.Id,
-                name = $"{s.FirstName} {s.LastName}",
+                name = ($"{s.FirstName} {s.LastName}".Trim() != "" ? $"{s.FirstName} {s.LastName}".Trim() : s.Email.Split('@')[0]),
                 email = s.Email,
                 targetLevel = levelStr,
                 dailyGoalMinutes = s.Profile?.DailyGoalMinutes ?? 20,

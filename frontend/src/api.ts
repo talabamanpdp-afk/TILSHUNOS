@@ -12,6 +12,20 @@ const getBaseUrl = () => {
 
 const BASE_URL = getBaseUrl();
 
+export function normalizeUserRole(role: any): 'admin' | 'teacher' | 'user' {
+  if (role === null || role === undefined) return 'user';
+  if (typeof role === 'string') {
+    const r = role.toLowerCase().trim();
+    if (r === 'superadmin' || r === 'admin') return 'admin';
+    if (r === 'teacher') return 'teacher';
+    return 'user';
+  }
+  // Enums: Guest = 0, Learner = 1, Teacher = 2, Admin = 3, SuperAdmin = 4
+  if (role === 2) return 'teacher';
+  if (role === 3 || role === 4) return 'admin';
+  return 'user';
+}
+
 export const authStorage = {
   getToken: () => localStorage.getItem('tilshunos_token'),
   setToken: (t: string) => localStorage.setItem('tilshunos_token', t),
@@ -29,9 +43,9 @@ export const authStorage = {
   },
   setUser: (u: any) => {
     localStorage.setItem('tilshunos_user', JSON.stringify(u));
-    if (u?.role) {
-      const r = typeof u.role === 'string' ? u.role.toLowerCase() : u.role === 1 ? 'admin' : u.role === 2 ? 'teacher' : 'user';
-      localStorage.setItem('tilshunos_role', r === 'superadmin' ? 'admin' : r === 'learner' ? 'user' : r);
+    if (u && (u.role !== undefined && u.role !== null)) {
+      const r = normalizeUserRole(u.role);
+      localStorage.setItem('tilshunos_role', r);
     }
   }
 };

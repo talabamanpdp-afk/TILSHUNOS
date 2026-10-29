@@ -188,8 +188,8 @@ public class AdminController : ControllerBase
                 SELECT
                     (SELECT COUNT(*) FROM users) as total_users,
                     (SELECT COUNT(*) FROM users WHERE email_confirmed = true) as verified_users,
-                    (SELECT COUNT(*) FROM teacher_profiles WHERE is_approved = true) as active_teachers,
-                    (SELECT COUNT(*) FROM users WHERE role = 0) as learners_count,
+                    (SELECT COUNT(*) FROM users WHERE role = 2) as active_teachers,
+                    (SELECT COUNT(*) FROM users WHERE role = 1) as learners_count,
                     (SELECT COUNT(*) FROM personal_vocabulary_entries) as total_vocab,
                     (SELECT COUNT(*) FROM learning_materials) as total_materials,
                     (SELECT COUNT(*) FROM assignments) as total_assignments,
@@ -224,7 +224,7 @@ public class AdminController : ControllerBase
             // Fallback to EF Core if needed
             totalUsers = await _db.Users.CountAsync();
             verifiedUsers = await _db.Users.CountAsync(u => u.EmailConfirmed);
-            activeTeachers = await _db.TeacherProfiles.CountAsync(t => t.IsApproved);
+            activeTeachers = await _db.Users.CountAsync(u => u.Role == UserRole.Teacher);
             learnersCount = await _db.Users.CountAsync(u => u.Role == UserRole.Learner);
             totalVocab = await _db.PersonalVocabularyEntries.CountAsync();
             totalMaterials = await _db.LearningMaterials.CountAsync();
@@ -356,6 +356,28 @@ public class AdminController : ControllerBase
 
         user.Role = request.Role;
         user.IsActive = request.IsActive;
+
+        if (request.Role == UserRole.Teacher)
+        {
+            var profile = await _db.TeacherProfiles.FirstOrDefaultAsync(t => t.UserId == user.Id);
+            if (profile == null)
+            {
+                _db.TeacherProfiles.Add(new TeacherProfile
+                {
+                    UserId = user.Id,
+                    Bio = "Ingliz tili va xalqaro imtihonlar (IELTS / CEFR) bo‘yicha tajribali o‘qituvchi.",
+                    Qualifications = "English · B1–C1 Mutaxassisi",
+                    LanguagesTaught = "English",
+                    CefrLevelsTaught = "A1,A2,B1,B2,C1",
+                    IsApproved = true
+                });
+            }
+            else
+            {
+                profile.IsApproved = true;
+            }
+        }
+
         await _db.SaveChangesAsync();
 
         return Ok(new { success = true, message = "Foydalanuvchi roli va holati yangilandi." });

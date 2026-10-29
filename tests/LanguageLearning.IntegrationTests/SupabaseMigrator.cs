@@ -478,4 +478,63 @@ public class SupabaseMigrator
         await client.SendAsync(delReq);
         Console.WriteLine("[TEST UPLOAD] File cleaned up successfully.");
     }
+
+    [Fact]
+    public async Task CheckUsersAndTeachersInSupabase()
+    {
+        var connStr = "Host=aws-0-ap-northeast-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.yipexommqztxnvpckqyi;Password=s0x1bj0n$02$;SSL Mode=Require;Trust Server Certificate=true;Timeout=60;";
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseNpgsql(connStr)
+            .Options;
+
+        using var db = new AppDbContext(options);
+
+        var users = await db.Users.AsNoTracking().ToListAsync();
+        Console.WriteLine($"[SUPABASE USERS COUNT] {users.Count}");
+        foreach (var u in users)
+        {
+            Console.WriteLine($"[USER] ID: {u.Id}, Email: {u.Email}, Role: {u.Role} ({(int)u.Role}), Active: {u.IsActive}");
+        }
+
+        var teachers = await db.TeacherProfiles.Include(t => t.User).AsNoTracking().ToListAsync();
+        Console.WriteLine($"[SUPABASE TEACHER PROFILES COUNT] {teachers.Count}");
+        foreach (var t in teachers)
+        {
+            Console.WriteLine($"[TEACHER PROFILE] UserID: {t.UserId}, UserEmail: {t.User?.Email}, Bio: {t.Bio}, Approved: {t.IsApproved}");
+        }
+
+        // Auto-create TeacherProfile for any user who has Role == Teacher
+        var teacherUsers = await db.Users
+            .Where(u => u.Role == LanguageLearning.Domain.Enums.UserRole.Teacher)
+            .ToListAsync();
+
+        foreach (var tu in teacherUsers)
+        {
+            var exists = await db.TeacherProfiles.AnyAsync(p => p.UserId == tu.Id);
+            if (!exists)
+            {
+                db.TeacherProfiles.Add(new LanguageLearning.Domain.Entities.TeacherProfile
+                {
+                    UserId = tu.Id,
+                    Bio = "Ingliz tili va xalqaro imtihonlar (IELTS / CEFR) bo‘yicha tajribali o‘qituvchi.",
+                    Qualifications = "English · B1–C1 Mutaxassisi",
+                    LanguagesTaught = "English",
+                    CefrLevelsTaught = "A1,A2,B1,B2,C1",
+                    IsApproved = true
+                });
+                Console.WriteLine($"[AUTO-CREATED PROFILE] for teacher: {tu.Email}");
+            }
+        }
+        await db.SaveChangesAsync();
+
+        var updatedProfiles = await db.TeacherProfiles.Include(t => t.User).AsNoTracking().ToListAsync();
+        Console.WriteLine($"[UPDATED TEACHER PROFILES COUNT] {updatedProfiles.Count}");
+        foreach (var p in updatedProfiles)
+        {
+            Console.WriteLine($"[CONFIRMED TEACHER PROFILE] {p.User?.Email} | {p.Qualifications}");
+        }
+
+        // Verify teachers count > 0
+        Assert.NotEmpty(updatedProfiles);
+    }
 }

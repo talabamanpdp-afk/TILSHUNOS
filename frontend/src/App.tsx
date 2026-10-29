@@ -11,7 +11,7 @@ import {
   Mic2, Moon, MoreHorizontal, Plus, Search, Settings, Share2, Sparkles, Sun, Smartphone, Target, TrendingUp, Trophy,
   Users, Volume2, X, Zap, type LucideIcon
 } from 'lucide-react';
-import { api, authStorage } from './api';
+import { api, authStorage, normalizeUserRole } from './api';
 import { playSpeech } from './utils/speech';
 
 type Word = { id: number; word: string; translation: string; example: string; topic: string; state: 'Rejalashtirilgan' | 'Jarayonda' | 'O‘rganilgan' };
@@ -1696,9 +1696,7 @@ function App() {
         password
       });
 
-      const userRole = res.user?.role;
-      const roleStr = typeof userRole === 'string' ? userRole.toLowerCase() : userRole === 1 ? 'admin' : userRole === 2 ? 'teacher' : 'user';
-      const cleanRole = roleStr === 'superadmin' ? 'admin' : roleStr === 'learner' ? 'user' : roleStr;
+      const cleanRole = normalizeUserRole(res.user?.role);
       setRole(cleanRole);
 
       // QAT'IYAN: Agar oddiy o'quvchi bo'lsa va til tanlamagan bo'lsa, onboardingga o'tadi!
@@ -1733,9 +1731,7 @@ function App() {
       const res = await api.verifyEmail(email.trim().toLowerCase(), code.trim());
       setMessage('Email tasdiqlandi! ✓');
 
-      const userRole = res.user?.role;
-      const roleStr = typeof userRole === 'string' ? userRole.toLowerCase() : userRole === 1 ? 'admin' : userRole === 2 ? 'teacher' : 'user';
-      const cleanRole = roleStr === 'superadmin' ? 'admin' : roleStr === 'learner' ? 'user' : roleStr;
+      const cleanRole = normalizeUserRole(res.user?.role);
       setRole(cleanRole);
 
       if (cleanRole === 'user') {

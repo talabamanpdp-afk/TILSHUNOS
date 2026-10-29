@@ -308,9 +308,10 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
         <div style={{
           display: 'flex',
           gap: '8px',
-          borderBottom: '2px solid #e2e8f0',
+          borderBottom: dark ? '2px solid #343449' : '2px solid #e2e8f0',
           marginBottom: '24px',
-          paddingBottom: '2px'
+          paddingBottom: '2px',
+          overflowX: 'auto'
         }}>
           <button
             onClick={() => setActiveTab('students')}
@@ -321,9 +322,10 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
               border: 'none',
               background: 'none',
               cursor: 'pointer',
-              color: activeTab === 'students' ? '#6366f1' : '#64748b',
-              borderBottom: activeTab === 'students' ? '3px solid #6366f1' : '3px solid transparent',
-              transition: 'all 0.2s ease'
+              color: activeTab === 'students' ? '#818cf8' : (dark ? '#94a3b8' : '#64748b'),
+              borderBottom: activeTab === 'students' ? '3px solid #818cf8' : '3px solid transparent',
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap'
             }}
           >
             Mening O'quvchilarim ({students.length})
@@ -337,8 +339,9 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
               border: 'none',
               background: 'none',
               cursor: 'pointer',
-              color: activeTab === 'tasks' ? '#6366f1' : '#64748b',
-              borderBottom: activeTab === 'tasks' ? '3px solid #6366f1' : '3px solid transparent'
+              color: activeTab === 'tasks' ? '#818cf8' : (dark ? '#94a3b8' : '#64748b'),
+              borderBottom: activeTab === 'tasks' ? '3px solid #818cf8' : '3px solid transparent',
+              whiteSpace: 'nowrap'
             }}
           >
             Berilgan Topshiriqlar ({assignedTasks.length})
@@ -352,8 +355,9 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
               border: 'none',
               background: 'none',
               cursor: 'pointer',
-              color: activeTab === 'profile' ? '#6366f1' : '#64748b',
-              borderBottom: activeTab === 'profile' ? '3px solid #6366f1' : '3px solid transparent'
+              color: activeTab === 'profile' ? '#818cf8' : (dark ? '#94a3b8' : '#64748b'),
+              borderBottom: activeTab === 'profile' ? '3px solid #818cf8' : '3px solid transparent',
+              whiteSpace: 'nowrap'
             }}
           >
             Shaxsiy Profil va Ijtimoiy tarmoqlar
@@ -367,8 +371,9 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
               border: 'none',
               background: 'none',
               cursor: 'pointer',
-              color: activeTab === 'personal' ? '#6366f1' : '#64748b',
-              borderBottom: activeTab === 'personal' ? '3px solid #6366f1' : '3px solid transparent'
+              color: activeTab === 'personal' ? '#818cf8' : (dark ? '#94a3b8' : '#64748b'),
+              borderBottom: activeTab === 'personal' ? '3px solid #818cf8' : '3px solid transparent',
+              whiteSpace: 'nowrap'
             }}
           >
             Shaxsiy Dashboard (Lug'at va O'rganish)
@@ -378,12 +383,12 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
         {/* TAB 1: Assigned Students */}
         {activeTab === 'students' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
               <div>
-                <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px 0', color: '#0f172a' }}>
+                <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px 0', color: dark ? '#f1f0fc' : '#0f172a' }}>
                   Biriktirilgan o'quvchilar
                 </h2>
-                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
+                <p style={{ margin: 0, fontSize: '13px', color: dark ? '#94a3b8' : '#64748b' }}>
                   Har bir o'quvchining darajasini kuzatib boring va ularga yangi vazifalar bering.
                 </p>
               </div>
@@ -391,8 +396,8 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                 onClick={loadStudents}
                 style={{
                   padding: '8px 16px',
-                  background: '#e0e7ff',
-                  color: '#4338ca',
+                  background: dark ? '#312e81' : '#e0e7ff',
+                  color: dark ? '#c7d2fe' : '#4338ca',
                   border: 'none',
                   borderRadius: '8px',
                   fontWeight: 600,
@@ -405,7 +410,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
             </div>
 
             {loading ? (
-              <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>O'quvchilar yuklanmoqda...</div>
+              <div style={{ padding: '40px', textAlign: 'center', color: dark ? '#94a3b8' : '#64748b' }}>O'quvchilar yuklanmoqda...</div>
             ) : (
               <div style={{
                 display: 'grid',
@@ -416,8 +421,8 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                   <div
                     key={student.id}
                     style={{
-                      background: '#ffffff',
-                      border: '1px solid #e2e8f0',
+                      background: dark ? '#202032' : '#ffffff',
+                      border: dark ? '1px solid #343449' : '1px solid #e2e8f0',
                       borderRadius: '16px',
                       padding: '20px',
                       boxShadow: '0 4px 6px -1px rgba(0,0,0,0.03)',
@@ -433,8 +438,8 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                             width: '42px',
                             height: '42px',
                             borderRadius: '50%',
-                            background: '#eef2ff',
-                            color: '#4f46e5',
+                            background: dark ? '#312e81' : '#eef2ff',
+                            color: dark ? '#c7d2fe' : '#4f46e5',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -444,13 +449,13 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                             {student.name.charAt(0)}
                           </div>
                           <div>
-                            <div style={{ fontWeight: 700, fontSize: '15px', color: '#0f172a' }}>{student.name}</div>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>{student.email}</div>
+                            <div style={{ fontWeight: 700, fontSize: '15px', color: dark ? '#f1f0fc' : '#0f172a' }}>{student.name}</div>
+                            <div style={{ fontSize: '12px', color: dark ? '#94a3b8' : '#64748b' }}>{student.email}</div>
                           </div>
                         </div>
                         <span style={{
-                          background: '#f1f5f9',
-                          color: '#475569',
+                          background: dark ? '#2a2a40' : '#f1f5f9',
+                          color: dark ? '#c7d2fe' : '#475569',
                           padding: '3px 8px',
                           borderRadius: '6px',
                           fontSize: '12px',
@@ -464,27 +469,28 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                         display: 'grid',
                         gridTemplateColumns: '1fr 1fr',
                         gap: '8px',
-                        background: '#f8fafc',
+                        background: dark ? '#181827' : '#f8fafc',
                         padding: '12px',
                         borderRadius: '10px',
                         marginBottom: '16px',
-                        fontSize: '12px'
+                        fontSize: '12px',
+                        border: dark ? '1px solid #2a2a40' : 'none'
                       }}>
                         <div>
-                          <span style={{ color: '#64748b' }}>Lug'at hajmi:</span>
-                          <strong style={{ display: 'block', color: '#0f172a', fontSize: '14px' }}>{student.vocabularyCount} ta so'z</strong>
+                          <span style={{ color: dark ? '#94a3b8' : '#64748b' }}>Lug'at hajmi:</span>
+                          <strong style={{ display: 'block', color: dark ? '#f1f0fc' : '#0f172a', fontSize: '14px' }}>{student.vocabularyCount} ta so'z</strong>
                         </div>
                         <div>
-                          <span style={{ color: '#64748b' }}>Topshiriqlar:</span>
-                          <strong style={{ display: 'block', color: '#0f172a', fontSize: '14px' }}>{student.assignedTasksCount} ta berilgan</strong>
+                          <span style={{ color: dark ? '#94a3b8' : '#64748b' }}>Topshiriqlar:</span>
+                          <strong style={{ display: 'block', color: dark ? '#f1f0fc' : '#0f172a', fontSize: '14px' }}>{student.assignedTasksCount} ta berilgan</strong>
                         </div>
                         <div>
-                          <span style={{ color: '#64748b' }}>Kunlik maqsad:</span>
-                          <strong style={{ display: 'block', color: '#0f172a' }}>{student.dailyGoalMinutes} daqiqa/kun</strong>
+                          <span style={{ color: dark ? '#94a3b8' : '#64748b' }}>Kunlik maqsad:</span>
+                          <strong style={{ display: 'block', color: dark ? '#f1f0fc' : '#0f172a' }}>{student.dailyGoalMinutes} daqiqa/kun</strong>
                         </div>
                         <div>
-                          <span style={{ color: '#64748b' }}>A'zo bo'lgan:</span>
-                          <strong style={{ display: 'block', color: '#0f172a' }}>{student.joinedDate}</strong>
+                          <span style={{ color: dark ? '#94a3b8' : '#64748b' }}>A'zo bo'lgan:</span>
+                          <strong style={{ display: 'block', color: dark ? '#f1f0fc' : '#0f172a' }}>{student.joinedDate}</strong>
                         </div>
                       </div>
                     </div>

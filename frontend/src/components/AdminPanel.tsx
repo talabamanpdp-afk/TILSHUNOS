@@ -358,21 +358,23 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
         api.getGameTopics(),
         api.getAdminVocabulary()
       ]).then(([teachersRes, materialsRes, topicsRes, vocabRes]) => {
-        if (teachersRes.status === 'fulfilled' && Array.isArray(teachersRes.value)) {
+        if (teachersRes.status === 'fulfilled' && Array.isArray(teachersRes.value) && teachersRes.value.length > 0) {
           setTeachers(teachersRes.value);
           try {
             localStorage.setItem('tilshunos_admin_teachers_cache', JSON.stringify(teachersRes.value));
           } catch {}
         } else if (usersRes.status === 'fulfilled' && Array.isArray(usersRes.value)) {
           const teacherUsers = usersRes.value
-            .filter((u: any) => u.role === 'Teacher' || u.role === 2)
+            .filter((u: any) => u.role === 'Teacher' || u.role === 2 || (typeof u.role === 'string' && u.role.toLowerCase() === 'teacher'))
             .map((u: any) => ({
               id: u.id,
-              name: `${u.firstName} ${u.lastName}`.trim() || u.email,
+              userId: u.id,
+              name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email,
               email: u.email,
               specialty: 'Ingliz tili mutaxassisi',
+              qualifications: 'Ingliz tili mutaxassisi',
               students: 0,
-              status: u.isActive ? 'Faol' : 'Nofaol'
+              status: u.isActive !== false ? 'Faol' : 'Nofaol'
             }));
           setTeachers(teacherUsers);
         }
@@ -1449,12 +1451,12 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         </tr>
                       ) : (
                         teachers.map((t: any) => (
-                          <tr key={t.id}>
-                            <td style={{ fontWeight: 700 }}>{t.name}</td>
-                            <td style={{ color: 'var(--muted)' }}>{t.email}</td>
+                          <tr key={t.id || t.userId}>
+                            <td style={{ fontWeight: 700 }}>{t.name || t.fullName || 'O‘qituvchi'}</td>
+                            <td style={{ color: 'var(--muted)' }}>{t.email || '-'}</td>
                             <td>{t.specialty || t.qualifications || 'Ingliz tili'}</td>
                             <td>{t.students || 0} ta</td>
-                            <td><span className="status status-learned">{t.status || 'Faol'}</span></td>
+                            <td><span className="status status-learned">{t.status || (t.isApproved ? 'Faol' : 'Nofaol')}</span></td>
                           </tr>
                         ))
                       )}
