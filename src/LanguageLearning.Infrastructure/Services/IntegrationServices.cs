@@ -260,7 +260,21 @@ public class EmailService : IEmailService
 
     private async Task<bool> SendEmailAsync(string toEmail, string subject, string htmlContent, CancellationToken cancellationToken)
     {
-        // Primary Strategy: Gmail SMTP (Real inbox delivery, prevents fake accounts)
+        // 1. Primary Strategy: Vercel HTTPS API Relay (Port 443 — NEVER blocked by Render Free tier)
+        try
+        {
+            var proxyOk = await TrySendViaVercelProxyAsync(toEmail, subject, htmlContent, cancellationToken);
+            if (proxyOk)
+            {
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Vercel proxy delivery failed for {Email}, attempting direct SMTP...", toEmail);
+        }
+
+        // 2. Secondary Strategy: Direct Gmail SMTP (for local dev and platforms where port 587 is open)
         try
         {
             var smtp = await GetSmtpSettingsAsync();
@@ -275,10 +289,10 @@ public class EmailService : IEmailService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Primary SMTP delivery failed for {Email}, falling back to Resend API...", toEmail);
+            _logger.LogWarning(ex, "Direct SMTP delivery failed for {Email}, falling back to Resend API...", toEmail);
         }
 
-        // Secondary Strategy: Resend HTTP API
+        // 3. Fallback Strategy: Resend HTTP API
         try
         {
             var resendOk = await TrySendViaResendAsync(toEmail, subject, htmlContent, cancellationToken);
@@ -296,6 +310,38 @@ public class EmailService : IEmailService
         return false;
     }
 
+    private async Task<bool> TrySendViaVercelProxyAsync(string toEmail, string subject, string htmlContent, CancellationToken cancellationToken)
+    {
+        var vercelUrl = Environment.GetEnvironmentVariable("EMAIL_RELAY_URL") 
+            ?? _configuration["EmailRelay:Url"] 
+            ?? "https://tilshunosuz.vercel.app/api/send-email";
+
+        var payload = new
+        {
+            to = toEmail.Trim().ToLowerInvariant(),
+            subject,
+            html = htmlContent,
+            key = "TilshunosMasterKey2026"
+        };
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, vercelUrl);
+        request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(TimeSpan.FromSeconds(8));
+
+        var response = await _httpClient.SendAsync(request, cts.Token);
+        if (response.IsSuccessStatusCode)
+        {
+            _logger.LogInformation("Email sent successfully via Vercel HTTPS relay to {Email}", toEmail);
+            return true;
+        }
+
+        var err = await response.Content.ReadAsStringAsync(cancellationToken);
+        _logger.LogWarning("Vercel relay returned {Status}: {Error}", response.StatusCode, err);
+        return false;
+    }
+
     private async Task<bool> TrySendViaSmtpAsync(SmtpConfig config, string toEmail, string subject, string htmlContent, CancellationToken cancellationToken)
     {
         using var client = new SmtpClient(config.Host, config.Port)
@@ -304,7 +350,7 @@ public class EmailService : IEmailService
             UseDefaultCredentials = false,
             Credentials = new NetworkCredential(config.User, config.Password),
             DeliveryMethod = SmtpDeliveryMethod.Network,
-            Timeout = 15000
+            Timeout = 4000
         };
 
         var fromDisplayName = string.IsNullOrWhiteSpace(config.FromName) ? "TILSHUNOS" : config.FromName;
