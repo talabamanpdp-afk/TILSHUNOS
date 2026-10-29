@@ -72,6 +72,8 @@ public class TeachersController : ControllerBase
             {
                 id = t.UserId,
                 userId = t.UserId,
+                firstName = t.User.FirstName,
+                lastName = t.User.LastName,
                 name = ($"{t.User.FirstName} {t.User.LastName}".Trim() != "" ? $"{t.User.FirstName} {t.User.LastName}".Trim() : t.User.Email),
                 fullName = ($"{t.User.FirstName} {t.User.LastName}".Trim() != "" ? $"{t.User.FirstName} {t.User.LastName}".Trim() : t.User.Email),
                 email = t.User.Email,
@@ -85,6 +87,7 @@ public class TeachersController : ControllerBase
                 hourlyRate = t.HourlyRate,
                 teachingExperienceYears = t.TeachingExperienceYears,
                 isApproved = t.IsApproved,
+                isActive = t.User.IsActive,
                 students = _db.TeacherStudentConnections.Count(c => c.TeacherId == t.UserId),
                 status = t.User.IsActive ? "Faol" : "Nofaol"
             })

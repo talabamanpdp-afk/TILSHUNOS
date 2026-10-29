@@ -400,6 +400,19 @@ public class AdminController : ControllerBase
             return BadRequest(new { message = "Super Admin hisobini o‘chirib bo‘lmaydi. U daxlsizdir." });
         }
 
+        // Clean up connections, assignments and teacher profile
+        var connections = await _db.TeacherStudentConnections.Where(c => c.TeacherId == id || c.StudentId == id).ToListAsync();
+        _db.TeacherStudentConnections.RemoveRange(connections);
+
+        var assignments = await _db.Assignments.Where(a => a.TeacherId == id || a.StudentId == id).ToListAsync();
+        _db.Assignments.RemoveRange(assignments);
+
+        var teacherProfile = await _db.TeacherProfiles.FirstOrDefaultAsync(tp => tp.UserId == id);
+        if (teacherProfile != null)
+        {
+            _db.TeacherProfiles.Remove(teacherProfile);
+        }
+
         _db.Users.Remove(user);
         await _db.SaveChangesAsync();
 
@@ -482,6 +495,85 @@ public class AdminController : ControllerBase
         await _db.SaveChangesAsync();
 
         return Ok(new { success = true, message = "O‘qituvchi muvaffaqiyatli yaratildi.", id = teacherUser.Id });
+    }
+
+    [HttpPut("teachers/{id:guid}")]
+    public async Task<IActionResult> UpdateTeacher(Guid id, [FromBody] UpdateTeacherAccountRequest request)
+    {
+        var user = await _db.Users.Include(u => u.TeacherProfile).FirstOrDefaultAsync(u => u.Id == id);
+        if (user == null) return NotFound(new { message = "O‘qituvchi topilmadi." });
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            var normalizedEmail = request.Email.Trim().ToUpperInvariant();
+            if (normalizedEmail != user.NormalizedEmail && await _db.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail && u.Id != id))
+            {
+                return BadRequest(new { message = "Bu email manzili boshqa foydalanuvchi tomonidan band qilingan." });
+            }
+            user.Email = request.Email.Trim().ToLowerInvariant();
+            user.NormalizedEmail = normalizedEmail;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.FirstName)) user.FirstName = request.FirstName.Trim();
+        if (!string.IsNullOrWhiteSpace(request.LastName)) user.LastName = request.LastName.Trim();
+        if (!string.IsNullOrWhiteSpace(request.Password) && request.Password.Length >= 6)
+        {
+            user.PasswordHash = _passwordHasher.HashPassword(request.Password);
+        }
+        if (request.IsActive.HasValue)
+        {
+            user.IsActive = request.IsActive.Value;
+        }
+
+        var teacherProfile = user.TeacherProfile ?? await _db.TeacherProfiles.FirstOrDefaultAsync(tp => tp.UserId == id);
+        if (teacherProfile == null)
+        {
+            teacherProfile = new TeacherProfile
+            {
+                UserId = id,
+                LanguagesTaught = "English",
+                CefrLevelsTaught = "A1,A2,B1,B2,C1",
+                IsApproved = true
+            };
+            _db.TeacherProfiles.Add(teacherProfile);
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Specialty)) teacherProfile.Qualifications = request.Specialty.Trim();
+        if (request.Bio != null) teacherProfile.Bio = request.Bio.Trim();
+        if (request.IsApproved.HasValue) teacherProfile.IsApproved = request.IsApproved.Value;
+
+        await _db.SaveChangesAsync();
+
+        return Ok(new { success = true, message = "O‘qituvchi ma’lumotlari muvaffaqiyatli yangilandi." });
+    }
+
+    [HttpDelete("teachers/{id:guid}")]
+    public async Task<IActionResult> DeleteTeacher(Guid id)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
+        if (user == null) return NotFound(new { message = "O‘qituvchi topilmadi." });
+
+        if (user.NormalizedEmail == "SOXIBGAYBULLAYEV439@GMAIL.COM" || user.Role == UserRole.SuperAdmin)
+        {
+            return BadRequest(new { message = "Super Admin hisobini o‘chirib bo‘lmaydi." });
+        }
+
+        var connections = await _db.TeacherStudentConnections.Where(c => c.TeacherId == id || c.StudentId == id).ToListAsync();
+        _db.TeacherStudentConnections.RemoveRange(connections);
+
+        var assignments = await _db.Assignments.Where(a => a.TeacherId == id || a.StudentId == id).ToListAsync();
+        _db.Assignments.RemoveRange(assignments);
+
+        var teacherProfile = await _db.TeacherProfiles.FirstOrDefaultAsync(tp => tp.UserId == id);
+        if (teacherProfile != null)
+        {
+            _db.TeacherProfiles.Remove(teacherProfile);
+        }
+
+        _db.Users.Remove(user);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { success = true, message = "O‘qituvchi muvaffaqiyatli o‘chirildi." });
     }
 
     [HttpGet("materials")]

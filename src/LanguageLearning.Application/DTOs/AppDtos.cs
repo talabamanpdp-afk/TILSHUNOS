@@ -305,6 +305,16 @@ public record AdminDashboardStatsDto(
 );
 
 public record CreateTeacherAccountRequest(string FirstName, string LastName, string Email, string Password, string Specialty, string? Bio);
+public record UpdateTeacherAccountRequest(
+    string? FirstName,
+    string? LastName,
+    string? Email,
+    string? Password,
+    string? Specialty,
+    string? Bio,
+    bool? IsActive,
+    bool? IsApproved
+);
 public record UpdateTeacherProfileDetailsRequest(string? Specialty, string? Bio, string? Telegram, string? Instagram, string? Facebook);
 public record CreateReadingMaterialRequest(string Title, string Content, string Topic, CefrLevel Level, int EstimatedMinutes, bool IsPublished, string? LanguageCode = "en");
 public record CreateWritingMaterialRequest(string Title, string Instructions, string Topic, CefrLevel Level, int TargetWordCount, bool IsPublished, string? LanguageCode = "en");

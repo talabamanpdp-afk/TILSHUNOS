@@ -238,6 +238,17 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   const [videoForm, setVideoForm] = useState({ title: '', videoUrl: '', description: '', topic: 'Daily Life', level: 'B1', mins: 15, isPublished: true });
   const [vocabForm, setVocabForm] = useState({ word: '', translation: '', topic: 'Daily Life', level: 'B1', example: '' });
   const [teacherForm, setTeacherForm] = useState({ firstName: '', lastName: '', email: '', password: '', specialty: 'English · B1–C1', bio: '' });
+  const [editingTeacher, setEditingTeacher] = useState<any | null>(null);
+  const [editTeacherForm, setEditTeacherForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    specialty: 'English · B1–C1',
+    bio: '',
+    isActive: true,
+    isApproved: true
+  });
 
   // System latency test state
   const [pingLatency, setPingLatency] = useState<number | null>(null);
@@ -358,7 +369,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
         api.getGameTopics(),
         api.getAdminVocabulary()
       ]).then(([teachersRes, materialsRes, topicsRes, vocabRes]) => {
-        if (teachersRes.status === 'fulfilled' && Array.isArray(teachersRes.value) && teachersRes.value.length > 0) {
+        if (teachersRes.status === 'fulfilled' && Array.isArray(teachersRes.value)) {
           setTeachers(teachersRes.value);
           try {
             localStorage.setItem('tilshunos_admin_teachers_cache', JSON.stringify(teachersRes.value));
@@ -589,9 +600,70 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       await api.createTeacher(teacherForm);
       notify('Yangi o‘qituvchi Supabasega muvaffaqiyatli saqlandi!');
       setTeacherForm({ firstName: '', lastName: '', email: '', password: '', specialty: 'English · B1–C1', bio: '' });
-      loadSupabaseData();
+      loadSupabaseData(true);
     } catch (err: any) {
-      notify(err.message || 'O‘qituvchi qo‘shishda xatolik');
+      notify(err.message || 'O‘qituvchi qo‘shishda xatolik', true);
+    }
+  };
+
+  const openEditTeacher = (t: any) => {
+    const parts = (t.name || t.fullName || '').split(' ');
+    const fName = t.firstName || parts[0] || '';
+    const lName = t.lastName || parts.slice(1).join(' ') || '';
+
+    setEditingTeacher(t);
+    setEditTeacherForm({
+      firstName: fName,
+      lastName: lName,
+      email: t.email || '',
+      password: '',
+      specialty: t.specialty || t.qualifications || 'English · B1–C1',
+      bio: t.bio || '',
+      isActive: t.isActive !== false && t.status !== 'Nofaol',
+      isApproved: t.isApproved !== false
+    });
+  };
+
+  const handleUpdateTeacher = async () => {
+    if (!editingTeacher) return;
+    const teacherId = editingTeacher.id || editingTeacher.userId;
+    if (!teacherId) return;
+
+    if (!editTeacherForm.firstName.trim() || !editTeacherForm.email.includes('@')) {
+      notify('O‘qituvchi ismi va to‘g‘ri email manzilini kiriting.', true);
+      return;
+    }
+
+    try {
+      await api.updateTeacher(teacherId, {
+        firstName: editTeacherForm.firstName.trim(),
+        lastName: editTeacherForm.lastName.trim(),
+        email: editTeacherForm.email.trim(),
+        password: editTeacherForm.password.trim() || undefined,
+        specialty: editTeacherForm.specialty.trim(),
+        bio: editTeacherForm.bio.trim(),
+        isActive: editTeacherForm.isActive,
+        isApproved: editTeacherForm.isApproved
+      });
+      notify('O‘qituvchi ma’lumotlari muvaffaqiyatli yangilandi! ✓');
+      setEditingTeacher(null);
+      loadSupabaseData(true);
+    } catch (err: any) {
+      notify(err.message || 'O‘qituvchini yangilashda xatolik', true);
+    }
+  };
+
+  const handleDeleteTeacher = async (teacherId: string, nameOrEmail: string) => {
+    if (!window.confirm(`${nameOrEmail} o‘qituvchisini tizimdan va Supabase bazasidan butunlay o‘chirib tashlashni tasdiqlaysizmi?`)) {
+      return;
+    }
+    try {
+      await api.deleteTeacher(teacherId);
+      notify('O‘qituvchi muvaffaqiyatli o‘chirildi! ✓');
+      setTeachers(prev => prev.filter(t => (t.id || t.userId) !== teacherId));
+      loadSupabaseData(true);
+    } catch (err: any) {
+      notify(err.message || 'O‘qituvchini o‘chirishda xatolik', true);
     }
   };
 
@@ -1440,12 +1512,13 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         <th>MUTAXASSISLIK</th>
                         <th>O‘QUVCHILAR</th>
                         <th>HOLAT</th>
+                        <th>AMALLAR</th>
                       </tr>
                     </thead>
                     <tbody>
                       {teachers.length === 0 ? (
                         <tr>
-                          <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)' }}>
+                          <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)' }}>
                             O‘qituvchilar topilmadi.
                           </td>
                         </tr>
@@ -1456,7 +1529,52 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             <td style={{ color: 'var(--muted)' }}>{t.email || '-'}</td>
                             <td>{t.specialty || t.qualifications || 'Ingliz tili'}</td>
                             <td>{t.students || 0} ta</td>
-                            <td><span className="status status-learned">{t.status || (t.isApproved ? 'Faol' : 'Nofaol')}</span></td>
+                            <td>
+                              <span className={`status ${t.status === 'Faol' || t.isApproved ? 'status-learned' : 'status-planned'}`}>
+                                {t.status || (t.isApproved ? 'Faol' : 'Nofaol')}
+                              </span>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <button
+                                  className="outline-btn"
+                                  title="Tahrirlash"
+                                  onClick={() => openEditTeacher(t)}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                    padding: '6px 12px',
+                                    borderRadius: '8px',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  <Edit3 size={14} /> Tahrirlash
+                                </button>
+                                <button
+                                  className="outline-btn"
+                                  title="O‘chirish"
+                                  onClick={() => handleDeleteTeacher(t.id || t.userId, t.name || t.fullName || t.email)}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                    padding: '6px 12px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #ef444455',
+                                    background: '#ef444415',
+                                    color: '#ef4444',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  <Trash2 size={14} /> O‘chirish
+                                </button>
+                              </div>
+                            </td>
                           </tr>
                         ))
                       )}
@@ -3945,6 +4063,115 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                 }}
               >
                 Saqlash
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TEACHER EDIT MODAL */}
+      {editingTeacher && (
+        <div className="modal-backdrop" onClick={() => setEditingTeacher(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px', width: '95%' }}>
+            <div className="modal-heading">
+              <div>
+                <h2>O‘qituvchi Ma’lumotlarini Tahrirlash</h2>
+                <p>{editingTeacher.email}</p>
+              </div>
+              <button className="icon-btn" onClick={() => setEditingTeacher(null)}><X size={18} /></button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', margin: '20px 0' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', fontWeight: 700 }}>
+                  Ism:
+                  <input
+                    value={editTeacherForm.firstName}
+                    onChange={e => setEditTeacherForm({ ...editTeacherForm, firstName: e.target.value })}
+                    placeholder="Ism"
+                    style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', fontWeight: 700 }}>
+                  Familiya:
+                  <input
+                    value={editTeacherForm.lastName}
+                    onChange={e => setEditTeacherForm({ ...editTeacherForm, lastName: e.target.value })}
+                    placeholder="Familiya"
+                    style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+                  />
+                </label>
+              </div>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', fontWeight: 700 }}>
+                Email:
+                <input
+                  type="email"
+                  value={editTeacherForm.email}
+                  onChange={e => setEditTeacherForm({ ...editTeacherForm, email: e.target.value })}
+                  placeholder="teacher@tilshunos.app"
+                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+                />
+              </label>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', fontWeight: 700 }}>
+                Yangi Parol (ixtiyoriy, agar o‘zgartirilmasa bo‘sh qoldiring):
+                <input
+                  type="password"
+                  value={editTeacherForm.password}
+                  onChange={e => setEditTeacherForm({ ...editTeacherForm, password: e.target.value })}
+                  placeholder="Kamida 6 belgi"
+                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+                />
+              </label>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', fontWeight: 700 }}>
+                Mutaxassislik:
+                <input
+                  value={editTeacherForm.specialty}
+                  onChange={e => setEditTeacherForm({ ...editTeacherForm, specialty: e.target.value })}
+                  placeholder="IELTS & B1–C1 Mutaxassisi"
+                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+                />
+              </label>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', fontWeight: 700 }}>
+                Qisqacha Bio:
+                <textarea
+                  rows={3}
+                  value={editTeacherForm.bio}
+                  onChange={e => setEditTeacherForm({ ...editTeacherForm, bio: e.target.value })}
+                  placeholder="Tajribali ustoz..."
+                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', resize: 'vertical' }}
+                />
+              </label>
+
+              <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginTop: '6px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: 600 }}>
+                  <input
+                    type="checkbox"
+                    checked={editTeacherForm.isActive}
+                    onChange={e => setEditTeacherForm({ ...editTeacherForm, isActive: e.target.checked })}
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--purple)' }}
+                  />
+                  Hisob Faol (IsActive)
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: 600 }}>
+                  <input
+                    type="checkbox"
+                    checked={editTeacherForm.isApproved}
+                    onChange={e => setEditTeacherForm({ ...editTeacherForm, isApproved: e.target.checked })}
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--purple)' }}
+                  />
+                  Tasdiqlangan Ustoz (IsApproved)
+                </label>
+              </div>
+            </div>
+
+            <div className="modal-footer" style={{ marginTop: '20px' }}>
+              <button className="outline-btn" onClick={() => setEditingTeacher(null)}>Bekor qilish</button>
+              <button className="primary-btn" onClick={handleUpdateTeacher}>
+                <Save size={16} /> Saqlash
               </button>
             </div>
           </div>

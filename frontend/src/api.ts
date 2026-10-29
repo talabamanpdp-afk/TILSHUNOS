@@ -569,6 +569,28 @@ export const api = {
     });
   },
 
+  async updateTeacher(id: string, data: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    password?: string;
+    specialty?: string;
+    bio?: string;
+    isActive?: boolean;
+    isApproved?: boolean;
+  }) {
+    return request<any>(`/admin/teachers/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async deleteTeacher(id: string) {
+    return request<any>(`/admin/teachers/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
   async getAllAdminMaterials(search?: string) {
     const qs = search ? `?search=${encodeURIComponent(search)}` : '';
     return request<any[]>(`/admin/materials${qs}`);
