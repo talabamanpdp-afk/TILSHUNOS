@@ -5,7 +5,7 @@ import {
   Search, Trash2, Edit3, Save, UserCog, Headphones, PenLine, BookMarked, ChartNoAxesCombined,
   Check, Sun, Moon, Sparkles, ArrowRight, Menu, X, RefreshCw, Database, CheckCircle2,
   AlertCircle, ExternalLink, ShieldAlert, Clock, Layers, MessageSquare, Zap,
-  Smartphone, Laptop, Image as ImageIcon, Upload
+  Smartphone, Laptop, Image as ImageIcon, Upload, RotateCcw
 } from 'lucide-react';
 import { api, authStorage } from '../api';
 
@@ -1977,15 +1977,16 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       key={tab.id}
                       onClick={() => setCmsTab(tab.id as any)}
                       style={{
-                        padding: '8px 16px',
-                        borderRadius: '9px',
-                        border: cmsTab === tab.id ? '1px solid var(--purple)' : '1px solid var(--border)',
-                        background: cmsTab === tab.id ? 'var(--soft)' : 'var(--panel)',
-                        color: cmsTab === tab.id ? 'var(--purple)' : 'var(--muted)',
+                        padding: '9px 16px',
+                        borderRadius: '10px',
+                        border: cmsTab === tab.id ? '1px solid transparent' : '1px solid var(--border)',
+                        background: cmsTab === tab.id ? 'linear-gradient(135deg, #7869f5 0%, #6358e8 100%)' : 'var(--panel)',
+                        color: cmsTab === tab.id ? '#ffffff' : 'var(--text)',
+                        boxShadow: cmsTab === tab.id ? '0 4px 12px rgba(120, 105, 245, 0.32)' : 'none',
                         fontSize: '12px',
-                        fontWeight: 700,
+                        fontWeight: cmsTab === tab.id ? 800 : 600,
                         cursor: 'pointer',
-                        transition: 'all 0.15s ease'
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                     >
                       {tab.label}
@@ -2105,15 +2106,16 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     </div>
 
                     {/* Presets Row for Background */}
-                    <div style={{ marginBottom: '20px', padding: '12px 16px', background: 'var(--soft)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        ⚡ 1-Bosishda Zamonaviy Fon Variantlari:
-                      </span>
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div className="admin-presets-container">
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', textTransform: 'uppercase', letterSpacing: '0.6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Sparkles size={14} /> 1-Bosishda Zamonaviy Fon Variantlari:
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                         <button
                           type="button"
-                          className="ghost-btn"
-                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          className={`admin-preset-pill ${cms.heroBgDesktop?.includes('1519681393784') ? 'active' : ''}`}
                           onClick={() => setCms({
                             ...cms,
                             heroBgDesktop: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80',
@@ -2124,8 +2126,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         </button>
                         <button
                           type="button"
-                          className="ghost-btn"
-                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          className={`admin-preset-pill ${cms.heroBgDesktop?.includes('1497633762265') ? 'active' : ''}`}
                           onClick={() => setCms({
                             ...cms,
                             heroBgDesktop: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1920&q=80',
@@ -2136,8 +2137,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         </button>
                         <button
                           type="button"
-                          className="ghost-btn"
-                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          className={`admin-preset-pill ${cms.heroBgDesktop?.includes('1522071820081') ? 'active' : ''}`}
                           onClick={() => setCms({
                             ...cms,
                             heroBgDesktop: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80',
@@ -2148,21 +2148,20 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         </button>
                         <button
                           type="button"
-                          className="ghost-btn"
-                          style={{ fontSize: '12px', padding: '6px 12px', color: '#ef4444' }}
+                          className="admin-preset-pill reset"
                           onClick={() => setCms({ ...cms, heroBgDesktop: '', heroBgMobile: '' })}
                         >
-                          ❌ Standart Toza Fonga Qaytarish (O‘chirish)
+                          <Trash2 size={13} /> Standart Toza Fonga Qaytarish (O‘chirish)
                         </button>
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
                       {/* Desktop Background Image */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div className="admin-media-card">
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                           <b style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Laptop size={15} style={{ color: '#2563eb' }} /> Desktop Orqa Fon Rasmi:
+                            <Laptop size={16} style={{ color: '#6366f1' }} /> Desktop Orqa Fon Rasmi:
                           </b>
                           <input
                             type="file"
@@ -2173,26 +2172,16 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           />
                           <button
                             type="button"
-                            className="secondary-btn"
+                            className="admin-upload-btn"
                             disabled={uploadingBgDesktop}
                             onClick={() => bgDesktopFileInputRef.current?.click()}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              fontSize: '11px',
-                              padding: '5px 11px',
-                              borderRadius: '7px',
-                              fontWeight: 700
-                            }}
                           >
-                            <Upload size={13} />
+                            <Upload size={14} />
                             {uploadingBgDesktop ? 'Yuklanmoqda...' : '📁 Qurilmadan Fon Yuklash'}
                           </button>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div className="admin-input-group">
                           <input
-                            style={{ flex: 1 }}
                             value={cms.heroBgDesktop || ''}
                             onChange={e => setCms({ ...cms, heroBgDesktop: e.target.value })}
                             placeholder="https://... yoki qurilmadan yuklangan havola"
@@ -2200,12 +2189,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           {cms.heroBgDesktop && (
                             <button
                               type="button"
-                              className="ghost-btn"
-                              style={{ padding: '6px 10px', color: '#ef4444', fontSize: '12px' }}
+                              className="admin-clear-action-btn"
                               onClick={() => setCms({ ...cms, heroBgDesktop: '' })}
                               title="O‘chirish"
                             >
-                              O‘chirish
+                              <Trash2 size={13} /> O‘chirish
                             </button>
                           )}
                         </div>
@@ -2215,12 +2203,13 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         {/* Preview */}
                         {cms.heroBgDesktop ? (
                           <div style={{
-                            marginTop: '4px',
-                            height: '110px',
-                            borderRadius: '10px',
+                            marginTop: '6px',
+                            height: '130px',
+                            borderRadius: '12px',
                             overflow: 'hidden',
                             border: '1px solid var(--border)',
-                            position: 'relative'
+                            position: 'relative',
+                            boxShadow: '0 4px 14px rgba(0,0,0,0.08)'
                           }}>
                             <img
                               src={cms.heroBgDesktop}
@@ -2229,27 +2218,30 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             />
                             <div style={{
                               position: 'absolute',
-                              bottom: '6px',
-                              left: '8px',
-                              background: 'rgba(0,0,0,0.65)',
+                              bottom: '8px',
+                              left: '10px',
+                              background: 'rgba(15, 23, 42, 0.78)',
+                              backdropFilter: 'blur(6px)',
                               color: '#fff',
-                              fontSize: '10px',
-                              padding: '2px 8px',
-                              borderRadius: '6px',
-                              fontWeight: 700
+                              fontSize: '11px',
+                              padding: '3px 10px',
+                              borderRadius: '7px',
+                              fontWeight: 700,
+                              letterSpacing: '0.3px'
                             }}>
                               Desktop Fon Ko‘rinishi
                             </div>
                           </div>
                         ) : (
                           <div style={{
-                            marginTop: '4px',
-                            padding: '16px',
-                            border: '1px dashed var(--border)',
-                            borderRadius: '10px',
+                            marginTop: '6px',
+                            padding: '24px 16px',
+                            border: '1.5px dashed var(--border)',
+                            borderRadius: '12px',
                             textAlign: 'center',
-                            fontSize: '11px',
-                            color: 'var(--muted)'
+                            fontSize: '11.5px',
+                            color: 'var(--muted)',
+                            background: 'var(--panel)'
                           }}>
                             Standart oq/qora fon qo‘llanilmoqda
                           </div>
@@ -2257,10 +2249,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       </div>
 
                       {/* Mobile Background Image */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div className="admin-media-card">
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                           <b style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Smartphone size={15} style={{ color: '#10b981' }} /> Mobil Orqa Fon Rasmi:
+                            <Smartphone size={16} style={{ color: '#10b981' }} /> Mobil Orqa Fon Rasmi:
                           </b>
                           <input
                             type="file"
@@ -2271,26 +2263,16 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           />
                           <button
                             type="button"
-                            className="secondary-btn"
+                            className="admin-upload-btn emerald"
                             disabled={uploadingBgMobile}
                             onClick={() => bgMobileFileInputRef.current?.click()}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              fontSize: '11px',
-                              padding: '5px 11px',
-                              borderRadius: '7px',
-                              fontWeight: 700
-                            }}
                           >
-                            <Upload size={13} />
+                            <Upload size={14} />
                             {uploadingBgMobile ? 'Yuklanmoqda...' : '📱 Mobil Fon Yuklash'}
                           </button>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div className="admin-input-group">
                           <input
-                            style={{ flex: 1 }}
                             value={cms.heroBgMobile || ''}
                             onChange={e => setCms({ ...cms, heroBgMobile: e.target.value })}
                             placeholder="https://... yoki smartfon uchun havola"
@@ -2298,12 +2280,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           {cms.heroBgMobile && (
                             <button
                               type="button"
-                              className="ghost-btn"
-                              style={{ padding: '6px 10px', color: '#ef4444', fontSize: '12px' }}
+                              className="admin-clear-action-btn"
                               onClick={() => setCms({ ...cms, heroBgMobile: '' })}
                               title="O‘chirish"
                             >
-                              O‘chirish
+                              <Trash2 size={13} /> O‘chirish
                             </button>
                           )}
                         </div>
@@ -2313,12 +2294,13 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         {/* Preview */}
                         {cms.heroBgMobile ? (
                           <div style={{
-                            marginTop: '4px',
-                            height: '110px',
-                            borderRadius: '10px',
+                            marginTop: '6px',
+                            height: '130px',
+                            borderRadius: '12px',
                             overflow: 'hidden',
                             border: '1px solid var(--border)',
-                            position: 'relative'
+                            position: 'relative',
+                            boxShadow: '0 4px 14px rgba(0,0,0,0.08)'
                           }}>
                             <img
                               src={cms.heroBgMobile}
@@ -2327,27 +2309,30 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             />
                             <div style={{
                               position: 'absolute',
-                              bottom: '6px',
-                              left: '8px',
-                              background: 'rgba(0,0,0,0.65)',
+                              bottom: '8px',
+                              left: '10px',
+                              background: 'rgba(15, 23, 42, 0.78)',
+                              backdropFilter: 'blur(6px)',
                               color: '#fff',
-                              fontSize: '10px',
-                              padding: '2px 8px',
-                              borderRadius: '6px',
-                              fontWeight: 700
+                              fontSize: '11px',
+                              padding: '3px 10px',
+                              borderRadius: '7px',
+                              fontWeight: 700,
+                              letterSpacing: '0.3px'
                             }}>
                               Mobil Fon Ko‘rinishi
                             </div>
                           </div>
                         ) : (
                           <div style={{
-                            marginTop: '4px',
-                            padding: '16px',
-                            border: '1px dashed var(--border)',
-                            borderRadius: '10px',
+                            marginTop: '6px',
+                            padding: '24px 16px',
+                            border: '1.5px dashed var(--border)',
+                            borderRadius: '12px',
                             textAlign: 'center',
-                            fontSize: '11px',
-                            color: 'var(--muted)'
+                            fontSize: '11.5px',
+                            color: 'var(--muted)',
+                            background: 'var(--panel)'
                           }}>
                             Desktop foni mobilga ham avtomatik moslashadi
                           </div>
@@ -2370,23 +2355,23 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     </div>
 
                     {/* Presets Row */}
-                    <div style={{ marginBottom: '20px', padding: '12px 16px', background: 'var(--soft)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        ⚡ 1-Bosishda Tayyor Rasm Variantlari:
-                      </span>
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div className="admin-presets-container">
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', textTransform: 'uppercase', letterSpacing: '0.6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Sparkles size={14} /> 1-Bosishda Tayyor Rasm Variantlari:
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                         <button
                           type="button"
-                          className="ghost-btn"
-                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          className={`admin-preset-pill ${cms.heroImage === '/hero-tutor.jpg' ? 'active' : ''}`}
                           onClick={() => setCms({ ...cms, heroImage: '/hero-tutor.jpg', heroMobileImage: '/hero-tutor.jpg' })}
                         >
                           👔 Standart Erkak Ustoz
                         </button>
                         <button
                           type="button"
-                          className="ghost-btn"
-                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          className={`admin-preset-pill ${cms.heroImage?.includes('1573496359142') ? 'active' : ''}`}
                           onClick={() => {
                             const img = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1000&q=80';
                             setCms({ ...cms, heroImage: img, heroMobileImage: img });
@@ -2396,8 +2381,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         </button>
                         <button
                           type="button"
-                          className="ghost-btn"
-                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          className={`admin-preset-pill ${cms.heroImage?.includes('1534528741775') ? 'active' : ''}`}
                           onClick={() => {
                             const img = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80';
                             setCms({ ...cms, heroImage: img, heroMobileImage: img });
@@ -2407,24 +2391,23 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         </button>
                         <button
                           type="button"
-                          className="ghost-btn"
-                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          className={`admin-preset-pill ${cms.heroImage?.includes('1522202176988') ? 'active' : ''}`}
                           onClick={() => {
                             const img = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1000&q=80';
                             setCms({ ...cms, heroImage: img, heroMobileImage: img });
                           }}
                         >
-                          📱 Talabalar & Dars Jarayoni
+                          🎓 Talabalar & Dars Jarayoni
                         </button>
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
                       {/* Desktop Mac Image */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div className="admin-media-card">
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                           <b style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Laptop size={15} style={{ color: '#2563eb' }} /> Desktop Mac Rasmi:
+                            <Laptop size={16} style={{ color: '#6366f1' }} /> Desktop Mac Rasmi:
                           </b>
                           {/* Device file upload button for desktop */}
                           <input
@@ -2436,51 +2419,54 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           />
                           <button
                             type="button"
-                            className="secondary-btn"
+                            className="admin-upload-btn"
                             disabled={uploadingDesktop}
                             onClick={() => desktopFileInputRef.current?.click()}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              fontSize: '11px',
-                              padding: '5px 11px',
-                              borderRadius: '7px',
-                              fontWeight: 700
-                            }}
                           >
-                            <Upload size={13} />
+                            <Upload size={14} />
                             {uploadingDesktop ? 'Yuklanmoqda...' : '📁 Qurilmadan Rasm Yuklash'}
                           </button>
                         </div>
-                        <input
-                          value={cms.heroImage || ''}
-                          onChange={e => setCms({ ...cms, heroImage: e.target.value })}
-                          placeholder="/hero-tutor.jpg yoki qurilmadan yuklangan havola..."
-                        />
+                        <div className="admin-input-group">
+                          <input
+                            value={cms.heroImage || ''}
+                            onChange={e => setCms({ ...cms, heroImage: e.target.value })}
+                            placeholder="/hero-tutor.jpg yoki qurilmadan yuklangan havola..."
+                          />
+                          {cms.heroImage && cms.heroImage !== '/hero-tutor.jpg' && (
+                            <button
+                              type="button"
+                              className="admin-clear-action-btn"
+                              onClick={() => setCms({ ...cms, heroImage: '/hero-tutor.jpg' })}
+                              title="Standart rasmga qaytarish"
+                            >
+                              <RotateCcw size={13} /> Standart
+                            </button>
+                          )}
+                        </div>
                         <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
                           Mac noutbuk ekrani uchun gorizontal yoki kvadrat rasm tavsiya etiladi.
                         </span>
                         {/* Desktop Preview */}
                         <div style={{
-                          marginTop: '4px',
-                          border: '2px dashed var(--border)',
-                          borderRadius: '10px',
-                          padding: '10px',
-                          background: 'var(--soft)',
+                          marginTop: '6px',
+                          border: '1.5px dashed var(--border)',
+                          borderRadius: '12px',
+                          padding: '12px',
+                          background: 'var(--panel)',
                           textAlign: 'center'
                         }}>
-                          <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '8px', letterSpacing: '0.4px' }}>
                             💻 MAC KO‘RINISHI (PREVIEW):
                           </span>
                           <div style={{
                             width: '100%',
-                            maxWidth: '240px',
+                            maxWidth: '260px',
                             margin: '0 auto',
                             aspectRatio: '16/11',
-                            borderRadius: '6px',
+                            borderRadius: '8px',
                             overflow: 'hidden',
-                            boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                            boxShadow: '0 6px 18px rgba(0,0,0,0.22)',
                             background: '#000'
                           }}>
                             <img
@@ -2494,10 +2480,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       </div>
 
                       {/* Mobile Smartphone Image */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div className="admin-media-card">
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                           <b style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Smartphone size={15} style={{ color: '#10b981' }} /> Mobile Telefon Rasmi:
+                            <Smartphone size={16} style={{ color: '#10b981' }} /> Mobile Telefon Rasmi:
                           </b>
                           {/* Device file upload button for mobile */}
                           <input
@@ -2509,46 +2495,49 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           />
                           <button
                             type="button"
-                            className="secondary-btn"
+                            className="admin-upload-btn emerald"
                             disabled={uploadingMobile}
                             onClick={() => mobileFileInputRef.current?.click()}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              fontSize: '11px',
-                              padding: '5px 11px',
-                              borderRadius: '7px',
-                              fontWeight: 700
-                            }}
                           >
-                            <Upload size={13} />
-                            {uploadingMobile ? 'Yuklanmoqda...' : '📁 Qurilmadan Rasm Yuklash'}
+                            <Upload size={14} />
+                            {uploadingMobile ? 'Yuklanmoqda...' : '📱 Qurilmadan Rasm Yuklash'}
                           </button>
                         </div>
-                        <input
-                          value={cms.heroMobileImage || ''}
-                          onChange={e => setCms({ ...cms, heroMobileImage: e.target.value })}
-                          placeholder="Bo‘sh qolsa Desktop rasmi ishlatiladi..."
-                        />
+                        <div className="admin-input-group">
+                          <input
+                            value={cms.heroMobileImage || ''}
+                            onChange={e => setCms({ ...cms, heroMobileImage: e.target.value })}
+                            placeholder="Bo‘sh qolsa Desktop rasmi ishlatiladi..."
+                          />
+                          {cms.heroMobileImage && (
+                            <button
+                              type="button"
+                              className="admin-clear-action-btn"
+                              onClick={() => setCms({ ...cms, heroMobileImage: '' })}
+                              title="O‘chirish"
+                            >
+                              <Trash2 size={13} /> O‘chirish
+                            </button>
+                          )}
+                        </div>
                         <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
                           Smartfon ekrani (9:16) uchun vertikal portret rasm eng chiroyli ko‘rinadi.
                         </span>
                         {/* Mobile Preview */}
                         <div style={{
-                          marginTop: '4px',
-                          border: '2px dashed var(--border)',
-                          borderRadius: '10px',
-                          padding: '10px',
-                          background: 'var(--soft)',
+                          marginTop: '6px',
+                          border: '1.5px dashed var(--border)',
+                          borderRadius: '12px',
+                          padding: '12px',
+                          background: 'var(--panel)',
                           textAlign: 'center'
                         }}>
-                          <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 800, color: '#10b981', display: 'block', marginBottom: '8px', letterSpacing: '0.4px' }}>
                             📱 SMARTFON KO‘RINISHI (PREVIEW):
                           </span>
                           <div style={{
                             position: 'relative',
-                            width: '110px',
+                            width: '115px',
                             margin: '0 auto',
                             aspectRatio: '9/18.8',
                             borderRadius: '18px',
