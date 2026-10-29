@@ -1651,9 +1651,7 @@ function App() {
 
       setPage('verify');
       setResendCooldown(60);
-      if (email.trim().toLowerCase() === 'talabamanpdp@gmail.com') {
-        setMessage('Tasdiqlash kodi talabamanpdp@gmail.com emailingizga Resend orqali yuborildi! Pochtani tekshiring.');
-      } else if (res.devCode) {
+      if (res.devCode) {
         setMessage(`Tasdiqlash kodi yuborildi! (Resend sinov kodi: ${res.devCode})`);
       } else {
         setMessage(`Tasdiqlash kodi ${email} manziliga yuborildi! Pochtani tekshiring.`);
@@ -1694,6 +1692,10 @@ function App() {
       }
       setPage('dashboard');
     } catch (err: any) {
+      if (err.requiresEmailVerification || (err.data && err.data.requiresEmailVerification)) {
+        setPage('verify');
+        setResendCooldown(30);
+      }
       setMessage(err.message || 'Email yoki parol noto‘g‘ri.');
     } finally {
       setLoading(false);
@@ -1709,9 +1711,22 @@ function App() {
     setMessage('');
 
     try {
-      await api.verifyEmail(email.trim().toLowerCase(), code.trim());
+      const res = await api.verifyEmail(email.trim().toLowerCase(), code.trim());
       setMessage('Email tasdiqlandi! ✓');
-      setPage('onboarding');
+
+      const userRole = res.user?.role;
+      const roleStr = typeof userRole === 'string' ? userRole.toLowerCase() : userRole === 1 ? 'admin' : userRole === 2 ? 'teacher' : 'user';
+      const cleanRole = roleStr === 'superadmin' ? 'admin' : roleStr === 'learner' ? 'user' : roleStr;
+      setRole(cleanRole);
+
+      if (cleanRole === 'user') {
+        const hasLang = res.user?.targetLanguage || localStorage.getItem('tilshunos_language');
+        if (!hasLang) {
+          setPage('onboarding');
+          return;
+        }
+      }
+      setPage('dashboard');
     } catch (err: any) {
       // In dev fallback, allow 123456 as well
       if (code.trim() === '123456') {
@@ -1731,12 +1746,10 @@ function App() {
     try {
       const res = await api.resendCode(email.trim().toLowerCase());
       setResendCooldown(60);
-      if (email.trim().toLowerCase() === 'talabamanpdp@gmail.com') {
-        setMessage('Yangi tasdiqlash kodi talabamanpdp@gmail.com emailingizga yuborildi! (Resend)');
-      } else if ((res as any)?.devCode) {
+      if ((res as any)?.devCode) {
         setMessage(`Yangi kod yuborildi! (Resend sinov kodi: ${(res as any).devCode})`);
       } else {
-        setMessage('Yangi tasdiqlash kodi emailingizga yuborildi! (Resend xizmati)');
+        setMessage(`Yangi tasdiqlash kodi ${email} manziliga yuborildi! Pochtani tekshiring.`);
       }
     } catch (err: any) {
       setMessage(err.message || 'Kodni yuborishda xatolik. Birozdan so‘ng urinib ko‘ring.');

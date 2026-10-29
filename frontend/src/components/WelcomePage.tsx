@@ -148,8 +148,9 @@ interface WelcomePageProps {
 }
 
 export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelectLevel }: WelcomePageProps) {
-  const desktopTutorImg = cms?.heroImage || '/hero-tutor.jpg';
-  const mobileTutorImg = cms?.heroMobileImage || cms?.heroImage || '/hero-tutor.jpg';
+  const ensureSecureUrl = (u?: string) => u ? u.replace(/^http:\/\/tilshunos\.onrender\.com/i, 'https://tilshunos.onrender.com') : u;
+  const desktopTutorImg = ensureSecureUrl(cms?.heroImage) || '/hero-tutor.jpg';
+  const mobileTutorImg = ensureSecureUrl(cms?.heroMobileImage || cms?.heroImage) || '/hero-tutor.jpg';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [previewTab, setPreviewTab] = useState<'vocab' | 'lesson' | 'progress'>('vocab');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);

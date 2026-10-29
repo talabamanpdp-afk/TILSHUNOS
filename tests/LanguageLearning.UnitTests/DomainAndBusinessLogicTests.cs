@@ -154,5 +154,14 @@ public class PasswordHasherTests
         hasher.VerifyPassword(raw, hash).Should().BeTrue();
         hasher.VerifyPassword("WrongPass!", hash).Should().BeFalse();
     }
+
+    [Fact]
+    public void RegisterRequest_AllowsOmittedConfirmPasswordAndLastName()
+    {
+        var req = new LanguageLearning.Application.DTOs.RegisterRequest("David", null, "david@example.com", "Secret123!");
+        req.FirstName.Should().Be("David");
+        req.LastName.Should().BeNull();
+        req.ConfirmPassword.Should().BeNull();
+    }
 }
 

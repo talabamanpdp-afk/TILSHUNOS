@@ -109,13 +109,23 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
     if (!res.ok) {
       let errorMsg = `Server xatoligi: ${res.status}`;
+      let data: any = {};
       try {
-        const data = await res.json();
-        errorMsg = data.message || data.error || errorMsg;
+        data = await res.json();
+        if (data.errors && typeof data.errors === 'object') {
+          const fieldErrors = Object.values(data.errors).flat().filter(Boolean).join('. ');
+          if (fieldErrors) errorMsg = fieldErrors;
+        } else {
+          errorMsg = data.message || data.error || data.title || errorMsg;
+        }
       } catch {
         // ignore
       }
-      throw new Error(errorMsg);
+      const err = new Error(errorMsg) as any;
+      err.status = res.status;
+      err.data = data;
+      err.requiresEmailVerification = data?.requiresEmailVerification;
+      throw err;
     }
 
     return res.json() as Promise<T>;
@@ -130,13 +140,17 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
 export const api = {
   // Authentication
-  async register(data: { email: string; password: string; firstName: string; lastName: string }) {
-    const res = await request<{ token: string; user: any; devCode?: string }>('/auth/register', {
+  async register(data: { email: string; password: string; firstName: string; lastName?: string }) {
+    const res = await request<{ message: string; email?: string; emailSent?: boolean; devCode?: string }>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        firstName: data.firstName,
+        lastName: data.lastName || '',
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.password
+      })
     });
-    if (res.token) authStorage.setToken(res.token);
-    if (res.user) authStorage.setUser(res.user);
     return res;
   },
 
@@ -166,14 +180,17 @@ export const api = {
   },
 
   async verifyEmail(email: string, code: string) {
-    return request<{ message: string }>('/auth/verify-email', {
+    const res = await request<{ message: string; token?: string; user?: any }>('/auth/verify-email', {
       method: 'POST',
       body: JSON.stringify({ email, code })
     });
+    if (res.token) authStorage.setToken(res.token);
+    if (res.user) authStorage.setUser(res.user);
+    return res;
   },
 
   async resendCode(email: string) {
-    return request<{ message: string }>('/auth/resend-code', {
+    return request<{ message: string; emailSent?: boolean; devCode?: string }>('/auth/resend-code', {
       method: 'POST',
       body: JSON.stringify({ email })
     });

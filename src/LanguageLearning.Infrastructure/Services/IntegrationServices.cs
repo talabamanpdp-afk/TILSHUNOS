@@ -3,7 +3,9 @@ using System.Text;
 using System.Text.Json;
 using LanguageLearning.Application.Interfaces;
 using LanguageLearning.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace LanguageLearning.Infrastructure.Services;
@@ -13,12 +15,14 @@ public class EmailService : IEmailService
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
     private readonly ILogger<EmailService> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
-    public EmailService(HttpClient httpClient, IConfiguration configuration, ILogger<EmailService> logger)
+    public EmailService(HttpClient httpClient, IConfiguration configuration, ILogger<EmailService> logger, IServiceProvider serviceProvider)
     {
         _httpClient = httpClient;
         _configuration = configuration;
         _logger = logger;
+        _serviceProvider = serviceProvider;
     }
 
     public async Task<bool> SendVerificationEmailAsync(string email, string code, CancellationToken cancellationToken = default)
@@ -136,6 +140,24 @@ public class EmailService : IEmailService
     {
         var apiKey = Environment.GetEnvironmentVariable("RESEND_API_KEY") 
             ?? _configuration["Resend:ApiKey"];
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<LanguageLearning.Infrastructure.Data.AppDbContext>();
+                var setting = db.SystemSettings.AsNoTracking().FirstOrDefault(s => s.Key == "resend_api_key");
+                if (setting != null && !string.IsNullOrWhiteSpace(setting.ValueJson))
+                {
+                    apiKey = setting.ValueJson.Trim().Trim('"');
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not load resend_api_key from system_settings");
+            }
+        }
         
         var fromEmail = Environment.GetEnvironmentVariable("RESEND_FROM_EMAIL") 
             ?? _configuration["Resend:FromEmail"] 

@@ -3,7 +3,7 @@ using LanguageLearning.Domain.Enums;
 namespace LanguageLearning.Application.DTOs;
 
 // --- Auth DTOs ---
-public record RegisterRequest(string FirstName, string LastName, string Email, string Password, string ConfirmPassword);
+public record RegisterRequest(string FirstName, string? LastName, string Email, string Password, string? ConfirmPassword = null);
 public record LoginRequest(string Email, string Password);
 public record GoogleAuthRequest(string IdToken, string? Email = null, string? FirstName = null, string? LastName = null);
 public record VerifyEmailRequest(string Email, string Code);

@@ -37,21 +37,28 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        var normalizedEmail = request.Email.Trim().ToUpperInvariant();
+        var rawEmail = (request.Email ?? "").Trim().ToLowerInvariant();
+        var normalizedEmail = rawEmail.ToUpperInvariant();
         if (await _db.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail))
         {
             return BadRequest(new { message = "Ushbu email bilan allaqachon ro‘yxatdan o‘tilgan. Iltimos, hisobingizga kiring." });
         }
 
+        var firstName = (request.FirstName ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(firstName)) firstName = "O‘rganuvchi";
+        var lastName = (request.LastName ?? "").Trim();
+
         var user = new User
         {
-            Email = request.Email.Trim().ToLowerInvariant(),
+            Email = rawEmail,
             NormalizedEmail = normalizedEmail,
-            FirstName = request.FirstName.Trim(),
-            LastName = request.LastName.Trim(),
+            FirstName = firstName,
+            LastName = lastName,
             PasswordHash = _passwordHasher.HashPassword(request.Password),
             Role = UserRole.Learner,
-            EmailConfirmed = false
+            EmailConfirmed = false,
+            IsActive = true,
+            CreatedAtUtc = DateTime.UtcNow
         };
 
         var profile = new UserProfile
@@ -78,21 +85,23 @@ public class AuthController : ControllerBase
         await _db.SaveChangesAsync();
 
         // Send verification email via Resend
+        bool emailSent = false;
         try
         {
-            await _emailService.SendVerificationEmailAsync(user.Email, code);
+            emailSent = await _emailService.SendVerificationEmailAsync(user.Email, code);
         }
         catch
         {
             // Logging is handled inside EmailService
         }
 
-        var token = _jwtService.GenerateToken(user);
-        var userDto = new UserDto(
-            user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.EmailConfirmed,
-            profile.NativeLanguage, null, null);
-
-        return Ok(new { token, user = userDto, devCode = code });
+        return Ok(new
+        {
+            message = "Tasdiqlash kodi emailingizga yuborildi.",
+            email = user.Email,
+            emailSent,
+            devCode = emailSent ? null : code
+        });
     }
 
     [HttpPost("login")]
@@ -169,6 +178,17 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Hisobingiz faoliyati to‘xtatilgan. Iltimos, ma’muriyat bilan bog‘laning." });
         }
 
+        // Oddiy foydalanuvchilar faqat emailini tasdiqlaganidan keyingina tizimga kirishi mumkin:
+        if (user.Role != UserRole.SuperAdmin && !user.EmailConfirmed)
+        {
+            return BadRequest(new
+            {
+                message = "Emailingiz hali tasdiqlanmagan. Iltimos, emailingizga yuborilgan 6 xonali tasdiqlash kodini kiriting.",
+                requiresEmailVerification = true,
+                email = user.Email
+            });
+        }
+
         user.LastLoginAtUtc = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
@@ -190,12 +210,15 @@ public class AuthController : ControllerBase
     [HttpPost("verify-email")]
     public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
     {
+        var email = (request.Email ?? "").Trim().ToLowerInvariant();
+        var code = (request.Code ?? "").Trim();
+
         var record = await _db.EmailVerificationCodes
-            .Where(c => c.Email == request.Email.Trim().ToLowerInvariant() && !c.IsUsed)
+            .Where(c => c.Email == email && !c.IsUsed)
             .OrderByDescending(c => c.CreatedAtUtc)
             .FirstOrDefaultAsync();
 
-        if (record == null || record.Code != request.Code.Trim())
+        if (record == null || record.Code != code)
         {
             return BadRequest(new { message = "Tasdiqlash kodi noto‘g‘ri. Iltimos, qaytadan tekshirib kiriting." });
         }
@@ -206,10 +229,24 @@ public class AuthController : ControllerBase
         }
 
         record.IsUsed = true;
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email.Trim().ToLowerInvariant());
+        var user = await _db.Users
+            .Include(u => u.Profile)
+            .Include(u => u.LearningLanguages)
+            .FirstOrDefaultAsync(u => u.Email == email);
+
         if (user != null)
         {
             user.EmailConfirmed = true;
+            user.LastLoginAtUtc = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+
+            var token = _jwtService.GenerateToken(user);
+            var primaryLang = user.LearningLanguages.FirstOrDefault(l => l.IsPrimary);
+            var userDto = new UserDto(
+                user.Id, user.Email, user.FirstName, user.LastName, user.Role, user.EmailConfirmed,
+                user.Profile?.NativeLanguage ?? "uz", primaryLang?.LanguageCode, primaryLang?.CurrentLevel);
+
+            return Ok(new { message = "Email muvaffaqiyatli tasdiqlandi.", token, user = userDto });
         }
 
         await _db.SaveChangesAsync();
@@ -219,7 +256,7 @@ public class AuthController : ControllerBase
     [HttpPost("resend-code")]
     public async Task<IActionResult> ResendCode([FromBody] ResendCodeRequest request)
     {
-        var email = request.Email.Trim().ToLowerInvariant();
+        var email = (request.Email ?? "").Trim().ToLowerInvariant();
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null)
         {
@@ -236,16 +273,22 @@ public class AuthController : ControllerBase
         _db.EmailVerificationCodes.Add(record);
         await _db.SaveChangesAsync();
 
+        bool emailSent = false;
         try
         {
-            await _emailService.SendVerificationEmailAsync(email, code);
+            emailSent = await _emailService.SendVerificationEmailAsync(email, code);
         }
         catch
         {
             // Error logged in EmailService
         }
 
-        return Ok(new { message = "Yangi tasdiqlash kodi emailingizga yuborildi.", devCode = code });
+        return Ok(new
+        {
+            message = "Yangi tasdiqlash kodi emailingizga yuborildi.",
+            emailSent,
+            devCode = emailSent ? null : code
+        });
     }
 
     [HttpPost("forgot-password")]
