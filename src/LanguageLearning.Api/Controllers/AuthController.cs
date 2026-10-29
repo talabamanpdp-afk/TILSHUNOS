@@ -19,19 +19,22 @@ public class AuthController : ControllerBase
     private readonly IJwtTokenService _jwtService;
     private readonly IEmailService _emailService;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         AppDbContext db,
         IPasswordHasherService passwordHasher,
         IJwtTokenService jwtService,
         IEmailService emailService,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        ILogger<AuthController> logger)
     {
         _db = db;
         _passwordHasher = passwordHasher;
         _jwtService = jwtService;
         _emailService = emailService;
         _currentUserService = currentUserService;
+        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -84,23 +87,30 @@ public class AuthController : ControllerBase
 
         await _db.SaveChangesAsync();
 
-        // Send verification email via Resend
+        // Send verification email via Gmail SMTP (or fallback provider)
         bool emailSent = false;
         try
         {
             emailSent = await _emailService.SendVerificationEmailAsync(user.Email, code);
         }
-        catch
+        catch (Exception ex)
         {
-            // Logging is handled inside EmailService
+            _logger.LogError(ex, "Failed to send verification email to {Email}", user.Email);
+        }
+
+        if (!emailSent)
+        {
+            return StatusCode(500, new
+            {
+                message = "Email manzilingizga tasdiqlash kodini yuborishda xatolik yuz berdi. Iltimos, emailingiz mavjud va to‘g‘ri ekanligini tekshiring yoki birozdan so‘ng qayta urinib ko‘ring."
+            });
         }
 
         return Ok(new
         {
-            message = "Tasdiqlash kodi emailingizga yuborildi.",
+            message = "Tasdiqlash kodi emailingizga yuborildi. Iltimos pochtangizni tekshiring.",
             email = user.Email,
-            emailSent,
-            devCode = emailSent ? null : code
+            emailSent = true
         });
     }
 
@@ -278,16 +288,23 @@ public class AuthController : ControllerBase
         {
             emailSent = await _emailService.SendVerificationEmailAsync(email, code);
         }
-        catch
+        catch (Exception ex)
         {
-            // Error logged in EmailService
+            _logger.LogError(ex, "Failed to resend verification email to {Email}", email);
+        }
+
+        if (!emailSent)
+        {
+            return StatusCode(500, new
+            {
+                message = "Tasdiqlash kodini yuborishda xatolik yuz berdi. Iltimos qaytadan urinib ko‘ring."
+            });
         }
 
         return Ok(new
         {
-            message = "Yangi tasdiqlash kodi emailingizga yuborildi.",
-            emailSent,
-            devCode = emailSent ? null : code
+            message = "Yangi tasdiqlash kodi emailingizga yuborildi. Iltimos pochtangizni tekshiring.",
+            emailSent = true
         });
     }
 

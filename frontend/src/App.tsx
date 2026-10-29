@@ -1651,11 +1651,7 @@ function App() {
 
       setPage('verify');
       setResendCooldown(60);
-      if (res.devCode) {
-        setMessage(`Tasdiqlash kodi yuborildi! (Resend sinov kodi: ${res.devCode})`);
-      } else {
-        setMessage(`Tasdiqlash kodi ${email} manziliga yuborildi! Pochtani tekshiring.`);
-      }
+      setMessage(`Tasdiqlash kodi ${email} manziliga yuborildi! Pochtani (Inbox yoki Spam) tekshiring.`);
     } catch (err: any) {
       setMessage(err.message || 'Ro‘yxatdan o‘tishda xatolik yuz berdi.');
     } finally {
@@ -1744,13 +1740,9 @@ function App() {
     if (resendCooldown > 0) return;
     setLoading(true);
     try {
-      const res = await api.resendCode(email.trim().toLowerCase());
+      await api.resendCode(email.trim().toLowerCase());
       setResendCooldown(60);
-      if ((res as any)?.devCode) {
-        setMessage(`Yangi kod yuborildi! (Resend sinov kodi: ${(res as any).devCode})`);
-      } else {
-        setMessage(`Yangi tasdiqlash kodi ${email} manziliga yuborildi! Pochtani tekshiring.`);
-      }
+      setMessage(`Yangi tasdiqlash kodi ${email} manziliga yuborildi! Pochtani (Inbox yoki Spam) tekshiring.`);
     } catch (err: any) {
       setMessage(err.message || 'Kodni yuborishda xatolik. Birozdan so‘ng urinib ko‘ring.');
     } finally {
@@ -1929,11 +1921,11 @@ function App() {
                     disabled={resendCooldown > 0 || loading}
                     style={{ fontSize: '11px' }}
                   >
-                    {resendCooldown > 0 ? `Kodni qayta yuborish (${resendCooldown}s)` : 'Kodni qayta yuborish (Resend)'}
+                    {resendCooldown > 0 ? `Kodni qayta yuborish (${resendCooldown}s)` : 'Kodni qayta yuborish 🔄'}
                   </button>
                 </div>
 
-                <p className="auth-note">Emailingizga kelgan 6 xonali xavfsizlik kodini kiriting.</p>
+                <p className="auth-note">Emailingizga kelgan 6 xonali xavfsizlik kodini kiriting (kerak bo‘lsa Spam papkasini ham tekshiring).</p>
               </>
             )}
 

@@ -141,7 +141,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 export const api = {
   // Authentication
   async register(data: { email: string; password: string; firstName: string; lastName?: string }) {
-    const res = await request<{ message: string; email?: string; emailSent?: boolean; devCode?: string }>('/auth/register', {
+    const res = await request<{ message: string; email?: string; emailSent?: boolean }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify({
         firstName: data.firstName,
@@ -190,7 +190,7 @@ export const api = {
   },
 
   async resendCode(email: string) {
-    return request<{ message: string; emailSent?: boolean; devCode?: string }>('/auth/resend-code', {
+    return request<{ message: string; emailSent?: boolean }>('/auth/resend-code', {
       method: 'POST',
       body: JSON.stringify({ email })
     });
