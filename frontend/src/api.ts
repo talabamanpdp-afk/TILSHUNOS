@@ -47,7 +47,7 @@ async function ensureValidToken(): Promise<string | null> {
       const res = await fetch(`${BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'admin@tilshunos.app', password: 'Admin123!' })
+        body: JSON.stringify({ email: 'soxibgaybullayev439@gmail.com', password: 's0x1bj0n$02$' })
       });
       if (res.ok) {
         const data = await res.json();
@@ -90,7 +90,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
           const authRes = await fetch(`${BASE_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: 'admin@tilshunos.app', password: 'Admin123!' })
+            body: JSON.stringify({ email: 'soxibgaybullayev439@gmail.com', password: 's0x1bj0n$02$' })
           });
           if (authRes.ok) {
             const authData = await authRes.json();
@@ -355,7 +355,56 @@ export const api = {
     });
   },
 
-  async uploadCmsImage(data: { dataBase64: string; fileName?: string; contentType?: string }) {
+  async uploadCmsImage(data: { dataBase64?: string; file?: File | Blob; fileName?: string; contentType?: string }) {
+    // 1. Direct Supabase Storage Bucket Upload (Zero lag, full resolution, 100% reliable)
+    const supabaseUrl = 'https://yipexommqztxnvpckqyi.supabase.co';
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcGV4b21tcXp0eG52cGNrcXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwODU0MDYsImV4cCI6MjEwODY2MTQwNn0.P17uUwPdlEJnOxorTav-wIExlfzUJGPEIqryrvGvfPI';
+    const bucketName = 'tilshunos-media';
+
+    try {
+      let bodyData: any = data.file;
+      let contentType = data.contentType || (data.file as any)?.type || 'image/jpeg';
+      let originalName = data.fileName || (data.file as any)?.name || 'image.jpg';
+      const cleanName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const uniqueName = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${cleanName}`;
+
+      if (!bodyData && data.dataBase64) {
+        const base64Clean = data.dataBase64.includes(',') ? data.dataBase64.split(',')[1] : data.dataBase64;
+        const binary = atob(base64Clean);
+        const array = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          array[i] = binary.charCodeAt(i);
+        }
+        bodyData = new Blob([array], { type: contentType });
+      }
+
+      if (bodyData) {
+        const res = await fetch(`${supabaseUrl}/storage/v1/object/${bucketName}/${uniqueName}`, {
+          method: 'POST',
+          headers: {
+            'apikey': anonKey,
+            'Authorization': `Bearer ${anonKey}`,
+            'Content-Type': contentType
+          },
+          body: bodyData
+        });
+
+        if (res.ok) {
+          const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${uniqueName}`;
+          return {
+            success: true,
+            id: uniqueName,
+            url: publicUrl,
+            relativeUrl: publicUrl,
+            message: 'Rasm to‘g‘ridan-to‘g‘ri Supabase "tilshunos-media" bucketiga muvaffaqiyatli yuklandi!'
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('Direct bucket upload failed, trying backend...', err);
+    }
+
+    // 2. Fallback to backend /cms/upload-image
     return request<{ success: boolean; id: string; url: string; relativeUrl: string; message: string }>('/cms/upload-image', {
       method: 'POST',
       body: JSON.stringify(data)
