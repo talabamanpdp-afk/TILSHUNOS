@@ -356,40 +356,122 @@ export const api = {
   },
 
   async uploadCmsImage(data: { dataBase64?: string; file?: File | Blob; fileName?: string; contentType?: string }) {
-    // 1. Direct Supabase Storage Bucket Upload (Zero lag, full resolution, 100% reliable)
+    // Direct Supabase Storage Bucket Upload ('tilshunos-media' bucket)
     const supabaseUrl = 'https://yipexommqztxnvpckqyi.supabase.co';
     const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcGV4b21tcXp0eG52cGNrcXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwODU0MDYsImV4cCI6MjEwODY2MTQwNn0.P17uUwPdlEJnOxorTav-wIExlfzUJGPEIqryrvGvfPI';
     const bucketName = 'tilshunos-media';
 
-    let originalName = data.fileName || (data.file as any)?.name || 'image.jpg';
-    const ext = (originalName.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const cleanExt = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) ? ext : 'jpg';
-    // Strictly alphanumeric ASCII S3 key to avoid Supabase 400 InvalidKey error with apostrophes like 'o‘rganish'
-    const uniqueName = `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${cleanExt}`;
-    let contentType = data.contentType || (data.file as any)?.type || (cleanExt === 'png' ? 'image/png' : 'image/jpeg');
+    let initialType = data.contentType || (data.file as any)?.type || 'image/jpeg';
+    let rawBlob: Blob | null = (data.file as Blob) || null;
 
-    try {
-      let bodyData: any = data.file;
-
-      if (!bodyData && data.dataBase64) {
+    if (!rawBlob && data.dataBase64) {
+      try {
         const base64Clean = data.dataBase64.includes(',') ? data.dataBase64.split(',')[1] : data.dataBase64;
         const binary = atob(base64Clean);
         const array = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) {
           array[i] = binary.charCodeAt(i);
         }
-        bodyData = new Blob([array], { type: contentType });
-      }
+        rawBlob = new Blob([array], { type: initialType });
+      } catch {}
+    }
 
-      if (bodyData) {
+    // Client-side smart optimizer: scales down giant camera photos (>2560px) while maintaining pristine crispness
+    let optimizedBlob: Blob | null = rawBlob;
+    let finalContentType = initialType;
+
+    if (rawBlob && typeof window !== 'undefined' && !initialType.includes('svg') && !initialType.includes('gif')) {
+      try {
+        const optimized = await new Promise<{ blob: Blob; contentType: string }>((resolve) => {
+          // If already very small (< 1MB) and modern format, use directly
+          if (rawBlob!.size < 1024 * 1024 && (initialType === 'image/webp' || initialType === 'image/jpeg' || initialType === 'image/png')) {
+            resolve({ blob: rawBlob!, contentType: initialType });
+            return;
+          }
+
+          const imgUrl = URL.createObjectURL(rawBlob!);
+          const img = new Image();
+          img.onload = () => {
+            URL.revokeObjectURL(imgUrl);
+            let w = img.naturalWidth || img.width;
+            let h = img.naturalHeight || img.height;
+            const maxDim = 2560; // 2K/QHD quality for razor-sharp hero/background visuals
+
+            if (w > maxDim || h > maxDim) {
+              if (w > h) {
+                h = Math.round((h * maxDim) / w);
+                w = maxDim;
+              } else {
+                w = Math.round((w * maxDim) / h);
+                h = maxDim;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve({ blob: rawBlob!, contentType: initialType });
+              return;
+            }
+
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, w, h);
+
+            // Compress to high quality WebP (0.90) or JPEG (0.90)
+            canvas.toBlob(
+              (b) => {
+                if (b && b.size < rawBlob!.size) {
+                  resolve({ blob: b, contentType: 'image/webp' });
+                } else {
+                  canvas.toBlob(
+                    (jb) => {
+                      if (jb && (jb.size < rawBlob!.size || rawBlob!.size > 2 * 1024 * 1024)) {
+                        resolve({ blob: jb, contentType: 'image/jpeg' });
+                      } else {
+                        resolve({ blob: rawBlob!, contentType: initialType });
+                      }
+                    },
+                    'image/jpeg',
+                    0.90
+                  );
+                }
+              },
+              'image/webp',
+              0.90
+            );
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(imgUrl);
+            resolve({ blob: rawBlob!, contentType: initialType });
+          };
+          img.src = imgUrl;
+        });
+
+        optimizedBlob = optimized.blob;
+        finalContentType = optimized.contentType;
+      } catch (err) {
+        console.warn('Image optimization skipped, using raw image:', err);
+      }
+    }
+
+    const cleanExt = finalContentType === 'image/webp' ? 'webp' : finalContentType === 'image/png' ? 'png' : finalContentType === 'image/svg+xml' ? 'svg' : finalContentType === 'image/gif' ? 'gif' : 'jpg';
+    const uniqueName = `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${cleanExt}`;
+
+    // 1. Direct Supabase Storage Bucket Upload
+    try {
+      if (optimizedBlob) {
         const res = await fetch(`${supabaseUrl}/storage/v1/object/${bucketName}/${uniqueName}`, {
           method: 'POST',
           headers: {
             'apikey': anonKey,
             'Authorization': `Bearer ${anonKey}`,
-            'Content-Type': contentType
+            'Content-Type': finalContentType,
+            'x-upsert': 'true'
           },
-          body: bodyData
+          body: optimizedBlob
         });
 
         if (res.ok) {
@@ -407,23 +489,23 @@ export const api = {
         }
       }
     } catch (err) {
-      console.warn('Direct bucket upload failed, trying backend...', err);
+      console.warn('Direct bucket upload failed, trying backend fallback...', err);
     }
 
     // 2. Fallback to backend /cms/upload-image
     let payload = {
       dataBase64: data.dataBase64,
       fileName: uniqueName,
-      contentType
+      contentType: finalContentType
     };
 
-    if (!payload.dataBase64 && data.file) {
+    if (optimizedBlob) {
       try {
         const b64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
           reader.onerror = reject;
-          reader.readAsDataURL(data.file as File);
+          reader.readAsDataURL(optimizedBlob as Blob);
         });
         payload.dataBase64 = b64;
       } catch {}

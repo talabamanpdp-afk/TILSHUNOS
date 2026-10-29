@@ -27,7 +27,7 @@ const adminNav = [
 export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; dark: boolean; setDark: (d: boolean) => void }) {
   const [section, setSection] = useState('dashboard');
 
-  const [toast, setToast] = useState('');
+  const [toast, setToast] = useState<{ message: string; isError?: boolean } | null>(null);
   const [query, setQuery] = useState('');
   const [mobileNav, setMobileNav] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -243,9 +243,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   const [pingLatency, setPingLatency] = useState<number | null>(null);
   const [testingPing, setTestingPing] = useState(false);
 
-  const notify = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(''), 3000);
+  const notify = (msg: string, isError = false) => {
+    setToast({ message: msg, isError });
+    setTimeout(() => setToast(null), 4000);
   };
 
   // Load real data from Supabase with two-stage priority loading
@@ -489,7 +489,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
 
       notify('Rasm muvaffaqiyatli Supabase "tilshunos-media" bucketiga yuklandi! ✓');
     } catch (err: any) {
-      notify(err.message || 'Rasm yuklashda xatolik yuz berdi');
+      let errMsg = err?.message || 'Rasm yuklashda xatolik yuz berdi';
+      if (typeof errMsg === 'string' && (errMsg.includes('413') || errMsg.includes('Payload too large') || errMsg.includes('EntityTooLarge'))) {
+        errMsg = 'Rasm hajmi chegaradan oshdi. Tizim uni avtomatik moslashtirmoqda, iltimos qayta urinib ko‘ring.';
+      }
+      notify(errMsg, true);
     } finally {
       if (target === 'desktop') setUploadingDesktop(false);
       else if (target === 'mobile') setUploadingMobile(false);
@@ -3946,9 +3950,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       )}
 
       {toast && (
-        <div className="toast">
-          <div><Check size={16} /></div>
-          <span>{toast}</span>
+        <div className="toast" style={toast.isError ? { background: '#ef4444', color: '#fff', borderColor: '#b91c1c' } : undefined}>
+          <div>{toast.isError ? <AlertCircle size={16} /> : <Check size={16} />}</div>
+          <span>{toast.message}</span>
         </div>
       )}
     </div>

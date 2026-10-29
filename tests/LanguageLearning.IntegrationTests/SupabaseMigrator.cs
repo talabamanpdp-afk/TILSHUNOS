@@ -390,4 +390,92 @@ public class SupabaseMigrator
         Assert.Equal("soxibgaybullayev439@gmail.com", remainingUsers[0].Email);
         Assert.Equal(LanguageLearning.Domain.Enums.UserRole.SuperAdmin, remainingUsers[0].Role);
     }
+
+    [Fact]
+    public async Task CheckAndUpdateSupabaseStorageBucket()
+    {
+        var connStr = "Host=aws-0-ap-northeast-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.yipexommqztxnvpckqyi;Password=s0x1bj0n$02$;SSL Mode=Require;Trust Server Certificate=true;Timeout=60;";
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseNpgsql(connStr)
+            .Options;
+
+        using var db = new AppDbContext(options);
+        var conn = db.Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open)
+        {
+            await conn.OpenAsync();
+        }
+
+        using var selectCmd = conn.CreateCommand();
+        selectCmd.CommandText = "SELECT id, name, public, file_size_limit, allowed_mime_types FROM storage.buckets;";
+        using var reader = await selectCmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            var id = reader["id"];
+            var limit = reader["file_size_limit"];
+            var pub = reader["public"];
+            var mimes = reader["allowed_mime_types"];
+            Console.WriteLine($"[BUCKET INFO] ID: {id}, Public: {pub}, FileSizeLimit: {limit}, MimeTypes: {mimes}");
+        }
+        await reader.CloseAsync();
+
+        // Update bucket limit to 50MB (52428800 bytes) and allow all images
+        using var updateCmd = conn.CreateCommand();
+        updateCmd.CommandText = @"
+            UPDATE storage.buckets 
+            SET file_size_limit = 52428800,
+                allowed_mime_types = NULL
+            WHERE id IN ('tilshunos-media', 'Tilshunos');
+        ";
+        var affected = await updateCmd.ExecuteNonQueryAsync();
+        Console.WriteLine($"[BUCKET UPDATE] Rows affected: {affected}");
+
+        // Re-read to confirm
+        using var checkCmd = conn.CreateCommand();
+        checkCmd.CommandText = "SELECT id, name, public, file_size_limit, allowed_mime_types FROM storage.buckets WHERE id = 'tilshunos-media';";
+        using var reader2 = await checkCmd.ExecuteReaderAsync();
+        if (await reader2.ReadAsync())
+        {
+            Console.WriteLine($"[CONFIRMED BUCKET] ID: {reader2["id"]}, Limit: {reader2["file_size_limit"]}, Mimes: {reader2["allowed_mime_types"]}");
+        }
+    }
+
+    [Fact]
+    public async Task TestDirectSupabaseStorageUpload()
+    {
+        var supabaseUrl = "https://yipexommqztxnvpckqyi.supabase.co";
+        var anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcGV4b21tcXp0eG52cGNrcXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwODU0MDYsImV4cCI6MjEwODY2MTQwNn0.P17uUwPdlEJnOxorTav-wIExlfzUJGPEIqryrvGvfPI";
+        var bucketName = "tilshunos-media";
+        var fileName = $"test_large_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}.jpg";
+
+        // Create a 2MB dummy image byte array (previously would fail with 413 because limit was 100KB)
+        var dummyData = new byte[2 * 1024 * 1024];
+        new Random().NextBytes(dummyData);
+
+        using var client = new HttpClient();
+        var uploadUrl = $"{supabaseUrl}/storage/v1/object/{bucketName}/{fileName}";
+        using var content = new ByteArrayContent(dummyData);
+        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+
+        using var req = new HttpRequestMessage(HttpMethod.Post, uploadUrl)
+        {
+            Content = content
+        };
+        req.Headers.Add("Authorization", $"Bearer {anonKey}");
+        req.Headers.Add("apikey", anonKey);
+
+        var res = await client.SendAsync(req);
+        var body = await res.Content.ReadAsStringAsync();
+        Console.WriteLine($"[TEST UPLOAD RESULT] Status: {res.StatusCode}, Body: {body}");
+
+        Assert.True(res.IsSuccessStatusCode, $"Direct upload failed with status {res.StatusCode}: {body}");
+
+        // Clean up test file
+        var deleteUrl = $"{supabaseUrl}/storage/v1/object/{bucketName}/{fileName}";
+        using var delReq = new HttpRequestMessage(HttpMethod.Delete, deleteUrl);
+        delReq.Headers.Add("Authorization", $"Bearer {anonKey}");
+        delReq.Headers.Add("apikey", anonKey);
+        await client.SendAsync(delReq);
+        Console.WriteLine("[TEST UPLOAD] File cleaned up successfully.");
+    }
 }

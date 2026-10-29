@@ -606,6 +606,7 @@ public class CmsController : ControllerBase
 
     [Authorize]
     [HttpPost("upload-image")]
+    [RequestSizeLimit(60_000_000)]
     public async Task<IActionResult> UploadImage([FromBody] UploadImageRequest request)
     {
         var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value?.ToLowerInvariant();
@@ -628,6 +629,7 @@ public class CmsController : ControllerBase
                 "image/png" => ".png",
                 "image/webp" => ".webp",
                 "image/svg+xml" => ".svg",
+                "image/gif" => ".gif",
                 _ => ".jpg"
             };
             var fileName = $"img_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}_{Guid.NewGuid().ToString("N")[..8]}{ext}";
@@ -661,6 +663,7 @@ public class CmsController : ControllerBase
             };
             req.Headers.Add("Authorization", $"Bearer {anonKey}");
             req.Headers.Add("apikey", anonKey);
+            req.Headers.Add("x-upsert", "true");
 
             var response = await client.SendAsync(req);
             if (!response.IsSuccessStatusCode)
