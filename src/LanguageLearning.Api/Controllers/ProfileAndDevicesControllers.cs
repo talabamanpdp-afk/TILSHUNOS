@@ -220,29 +220,69 @@ public class ProfileController : ControllerBase
         var inProgressCount = vocabCounts.FirstOrDefault(x => x.State == VocabularyState.InProgress)?.Count ?? 0;
         var learnedCount = vocabCounts.FirstOrDefault(x => x.State == VocabularyState.Learned)?.Count ?? 0;
         var needsReviewCount = vocabCounts.FirstOrDefault(x => x.State == VocabularyState.NeedsReview)?.Count ?? 0;
+        var totalWords = plannedCount + inProgressCount + learnedCount + needsReviewCount;
 
         var activeTasksCount = await _db.Assignments
             .CountAsync(a => a.StudentId == userId.Value && a.Status != AssignmentStatus.Reviewed);
 
-        var recentPracticeSessions = await _db.PracticeSessions
-            .Where(s => s.UserId == userId.Value && s.IsCompleted)
-            .OrderByDescending(s => s.CompletedAtUtc)
-            .Take(5)
-            .Select(s => new { s.Id, s.Direction, s.TotalQuestions, s.CorrectCount, s.CompletedAtUtc })
+        // Calculate real practice time today and this week
+        var nowUtc = DateTime.UtcNow;
+        var todayStartUtc = new DateTime(nowUtc.Year, nowUtc.Month, nowUtc.Day, 0, 0, 0, DateTimeKind.Utc);
+        var sevenDaysAgoUtc = todayStartUtc.AddDays(-6);
+
+        var todaySessions = await _db.PracticeSessions
+            .Where(s => s.UserId == userId.Value && s.IsCompleted && s.CompletedAtUtc >= todayStartUtc)
             .ToListAsync();
+
+        var todayMaterials = await _db.MaterialProgressRecords
+            .Include(m => m.Material)
+            .Where(m => m.UserId == userId.Value && m.IsCompleted && m.CompletedAtUtc >= todayStartUtc)
+            .ToListAsync();
+
+        int todayMinutes = (todaySessions.Count * 3) + todayMaterials.Sum(m => m.Material?.EstimatedMinutes ?? 5);
+
+        // Weekly minutes
+        var weeklySessions = await _db.PracticeSessions
+            .Where(s => s.UserId == userId.Value && s.IsCompleted && s.CompletedAtUtc >= sevenDaysAgoUtc)
+            .ToListAsync();
+
+        var weeklyMaterials = await _db.MaterialProgressRecords
+            .Include(m => m.Material)
+            .Where(m => m.UserId == userId.Value && m.IsCompleted && m.CompletedAtUtc >= sevenDaysAgoUtc)
+            .ToListAsync();
+
+        int weeklyMinutes = (weeklySessions.Count * 3) + weeklyMaterials.Sum(m => m.Material?.EstimatedMinutes ?? 5);
+
+        // Real Total XP (10 XP per correct question + material scores)
+        var totalAttemptsCorrect = await _db.PracticeAttempts
+            .CountAsync(a => a.Session.UserId == userId.Value && a.IsCorrect);
+        var totalMaterialScore = await _db.MaterialProgressRecords
+            .Where(m => m.UserId == userId.Value)
+            .SumAsync(m => m.Score);
+        int totalXP = (totalAttemptsCorrect * 10) + totalMaterialScore;
+
+        var dailyGoalMinutes = user.Profile?.DailyGoalMinutes ?? 20;
+        var dailyStreak = user.Profile?.CurrentStreakDays ?? 0;
+        var longestStreak = user.Profile?.CurrentStreakDays ?? 0;
 
         return Ok(new
         {
-            LanguageCode = primaryLang,
-            CurrentLevel = user.LearningLanguages.FirstOrDefault(l => l.IsPrimary)?.CurrentLevel ?? CefrLevel.A1,
-            DailyStreak = user.Profile?.CurrentStreakDays ?? 1,
-            DailyGoalMinutes = user.Profile?.DailyGoalMinutes ?? 20,
-            PlannedWords = plannedCount,
-            InProgressWords = inProgressCount,
-            LearnedWords = learnedCount,
-            NeedsReviewWords = needsReviewCount,
-            ActiveTasksCount = activeTasksCount,
-            RecentSessions = recentPracticeSessions
+            languageCode = primaryLang,
+            currentLevel = user.LearningLanguages.FirstOrDefault(l => l.IsPrimary)?.CurrentLevel.ToString() ?? "A1",
+            dailyStreak = dailyStreak,
+            longestStreak = longestStreak,
+            dailyGoalMinutes = dailyGoalMinutes,
+            todayMinutes = todayMinutes,
+            weeklyMinutes = weeklyMinutes,
+            totalXP = totalXP,
+            totalWords = totalWords,
+            plannedWords = plannedCount,
+            inProgressWords = inProgressCount,
+            learnedWords = learnedCount,
+            needsReviewWords = needsReviewCount,
+            activeTasksCount = activeTasksCount,
+            newWordsToday = await _db.PersonalVocabularyEntries.CountAsync(v => v.UserId == userId.Value && v.CreatedAtUtc >= todayStartUtc),
+            practiceCountToday = todaySessions.Count + todayMaterials.Count
         });
     }
 }

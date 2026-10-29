@@ -278,6 +278,27 @@ export const api = {
     return request<{ name: string; avatar: string; score: number; rank: number }[]>('/games/leaderboard');
   },
 
+  async getDashboardSummary() {
+    return request<{
+      languageCode: string;
+      currentLevel: string;
+      dailyStreak: number;
+      longestStreak: number;
+      dailyGoalMinutes: number;
+      todayMinutes: number;
+      weeklyMinutes: number;
+      totalXP: number;
+      totalWords: number;
+      plannedWords: number;
+      inProgressWords: number;
+      learnedWords: number;
+      needsReviewWords: number;
+      activeTasksCount: number;
+      newWordsToday: number;
+      practiceCountToday: number;
+    }>('/profile/dashboard-summary');
+  },
+
   // AI Tutor
   async sendAiChat(message: string, conversationId?: string, targetLanguage = 'English', level = 1) {
     return request<{ conversationId: string; reply: string }>('/ai/chat', {

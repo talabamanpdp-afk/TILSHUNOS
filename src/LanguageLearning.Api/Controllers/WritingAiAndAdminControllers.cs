@@ -237,8 +237,14 @@ public class AdminController : ControllerBase
             videoCount = await _db.LearningMaterials.CountAsync(m => m.ContentType == MaterialContentType.VideoLesson);
         }
 
-        // Real Level distribution from active learners
+        // Real Level distribution from active learners ONLY (exclude SuperAdmin, Admin, Teacher)
+        var learnerUserIds = await _db.Users
+            .Where(u => u.Role == UserRole.Learner)
+            .Select(u => u.Id)
+            .ToListAsync();
+
         var levels = await _db.UserLearningLanguages
+            .Where(l => learnerUserIds.Contains(l.UserId) && l.IsPrimary)
             .GroupBy(l => l.CurrentLevel)
             .Select(g => new { Level = g.Key.ToString(), Count = g.Count() })
             .ToDictionaryAsync(x => x.Level, x => x.Count);
@@ -250,11 +256,11 @@ public class AdminController : ControllerBase
         var c1Count = levels.GetValueOrDefault("C1", 0);
         var c2Count = levels.GetValueOrDefault("C2", 0);
 
-        // If total users exceeds mapped learning language profiles, allocate remainder to A1 beginners
-        var mappedTotal = a1Count + a2Count + b1Count + b2Count + c1Count + c2Count;
-        if (totalUsers > mappedTotal)
+        // If any learner hasn't mapped learning language profile yet, allocate to A1 beginners
+        var mappedLearners = a1Count + a2Count + b1Count + b2Count + c1Count + c2Count;
+        if (learnersCount > mappedLearners)
         {
-            a1Count += (totalUsers - mappedTotal);
+            a1Count += (learnersCount - mappedLearners);
         }
 
         var levelDistribution = new Dictionary<string, int>

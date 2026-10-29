@@ -16,13 +16,7 @@ import { playSpeech } from './utils/speech';
 
 type Word = { id: number; word: string; translation: string; example: string; topic: string; state: 'Rejalashtirilgan' | 'Jarayonda' | 'O‘rganilgan' };
 
-const initialWords: Word[] = [
-  { id: 1, word: 'achieve', translation: 'erishmoq', example: 'You can achieve anything with practice.', topic: 'Motivatsiya', state: 'Jarayonda' },
-  { id: 2, word: 'curious', translation: 'qiziquvchan', example: 'Children are naturally curious.', topic: 'Xarakter', state: 'Rejalashtirilgan' },
-  { id: 3, word: 'opportunity', translation: 'imkoniyat', example: 'This is a great opportunity to learn.', topic: 'Ish va ta’lim', state: 'O‘rganilgan' },
-  { id: 4, word: 'improve', translation: 'yaxshilamoq', example: 'I want to improve my English.', topic: 'Ta’lim', state: 'Jarayonda' },
-  { id: 5, word: 'confident', translation: 'o‘ziga ishongan', example: 'She feels confident when speaking.', topic: 'Xarakter', state: 'Rejalashtirilgan' },
-];
+const initialWords: Word[] = [];
 
 type NavItem = { label: string; icon: LucideIcon; section?: string };
 const navItems: NavItem[] = [
@@ -133,11 +127,14 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
     return [...staticItems, ...dynamicItems];
   }, [selectedLang, backendMaterials]);
 
+  const vocabKey = currentUser?.id ? `tilshunos_words_${currentUser.id}` : 'tilshunos_words';
   const [words, setWords] = useState<Word[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem('tilshunos_words') || 'null') || initialWords;
+      const saved = localStorage.getItem(vocabKey);
+      if (saved) return JSON.parse(saved);
+      return [];
     } catch {
-      return initialWords;
+      return [];
     }
   });
   const [search, setSearch] = useState('');
@@ -151,6 +148,60 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
   const [questionIndex, setQuestionIndex] = useState(0);
   const [showAll, setShowAll] = useState(false);
 
+  // Real Dashboard Stats from Supabase
+  const [dashboardStats, setDashboardStats] = useState({
+    dailyStreak: 0,
+    longestStreak: 0,
+    dailyGoalMinutes: 20,
+    todayMinutes: 0,
+    weeklyMinutes: 0,
+    totalXP: 0,
+    totalWords: 0,
+    plannedWords: 0,
+    inProgressWords: 0,
+    learnedWords: 0,
+    needsReviewWords: 0,
+    activeTasksCount: 0,
+    newWordsToday: 0,
+    practiceCountToday: 0
+  });
+
+  const refreshDashboardStats = () => {
+    api.getDashboardSummary()
+      .then(res => {
+        if (res) {
+          setDashboardStats({
+            dailyStreak: res.dailyStreak || 0,
+            longestStreak: res.longestStreak || 0,
+            dailyGoalMinutes: res.dailyGoalMinutes || 20,
+            todayMinutes: res.todayMinutes || 0,
+            weeklyMinutes: res.weeklyMinutes || 0,
+            totalXP: res.totalXP || 0,
+            totalWords: res.totalWords || 0,
+            plannedWords: res.plannedWords || 0,
+            inProgressWords: res.inProgressWords || 0,
+            learnedWords: res.learnedWords || 0,
+            needsReviewWords: res.needsReviewWords || 0,
+            activeTasksCount: res.activeTasksCount || 0,
+            newWordsToday: res.newWordsToday || 0,
+            practiceCountToday: res.practiceCountToday || 0
+          });
+        }
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    refreshDashboardStats();
+  }, [selectedLang]);
+
+  const formattedDate = useMemo(() => {
+    const d = new Date();
+    const months = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
+    const days = ['Yakshanba', 'Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba'];
+    return `${d.getDate()}-${months[d.getMonth()]}, ${days[d.getDay()]}`;
+  }, []);
+
   // Games state
   const [gameMode, setGameMode] = useState('Mavzu typing');
   const [gameInput, setGameInput] = useState('');
@@ -159,11 +210,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
   const [previousChainWord, setPreviousChainWord] = useState('Apple');
   const [imageMode, setImageMode] = useState('Variantlardan tanlash');
   const [showDuelModal, setShowDuelModal] = useState(false);
-  const [leaderboard, setLeaderboard] = useState<any[]>([
-    { name: 'Jasur Aliyev', avatar: 'J', score: 1420, rank: 1 },
-    { name: 'Madina Karimova', avatar: 'M', score: 1280, rank: 2 },
-    { name: 'Siz', avatar: 'S', score: 0, rank: 3 }
-  ]);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
   // PWA install state - strictly detects if genuinely running in standalone PWA app window
   const checkIsStandalone = () => {
@@ -213,7 +260,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
   useEffect(() => {
     api.getVocabulary()
       .then(items => {
-        if (Array.isArray(items) && items.length > 0) {
+        if (Array.isArray(items)) {
           const mapped: Word[] = items.map((x: any) => ({
             id: x.id,
             word: x.targetWord,
@@ -223,6 +270,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
             state: x.status === 2 ? 'O‘rganilgan' : x.status === 1 ? 'Jarayonda' : 'Rejalashtirilgan'
           }));
           setWords(mapped);
+          localStorage.setItem(vocabKey, JSON.stringify(mapped));
         }
       })
       .catch(() => {});
@@ -230,10 +278,10 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
     // Load leaderboard
     api.getLeaderboard()
       .then(lb => {
-        if (Array.isArray(lb) && lb.length > 0) setLeaderboard(lb);
+        if (Array.isArray(lb)) setLeaderboard(lb);
       })
       .catch(() => {});
-  }, []);
+  }, [vocabKey]);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -297,6 +345,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
           topic: 'General',
           correctAnswers: 1
         });
+        refreshDashboardStats();
       } else {
         setGameFeedback(res.message || 'Noto‘g‘ri yoki qoidaga mos emas.');
       }
@@ -308,8 +357,8 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
   };
 
   useEffect(() => {
-    localStorage.setItem('tilshunos_words', JSON.stringify(words));
-  }, [words]);
+    localStorage.setItem(vocabKey, JSON.stringify(words));
+  }, [words, vocabKey]);
 
   useEffect(() => {
     if (toast) {
@@ -343,6 +392,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
         exampleSentence: newWord.example.trim(),
         topic: newWord.topic
       });
+      refreshDashboardStats();
     } catch {
       // offline fallback
     }
@@ -506,7 +556,9 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
               >
                 <item.icon size={18} strokeWidth={1.8} />
                 <span>{item.label}</span>
-                {item.label === 'Vazifalar' && <span className="nav-count">3</span>}
+                {item.label === 'Vazifalar' && dashboardStats.activeTasksCount > 0 && (
+                  <span className="nav-count">{dashboardStats.activeTasksCount}</span>
+                )}
                 {item.label === 'So‘z o‘yinlari' && <span className="new-pill">HOT</span>}
                 {item.label === 'AI yordamchi' && <span className="new-pill">AI</span>}
               </button>
@@ -518,14 +570,18 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
           <div className="streak-card">
             <div className="streak-top">
               <div className="streak-icon"><Flame size={18} fill="currentColor" /></div>
-              <span className="streak-days">5 kunlik seriya</span>
+              <span className="streak-days">{dashboardStats.dailyStreak > 0 ? `${dashboardStats.dailyStreak} kunlik seriya` : '0 kunlik seriya'}</span>
               <MoreHorizontal size={17} />
             </div>
-            <p>Zo‘r ketyapsiz! Har kuni mashq qilish natijani tezlashtiradi.</p>
+            <p>
+              {dashboardStats.dailyStreak > 0
+                ? 'Zo‘r ketyapsiz! Har kuni mashq qilish natijani tezlashtiradi.'
+                : 'Hali boshlanmadi. Bugungi mashqni yakunlab, seriyani yoqing!'}
+            </p>
             <div className="week-dots">
               {['Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh', 'Ya'].map((d, i) => (
-                <div key={d} className={`day-dot ${i < 5 ? 'done' : ''}`}>
-                  <span>{i < 5 ? <Check size={11} /> : d[0]}</span>
+                <div key={d} className={`day-dot ${i < dashboardStats.dailyStreak ? 'done' : ''}`}>
+                  <span>{i < dashboardStats.dailyStreak ? <Check size={11} /> : d[0]}</span>
                   <small>{d}</small>
                 </div>
               ))}
@@ -606,7 +662,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                   <p className="subheading">Har kuni kichik qadam — kelajakda erkin muloqot. Bugun nimadan boshlaymiz?</p>
                 </div>
                 <button className="date-chip">
-                  <CalendarDays size={16} /> 27-oktabr, Seshanba
+                  <CalendarDays size={16} /> {formattedDate}
                 </button>
               </div>
 
@@ -615,11 +671,13 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 <div className="hero-orb orb-two" />
                 <div className="hero-content">
                   <div className="hero-label"><span className="hero-spark"><Zap size={13} fill="currentColor" /></span> BUGUNGI MAQSAD</div>
-                  <h2>Har kuni 20 daqiqa,<br />kelajakda <em>erkin muloqot.</em></h2>
+                  <h2>Har kuni {dashboardStats.dailyGoalMinutes} daqiqa,<br />kelajakda <em>erkin muloqot.</em></h2>
                   <p>Bugungi maqsadingizga yetish uchun mashq qilishni davom eting.</p>
                   <div className="hero-progress-line">
-                    <div className="progress-track"><span style={{ width: '65%' }} /></div>
-                    <strong>13 <small>/ 20 daq.</small></strong>
+                    <div className="progress-track">
+                      <span style={{ width: `${Math.min(100, Math.round(((dashboardStats.todayMinutes || 0) / Math.max(1, dashboardStats.dailyGoalMinutes)) * 100))}%` }} />
+                    </div>
+                    <strong>{dashboardStats.todayMinutes} <small>/ {dashboardStats.dailyGoalMinutes} daq.</small></strong>
                   </div>
                   <button className="hero-button" onClick={() => setPracticeOpen(true)}>
                     O‘rganishni davom ettirish <ArrowRight size={16} />
@@ -635,16 +693,52 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                     <div className="book-star">✦</div>
                   </div>
                   <div className="float-card float-card-top"><span className="float-check"><Check size={13} /></span> Daily practice</div>
-                  <div className="float-card float-card-bottom"><Flame size={15} fill="currentColor" /> 5 day streak</div>
+                  <div className="float-card float-card-bottom"><Flame size={15} fill="currentColor" /> {dashboardStats.dailyStreak} kunlik seriya</div>
                 </div>
               </section>
 
-              <section className="stats-grid">
-                <Stat icon={BookA} label="O‘rganilgan so‘zlar" value={String(learned + 42)} note="Haqiqiy progress" color="purple" trend="up" />
-                <Stat icon={Flame} label="Ketma-ket kunlar" value="5 kun" note="Shaxsiy rekord: 14" color="orange" />
-                <Stat icon={Target} label="Maqsad bajarilishi" value="65%" note="Kunlik reja" color="green" trend="up" />
-                <Stat icon={Trophy} label="Umumiy natija" value={`${1280 + gameScore} XP`} note="Haftalik o‘rin: #3" color="blue" />
-              </section>
+              {(() => {
+                const goalPercent = Math.min(100, Math.round(((dashboardStats.todayMinutes || 0) / Math.max(1, dashboardStats.dailyGoalMinutes)) * 100));
+                const totalLearnedWords = dashboardStats.learnedWords || words.filter(w => w.state === 'O‘rganilgan').length;
+                const totalScore = (dashboardStats.totalXP || 0) + gameScore;
+                const myRank = leaderboard.findIndex(l => l.name?.toLowerCase().includes(currentUser?.firstName?.toLowerCase() || '')) + 1;
+                const rankNote = myRank > 0 ? `Haftalik o‘rin: #${myRank}` : (totalScore > 0 ? 'Haftalik reytingda' : 'Boshlang‘ich bosqich');
+
+                return (
+                  <section className="stats-grid">
+                    <Stat
+                      icon={BookA}
+                      label="O‘rganilgan so‘zlar"
+                      value={String(totalLearnedWords)}
+                      note={totalLearnedWords > 0 ? "Haqiqiy progress" : "Hali so‘z o‘rganilmadi"}
+                      color="purple"
+                      trend={totalLearnedWords > 0 ? "up" : undefined}
+                    />
+                    <Stat
+                      icon={Flame}
+                      label="Ketma-ket kunlar"
+                      value={`${dashboardStats.dailyStreak} kun`}
+                      note={dashboardStats.longestStreak > 0 ? `Shaxsiy rekord: ${dashboardStats.longestStreak}` : "Hali boshlanmadi"}
+                      color="orange"
+                    />
+                    <Stat
+                      icon={Target}
+                      label="Maqsad bajarilishi"
+                      value={`${goalPercent}%`}
+                      note="Kunlik reja"
+                      color="green"
+                      trend={goalPercent > 0 ? "up" : undefined}
+                    />
+                    <Stat
+                      icon={Trophy}
+                      label="Umumiy natija"
+                      value={`${totalScore} XP`}
+                      note={rankNote}
+                      color="blue"
+                    />
+                  </section>
+                );
+              })()}
 
               <div className="dashboard-grid">
                 <section className="panel weekly-panel">
@@ -657,8 +751,19 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                   </div>
                   <div className="chart-summary">
                     <div>
-                      <strong>4 soat 35 daq.</strong>
-                      <span><ArrowUpRight size={14} /> 18% <small>o‘tgan haftaga nisbatan</small></span>
+                      <strong>
+                        {(() => {
+                          const mins = dashboardStats.weeklyMinutes || 0;
+                          const h = Math.floor(mins / 60);
+                          const m = mins % 60;
+                          if (h > 0) return `${h} soat ${m} daq.`;
+                          return `${m} daqiqa`;
+                        })()}
+                      </strong>
+                      <span>
+                        <ArrowUpRight size={14} /> {dashboardStats.weeklyMinutes > 0 ? 'Faol o‘rganish' : '0 daqiqa'}
+                        <small> haftalik dars vaqti</small>
+                      </span>
                     </div>
                     <div className="chart-legend">
                       <span><i className="legend-dot main-dot" /> Bu hafta</span>
@@ -676,8 +781,14 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                             <stop offset="100%" stopColor="#7b6cf6" stopOpacity="0" />
                           </linearGradient>
                         </defs>
-                        <path d="M0,108 C30,96 40,118 75,92 S120,75 150,88 S200,43 225,62 S270,86 300,55 S350,69 375,43 S425,65 450,39 S510,60 525,26 S575,38 600,16 L600,150 L0,150 Z" fill="url(#areaFill)" />
-                        <path d="M0,108 C30,96 40,118 75,92 S120,75 150,88 S200,43 225,62 S270,86 300,55 S350,69 375,43 S425,65 450,39 S510,60 525,26 S575,38 600,16" fill="none" stroke="#7b6cf6" strokeWidth="3" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+                        {dashboardStats.weeklyMinutes > 0 ? (
+                          <>
+                            <path d="M0,108 C30,96 40,118 75,92 S120,75 150,88 S200,43 225,62 S270,86 300,55 S350,69 375,43 S425,65 450,39 S510,60 525,26 S575,38 600,16 L600,150 L0,150 Z" fill="url(#areaFill)" />
+                            <path d="M0,108 C30,96 40,118 75,92 S120,75 150,88 S200,43 225,62 S270,86 300,55 S350,69 375,43 S425,65 450,39 S510,60 525,26 S575,38 600,16" fill="none" stroke="#7b6cf6" strokeWidth="3" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+                          </>
+                        ) : (
+                          <line x1="0" y1="140" x2="600" y2="140" stroke="var(--border)" strokeWidth="2" strokeDasharray="4 4" />
+                        )}
                       </svg>
                       <div className="chart-x-labels"><span>Du</span><span>Se</span><span>Ch</span><span>Pa</span><span>Ju</span><span>Sh</span><span>Ya</span></div>
                     </div>
@@ -692,21 +803,37 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                     </div>
                   </div>
                   <div className="goal-circle-wrap">
-                    <div className="goal-circle">
-                      <svg viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="49" className="circle-bg" />
-                        <circle cx="60" cy="60" r="49" className="circle-value" />
-                      </svg>
-                      <div className="circle-center">
-                        <strong>65<span>%</span></strong>
-                        <small>bajarildi</small>
-                      </div>
-                    </div>
+                    {(() => {
+                      const goalPct = Math.min(100, Math.round(((dashboardStats.todayMinutes || 0) / Math.max(1, dashboardStats.dailyGoalMinutes)) * 100));
+                      const strokeOffset = Math.round(308 - (308 * goalPct) / 100);
+                      return (
+                        <div className="goal-circle">
+                          <svg viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="49" className="circle-bg" />
+                            <circle
+                              cx="60"
+                              cy="60"
+                              r="49"
+                              className="circle-value"
+                              style={{
+                                strokeDasharray: 308,
+                                strokeDashoffset: strokeOffset,
+                                transition: 'stroke-dashoffset 0.6s ease'
+                              }}
+                            />
+                          </svg>
+                          <div className="circle-center">
+                            <strong>{goalPct}<span>%</span></strong>
+                            <small>bajarildi</small>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="goal-details">
-                    <div><span className="goal-color purple" />O‘rganish vaqti <strong>13/20 daq.</strong></div>
-                    <div><span className="goal-color green" />Yangi so‘zlar <strong>8/10 ta</strong></div>
-                    <div><span className="goal-color orange" />Mashqlar <strong>3/5 ta</strong></div>
+                    <div><span className="goal-color purple" />O‘rganish vaqti <strong>{dashboardStats.todayMinutes}/{dashboardStats.dailyGoalMinutes} daq.</strong></div>
+                    <div><span className="goal-color green" />Yangi so‘zlar <strong>{dashboardStats.newWordsToday || 0}/10 ta</strong></div>
+                    <div><span className="goal-color orange" />Mashqlar <strong>{dashboardStats.practiceCountToday || 0}/5 ta</strong></div>
                   </div>
                   <button className="text-action" onClick={() => setPracticeOpen(true)}>
                     Maqsadni yakunlash <ArrowRight size={15} />
@@ -766,18 +893,24 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                     </button>
                   </div>
                   <div className="mini-word-list">
-                    {words.slice(0, 3).map(w => (
-                      <div className="mini-word" key={w.id}>
-                        <div className="word-letter">{w.word[0].toUpperCase()}</div>
-                        <div className="mini-word-text">
-                          <strong>{w.word}</strong>
-                          <span>{w.translation}</span>
+                    {words.length > 0 ? (
+                      words.slice(0, 3).map(w => (
+                        <div className="mini-word" key={w.id}>
+                          <div className="word-letter">{w.word[0].toUpperCase()}</div>
+                          <div className="mini-word-text">
+                            <strong>{w.word}</strong>
+                            <span>{w.translation}</span>
+                          </div>
+                          <span className={`status status-${w.state === 'O‘rganilgan' ? 'learned' : w.state === 'Jarayonda' ? 'progress' : 'planned'}`}>
+                            {w.state}
+                          </span>
                         </div>
-                        <span className={`status status-${w.state === 'O‘rganilgan' ? 'learned' : w.state === 'Jarayonda' ? 'progress' : 'planned'}`}>
-                          {w.state}
-                        </span>
+                      ))
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '24px 12px', color: 'var(--muted)', fontSize: '13px' }}>
+                        Lug‘atingizda hozircha so‘zlar yo‘q. Yangi so‘z qo‘shib o‘rganishni boshlang!
                       </div>
-                    ))}
+                    )}
                   </div>
                 </section>
 
@@ -788,20 +921,32 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                       <p>Mehnatingiz samarasini ko‘ring</p>
                     </div>
                   </div>
-                  <div className="achievement-row">
+                  <div className={`achievement-row ${dashboardStats.dailyStreak >= 5 ? '' : 'locked'}`}>
                     <div className="achievement-medal medal-gold"><Flame size={23} fill="currentColor" /></div>
-                    <div><strong>5 kunlik seriya</strong><span>5 kun uzluksiz o‘rgandingiz</span></div>
-                    <span className="achievement-check"><Check size={14} /></span>
+                    <div><strong>5 kunlik seriya</strong><span>5 kun uzluksiz o‘rganish</span></div>
+                    {dashboardStats.dailyStreak >= 5 ? (
+                      <span className="achievement-check"><Check size={14} /></span>
+                    ) : (
+                      <span className="achievement-lock">{dashboardStats.dailyStreak}/5 kun</span>
+                    )}
                   </div>
-                  <div className="achievement-row">
+                  <div className={`achievement-row ${words.length >= 100 ? '' : 'locked'}`}>
                     <div className="achievement-medal medal-purple"><BookOpen size={23} /></div>
-                    <div><strong>So‘z yig‘uvchi</strong><span>100 ta so‘z yig‘ildi</span></div>
-                    <span className="achievement-check"><Check size={14} /></span>
+                    <div><strong>So‘z yig‘uvchi</strong><span>100 ta so‘z yig‘ish</span></div>
+                    {words.length >= 100 ? (
+                      <span className="achievement-check"><Check size={14} /></span>
+                    ) : (
+                      <span className="achievement-lock">{words.length}/100 ta</span>
+                    )}
                   </div>
-                  <div className="achievement-row locked">
+                  <div className={`achievement-row ${words.length >= 200 ? '' : 'locked'}`}>
                     <div className="achievement-medal medal-blue"><GraduationCap size={23} /></div>
                     <div><strong>Bilimdon</strong><span>200 ta so‘zga yeting</span></div>
-                    <span className="achievement-lock">76%</span>
+                    {words.length >= 200 ? (
+                      <span className="achievement-check"><Check size={14} /></span>
+                    ) : (
+                      <span className="achievement-lock">{words.length}/200 ta</span>
+                    )}
                   </div>
                 </section>
               </div>
@@ -1143,13 +1288,19 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                     <div className="side-game-icon"><Trophy size={21} /></div>
                     <h3>Haftalik musobaqa reytingi</h3>
                     <p>O‘yinlarda qatnashib, ball to‘plang va ligada yuqoriga ko‘tariling.</p>
-                    {leaderboard.map((u: any, idx: number) => (
-                      <div className="leader-row" key={u.name || idx}>
-                        <span className={`leader-avatar ${idx === 1 ? 'second' : idx === 2 ? 'third' : ''}`}>{idx + 1}</span>
-                        <span>{u.name}</span>
-                        <strong>{u.score} XP</strong>
+                    {leaderboard.length > 0 ? (
+                      leaderboard.map((u: any, idx: number) => (
+                        <div className="leader-row" key={u.name || idx}>
+                          <span className={`leader-avatar ${idx === 1 ? 'second' : idx === 2 ? 'third' : ''}`}>{idx + 1}</span>
+                          <span>{u.name}</span>
+                          <strong>{u.score} XP</strong>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '16px 8px', color: 'var(--muted)', fontSize: '13px' }}>
+                        Musobaqada qatnashib ilk ballaringizni to‘plang!
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               </div>
@@ -1449,35 +1600,59 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
             </div>
             <div className="practice-progress"><i style={{ width: `${Math.min(100, (questionIndex + 1) * 20)}%` }} /></div>
             <div className="question-content">
-              <div className="question-label">SO‘ZNING O‘ZBEKCHA TARJIMASINI YOZING</div>
-              <h2>{currentQuestion?.word || 'achieve'}</h2>
-              <button
-                className="pronounce-btn"
-                onClick={() => playSpeech(currentQuestion?.word || '', 'en')}
-                type="button"
-              >
-                <Volume2 size={17} /> Audio talaffuz
-              </button>
-              <input
-                className={`answer-input ${answered ? (answer.trim().toLowerCase() === currentQuestion?.translation.toLowerCase() ? 'correct' : 'incorrect') : ''}`}
-                value={answer}
-                onChange={e => { setAnswer(e.target.value); setAnswered(false); }}
-                onKeyDown={e => e.key === 'Enter' && (answered ? nextQuestion() : checkAnswer())}
-                placeholder="O‘zbekcha tarjimani yozing..."
-                disabled={answered}
-              />
-              {answered && (
-                <div className={`answer-feedback ${answer.trim().toLowerCase() === currentQuestion?.translation.toLowerCase() ? 'good' : 'bad'}`}>
-                  {answer.trim().toLowerCase() === currentQuestion?.translation.toLowerCase() ? 'Ajoyib! To‘g‘ri javob 🎉' : `To‘g‘ri javob: ${currentQuestion?.translation}`}
+              {!currentQuestion ? (
+                <div style={{ textAlign: 'center', padding: '24px 8px' }}>
+                  <BookA size={36} style={{ color: 'var(--purple)', marginBottom: '12px' }} />
+                  <h3>Lug‘at hozircha bo‘sh</h3>
+                  <p style={{ color: 'var(--muted)', marginTop: '6px', fontSize: '13px' }}>
+                    Mashq qilish uchun avval “So‘z daftarim” bo‘limidan yangi so‘zlar qo‘shing.
+                  </p>
+                  <button
+                    className="primary-btn"
+                    style={{ marginTop: '16px' }}
+                    onClick={() => {
+                      setPracticeOpen(false);
+                      chooseNav('So‘z daftarim');
+                    }}
+                  >
+                    <Plus size={16} /> So‘z qo‘shish
+                  </button>
                 </div>
+              ) : (
+                <>
+                  <div className="question-label">SO‘ZNING O‘ZBEKCHA TARJIMASINI YOZING</div>
+                  <h2>{currentQuestion.word}</h2>
+                  <button
+                    className="pronounce-btn"
+                    onClick={() => playSpeech(currentQuestion.word, 'en')}
+                    type="button"
+                  >
+                    <Volume2 size={17} /> Audio talaffuz
+                  </button>
+                  <input
+                    className={`answer-input ${answered ? (answer.trim().toLowerCase() === currentQuestion.translation.toLowerCase() ? 'correct' : 'incorrect') : ''}`}
+                    value={answer}
+                    onChange={e => { setAnswer(e.target.value); setAnswered(false); }}
+                    onKeyDown={e => e.key === 'Enter' && (answered ? nextQuestion() : checkAnswer())}
+                    placeholder="O‘zbekcha tarjimani yozing..."
+                    disabled={answered}
+                  />
+                  {answered && (
+                    <div className={`answer-feedback ${answer.trim().toLowerCase() === currentQuestion.translation.toLowerCase() ? 'good' : 'bad'}`}>
+                      {answer.trim().toLowerCase() === currentQuestion.translation.toLowerCase() ? 'Ajoyib! To‘g‘ri javob 🎉' : `To‘g‘ri javob: ${currentQuestion.translation}`}
+                    </div>
+                  )}
+                </>
               )}
             </div>
             <div className="practice-modal-footer">
               <span><CircleHelp size={15} /> Xotiradan topishga harakat qiling.</span>
-              {answered ? (
-                <button className="primary-btn" onClick={nextQuestion}>Keyingi savol <ArrowRight size={15} /></button>
-              ) : (
-                <button className="primary-btn" onClick={checkAnswer} disabled={!answer.trim()}>Javobni tekshirish <Check size={15} /></button>
+              {currentQuestion && (
+                answered ? (
+                  <button className="primary-btn" onClick={nextQuestion}>Keyingi savol <ArrowRight size={15} /></button>
+                ) : (
+                  <button className="primary-btn" onClick={checkAnswer} disabled={!answer.trim()}>Javobni tekshirish <Check size={15} /></button>
+                )
               )}
             </div>
           </div>

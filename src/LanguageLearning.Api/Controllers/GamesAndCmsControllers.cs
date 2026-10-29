@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using LanguageLearning.Application.Interfaces;
 using LanguageLearning.Domain.Entities;
+using LanguageLearning.Domain.Enums;
 using LanguageLearning.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -148,36 +149,41 @@ public class GamesController : ControllerBase
     [HttpGet("leaderboard")]
     public async Task<IActionResult> GetLeaderboard()
     {
-        var dbTopUsers = await _db.UserProfiles
-            .Include(p => p.User)
-            .OrderByDescending(p => p.CurrentStreakDays)
-            .Take(10)
-            .Select(p => new
-            {
-                Name = $"{p.User.FirstName} {p.User.LastName}".Trim(),
-                Avatar = !string.IsNullOrEmpty(p.User.FirstName) ? p.User.FirstName.Substring(0, 1).ToUpper() : "U",
-                Score = 800 + (p.CurrentStreakDays * 120),
-                Rank = 1
-            })
+        var learners = await _db.Users
+            .Where(u => u.Role == UserRole.Learner)
+            .Include(u => u.Profile)
             .ToListAsync();
 
-        if (dbTopUsers.Count == 0)
-        {
-            var fallback = RecentScores
-                .OrderByDescending(s => s.Score)
-                .Take(5)
-                .Select((s, idx) => new
-                {
-                    Name = s.UserName,
-                    Avatar = s.Avatar,
-                    Score = s.Score,
-                    Rank = idx + 1
-                })
-                .ToList();
-            return Ok(fallback);
-        }
+        var learnerIds = learners.Select(u => u.Id).ToList();
 
-        var ranked = dbTopUsers
+        var practiceScores = await _db.PracticeAttempts
+            .Where(a => learnerIds.Contains(a.Session.UserId) && a.IsCorrect)
+            .GroupBy(a => a.Session.UserId)
+            .Select(g => new { UserId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(g => g.UserId, g => g.Count * 10);
+
+        var materialScores = await _db.MaterialProgressRecords
+            .Where(m => learnerIds.Contains(m.UserId))
+            .GroupBy(m => m.UserId)
+            .Select(g => new { UserId = g.Key, Score = g.Sum(m => m.Score) })
+            .ToDictionaryAsync(g => g.UserId, g => g.Score);
+
+        var ranked = learners
+            .Select(u =>
+            {
+                var pScore = practiceScores.GetValueOrDefault(u.Id, 0);
+                var mScore = materialScores.GetValueOrDefault(u.Id, 0);
+                var total = pScore + mScore;
+                var name = $"{u.FirstName} {u.LastName}".Trim();
+                if (string.IsNullOrWhiteSpace(name)) name = u.Email;
+                var avatar = !string.IsNullOrEmpty(u.FirstName) ? u.FirstName.Substring(0, 1).ToUpper() : "U";
+                return new
+                {
+                    Name = name,
+                    Avatar = avatar,
+                    Score = total
+                };
+            })
             .OrderByDescending(u => u.Score)
             .Select((u, idx) => new
             {
@@ -185,7 +191,8 @@ public class GamesController : ControllerBase
                 u.Avatar,
                 u.Score,
                 Rank = idx + 1
-            });
+            })
+            .ToList();
 
         return Ok(ranked);
     }

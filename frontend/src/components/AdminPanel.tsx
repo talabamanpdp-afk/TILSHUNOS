@@ -899,9 +899,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     });
   }, [generalVocab, vocabSearch]);
 
-  const totalStudents = stats.totalUsers || learners.length || 0;
+  const totalStudents = stats.learnersCount !== undefined ? stats.learnersCount : learners.length;
   const levelDist = stats.studentsByLevel || { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 };
-  const verifiedPercent = totalStudents > 0 ? Math.round(((stats.verifiedUsers || 0) / totalStudents) * 100) : 100;
+  const verifiedPercent = stats.totalUsers > 0 ? Math.round(((stats.verifiedUsers || 0) / stats.totalUsers) * 100) : 100;
 
   return (
     <div className={dark ? 'app dark' : 'app'}>
@@ -1015,12 +1015,12 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                 <div className="stat-card">
                   <div className="stat-top">
                     <div className="stat-icon purple"><Users size={19} /></div>
-                    <span className="badge-role-learner">Faol</span>
+                    <span className="badge-role-learner">O‘quvchilar</span>
                   </div>
-                  <div className="stat-value">{stats.totalUsers}</div>
-                  <div className="stat-label">Jami Foydalanuvchilar</div>
+                  <div className="stat-value">{totalStudents}</div>
+                  <div className="stat-label">Faol O‘quvchilar</div>
                   <div className="stat-note">
-                    {stats.verifiedUsers} tasi tasdiqlangan ({verifiedPercent}%)
+                    Jami tizim hisoblari: {stats.totalUsers || users.length} ta
                   </div>
                 </div>
 
@@ -1072,7 +1072,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     <p>Foydalanuvchilar qaysi darajada ekanligi va real foiz ko‘rsatkichlari</p>
                   </div>
                   <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700 }}>
-                    Jami hisoblangan: {totalStudents} nafar
+                    Jami hisoblangan: {totalStudents} nafar o‘quvchi
                   </span>
                 </div>
 
