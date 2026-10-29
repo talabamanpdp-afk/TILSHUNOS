@@ -165,31 +165,40 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
     { name: 'Siz', avatar: 'S', score: 0, rank: 3 }
   ]);
 
-  // PWA install state - detect if already installed
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [installed, setInstalled] = useState<boolean>(() => {
+  // PWA install state - strictly detects if genuinely running in standalone PWA app window
+  const checkIsStandalone = () => {
     if (typeof window === 'undefined') return false;
-    const isStandalone =
+    return (
       window.matchMedia('(display-mode: standalone)').matches ||
-      window.matchMedia('(display-mode: fullscreen)').matches ||
-      window.matchMedia('(display-mode: minimal-ui)').matches ||
       (window.navigator as any).standalone === true ||
-      window.location.search.includes('source=pwa') ||
-      document.referrer.includes('android-app://') ||
-      localStorage.getItem('tilshunos_pwa_installed') === 'true';
-    return !!isStandalone;
-  });
+      document.referrer.includes('android-app://')
+    );
+  };
+
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installed, setInstalled] = useState<boolean>(() => checkIsStandalone());
   const [bannerDismissed, setBannerDismissed] = useState<boolean>(() => {
-    return localStorage.getItem('tilshunos_pwa_banner_dismissed') === 'true' || localStorage.getItem('tilshunos_pwa_installed') === 'true';
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('tilshunos_pwa_banner_dismissed') === 'true';
   });
   const [showPwaModal, setShowPwaModal] = useState(false);
 
   useEffect(() => {
-    if (window.location.search.includes('source=pwa')) {
-      localStorage.setItem('tilshunos_pwa_installed', 'true');
-      localStorage.setItem('tilshunos_pwa_banner_dismissed', 'true');
-      setInstalled(true);
-      setBannerDismissed(true);
+    const updateStandalone = () => {
+      const isStandalone = checkIsStandalone();
+      setInstalled(isStandalone);
+      if (!isStandalone) {
+        // Clear any old false-positive cache from previous versions
+        localStorage.removeItem('tilshunos_pwa_installed');
+      }
+    };
+
+    updateStandalone();
+
+    const media = window.matchMedia('(display-mode: standalone)');
+    if (media.addEventListener) {
+      media.addEventListener('change', updateStandalone);
+      return () => media.removeEventListener('change', updateStandalone);
     }
   }, []);
 
@@ -246,13 +255,16 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
 
   const triggerInstall = async () => {
     if (installPrompt) {
-      await installPrompt.prompt();
-      const choice = await installPrompt.userChoice;
-      if (choice?.outcome === 'accepted') {
-        setInstalled(true);
-        localStorage.setItem('tilshunos_pwa_installed', 'true');
+      try {
+        await installPrompt.prompt();
+        const choice = await installPrompt.userChoice;
+        if (choice?.outcome === 'accepted') {
+          setInstalled(true);
+        }
+        setInstallPrompt(null);
+      } catch (err) {
+        setShowPwaModal(true);
       }
-      setInstallPrompt(null);
     } else {
       setShowPwaModal(true);
     }
@@ -576,9 +588,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 className="install-dismiss"
                 onClick={() => {
                   localStorage.setItem('tilshunos_pwa_banner_dismissed', 'true');
-                  localStorage.setItem('tilshunos_pwa_installed', 'true');
                   setBannerDismissed(true);
-                  setInstalled(true);
                 }}
                 aria-label="Yopish"
               >
@@ -1345,12 +1355,26 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                     <span className={`toggle ${dark ? 'on' : ''}`}><i /></span>
                   </button>
                   {!installed ? (
-                    <button className="primary-btn" onClick={triggerInstall} style={{ marginTop: '10px' }}>
-                      <Smartphone size={16} /> Ilovani telefonga o‘rnatish
-                    </button>
+                    <div style={{ marginTop: '16px', padding: '14px', borderRadius: '12px', background: 'var(--soft)', border: '1px solid var(--border)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}>
+                          <Smartphone size={20} />
+                        </div>
+                        <div>
+                          <strong style={{ fontSize: '13px', display: 'block' }}>TILSHUNOS mobil ilovasi</strong>
+                          <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Ilova hozircha brauzer orqali ochilgan</span>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '0 0 12px 0', lineHeight: 1.5 }}>
+                        Tezkor kirish, to‘liq ekran va qulay mobil tajriba uchun ilovani telefoningiz bosh ekraniga o‘rnating.
+                      </p>
+                      <button className="primary-btn" onClick={triggerInstall} style={{ width: '100%', justifyContent: 'center', padding: '10px 14px', fontWeight: 700 }}>
+                        <Download size={16} /> Ilovani qurilmaga o‘rnatish
+                      </button>
+                    </div>
                   ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#16a34a', fontSize: '11px', fontWeight: 700, marginTop: '10px', background: 'var(--soft)', padding: '10px', borderRadius: '8px' }}>
-                      <Check size={16} /> Ilova ushbu qurilmaga o‘rnatilgan
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#16a34a', fontSize: '12px', fontWeight: 700, marginTop: '14px', background: 'rgba(22, 163, 74, 0.1)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(22, 163, 74, 0.2)' }}>
+                      <Check size={18} /> Ilova ushbu qurilmada to‘liq o‘rnatilgan ilova rejimida ishlamoqda
                     </div>
                   )}
                   <button className="outline-btn" onClick={onLogout} style={{ marginTop: '10px', color: '#e05656' }}>
@@ -1495,25 +1519,24 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
-              <button
-                className="primary-btn"
-                style={{ width: '100%', background: '#16a34a', color: '#fff', padding: '12px', fontWeight: 800 }}
-                onClick={() => {
-                  setInstalled(true);
-                  setBannerDismissed(true);
-                  localStorage.setItem('tilshunos_pwa_installed', 'true');
-                  localStorage.setItem('tilshunos_pwa_banner_dismissed', 'true');
-                  setShowPwaModal(false);
-                }}
-              >
-                <Check size={16} /> Men allaqachon o‘rnatganman (Boshqa ko‘rsatilmasin)
-              </button>
+              {installPrompt && (
+                <button
+                  className="primary-btn"
+                  style={{ width: '100%', padding: '12px', fontWeight: 800, justifyContent: 'center' }}
+                  onClick={() => {
+                    setShowPwaModal(false);
+                    triggerInstall();
+                  }}
+                >
+                  <Download size={16} /> O‘rnatish dialogini ochish
+                </button>
+              )}
               <button
                 className="outline-btn"
-                style={{ width: '100%', padding: '10px' }}
+                style={{ width: '100%', padding: '10px', justifyContent: 'center' }}
                 onClick={() => setShowPwaModal(false)}
               >
-                Yopish
+                Tushunarli, yopish
               </button>
             </div>
           </div>
