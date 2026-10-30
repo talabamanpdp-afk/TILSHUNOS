@@ -12,9 +12,7 @@ import { api, authStorage } from '../api';
 const adminNav = [
   ['Dashboard & Statistika', 'dashboard', LayoutDashboard],
   ['Welcome Sahifa / CMS', 'cms', Globe],
-  ['O‘quvchilar Boshqaruvi', 'students', Users],
-  ['O‘qituvchilar', 'teachers', GraduationCap],
-  ['Adminlar & Ruxsatlar', 'roles', UserCog],
+  ['Foydalanuvchilar', 'users', Users],
   ['Umumiy Lug‘at', 'vocab', BookOpen],
   ['O‘yin Mavzulari', 'games', Gamepad2],
   ['Reading Materiallari', 'reading', BookMarked],
@@ -902,6 +900,167 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     });
   }, [learners, query, studentStatusFilter]);
 
+  // ==========================================
+  // FOYDALANUVCHILAR (USERS) YAGONA BO‘LIMI
+  // ==========================================
+  const [usersSubTab, setUsersSubTab] = useState<'all' | 'learners' | 'teachers' | 'admins'>('all');
+  const [usersRoleFilter, setUsersRoleFilter] = useState<'all' | 'learners' | 'teachers' | 'admins'>('all');
+  const [usersStatusFilter, setUsersStatusFilter] = useState<'all' | 'verified' | 'unverified' | 'active'>('all');
+  const [allUsersSearch, setAllUsersSearch] = useState('');
+  const [teacherSearch, setTeacherSearch] = useState('');
+
+  // Appoint Teacher Modal states
+  const [appointTeacherModalOpen, setAppointTeacherModalOpen] = useState(false);
+  const [selectedUserToAppointTeacher, setSelectedUserToAppointTeacher] = useState('');
+  const [appointTeacherSearch, setAppointTeacherSearch] = useState('');
+  const [appointTeacherSpecialty, setAppointTeacherSpecialty] = useState('English · B1–C1');
+  const [appointTeacherBio, setAppointTeacherBio] = useState('Ingliz tili va xalqaro imtihonlar (IELTS / CEFR) bo‘yicha tajribali o‘qituvchi.');
+
+  // Appoint Admin search state
+  const [appointAdminSearch, setAppointAdminSearch] = useState('');
+
+  // Helper to render role badge
+  const renderUserRoleBadge = (u: any) => {
+    if (isSuperAdmin(u)) {
+      return (
+        <span className="badge-role-admin" style={{ background: 'linear-gradient(135deg, #7869f5, #5b4bf0)', color: '#fff', fontWeight: 800 }}>
+          👑 Super Admin
+        </span>
+      );
+    }
+    const roleStr = String(u.role || '').toLowerCase();
+    if (roleStr === 'admin' || u.role === 3) {
+      return <span className="badge-role-admin">🛡️ Moderator Admin</span>;
+    }
+    if (roleStr === 'teacher' || u.role === 2) {
+      return <span className="badge-role-teacher">👨‍🏫 O‘qituvchi</span>;
+    }
+    return <span className="badge-role-learner">🎓 O‘quvchi</span>;
+  };
+
+  // Tab 1: All Users filter
+  const filteredAllUsers = useMemo(() => {
+    return users.filter(u => {
+      // Role filter
+      if (usersRoleFilter === 'learners') {
+        const roleStr = String(u.role || '').toLowerCase();
+        if (isSuperAdmin(u) || roleStr === 'admin' || u.role === 3 || roleStr === 'teacher' || u.role === 2) return false;
+      } else if (usersRoleFilter === 'teachers') {
+        const roleStr = String(u.role || '').toLowerCase();
+        if (roleStr !== 'teacher' && u.role !== 2) return false;
+      } else if (usersRoleFilter === 'admins') {
+        const roleStr = String(u.role || '').toLowerCase();
+        if (!isSuperAdmin(u) && roleStr !== 'admin' && u.role === 3) return false;
+      }
+
+      // Status filter
+      if (usersStatusFilter === 'verified' && !u.emailConfirmed) return false;
+      if (usersStatusFilter === 'unverified' && u.emailConfirmed) return false;
+      if (usersStatusFilter === 'active' && u.isActive === false) return false;
+
+      // Search query
+      if (allUsersSearch) {
+        const q = allUsersSearch.toLowerCase();
+        const name = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
+        const email = (u.email || '').toLowerCase();
+        return name.includes(q) || email.includes(q);
+      }
+
+      return true;
+    });
+  }, [users, usersRoleFilter, usersStatusFilter, allUsersSearch]);
+
+  // Tab 3: Teachers filter
+  const filteredTeachers = useMemo(() => {
+    return teachers.filter((t: any) => {
+      if (!teacherSearch) return true;
+      const q = teacherSearch.toLowerCase();
+      const name = (t.name || t.fullName || '').toLowerCase();
+      const email = (t.email || '').toLowerCase();
+      const spec = (t.specialty || t.qualifications || '').toLowerCase();
+      return name.includes(q) || email.includes(q) || spec.includes(q);
+    });
+  }, [teachers, teacherSearch]);
+
+  // Eligible users for Teacher appointment (from existing registered users)
+  const eligibleUsersForTeacher = useMemo(() => {
+    return users.filter(u => {
+      if (isSuperAdmin(u)) return false;
+      const roleStr = String(u.role || '').toLowerCase();
+      if (roleStr === 'teacher' || u.role === 2) return false;
+      if (appointTeacherSearch) {
+        const q = appointTeacherSearch.toLowerCase();
+        const name = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
+        const email = (u.email || '').toLowerCase();
+        return name.includes(q) || email.includes(q);
+      }
+      return true;
+    });
+  }, [users, appointTeacherSearch]);
+
+  // Eligible users for Admin appointment (from existing registered users)
+  const eligibleUsersForAdmin = useMemo(() => {
+    return users.filter(u => {
+      if (isSuperAdmin(u)) return false;
+      const roleStr = String(u.role || '').toLowerCase();
+      if (roleStr === 'admin' || u.role === 3) return false;
+      if (appointAdminSearch) {
+        const q = appointAdminSearch.toLowerCase();
+        const name = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
+        const email = (u.email || '').toLowerCase();
+        return name.includes(q) || email.includes(q);
+      }
+      return true;
+    });
+  }, [users, appointAdminSearch]);
+
+  // Appoint Teacher Handler
+  const handleAppointTeacher = async () => {
+    if (!selectedUserToAppointTeacher) {
+      notify('Iltimos, o‘qituvchilikka tayinlash uchun ro‘yxatdan foydalanuvchini tanlang');
+      return;
+    }
+    const targetUser = users.find(u => u.id === selectedUserToAppointTeacher);
+    if (!targetUser) {
+      notify('Tanlangan foydalanuvchi topilmadi');
+      return;
+    }
+    if (isSuperAdmin(targetUser)) {
+      notify('Super Admin hisobining rolini o‘zgartirish taqiqlangan!');
+      return;
+    }
+    try {
+      await api.updateUserRole(selectedUserToAppointTeacher, { role: 2, isActive: true });
+      await api.updateTeacher(selectedUserToAppointTeacher, {
+        specialty: appointTeacherSpecialty.trim() || 'English · B1–C1',
+        bio: appointTeacherBio.trim() || 'Ingliz tili va xalqaro imtihonlar bo‘yicha tajribali o‘qituvchi.',
+        isActive: true,
+        isApproved: true
+      });
+      notify(`${targetUser.firstName || targetUser.email} muvaffaqiyatli O‘qituvchi qilib tayinlandi! ✓`);
+      setAppointTeacherModalOpen(false);
+      setSelectedUserToAppointTeacher('');
+      setAppointTeacherSearch('');
+      loadSupabaseData(true);
+    } catch (err: any) {
+      notify(err.message || 'O‘qituvchi tayinlashda xatolik yuz berdi', true);
+    }
+  };
+
+  // Demote Teacher back to Learner Handler
+  const handleDemoteTeacher = async (teacherId: string, nameOrEmail: string) => {
+    if (!window.confirm(`${nameOrEmail} o‘qituvchisini ustozlik maqomidan chiqarib, oddiy O‘quvchi roliga qaytarishni tasdiqlaysizmi?`)) {
+      return;
+    }
+    try {
+      await api.updateUserRole(teacherId, { role: 1, isActive: true });
+      notify('O‘qituvchi muvaffaqiyatli oddiy O‘quvchi roliga o‘tkazildi! ✓');
+      loadSupabaseData(true);
+    } catch (err: any) {
+      notify(err.message || 'Xatolik yuz berdi', true);
+    }
+  };
+
   // Admin permissions state (Super Admin boshqaradigan ruxsatlar)
   const [adminPerms, setAdminPerms] = useState<Record<string, { canVocab: boolean; canTeachers: boolean; canCMS: boolean; canMaterials: boolean; canStudents: boolean }>>(() => {
     try {
@@ -918,6 +1077,15 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       notify('Iltimos, adminlikka tayinlash uchun foydalanuvchini tanlang');
       return;
     }
+    const targetUser = users.find(u => u.id === selectedUserToAppoint);
+    if (!targetUser) {
+      notify('Tanlangan foydalanuvchi topilmadi');
+      return;
+    }
+    if (isSuperAdmin(targetUser)) {
+      notify('Bu foydalanuvchi allaqachon Super Admin hisoblanadi!');
+      return;
+    }
     try {
       await api.updateUserRole(selectedUserToAppoint, { role: 3, isActive: true });
       const updated = {
@@ -926,9 +1094,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       };
       setAdminPerms(updated);
       localStorage.setItem('tilshunos_admin_permissions', JSON.stringify(updated));
-      notify('Yangi Moderator Admin muvaffaqiyatli saylandi! ✓');
+      notify(`${targetUser.firstName || targetUser.email} muvaffaqiyatli Moderator Admin saylandi! ✓`);
       setAppointModalOpen(false);
       setSelectedUserToAppoint('');
+      setAppointAdminSearch('');
       loadSupabaseData(true);
     } catch (err: any) {
       notify(err.message || 'Admin tayinlashda xatolik yuz berdi');
@@ -1013,9 +1182,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
             >
               <Icon size={18} strokeWidth={1.8} />
               <span>{label}</span>
-              {key === 'students' && learners.length > 0 && (
+              {key === 'users' && users.length > 0 && (
                 <span className="nav-count" style={{ background: 'var(--soft)', color: 'var(--purple)', fontWeight: 800 }}>
-                  {learners.length}
+                  {users.length}
                 </span>
               )}
             </button>
@@ -1084,7 +1253,12 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
 
               {/* Main metrics (100% Real from Supabase) */}
               <section className="stats-grid">
-                <div className="stat-card">
+                <div
+                  className="stat-card"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => { setSection('users'); setUsersSubTab('learners'); }}
+                  title="O‘quvchilar ro‘yxatiga o‘tish"
+                >
                   <div className="stat-top">
                     <div className="stat-icon purple"><Users size={19} /></div>
                     <span className="badge-role-learner">O‘quvchilar</span>
@@ -1096,7 +1270,12 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   </div>
                 </div>
 
-                <div className="stat-card">
+                <div
+                  className="stat-card"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => { setSection('users'); setUsersSubTab('teachers'); }}
+                  title="O‘qituvchilar ro‘yxatiga o‘tish"
+                >
                   <div className="stat-top">
                     <div className="stat-icon orange"><GraduationCap size={19} /></div>
                     <span className="badge-role-teacher">Ustozlar</span>
@@ -1220,7 +1399,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     </div>
                     <button
                       className="text-action"
-                      onClick={() => setSection('students')}
+                      onClick={() => { setSection('users'); setUsersSubTab('all'); }}
                       style={{ fontSize: '11px', margin: 0 }}
                     >
                       Barchasi ({users.length}) →
@@ -1273,18 +1452,29 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
             </>
           )}
 
-          {/* O‘QUVCHILAR BO‘LIMI (FAQAT O‘quvchilar, Adminlar bu yerda umuman bo‘lmaydi!) */}
-          {section === 'students' && (
+          {/* YAGONA FOYDALANUVCHILAR BO‘LIMI (4 TA SUB-TAB: ALL, LEARNERS, TEACHERS, ADMINS) */}
+          {section === 'users' && (
             <>
+              {/* Header */}
               <div className="welcome-row">
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="eyebrow"><Users size={14} /> O‘QUVCHILAR REESTRI</div>
-                  <h1 style={{ wordBreak: 'break-word' }}>O‘quvchilar <span>Boshqaruvi</span></h1>
+                  <div className="eyebrow"><Users size={14} /> FOYDALANUVCHILAR VA XAVFSIZLIK MARKAZI</div>
+                  <h1 style={{ wordBreak: 'break-word' }}>Foydalanuvchilar <span>Boshqaruvi</span></h1>
                   <p className="subheading">
-                    Supabase bazasidagi barcha ro‘yxatdan o‘tgan o‘quvchilar ro‘yxati (Jami: {learners.length} nafar).
+                    Supabase PostgreSQL bazasidagi barcha foydalanuvchilar, o‘quvchilar, o‘qituvchilar va moderator adminlar yagona boshqaruvi.
                   </p>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
+                  {usersSubTab === 'teachers' && (
+                    <button className="primary-btn" onClick={() => setAppointTeacherModalOpen(true)}>
+                      <GraduationCap size={15} /> Ustoz Tayinlash
+                    </button>
+                  )}
+                  {usersSubTab === 'admins' && (
+                    <button className="primary-btn" onClick={() => setAppointModalOpen(true)}>
+                      <Plus size={15} /> Yangi Admin Saylash
+                    </button>
+                  )}
                   <button className="primary-btn" onClick={() => loadSupabaseData(true)} disabled={refreshing}>
                     <RefreshCw size={15} className={refreshing ? 'animate-spin' : ''} />
                     Yangilash
@@ -1292,296 +1482,781 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                 </div>
               </div>
 
-              {/* Filters toolbar */}
-              <div className="panel" style={{ padding: '14px 18px', marginBottom: '20px' }}>
-                <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, minWidth: '220px' }}>
-                    <Search size={18} style={{ color: 'var(--muted)', flexShrink: 0 }} />
-                    <input
-                      value={query}
-                      onChange={e => setQuery(e.target.value)}
-                      placeholder="Ism, familiya yoki email bo‘yicha qidirish..."
-                      style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '12px', color: 'var(--text)' }}
-                    />
-                    {query && (
-                      <button onClick={() => setQuery('')} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
-                        <X size={16} />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="admin-filters-scroll">
-                    {[
-                      ['all', `Barcha O‘quvchilar (${learners.length})`],
-                      ['verified', 'Tasdiqlanganlar'],
-                      ['unverified', 'Tasdiqlanmaganlar'],
-                      ['active', 'Faol O‘quvchilar']
-                    ].map(([f, label]) => (
-                      <button
-                        key={f}
-                        onClick={() => setStudentStatusFilter(f as any)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          border: studentStatusFilter === f ? '1px solid var(--purple)' : '1px solid var(--border)',
-                          background: studentStatusFilter === f ? 'var(--soft)' : 'var(--panel)',
-                          color: studentStatusFilter === f ? 'var(--purple)' : 'var(--muted)',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
-                          flexShrink: 0
-                        }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              {/* Segmented Sub-Tab Bar */}
+              <div style={{
+                display: 'flex',
+                gap: '8px',
+                background: 'var(--panel)',
+                padding: '6px',
+                borderRadius: '14px',
+                border: '1px solid var(--border)',
+                overflowX: 'auto',
+                marginBottom: '20px',
+                scrollbarWidth: 'none'
+              }}>
+                {[
+                  ['all', 'Umumiy Foydalanuvchilar', Users, users.length],
+                  ['learners', 'O‘quvchilar', Boxes, learners.length],
+                  ['teachers', 'O‘qituvchilar', GraduationCap, teachers.length],
+                  ['admins', 'Adminlar & Ruxsatlar', UserCog, subAdmins.length]
+                ].map(([tabKey, label, TabIcon, count]: any) => (
+                  <button
+                    key={tabKey}
+                    onClick={() => setUsersSubTab(tabKey)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 16px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: usersSubTab === tabKey ? 'var(--purple)' : 'transparent',
+                      color: usersSubTab === tabKey ? '#fff' : 'var(--muted)',
+                      fontWeight: 700,
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    <TabIcon size={15} />
+                    <span>{label}</span>
+                    <span style={{
+                      background: usersSubTab === tabKey ? 'rgba(255,255,255,0.25)' : 'var(--soft)',
+                      color: usersSubTab === tabKey ? '#fff' : 'var(--purple)',
+                      padding: '2px 7px',
+                      borderRadius: '10px',
+                      fontSize: '11px',
+                      fontWeight: 800
+                    }}>
+                      {count}
+                    </span>
+                  </button>
+                ))}
               </div>
 
-              {/* Learners content */}
-              <div className="panel" style={{ padding: '20px' }}>
-                {filteredLearners.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--muted)' }}>
-                    O‘quvchilar topilmadi.
+              {/* SUB-TAB 1: UMUMIY FOYDALANUVCHILAR */}
+              {usersSubTab === 'all' && (
+                <>
+                  <div className="panel" style={{ padding: '14px 18px', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, minWidth: '240px' }}>
+                        <Search size={18} style={{ color: 'var(--muted)', flexShrink: 0 }} />
+                        <input
+                          value={allUsersSearch}
+                          onChange={e => setAllUsersSearch(e.target.value)}
+                          placeholder="Foydalanuvchi ismi, familiyasi yoki email bo‘yicha qidirish..."
+                          style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '12px', color: 'var(--text)' }}
+                        />
+                        {allUsersSearch && (
+                          <button onClick={() => setAllUsersSearch('')} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
+                            <X size={16} />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Role Filter Pills */}
+                      <div className="admin-filters-scroll" style={{ display: 'flex', gap: '6px' }}>
+                        {[
+                          ['all', `Barchasi (${users.length})`],
+                          ['learners', `O‘quvchilar (${learners.length})`],
+                          ['teachers', `Ustozlar (${teachers.length})`],
+                          ['admins', `Adminlar (${subAdmins.length})`]
+                        ].map(([rf, rfLabel]) => (
+                          <button
+                            key={rf}
+                            onClick={() => setUsersRoleFilter(rf as any)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '8px',
+                              border: usersRoleFilter === rf ? '1px solid var(--purple)' : '1px solid var(--border)',
+                              background: usersRoleFilter === rf ? 'var(--soft)' : 'var(--panel)',
+                              color: usersRoleFilter === rf ? 'var(--purple)' : 'var(--muted)',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {rfLabel}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Status Filter Pills */}
+                      <div className="admin-filters-scroll" style={{ display: 'flex', gap: '6px' }}>
+                        {[
+                          ['all', 'Barcha Holatlar'],
+                          ['verified', 'Tasdiqlangan'],
+                          ['unverified', 'Tasdiqlanmagan'],
+                          ['active', 'Faol']
+                        ].map(([sf, sfLabel]) => (
+                          <button
+                            key={sf}
+                            onClick={() => setUsersStatusFilter(sf as any)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '8px',
+                              border: usersStatusFilter === sf ? '1px solid var(--purple)' : '1px solid var(--border)',
+                              background: usersStatusFilter === sf ? 'var(--soft)' : 'var(--panel)',
+                              color: usersStatusFilter === sf ? 'var(--purple)' : 'var(--muted)',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {sfLabel}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <>
-                    {/* Desktop Table View */}
-                    <div className="admin-desktop-table admin-table-container">
+
+                  <div className="panel" style={{ padding: '20px' }}>
+                    {filteredAllUsers.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--muted)' }}>
+                        Foydalanuvchilar topilmadi.
+                      </div>
+                    ) : (
+                      <>
+                        <div className="admin-desktop-table admin-table-container">
+                          <table className="admin-table">
+                            <thead>
+                              <tr>
+                                <th>Foydalanuvchi</th>
+                                <th>Email Manzili</th>
+                                <th>Roli</th>
+                                <th>Email Holati</th>
+                                <th>Ro‘yxatdan O‘tgan</th>
+                                <th>Holat</th>
+                                <th style={{ textAlign: 'right' }}>Amallar</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredAllUsers.map((u: any) => (
+                                <tr key={u.id}>
+                                  <td style={{ fontWeight: 700 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                      <div className="avatar" style={{ width: '32px', height: '32px', fontSize: '12px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
+                                        {(u.firstName?.[0] || u.email?.[0] || 'U').toUpperCase()}
+                                      </div>
+                                      <div>
+                                        {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : u.email.split('@')[0]}
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td style={{ color: 'var(--muted)' }}>{u.email}</td>
+                                  <td>{renderUserRoleBadge(u)}</td>
+                                  <td>
+                                    {u.emailConfirmed ? (
+                                      <span className="badge-verified"><CheckCircle2 size={12} /> Tasdiqlangan</span>
+                                    ) : (
+                                      <span className="badge-unverified"><AlertCircle size={12} /> Tasdiqlanmagan</span>
+                                    )}
+                                  </td>
+                                  <td style={{ color: 'var(--muted)', fontSize: '11px' }}>
+                                    {u.createdAtUtc ? new Date(u.createdAtUtc).toLocaleDateString('uz-UZ') : '—'}
+                                  </td>
+                                  <td>
+                                    <span className={`status ${u.isActive !== false ? 'status-learned' : 'status-planned'}`}>
+                                      {u.isActive !== false ? 'Faol' : 'Nofaol'}
+                                    </span>
+                                  </td>
+                                  <td style={{ textAlign: 'right' }}>
+                                    {isSuperAdmin(u) ? (
+                                      <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 700, padding: '4px 10px', background: '#dcfce7', borderRadius: '12px' }}>
+                                        Daxlsiz 👑
+                                      </span>
+                                    ) : (
+                                      <div style={{ display: 'inline-flex', gap: '6px' }}>
+                                        <button
+                                          className="outline-btn"
+                                          onClick={() => setSelectedUserForEdit(u)}
+                                          title="Rolni o‘zgartirish"
+                                          style={{ padding: '6px 9px', fontSize: '11px' }}
+                                        >
+                                          <UserCog size={14} /> Rol
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteUser(u.id, u.email)}
+                                          title="O‘chirish"
+                                          style={{ background: 'none', border: 0, color: '#e05656', cursor: 'pointer', padding: '6px' }}
+                                        >
+                                          <Trash2 size={15} />
+                                        </button>
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="mobile-cards-grid">
+                          {filteredAllUsers.map((u: any) => (
+                            <div key={u.id} className="learner-card">
+                              <div className="learner-card-header">
+                                <div className="avatar" style={{ width: '36px', height: '36px', fontSize: '13px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
+                                  {(u.firstName?.[0] || u.email?.[0] || 'U').toUpperCase()}
+                                </div>
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                  <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : u.email.split('@')[0]}
+                                  </strong>
+                                  <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {u.email}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="learner-card-body">
+                                {renderUserRoleBadge(u)}
+                                {u.emailConfirmed ? (
+                                  <span className="badge-verified"><CheckCircle2 size={11} /> Tasdiqlangan</span>
+                                ) : (
+                                  <span className="badge-unverified"><AlertCircle size={11} /> Tasdiqlanmagan</span>
+                                )}
+                                <span style={{ fontSize: '10px', color: 'var(--muted)', marginLeft: 'auto' }}>
+                                  {u.createdAtUtc ? new Date(u.createdAtUtc).toLocaleDateString('uz-UZ') : ''}
+                                </span>
+                              </div>
+
+                              <div className="learner-card-actions">
+                                {isSuperAdmin(u) ? (
+                                  <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 700, padding: '4px 10px', background: '#dcfce7', borderRadius: '12px' }}>
+                                    Daxlsiz Super Admin 👑
+                                  </span>
+                                ) : (
+                                  <>
+                                    <button
+                                      className="outline-btn"
+                                      onClick={() => setSelectedUserForEdit(u)}
+                                      style={{ padding: '6px 12px', fontSize: '11px' }}
+                                    >
+                                      <UserCog size={13} /> Rolni o‘zgartirish
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteUser(u.id, u.email)}
+                                      style={{ background: 'none', border: 0, color: '#e05656', cursor: 'pointer', padding: '6px' }}
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* SUB-TAB 2: O‘QUVCHILAR (LEARNERS) */}
+              {usersSubTab === 'learners' && (
+                <>
+                  <div className="panel" style={{ padding: '14px 18px', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, minWidth: '220px' }}>
+                        <Search size={18} style={{ color: 'var(--muted)', flexShrink: 0 }} />
+                        <input
+                          value={query}
+                          onChange={e => setQuery(e.target.value)}
+                          placeholder="O‘quvchi ismi, familiyasi yoki email bo‘yicha qidirish..."
+                          style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '12px', color: 'var(--text)' }}
+                        />
+                        {query && (
+                          <button onClick={() => setQuery('')} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
+                            <X size={16} />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="admin-filters-scroll">
+                        {[
+                          ['all', `Barcha O‘quvchilar (${learners.length})`],
+                          ['verified', 'Tasdiqlanganlar'],
+                          ['unverified', 'Tasdiqlanmaganlar'],
+                          ['active', 'Faol O‘quvchilar']
+                        ].map(([f, label]) => (
+                          <button
+                            key={f}
+                            onClick={() => setStudentStatusFilter(f as any)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '8px',
+                              border: studentStatusFilter === f ? '1px solid var(--purple)' : '1px solid var(--border)',
+                              background: studentStatusFilter === f ? 'var(--soft)' : 'var(--panel)',
+                              color: studentStatusFilter === f ? 'var(--purple)' : 'var(--muted)',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                              flexShrink: 0
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="panel" style={{ padding: '20px' }}>
+                    {filteredLearners.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--muted)' }}>
+                        O‘quvchilar topilmadi.
+                      </div>
+                    ) : (
+                      <>
+                        <div className="admin-desktop-table admin-table-container">
+                          <table className="admin-table">
+                            <thead>
+                              <tr>
+                                <th>O‘quvchi</th>
+                                <th>Email Manzili</th>
+                                <th>Roli</th>
+                                <th>Email Holati</th>
+                                <th>Ro‘yxatdan O‘tgan</th>
+                                <th style={{ textAlign: 'right' }}>Amallar</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredLearners.map((u: any) => (
+                                <tr key={u.id}>
+                                  <td style={{ fontWeight: 700 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                      <div className="avatar" style={{ width: '32px', height: '32px', fontSize: '12px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
+                                        {(u.firstName?.[0] || u.email?.[0] || 'O').toUpperCase()}
+                                      </div>
+                                      <div>
+                                        {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : 'O‘quvchi'}
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td style={{ color: 'var(--muted)' }}>{u.email}</td>
+                                  <td>
+                                    <span className="badge-role-learner">
+                                      Learner (O‘quvchi)
+                                    </span>
+                                  </td>
+                                  <td>
+                                    {u.emailConfirmed ? (
+                                      <span className="badge-verified">
+                                        <CheckCircle2 size={12} /> Tasdiqlangan
+                                      </span>
+                                    ) : (
+                                      <span className="badge-unverified">
+                                        <AlertCircle size={12} /> Tasdiqlanmagan
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td style={{ color: 'var(--muted)', fontSize: '11px' }}>
+                                    {u.createdAtUtc ? new Date(u.createdAtUtc).toLocaleDateString('uz-UZ') : '—'}
+                                  </td>
+                                  <td style={{ textAlign: 'right' }}>
+                                    <div style={{ display: 'inline-flex', gap: '6px' }}>
+                                      <button
+                                        className="outline-btn"
+                                        onClick={() => {
+                                          setSelectedUserToAppointTeacher(u.id);
+                                          setAppointTeacherModalOpen(true);
+                                        }}
+                                        title="O‘qituvchi qilib tayinlash"
+                                        style={{ padding: '6px 9px', fontSize: '11px', color: 'var(--purple)', borderColor: 'var(--purple)' }}
+                                      >
+                                        <GraduationCap size={14} /> Ustoz qilish
+                                      </button>
+                                      <button
+                                        className="outline-btn"
+                                        onClick={() => setSelectedUserForEdit(u)}
+                                        title="Rolni o‘zgartirish"
+                                        style={{ padding: '6px 9px', fontSize: '11px' }}
+                                      >
+                                        <UserCog size={14} /> Rol
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteUser(u.id, u.email)}
+                                        title="O‘chirish"
+                                        style={{ background: 'none', border: 0, color: '#e05656', cursor: 'pointer', padding: '6px' }}
+                                      >
+                                        <Trash2 size={15} />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="mobile-cards-grid">
+                          {filteredLearners.map((u: any) => (
+                            <div key={u.id} className="learner-card">
+                              <div className="learner-card-header">
+                                <div className="avatar" style={{ width: '36px', height: '36px', fontSize: '13px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
+                                  {(u.firstName?.[0] || u.email?.[0] || 'O').toUpperCase()}
+                                </div>
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                  <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : 'O‘quvchi'}
+                                  </strong>
+                                  <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {u.email}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="learner-card-body">
+                                <span className="badge-role-learner">O‘quvchi</span>
+                                {u.emailConfirmed ? (
+                                  <span className="badge-verified"><CheckCircle2 size={11} /> Tasdiqlangan</span>
+                                ) : (
+                                  <span className="badge-unverified"><AlertCircle size={11} /> Tasdiqlanmagan</span>
+                                )}
+                                <span style={{ fontSize: '10px', color: 'var(--muted)', marginLeft: 'auto' }}>
+                                  {u.createdAtUtc ? new Date(u.createdAtUtc).toLocaleDateString('uz-UZ') : ''}
+                                </span>
+                              </div>
+
+                              <div className="learner-card-actions">
+                                <button
+                                  className="outline-btn"
+                                  onClick={() => {
+                                    setSelectedUserToAppointTeacher(u.id);
+                                    setAppointTeacherModalOpen(true);
+                                  }}
+                                  style={{ padding: '6px 10px', fontSize: '11px', color: 'var(--purple)', borderColor: 'var(--purple)' }}
+                                >
+                                  <GraduationCap size={13} /> Ustoz qilish
+                                </button>
+                                <button
+                                  className="outline-btn"
+                                  onClick={() => setSelectedUserForEdit(u)}
+                                  style={{ padding: '6px 10px', fontSize: '11px' }}
+                                >
+                                  <UserCog size={13} /> Rol
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteUser(u.id, u.email)}
+                                  style={{ background: 'none', border: 0, color: '#e05656', cursor: 'pointer', padding: '6px' }}
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* SUB-TAB 3: O‘QITUVCHILAR (TEACHERS) */}
+              {usersSubTab === 'teachers' && (
+                <>
+                  {/* In-System Teacher Appointment Banner */}
+                  <div className="panel" style={{
+                    padding: '22px',
+                    marginBottom: '20px',
+                    background: 'linear-gradient(135deg, rgba(120, 105, 245, 0.08), rgba(91, 75, 240, 0.03))',
+                    border: '1.5px solid rgba(120, 105, 245, 0.25)',
+                    borderRadius: '16px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <div style={{
+                          width: '44px',
+                          height: '44px',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(135deg, #7869f5, #5b4bf0)',
+                          color: '#fff',
+                          display: 'grid',
+                          placeItems: 'center',
+                          boxShadow: '0 4px 12px rgba(120, 105, 245, 0.3)'
+                        }}>
+                          <GraduationCap size={22} />
+                        </div>
+                        <div>
+                          <h3 style={{ margin: '0 0 4px', fontSize: '16px' }}>Foydalanuvchilar Orasidan O‘qituvchi Tayinlash</h3>
+                          <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
+                            O‘qituvchilar tizimda ro‘yxatdan o‘tgan umumiy foydalanuvchilar orasidan tanlab olinadi va Supabase bazasiga biriktiriladi.
+                          </p>
+                        </div>
+                      </div>
+                      <button className="primary-btn" onClick={() => setAppointTeacherModalOpen(true)} style={{ padding: '9px 18px', fontSize: '12px' }}>
+                        <Plus size={16} /> Yangi Ustoz Tayinlash
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Teachers Search & Table */}
+                  <div className="panel" style={{ padding: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                      <h3 style={{ margin: 0 }}>Mavjud O‘qituvchilar Ro‘yxati ({teachers.length} ta)</h3>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', minWidth: '220px' }}>
+                        <Search size={16} style={{ color: 'var(--muted)' }} />
+                        <input
+                          value={teacherSearch}
+                          onChange={e => setTeacherSearch(e.target.value)}
+                          placeholder="Ustoz ismi yoki mutaxassisligi..."
+                          style={{ padding: '6px 10px', fontSize: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                       <table className="admin-table">
                         <thead>
                           <tr>
-                            <th>O‘quvchi</th>
-                            <th>Email Manzili</th>
-                            <th>Roli</th>
-                            <th>Email Holati</th>
-                            <th>Ro‘yxatdan O‘tgan</th>
-                            <th style={{ textAlign: 'right' }}>Amallar</th>
+                            <th>ISMI</th>
+                            <th>EMAIL</th>
+                            <th>MUTAXASSISLIK</th>
+                            <th>O‘QUVCHILAR</th>
+                            <th>HOLAT</th>
+                            <th style={{ textAlign: 'right' }}>AMALLAR</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredLearners.map((u: any) => (
-                            <tr key={u.id}>
-                              <td style={{ fontWeight: 700 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                  <div className="avatar" style={{ width: '32px', height: '32px', fontSize: '12px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
-                                    {(u.firstName?.[0] || u.email?.[0] || 'O').toUpperCase()}
-                                  </div>
-                                  <div>
-                                    {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : 'O‘quvchi'}
-                                  </div>
-                                </div>
-                              </td>
-                              <td style={{ color: 'var(--muted)' }}>{u.email}</td>
-                              <td>
-                                <span className="badge-role-learner">
-                                  Learner (O‘quvchi)
-                                </span>
-                              </td>
-                              <td>
-                                {u.emailConfirmed ? (
-                                  <span className="badge-verified">
-                                    <CheckCircle2 size={12} /> Tasdiqlangan
-                                  </span>
-                                ) : (
-                                  <span className="badge-unverified">
-                                    <AlertCircle size={12} /> Tasdiqlanmagan
-                                  </span>
-                                )}
-                              </td>
-                              <td style={{ color: 'var(--muted)', fontSize: '11px' }}>
-                                {u.createdAtUtc ? new Date(u.createdAtUtc).toLocaleDateString('uz-UZ') : '—'}
-                              </td>
-                              <td style={{ textAlign: 'right' }}>
-                                <div style={{ display: 'inline-flex', gap: '6px' }}>
-                                  <button
-                                    className="outline-btn"
-                                    onClick={() => setSelectedUserForEdit(u)}
-                                    title="Rolni o‘zgartirish"
-                                    style={{ padding: '6px 9px', fontSize: '11px' }}
-                                  >
-                                    <UserCog size={14} /> Rol
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteUser(u.id, u.email)}
-                                    title="O‘chirish"
-                                    style={{ background: 'none', border: 0, color: '#e05656', cursor: 'pointer', padding: '6px' }}
-                                  >
-                                    <Trash2 size={15} />
-                                  </button>
-                                </div>
+                          {filteredTeachers.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} style={{ textAlign: 'center', padding: '28px', color: 'var(--muted)' }}>
+                                O‘qituvchilar topilmadi.
                               </td>
                             </tr>
-                          ))}
+                          ) : (
+                            filteredTeachers.map((t: any) => (
+                              <tr key={t.id || t.userId}>
+                                <td style={{ fontWeight: 700 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div className="avatar" style={{ width: '32px', height: '32px', fontSize: '12px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
+                                      {(t.name?.[0] || t.fullName?.[0] || t.email?.[0] || 'U').toUpperCase()}
+                                    </div>
+                                    <div>{t.name || t.fullName || 'O‘qituvchi'}</div>
+                                  </div>
+                                </td>
+                                <td style={{ color: 'var(--muted)' }}>{t.email || '-'}</td>
+                                <td>{t.specialty || t.qualifications || 'Ingliz tili'}</td>
+                                <td>{t.students || 0} ta</td>
+                                <td>
+                                  <span className={`status ${t.status === 'Faol' || t.isApproved ? 'status-learned' : 'status-planned'}`}>
+                                    {t.status || (t.isApproved ? 'Faol' : 'Nofaol')}
+                                  </span>
+                                </td>
+                                <td style={{ textAlign: 'right' }}>
+                                  <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                                    <button
+                                      className="outline-btn"
+                                      title="Tahrirlash"
+                                      onClick={() => openEditTeacher(t)}
+                                      style={{ padding: '6px 10px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                    >
+                                      <Edit3 size={13} /> Tahrirlash
+                                    </button>
+                                    <button
+                                      className="outline-btn"
+                                      title="O‘quvchilikka qaytarish"
+                                      onClick={() => handleDemoteTeacher(t.id || t.userId, t.name || t.fullName || t.email)}
+                                      style={{ padding: '6px 10px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                    >
+                                      <RotateCcw size={13} /> O‘quvchi qilish
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteTeacher(t.id || t.userId, t.name || t.fullName || t.email)}
+                                      title="O‘chirish"
+                                      style={{ background: 'none', border: 0, color: '#e05656', cursor: 'pointer', padding: '6px' }}
+                                    >
+                                      <Trash2 size={15} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
+                  </div>
+                </>
+              )}
 
-                    {/* Mobile Cards View (Responsive on <= 768px screens) */}
-                    <div className="mobile-cards-grid">
-                      {filteredLearners.map((u: any) => (
-                        <div key={u.id} className="learner-card">
-                          <div className="learner-card-header">
-                            <div className="avatar" style={{ width: '36px', height: '36px', fontSize: '13px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
-                              {(u.firstName?.[0] || u.email?.[0] || 'O').toUpperCase()}
-                            </div>
-                            <div style={{ minWidth: 0, flex: 1 }}>
-                              <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : 'O‘quvchi'}
-                              </strong>
-                              <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {u.email}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="learner-card-body">
-                            <span className="badge-role-learner">O‘quvchi</span>
-                            {u.emailConfirmed ? (
-                              <span className="badge-verified"><CheckCircle2 size={11} /> Tasdiqlangan</span>
-                            ) : (
-                              <span className="badge-unverified"><AlertCircle size={11} /> Tasdiqlanmagan</span>
-                            )}
-                            <span style={{ fontSize: '10px', color: 'var(--muted)', marginLeft: 'auto' }}>
-                              {u.createdAtUtc ? new Date(u.createdAtUtc).toLocaleDateString('uz-UZ') : ''}
-                            </span>
-                          </div>
-
-                          <div className="learner-card-actions">
-                            <button
-                              className="outline-btn"
-                              onClick={() => setSelectedUserForEdit(u)}
-                              style={{ padding: '6px 12px', fontSize: '11px' }}
-                            >
-                              <UserCog size={13} /> Rolni o‘zgartirish
-                            </button>
-                            <button
-                              onClick={() => handleDeleteUser(u.id, u.email)}
-                              style={{ background: 'none', border: 0, color: '#e05656', cursor: 'pointer', padding: '6px' }}
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
+              {/* SUB-TAB 4: ADMINLAR & RUXSATLAR (ADMINS) */}
+              {usersSubTab === 'admins' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+                  {/* Super Admin Status Card */}
+                  <div className="panel" style={{
+                    padding: '24px',
+                    background: 'linear-gradient(135deg, rgba(120, 105, 245, 0.08), rgba(91, 75, 240, 0.04))',
+                    border: '1.5px solid rgba(120, 105, 245, 0.3)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '14px',
+                          background: 'linear-gradient(135deg, #7869f5, #5b4bf0)',
+                          color: '#fff',
+                          display: 'grid',
+                          placeItems: 'center',
+                          fontWeight: 800,
+                          fontSize: '20px',
+                          boxShadow: '0 6px 16px rgba(120, 105, 245, 0.3)'
+                        }}>
+                          👑
                         </div>
-                      ))}
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text)' }}>Soxibjon Gaybullayev</h3>
+                            <span style={{
+                              background: '#7869f5',
+                              color: '#fff',
+                              fontSize: '10px',
+                              fontWeight: 800,
+                              padding: '3px 8px',
+                              borderRadius: '6px'
+                            }}>
+                              YAGONA SUPER ADMIN (1 NAFAR)
+                            </span>
+                            <span className="badge-verified">Daxlsiz</span>
+                          </div>
+                          <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
+                            Platforma asoschisi va yagona to‘liq boshqaruvchisi. Uni hech kim tizimdan chiqara yoki o‘chira olmaydi.
+                          </p>
+                        </div>
+                      </div>
+                      <div style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: '#16a34a',
+                        background: '#dcfce7',
+                        padding: '8px 14px',
+                        borderRadius: '20px'
+                      }}>
+                        To‘liq cheksiz boshqaruv huquqi ✓
+                      </div>
                     </div>
-                  </>
-                )}
-              </div>
-            </>
-          )}
+                  </div>
 
-          {/* O‘QITUVCHILAR BO‘LIMI */}
-          {section === 'teachers' && (
-            <>
-              <div className="welcome-row">
-                <div>
-                  <div className="eyebrow"><GraduationCap size={14} /> TA’LIM JAMOA</div>
-                  <h1>O‘qituvchilar <span>Boshqaruvi</span></h1>
-                  <p className="subheading">Supabase bazasida mavjud o‘qituvchilar va yangi o‘qituvchi hisobini yaratish.</p>
-                </div>
-              </div>
+                  {/* Sub-Admins Table & Permissions */}
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
+                      <div>
+                        <h2 style={{ margin: '0 0 4px', fontSize: '17px' }}>Saylangan Moderator Adminlar ({subAdmins.length})</h2>
+                        <p style={{ margin: 0, fontSize: '11px', color: 'var(--muted)' }}>
+                          Umumiy foydalanuvchilar orasidan Super Admin tomonidan tayinlangan moderatorlar va ularning faol ruxsatlari.
+                        </p>
+                      </div>
+                      <button className="outline-btn" onClick={() => setAppointModalOpen(true)} style={{ padding: '7px 12px' }}>
+                        <Plus size={14} /> Yangi Admin Tayinlash
+                      </button>
+                    </div>
 
-              <div className="panel" style={{ padding: '24px', marginBottom: '24px' }}>
-                <h3 style={{ marginBottom: '14px' }}>Yangi O‘qituvchi Qo‘shish (Supabasega yoziladi)</h3>
-                <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
-                  <label>Ism<input value={teacherForm.firstName} onChange={e => setTeacherForm({ ...teacherForm, firstName: e.target.value })} placeholder="Dilnoza" /></label>
-                  <label>Familiya<input value={teacherForm.lastName} onChange={e => setTeacherForm({ ...teacherForm, lastName: e.target.value })} placeholder="Karimova" /></label>
-                  <label>Email<input type="email" value={teacherForm.email} onChange={e => setTeacherForm({ ...teacherForm, email: e.target.value })} placeholder="teacher@tilshunos.app" /></label>
-                  <label>Parol<input type="password" value={teacherForm.password} onChange={e => setTeacherForm({ ...teacherForm, password: e.target.value })} placeholder="Kamida 6 belgi" /></label>
-                  <label>Mutaxassislik<input value={teacherForm.specialty} onChange={e => setTeacherForm({ ...teacherForm, specialty: e.target.value })} placeholder="IELTS & B1–C1" /></label>
-                  <label>Qisqacha bio<input value={teacherForm.bio} onChange={e => setTeacherForm({ ...teacherForm, bio: e.target.value })} placeholder="Tajribali ustoz" /></label>
-                </div>
-                <button className="primary-btn" onClick={handleCreateTeacher} style={{ marginTop: '16px' }}>
-                  <Plus size={16} /> O‘qituvchini Saqlash
-                </button>
-              </div>
+                    {subAdmins.length === 0 ? (
+                      <div style={{
+                        padding: '36px 20px',
+                        textAlign: 'center',
+                        background: 'var(--bg)',
+                        borderRadius: '12px',
+                        border: '1px dashed var(--border)'
+                      }}>
+                        <ShieldAlert size={32} style={{ color: 'var(--muted)', margin: '0 auto 10px' }} />
+                        <strong style={{ display: 'block', fontSize: '13px', color: 'var(--text)', marginBottom: '4px' }}>
+                          Hozircha qo‘shimcha admin tayinlanmagan
+                        </strong>
+                        <p style={{ margin: 0, fontSize: '11px', color: 'var(--muted)' }}>
+                          Super Admin sifatida yuqoridagi <strong>"+ Yangi Admin Tayinlash"</strong> tugmasi orqali umumiy foydalanuvchilar orasidan moderator saylashingiz mumkin.
+                        </p>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        {subAdmins.map((admin: any) => {
+                          const perms = adminPerms[admin.id] || { canVocab: true, canTeachers: false, canCMS: true, canMaterials: true, canStudents: true };
+                          return (
+                            <div key={admin.id} style={{
+                              background: 'var(--bg)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '14px',
+                              padding: '16px 18px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '14px'
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <div className="avatar" style={{ width: '38px', height: '38px', fontSize: '14px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
+                                    {(admin.firstName?.[0] || admin.email?.[0] || 'A').toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text)' }}>
+                                      {admin.firstName || admin.lastName ? `${admin.firstName || ''} ${admin.lastName || ''}`.trim() : 'Admin'}
+                                    </strong>
+                                    <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{admin.email}</span>
+                                  </div>
+                                  <span className="badge-role-admin" style={{ marginLeft: '6px' }}>
+                                    Moderator Admin
+                                  </span>
+                                </div>
 
-              <div className="panel" style={{ padding: '20px' }}>
-                <div className="panel-heading" style={{ marginBottom: '16px' }}>
-                  <h3>Mavjud O‘qituvchilar Ro‘yxati ({teachers.length} ta)</h3>
-                </div>
-                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                  <table className="admin-table">
-                    <thead>
-                      <tr>
-                        <th>ISMI</th>
-                        <th>EMAIL</th>
-                        <th>MUTAXASSISLIK</th>
-                        <th>O‘QUVCHILAR</th>
-                        <th>HOLAT</th>
-                        <th>AMALLAR</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {teachers.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)' }}>
-                            O‘qituvchilar topilmadi.
-                          </td>
-                        </tr>
-                      ) : (
-                        teachers.map((t: any) => (
-                          <tr key={t.id || t.userId}>
-                            <td style={{ fontWeight: 700 }}>{t.name || t.fullName || 'O‘qituvchi'}</td>
-                            <td style={{ color: 'var(--muted)' }}>{t.email || '-'}</td>
-                            <td>{t.specialty || t.qualifications || 'Ingliz tili'}</td>
-                            <td>{t.students || 0} ta</td>
-                            <td>
-                              <span className={`status ${t.status === 'Faol' || t.isApproved ? 'status-learned' : 'status-planned'}`}>
-                                {t.status || (t.isApproved ? 'Faol' : 'Nofaol')}
-                              </span>
-                            </td>
-                            <td>
-                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 <button
-                                  className="outline-btn"
-                                  title="Tahrirlash"
-                                  onClick={() => openEditTeacher(t)}
+                                  onClick={() => handleDemoteAdmin(admin.id, admin.email)}
                                   style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '5px',
                                     padding: '6px 12px',
+                                    border: '1px solid #fee2e2',
+                                    background: '#fef2f2',
+                                    color: '#b91c1c',
                                     borderRadius: '8px',
-                                    fontSize: '12px',
-                                    fontWeight: 600,
+                                    fontSize: '11px',
+                                    fontWeight: 700,
                                     cursor: 'pointer'
                                   }}
                                 >
-                                  <Edit3 size={14} /> Tahrirlash
-                                </button>
-                                <button
-                                  className="outline-btn"
-                                  title="O‘chirish"
-                                  onClick={() => handleDeleteTeacher(t.id || t.userId, t.name || t.fullName || t.email)}
-                                  style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '5px',
-                                    padding: '6px 12px',
-                                    borderRadius: '8px',
-                                    border: '1px solid #ef444455',
-                                    background: '#ef444415',
-                                    color: '#ef4444',
-                                    fontSize: '12px',
-                                    fontWeight: 600,
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  <Trash2 size={14} /> O‘chirish
+                                  Adminlikdan olish
                                 </button>
                               </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+
+                              {/* Permissions toggles */}
+                              <div style={{
+                                padding: '12px',
+                                background: 'var(--panel)',
+                                borderRadius: '10px',
+                                border: '1px solid var(--border)'
+                              }}>
+                                <span style={{ display: 'block', fontSize: '10px', fontWeight: 800, color: 'var(--muted)', marginBottom: '10px', letterSpacing: '0.5px' }}>
+                                  SUPER ADMIN TOMONIDAN BERILGAN RUXSATLAR:
+                                </span>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
+                                  {[
+                                    ['canVocab', '📚 Umumiy Lug‘atni boshqarish'],
+                                    ['canCMS', '🌐 Welcome Sahifa (CMS)'],
+                                    ['canTeachers', '🎓 O‘qituvchilarni boshqarish'],
+                                    ['canMaterials', '✍️ O‘quv Materiallari'],
+                                    ['canStudents', '📊 Foydalanuvchilar reestrini ko‘rish']
+                                  ].map(([k, label]) => (
+                                    <label key={k} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', cursor: 'pointer', color: 'var(--text)' }}>
+                                      <input
+                                        type="checkbox"
+                                        checked={Boolean((perms as any)[k])}
+                                        onChange={() => handleToggleAdminPerm(admin.id, k as any)}
+                                        style={{ width: '15px', height: '15px', accentColor: 'var(--purple)' }}
+                                      />
+                                      <span>{label}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           )}
 
@@ -3641,194 +4316,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
             </>
           )}
 
-          {/* ROLLAR & ADMINLARNI BOSHQARISH SECTION */}
-          {section === 'roles' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-              <div className="welcome-row">
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="eyebrow"><UserCog size={14} /> MA’MURIYAT & ROLLAR</div>
-                  <h1 style={{ wordBreak: 'break-word' }}>Adminlar va Ruxsatlar <span>Boshqaruvi</span></h1>
-                  <p className="subheading">
-                    Tizimda 1 ta daxlsiz Super Admin bo‘ladi. Barcha boshqa moderator adminlarni Super Admin saylaydi va ularning vakolatlarini mustaqil boshqaradi.
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                  <button className="primary-btn" onClick={() => setAppointModalOpen(true)}>
-                    <Plus size={15} /> Yangi Admin Saylash
-                  </button>
-                </div>
-              </div>
 
-              {/* Super Admin Status Card */}
-              <div className="panel" style={{
-                padding: '24px',
-                background: 'linear-gradient(135deg, rgba(120, 105, 245, 0.08), rgba(91, 75, 240, 0.04))',
-                border: '1.5px solid rgba(120, 105, 245, 0.3)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '14px',
-                      background: 'linear-gradient(135deg, #7869f5, #5b4bf0)',
-                      color: '#fff',
-                      display: 'grid',
-                      placeItems: 'center',
-                      fontWeight: 800,
-                      fontSize: '20px',
-                      boxShadow: '0 6px 16px rgba(120, 105, 245, 0.3)'
-                    }}>
-                      👑
-                    </div>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text)' }}>Soxibjon Gaybullayev</h3>
-                        <span style={{
-                          background: '#7869f5',
-                          color: '#fff',
-                          fontSize: '10px',
-                          fontWeight: 800,
-                          padding: '3px 8px',
-                          borderRadius: '6px'
-                        }}>
-                          YAGONA SUPER ADMIN (1 NAFAR)
-                        </span>
-                        <span className="badge-verified">Daxlsiz</span>
-                      </div>
-                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
-                        Platforma asoschisi va yagona to‘liq boshqaruvchisi. Uni hech kim tizimdan chiqara yoki o‘chira olmaydi.
-                      </p>
-                    </div>
-                  </div>
-                  <div style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    color: '#16a34a',
-                    background: '#dcfce7',
-                    padding: '8px 14px',
-                    borderRadius: '20px'
-                  }}>
-                    To‘liq cheksiz boshqaruv huquqi ✓
-                  </div>
-                </div>
-              </div>
-
-              {/* Sub-Admins Table & Permissions */}
-              <div className="panel" style={{ padding: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
-                  <div>
-                    <h2 style={{ margin: '0 0 4px', fontSize: '17px' }}>Saylangan Moderator Adminlar ({subAdmins.length})</h2>
-                    <p style={{ margin: 0, fontSize: '11px', color: 'var(--muted)' }}>
-                      Super Admin tomonidan tayinlangan moderatorlar va ularning faol ruxsatlari.
-                    </p>
-                  </div>
-                  <button className="outline-btn" onClick={() => setAppointModalOpen(true)} style={{ padding: '7px 12px' }}>
-                    <Plus size={14} /> Yangi Admin Tayinlash
-                  </button>
-                </div>
-
-                {subAdmins.length === 0 ? (
-                  <div style={{
-                    padding: '36px 20px',
-                    textAlign: 'center',
-                    background: 'var(--bg)',
-                    borderRadius: '12px',
-                    border: '1px dashed var(--border)'
-                  }}>
-                    <ShieldAlert size={32} style={{ color: 'var(--muted)', margin: '0 auto 10px' }} />
-                    <strong style={{ display: 'block', fontSize: '13px', color: 'var(--text)', marginBottom: '4px' }}>
-                      Hozircha qo‘shimcha admin tayinlanmagan
-                    </strong>
-                    <p style={{ margin: 0, fontSize: '11px', color: 'var(--muted)' }}>
-                      Super Admin sifatida yuqoridagi <strong>"+ Yangi Admin Saylash"</strong> tugmasi orqali o‘quvchi yoki o‘qituvchilarni moderator qilib saylashingiz mumkin.
-                    </p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    {subAdmins.map((admin: any) => {
-                      const perms = adminPerms[admin.id] || { canVocab: true, canTeachers: false, canCMS: true, canMaterials: true, canStudents: true };
-                      return (
-                        <div key={admin.id} style={{
-                          background: 'var(--bg)',
-                          border: '1px solid var(--border)',
-                          borderRadius: '14px',
-                          padding: '16px 18px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '14px'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              <div className="avatar" style={{ width: '38px', height: '38px', fontSize: '14px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
-                                {(admin.firstName?.[0] || admin.email?.[0] || 'A').toUpperCase()}
-                              </div>
-                              <div>
-                                <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text)' }}>
-                                  {admin.firstName || admin.lastName ? `${admin.firstName || ''} ${admin.lastName || ''}`.trim() : 'Admin'}
-                                </strong>
-                                <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{admin.email}</span>
-                              </div>
-                              <span className="badge-role-admin" style={{ marginLeft: '6px' }}>
-                                Moderator Admin
-                              </span>
-                            </div>
-
-                            <button
-                              onClick={() => handleDemoteAdmin(admin.id, admin.email)}
-                              style={{
-                                padding: '6px 12px',
-                                border: '1px solid #fee2e2',
-                                background: '#fef2f2',
-                                color: '#b91c1c',
-                                borderRadius: '8px',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                cursor: 'pointer'
-                              }}
-                            >
-                              Adminlikdan olish
-                            </button>
-                          </div>
-
-                          {/* Permissions toggles */}
-                          <div style={{
-                            padding: '12px',
-                            background: 'var(--panel)',
-                            borderRadius: '10px',
-                            border: '1px solid var(--border)'
-                          }}>
-                            <span style={{ display: 'block', fontSize: '10px', fontWeight: 800, color: 'var(--muted)', marginBottom: '10px', letterSpacing: '0.5px' }}>
-                              SUPER ADMIN TOMONIDAN BERILGAN RUXSATLAR:
-                            </span>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
-                              {[
-                                ['canVocab', '📚 Umumiy Lug‘atni boshqarish'],
-                                ['canCMS', '🌐 Welcome Sahifa (CMS)'],
-                                ['canTeachers', '🎓 O‘qituvchilarni boshqarish'],
-                                ['canMaterials', '✍️ O‘quv Materiallari'],
-                                ['canStudents', '📊 O‘quvchilar ro‘yxatini ko‘rish']
-                              ].map(([k, label]) => (
-                                <label key={k} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', cursor: 'pointer', color: 'var(--text)' }}>
-                                  <input
-                                    type="checkbox"
-                                    checked={Boolean((perms as any)[k])}
-                                    onChange={() => handleToggleAdminPerm(admin.id, k as any)}
-                                    style={{ width: '15px', height: '15px', accentColor: 'var(--purple)' }}
-                                  />
-                                  <span>{label}</span>
-                                </label>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* TIZIM SOZLAMALARI & SUPABASE STATUS */}
           {section === 'settings' && (
@@ -3967,37 +4455,166 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       {/* YANGI ADMIN SAYLASH MODAL (SUPER ADMIN UCHUN) */}
       {appointModalOpen && (
         <div className="modal-backdrop" onClick={() => setAppointModalOpen(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '460px' }}>
             <div className="modal-heading">
               <div>
                 <h2>Yangi Moderator Admin Saylash</h2>
-                <p>Mavjud o‘quvchilar orasidan yangi admin tayinlang.</p>
+                <p>Mavjud umumiy foydalanuvchilar orasidan moderator admin tayinlang.</p>
               </div>
               <button className="icon-btn" onClick={() => setAppointModalOpen(false)}><X size={18} /></button>
             </div>
 
-            <div style={{ margin: '18px 0' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                Foydalanuvchini tanlang:
-              </label>
-              <select
-                value={selectedUserToAppoint}
-                onChange={e => setSelectedUserToAppoint(e.target.value)}
-                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '12px' }}
-              >
-                <option value="">-- Foydalanuvchini tanlang --</option>
-                {learners.map((u: any) => (
-                  <option key={u.id} value={u.id}>
-                    {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : 'O‘quvchi'} ({u.email})
-                  </option>
-                ))}
-              </select>
+            <div style={{ margin: '18px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
+                  Foydalanuvchini qidirish:
+                </label>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', border: '1px solid var(--border)', borderRadius: '10px', padding: '8px 12px', background: 'var(--bg)' }}>
+                  <Search size={16} style={{ color: 'var(--muted)' }} />
+                  <input
+                    value={appointAdminSearch}
+                    onChange={e => setAppointAdminSearch(e.target.value)}
+                    placeholder="Ism yoki email bo‘yicha filtr..."
+                    style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '12px', color: 'var(--text)' }}
+                  />
+                  {appointAdminSearch && (
+                    <button onClick={() => setAppointAdminSearch('')} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
+                  Foydalanuvchini tanlang:
+                </label>
+                <select
+                  value={selectedUserToAppoint}
+                  onChange={e => setSelectedUserToAppoint(e.target.value)}
+                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '12px' }}
+                >
+                  <option value="">-- Tanlang ({eligibleUsersForAdmin.length} ta nomzod) --</option>
+                  {eligibleUsersForAdmin.map((u: any) => (
+                    <option key={u.id} value={u.id}>
+                      {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : u.email.split('@')[0]} ({u.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="modal-footer">
               <button className="outline-btn" onClick={() => setAppointModalOpen(false)}>Bekor qilish</button>
               <button className="primary-btn" onClick={handleAppointAdmin}>
-                Admin qilib tayinlash
+                <UserCog size={15} /> Admin qilib tayinlash
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FOYDALANUVCHILAR ORASIDAN O‘QITUVCHI TAYINLASH MODAL */}
+      {appointTeacherModalOpen && (
+        <div className="modal-backdrop" onClick={() => setAppointTeacherModalOpen(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+            <div className="modal-heading">
+              <div>
+                <h2>Foydalanuvchilar Orasidan O‘qituvchi Tayinlash</h2>
+                <p>Mavjud ro‘yxatdan o‘tgan foydalanuvchini tanlang va unga o‘qituvchi maqomini bering.</p>
+              </div>
+              <button className="icon-btn" onClick={() => setAppointTeacherModalOpen(false)}><X size={18} /></button>
+            </div>
+
+            <div style={{ margin: '18px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
+                  Foydalanuvchini qidirish:
+                </label>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', border: '1px solid var(--border)', borderRadius: '10px', padding: '8px 12px', background: 'var(--bg)' }}>
+                  <Search size={16} style={{ color: 'var(--muted)' }} />
+                  <input
+                    value={appointTeacherSearch}
+                    onChange={e => setAppointTeacherSearch(e.target.value)}
+                    placeholder="Ism yoki email bo‘yicha filtr..."
+                    style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '12px', color: 'var(--text)' }}
+                  />
+                  {appointTeacherSearch && (
+                    <button onClick={() => setAppointTeacherSearch('')} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
+                  Foydalanuvchini tanlang:
+                </label>
+                <select
+                  value={selectedUserToAppointTeacher}
+                  onChange={e => setSelectedUserToAppointTeacher(e.target.value)}
+                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '12px' }}
+                >
+                  <option value="">-- Tanlang ({eligibleUsersForTeacher.length} ta nomzod) --</option>
+                  {eligibleUsersForTeacher.map((u: any) => (
+                    <option key={u.id} value={u.id}>
+                      {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : u.email.split('@')[0]} ({u.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
+                  Mutaxassislik / Yo‘nalish:
+                </label>
+                <input
+                  value={appointTeacherSpecialty}
+                  onChange={e => setAppointTeacherSpecialty(e.target.value)}
+                  placeholder="Masalan: English · B1–C1, IELTS & Speaking"
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '12px' }}
+                />
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                  {['English · B1–C1', 'IELTS & CEFR', 'Grammatika & Lug‘at', 'Bolalar uchun ingliz tili'].map(preset => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setAppointTeacherSpecialty(preset)}
+                      style={{
+                        fontSize: '10px',
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--border)',
+                        background: appointTeacherSpecialty === preset ? 'var(--soft)' : 'var(--panel)',
+                        color: appointTeacherSpecialty === preset ? 'var(--purple)' : 'var(--muted)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
+                  Qisqacha bio:
+                </label>
+                <textarea
+                  value={appointTeacherBio}
+                  onChange={e => setAppointTeacherBio(e.target.value)}
+                  rows={2}
+                  placeholder="Tajribali ustoz va repetitor..."
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '12px', resize: 'vertical' }}
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="outline-btn" onClick={() => setAppointTeacherModalOpen(false)}>Bekor qilish</button>
+              <button className="primary-btn" onClick={handleAppointTeacher}>
+                <GraduationCap size={15} /> O‘qituvchi qilib tayinlash
               </button>
             </div>
           </div>
