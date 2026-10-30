@@ -5,7 +5,7 @@ import {
   Search, Trash2, Edit3, Save, UserCog, Headphones, PenLine, BookMarked, ChartNoAxesCombined,
   Check, Sun, Moon, Sparkles, ArrowRight, Menu, X, RefreshCw, Database, CheckCircle2,
   AlertCircle, ExternalLink, ShieldAlert, Clock, Layers, MessageSquare, Zap,
-  Smartphone, Laptop, Image as ImageIcon, Upload, RotateCcw
+  Smartphone, Laptop, Image as ImageIcon, Upload, RotateCcw, Camera
 } from 'lucide-react';
 import { api, authStorage } from '../api';
 
@@ -192,7 +192,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     aboutButton: 'Batafsil ma’lumot',
     aboutDetailed: 'TILSHUNOS — xalqaro CEFR (A1–C2) standartlariga moslashtirilgan, sun’iy intellekt va professional ustozlar metodikasini o‘zida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvchiga murakkab grammatik qoidalarsiz, interaktiv so‘z o‘yinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy o‘zlashtirish imkoniyatini taqdim etishdir.',
     founderName: 'Soxibjon Gaybullayev',
+    founderTitle: 'LOYIHA ASOSCHISI VA RAHBARI',
     founderBio: 'TILSHUNOS platformasi asoschisi. O‘zbekiston yoshlariga jahon tillarini eng samarali va qulay usulda o‘rganish uchun innovatsion ekotizim yaratish ustida ishlaydi.',
+    founderQuote: 'Bizning niyatimiz — O‘zbekiston yoshlariga jahonning istalgan tili bo‘yicha eng sifatli ta’limni o‘z ona tilida va zamonaviy texnologiyalar bilan taqdim etish.',
+    founderPhoto: '',
     team: [
       { name: 'Soxibjon Gaybullayev', role: 'Asoschi & Bosh Muhandis', bio: 'Til o‘rganish texnologiyalari va raqamli ta’lim bo‘yicha mutaxassis.', avatar: 'S' },
       { name: 'Dilnoza Karimova', role: 'Bosh O‘qituvchi & Metodist', bio: 'IELTS va CEFR standartlari bo‘yicha 8 yillik tajribaga ega ustoz.', avatar: 'D' },
@@ -216,6 +219,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
 });
   const [cmsTab, setCmsTab] = useState<'hero' | 'stats' | 'preview' | 'curriculum' | 'features' | 'about' | 'faq' | 'footer'>('hero');
   const [newTeamMember, setNewTeamMember] = useState({ name: '', role: '', bio: '', avatar: '' });
+  const [editingTeamMemberIdx, setEditingTeamMemberIdx] = useState<number | null>(null);
+  const [editingTeamMember, setEditingTeamMember] = useState({ name: '', role: '', bio: '', avatar: '' });
+  const [uploadingFounder, setUploadingFounder] = useState(false);
+  const [uploadingTeamPhoto, setUploadingTeamPhoto] = useState(false);
   const [newFaq, setNewFaq] = useState({ q: '', a: '' });
 
   // Game Topics & Words from Supabase
@@ -555,6 +562,110 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       notify('A’zo o‘chirildi va Supabasega saqlandi! ✓');
     } catch {
       notify('A’zo olib tashlandi. Saqlash tugmasini bosing! ✓');
+    }
+  };
+
+  const handleFounderPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      notify('Faqat rasm fayllari (JPG, PNG, WebP) yuklanishi mumkin!');
+      return;
+    }
+    setUploadingFounder(true);
+    try {
+      let dataBase64 = '';
+      try {
+        dataBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(file);
+        });
+      } catch {}
+
+      const res = await api.uploadCmsImage({
+        file,
+        dataBase64,
+        fileName: `founder-${Date.now()}-${file.name}`,
+        contentType: file.type || 'image/jpeg'
+      });
+      if (!res || !res.url) throw new Error('Rasm yuklanmadi');
+
+      const updatedCms = {
+        ...cms,
+        founderPhoto: res.url
+      };
+      setCms(updatedCms);
+      localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+      await api.saveCms(updatedCms);
+      notify('Super Admin / Loyiha asoschisi rasmi Supabasega saqlandi! ✓');
+    } catch (err: any) {
+      notify(err.message || 'Rasm yuklashda xatolik yuz berdi', true);
+    } finally {
+      setUploadingFounder(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleTeamMemberPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEditing = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      notify('Faqat rasm fayllari (JPG, PNG, WebP) yuklanishi mumkin!');
+      return;
+    }
+    setUploadingTeamPhoto(true);
+    try {
+      let dataBase64 = '';
+      try {
+        dataBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(file);
+        });
+      } catch {}
+
+      const res = await api.uploadCmsImage({
+        file,
+        dataBase64,
+        fileName: `team-${Date.now()}-${file.name}`,
+        contentType: file.type || 'image/jpeg'
+      });
+      if (!res || !res.url) throw new Error('Rasm yuklanmadi');
+
+      if (isEditing) {
+        setEditingTeamMember(prev => ({ ...prev, avatar: res.url }));
+      } else {
+        setNewTeamMember(prev => ({ ...prev, avatar: res.url }));
+      }
+      notify('Yetakchi rasmi muvaffaqiyatli yuklandi! ✓');
+    } catch (err: any) {
+      notify(err.message || 'Rasm yuklashda xatolik yuz berdi', true);
+    } finally {
+      setUploadingTeamPhoto(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleSaveEditedTeamMember = async () => {
+    if (editingTeamMemberIdx === null) return;
+    if (!editingTeamMember.name.trim() || !editingTeamMember.role.trim()) {
+      notify('Ism va lavozimni kiriting', true);
+      return;
+    }
+    const next = [...(cms.team || [])];
+    next[editingTeamMemberIdx] = { ...editingTeamMember };
+    const updatedCms = { ...cms, team: next };
+    setCms(updatedCms);
+    setEditingTeamMemberIdx(null);
+    try {
+      localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+      await api.saveCms(updatedCms);
+      notify('Yetakchi ma’lumotlari yangilandi va Supabasega saqlandi! ✓');
+    } catch {
+      notify('Yetakchi ma’lumotlari yangilandi. Saqlash tugmasini bosing! ✓');
     }
   };
 
@@ -1149,9 +1260,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       {mobileNav && <div className="scrim" onClick={() => setMobileNav(false)} />}
 
       <aside className={`sidebar ${mobileNav ? 'mobile-open' : ''}`}>
-        <div className="brand">
-          <div className="brand-mark" style={{ background: 'linear-gradient(135deg, #7869f5, #5b4bf0)' }}>
-            <ShieldCheck size={24} />
+        <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="brand-mark" style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#fff', display: 'grid', placeItems: 'center', overflow: 'hidden', padding: '2px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', flexShrink: 0 }}>
+            <img src="/brand_logo.png" alt="TILSHUNOS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }} />
           </div>
           <div>
             <div className="brand-name">TILSHUNOS<span>.</span></div>
@@ -1163,10 +1274,16 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
         </div>
 
         <div className="profile-mini" style={{ background: 'var(--soft)', borderColor: 'var(--border)' }}>
-          <div className="avatar" style={{ background: '#7869f5', color: '#fff' }}>A</div>
+          <div className="avatar" style={{ background: '#7869f5', color: '#fff', overflow: 'hidden', display: 'grid', placeItems: 'center' }}>
+            {cms.founderPhoto ? (
+              <img src={cms.founderPhoto} alt="Super Admin" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              '👑'
+            )}
+          </div>
           <div className="profile-copy">
-            <strong>Super Admin</strong>
-            <span><span className="online-dot" /> Onlayn</span>
+            <strong>{cms.founderName || 'Soxibjon G.'}</strong>
+            <span><span className="online-dot" /> Super Admin</span>
           </div>
         </div>
 
@@ -1224,7 +1341,13 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
             <button className="icon-btn theme-btn" onClick={() => setDark(!dark)} title="Mavzuni almashtirish">
               {dark ? <Sun size={19} /> : <Moon size={19} />}
             </button>
-            <div className="top-avatar" style={{ background: '#7869f5', color: '#fff' }}>A</div>
+            <div className="top-avatar" style={{ background: '#7869f5', color: '#fff', overflow: 'hidden', display: 'grid', placeItems: 'center' }}>
+              {cms.founderPhoto ? (
+                <img src={cms.founderPhoto} alt="Super Admin" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                '👑'
+              )}
+            </div>
           </div>
         </header>
 
@@ -2094,24 +2217,45 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     border: '1.5px solid rgba(120, 105, 245, 0.3)'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div style={{
-                          width: '48px',
-                          height: '48px',
-                          borderRadius: '14px',
-                          background: 'linear-gradient(135deg, #7869f5, #5b4bf0)',
-                          color: '#fff',
-                          display: 'grid',
-                          placeItems: 'center',
-                          fontWeight: 800,
-                          fontSize: '20px',
-                          boxShadow: '0 6px 16px rgba(120, 105, 245, 0.3)'
-                        }}>
-                          👑
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                        <div style={{ position: 'relative', width: '56px', height: '56px', flexShrink: 0 }}>
+                          {cms.founderPhoto ? (
+                            <img
+                              src={cms.founderPhoto}
+                              alt={cms.founderName || 'Super Admin'}
+                              style={{ width: '56px', height: '56px', borderRadius: '16px', objectFit: 'cover', border: '2px solid #7869f5', boxShadow: '0 4px 14px rgba(120, 105, 245, 0.35)' }}
+                            />
+                          ) : (
+                            <div style={{
+                              width: '56px',
+                              height: '56px',
+                              borderRadius: '16px',
+                              background: 'linear-gradient(135deg, #7869f5, #5b4bf0)',
+                              color: '#fff',
+                              display: 'grid',
+                              placeItems: 'center',
+                              fontWeight: 800,
+                              fontSize: '24px',
+                              boxShadow: '0 4px 14px rgba(120, 105, 245, 0.35)'
+                            }}>
+                              👑
+                            </div>
+                          )}
+                          <span style={{
+                            position: 'absolute',
+                            bottom: '-4px',
+                            right: '-4px',
+                            background: '#fff',
+                            borderRadius: '50%',
+                            padding: '2px',
+                            fontSize: '12px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.18)',
+                            lineHeight: 1
+                          }}>👑</span>
                         </div>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text)' }}>Soxibjon Gaybullayev</h3>
+                            <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text)' }}>{cms.founderName || 'Soxibjon Gaybullayev'}</h3>
                             <span style={{
                               background: '#7869f5',
                               color: '#fff',
@@ -2124,9 +2268,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             </span>
                             <span className="badge-verified">Daxlsiz</span>
                           </div>
-                          <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
+                          <p style={{ margin: '4px 0 8px', fontSize: '12px', color: 'var(--muted)' }}>
                             Platforma asoschisi va yagona to‘liq boshqaruvchisi. Uni hech kim tizimdan chiqara yoki o‘chira olmaydi.
                           </p>
+                          <label className="outline-btn" style={{ fontSize: '11px', padding: '5px 10px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                            <Camera size={13} />
+                            {uploadingFounder ? 'Yuklanmoqda...' : 'Super Admin Rasmini Yuklash / O‘zgartirish'}
+                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFounderPhotoUpload} disabled={uploadingFounder} />
+                          </label>
                         </div>
                       </div>
                       <div style={{
@@ -4027,9 +4176,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   <div className="panel" style={{ padding: '24px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                       <div>
-                        <h3>Sayt Faollari va Jamoa A’zolari</h3>
+                        <h3>Sayt Faollari va Jamoa A’zolari ({cms.team?.length || 0} nafar)</h3>
                         <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
-                          Welcome sahifasida "Biz haqimizda" bo‘limida ko‘rinadigan faollar va mutaxassislar ro‘yxati.
+                          Welcome va "Biz haqimizda" sahifasida ko‘rinadigan yetakchilar va ularning rasmlari.
                         </p>
                       </div>
                       <button className="primary-btn" onClick={saveCmsChanges} style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 700 }}>
@@ -4037,7 +4186,94 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       </button>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+                    {/* Member Edit Modal if active */}
+                    {editingTeamMemberIdx !== null && (
+                      <div style={{
+                        padding: '18px',
+                        background: 'var(--soft)',
+                        borderRadius: '14px',
+                        border: '1.5px solid var(--purple)',
+                        marginBottom: '20px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                          <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 800, color: 'var(--purple)' }}>
+                            ✏️ Yetakchi Ma’lumotlarini Tahrirlash: {editingTeamMember.name}
+                          </h4>
+                          <button onClick={() => setEditingTeamMemberIdx(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)' }}>
+                            <X size={16} />
+                          </button>
+                        </div>
+                        <div className="form-grid" style={{ gap: '12px' }}>
+                          <label>
+                            Ism va familiya:
+                            <input
+                              value={editingTeamMember.name}
+                              onChange={e => setEditingTeamMember({ ...editingTeamMember, name: e.target.value })}
+                            />
+                          </label>
+                          <label>
+                            Lavozim / Rol:
+                            <input
+                              value={editingTeamMember.role}
+                              onChange={e => setEditingTeamMember({ ...editingTeamMember, role: e.target.value })}
+                            />
+                          </label>
+                          <label className="span-two">
+                            Qisqa biografiya / Mas’uliyati:
+                            <textarea
+                              value={editingTeamMember.bio}
+                              onChange={e => setEditingTeamMember({ ...editingTeamMember, bio: e.target.value })}
+                              rows={2}
+                            />
+                          </label>
+                          <div className="span-two" style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <div style={{
+                              width: '52px',
+                              height: '52px',
+                              borderRadius: '12px',
+                              background: '#14243A',
+                              color: '#fff',
+                              overflow: 'hidden',
+                              display: 'grid',
+                              placeItems: 'center',
+                              fontWeight: 800,
+                              fontSize: '18px',
+                              border: '1px solid var(--border)'
+                            }}>
+                              {editingTeamMember.avatar && (editingTeamMember.avatar.startsWith('http') || editingTeamMember.avatar.startsWith('data:') || editingTeamMember.avatar.startsWith('/')) ? (
+                                <img src={editingTeamMember.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                editingTeamMember.avatar || 'F'
+                              )}
+                            </div>
+                            <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                              <label style={{ fontSize: '11px', fontWeight: 700 }}>Yetakchi Rasmi:</label>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                <label className="admin-upload-btn" style={{ padding: '7px 12px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <Upload size={13} />
+                                  {uploadingTeamPhoto ? 'Yuklanmoqda...' : 'Qurilmadan Rasm Tanlash'}
+                                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleTeamMemberPhotoUpload(e, true)} disabled={uploadingTeamPhoto} />
+                                </label>
+                                <input
+                                  value={editingTeamMember.avatar}
+                                  onChange={e => setEditingTeamMember({ ...editingTeamMember, avatar: e.target.value })}
+                                  placeholder="Yoki to‘g‘ridan-to‘g‘ri rasm URL havolasi..."
+                                  style={{ flex: 1, minWidth: '180px', padding: '6px 10px', fontSize: '11px' }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '14px' }}>
+                          <button className="outline-btn" onClick={() => setEditingTeamMemberIdx(null)}>Bekor qilish</button>
+                          <button className="primary-btn" onClick={handleSaveEditedTeamMember}>
+                            <Save size={14} /> O‘zgarishlarni Saqlash
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginBottom: '24px' }}>
                       {(cms.team || []).map((member: any, idx: number) => (
                         <div
                           key={idx}
@@ -4046,47 +4282,74 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             background: 'var(--bg)',
                             borderRadius: '12px',
                             border: '1px solid var(--border)',
-                            position: 'relative'
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between'
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                            <div
-                              style={{
-                                width: '38px',
-                                height: '38px',
-                                borderRadius: '10px',
-                                background: 'linear-gradient(135deg, #14243A, #356CF6)',
-                                color: '#fff',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: 800,
-                                fontSize: '14px'
-                              }}
-                            >
-                              {member.avatar || member.name?.[0]?.toUpperCase() || 'F'}
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                              <div
+                                style={{
+                                  width: '46px',
+                                  height: '46px',
+                                  borderRadius: '12px',
+                                  background: 'linear-gradient(135deg, #14243A, #356CF6)',
+                                  color: '#fff',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: 800,
+                                  fontSize: '16px',
+                                  overflow: 'hidden',
+                                  flexShrink: 0,
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                }}
+                              >
+                                {member.avatar && (member.avatar.startsWith('http') || member.avatar.startsWith('data:') || member.avatar.startsWith('/')) ? (
+                                  <img src={member.avatar} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                  member.avatar || member.name?.[0]?.toUpperCase() || 'F'
+                                )}
+                              </div>
+                              <div style={{ minWidth: 0, flex: 1 }}>
+                                <strong style={{ fontSize: '13px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{member.name}</strong>
+                                <span style={{ fontSize: '11px', color: 'var(--purple)', fontWeight: 600 }}>{member.role}</span>
+                              </div>
                             </div>
-                            <div>
-                              <strong style={{ fontSize: '13px', display: 'block' }}>{member.name}</strong>
-                              <span style={{ fontSize: '11px', color: 'var(--purple)', fontWeight: 600 }}>{member.role}</span>
-                            </div>
+                            <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--muted)', lineHeight: '1.45' }}>{member.bio}</p>
                           </div>
-                          <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--muted)', lineHeight: '1.45' }}>{member.bio}</p>
-                          <button
-                            onClick={() => handleDeleteTeamMember(idx)}
-                            style={{
-                              position: 'absolute',
-                              top: '12px',
-                              right: '12px',
-                              background: 'none',
-                              border: 'none',
-                              color: '#e05656',
-                              cursor: 'pointer'
-                            }}
-                            title="O‘chirish"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+
+                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', marginTop: '12px', borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
+                            <button
+                              onClick={() => {
+                                setEditingTeamMemberIdx(idx);
+                                setEditingTeamMember({
+                                  name: member.name || '',
+                                  role: member.role || '',
+                                  bio: member.bio || '',
+                                  avatar: member.avatar || ''
+                                });
+                              }}
+                              className="outline-btn"
+                              style={{ padding: '5px 10px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <Edit3 size={13} /> Tahrirlash & Rasm
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTeamMember(idx)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#e05656',
+                                cursor: 'pointer',
+                                padding: '5px'
+                              }}
+                              title="O‘chirish"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -4120,11 +4383,48 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             placeholder="Mutaxassis haqida qisqa ma’lumot..."
                           />
                         </label>
+                        <div className="span-two" style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <div style={{
+                            width: '46px',
+                            height: '46px',
+                            borderRadius: '10px',
+                            background: '#14243A',
+                            color: '#fff',
+                            overflow: 'hidden',
+                            display: 'grid',
+                            placeItems: 'center',
+                            fontWeight: 800,
+                            fontSize: '16px',
+                            border: '1px solid var(--border)'
+                          }}>
+                            {newTeamMember.avatar && (newTeamMember.avatar.startsWith('http') || newTeamMember.avatar.startsWith('data:') || newTeamMember.avatar.startsWith('/')) ? (
+                              <img src={newTeamMember.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              newTeamMember.avatar || (newTeamMember.name?.[0]?.toUpperCase() || '+')
+                            )}
+                          </div>
+                          <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={{ fontSize: '11px', fontWeight: 700 }}>Rasm yuklash:</label>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                              <label className="admin-upload-btn" style={{ padding: '7px 12px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <Upload size={13} />
+                                {uploadingTeamPhoto ? 'Yuklanmoqda...' : 'Qurilmadan Rasm Tanlash'}
+                                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleTeamMemberPhotoUpload(e, false)} disabled={uploadingTeamPhoto} />
+                              </label>
+                              <input
+                                value={newTeamMember.avatar}
+                                onChange={e => setNewTeamMember({ ...newTeamMember, avatar: e.target.value })}
+                                placeholder="Yoki rasm URL havolasi..."
+                                style={{ flex: 1, minWidth: '180px', padding: '6px 10px', fontSize: '11px' }}
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </div>
                       <button
                         className="outline-btn"
                         onClick={handleAddTeamMember}
-                        style={{ marginTop: '12px', background: 'var(--panel)' }}
+                        style={{ marginTop: '14px', background: 'var(--panel)' }}
                       >
                         <Plus size={15} /> Ro‘yxatga Kiritish
                       </button>
@@ -4229,12 +4529,79 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               {cmsTab === 'footer' && (
                 <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
                   <div className="panel" style={{ padding: '24px' }}>
-                    <h3 style={{ marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <ShieldCheck size={18} style={{ color: 'var(--purple)' }} /> Sayt Asoschisi Ma’lumotlari
-                    </h3>
-                    <p style={{ margin: '0 0 14px', fontSize: '11px', color: 'var(--muted)' }}>
-                      Footer qismida sayt asoschisi haqida ko‘rinadigan ma’lumotlar.
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                      <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <ShieldCheck size={18} style={{ color: 'var(--purple)' }} /> Sayt Asoschisi Ma’lumotlari & Rasmi
+                      </h3>
+                      <button className="primary-btn" onClick={saveCmsChanges} style={{ padding: '6px 14px', fontSize: '11px', fontWeight: 700 }}>
+                        <Save size={14} /> Saqlash
+                      </button>
+                    </div>
+                    <p style={{ margin: '0 0 16px', fontSize: '11px', color: 'var(--muted)' }}>
+                      "Biz haqimizda" sahifasida va Admin paneldagi Super Admin kartasida aks etuvchi asoschi ma’lumotlari.
                     </p>
+
+                    {/* Founder Photo Preview and Upload */}
+                    <div style={{
+                      display: 'flex',
+                      gap: '16px',
+                      alignItems: 'center',
+                      padding: '14px',
+                      background: 'var(--bg)',
+                      borderRadius: '12px',
+                      border: '1px solid var(--border)',
+                      marginBottom: '16px',
+                      flexWrap: 'wrap'
+                    }}>
+                      <div style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '14px',
+                        background: '#14243A',
+                        color: '#fff',
+                        display: 'grid',
+                        placeItems: 'center',
+                        overflow: 'hidden',
+                        fontWeight: 800,
+                        fontSize: '22px',
+                        border: '2px solid var(--purple)',
+                        boxShadow: '0 4px 12px rgba(120, 105, 245, 0.25)',
+                        flexShrink: 0
+                      }}>
+                        {cms.founderPhoto ? (
+                          <img src={cms.founderPhoto} alt="Asoschi" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          cms.founderName?.[0]?.toUpperCase() || 'S'
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <b style={{ fontSize: '12px' }}>Asoschi Rasmi (Avatar):</b>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <label className="admin-upload-btn" style={{ padding: '7px 12px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <Upload size={13} />
+                            {uploadingFounder ? 'Yuklanmoqda...' : 'Qurilmadan Rasm Yuklash'}
+                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFounderPhotoUpload} disabled={uploadingFounder} />
+                          </label>
+                          <input
+                            value={cms.founderPhoto || ''}
+                            onChange={e => setCms({ ...cms, founderPhoto: e.target.value })}
+                            placeholder="https://... rasm havolasi"
+                            style={{ flex: 1, minWidth: '180px', padding: '6px 10px', fontSize: '11px' }}
+                          />
+                          {cms.founderPhoto && (
+                            <button
+                              type="button"
+                              onClick={() => setCms({ ...cms, founderPhoto: '' })}
+                              className="text-action"
+                              style={{ color: '#e05656', fontSize: '11px' }}
+                            >
+                              O‘chirish
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
                     <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
                       <b style={{ fontSize: '12px' }}>Asoschi Ismi-sharifi:</b>
                       <input
@@ -4243,15 +4610,36 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         placeholder="Soxibjon Gaybullayev"
                       />
                     </label>
+
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+                      <b style={{ fontSize: '12px' }}>Lavozimi / Unvoni:</b>
+                      <input
+                        value={cms.founderTitle || ''}
+                        onChange={e => setCms({ ...cms, founderTitle: e.target.value })}
+                        placeholder="LOYIHA ASOSCHISI VA RAHBARI"
+                      />
+                    </label>
+
                     <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
                       <b style={{ fontSize: '12px' }}>Asoschi Biografiyasi va Missiyasi:</b>
                       <textarea
                         value={cms.founderBio || ''}
                         onChange={e => setCms({ ...cms, founderBio: e.target.value })}
-                        rows={5}
+                        rows={4}
                         placeholder="Platforma asoschisi haqida qisqa ma’lumot va loyiha maqsadi..."
                       />
                     </label>
+
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+                      <b style={{ fontSize: '12px' }}>Asoschi Shiori / Iqtibosi (Quote):</b>
+                      <textarea
+                        value={cms.founderQuote || ''}
+                        onChange={e => setCms({ ...cms, founderQuote: e.target.value })}
+                        rows={3}
+                        placeholder="Bizning niyatimiz — O‘zbekiston yoshlariga jahonning istalgan tili bo‘yicha..."
+                      />
+                    </label>
+
                     <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <b style={{ fontSize: '12px' }}>Footer Mualliflik Huquqi Matni (Copyright):</b>
                       <input
@@ -4329,24 +4717,45 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                 borderRadius: '16px'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '14px',
-                      background: 'linear-gradient(135deg, #7869f5, #5b4bf0)',
-                      color: '#fff',
-                      display: 'grid',
-                      placeItems: 'center',
-                      fontWeight: 800,
-                      fontSize: '22px',
-                      boxShadow: '0 8px 18px rgba(120, 105, 245, 0.3)'
-                    }}>
-                      🛡️
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ position: 'relative', width: '56px', height: '56px', flexShrink: 0 }}>
+                      {cms.founderPhoto ? (
+                        <img
+                          src={cms.founderPhoto}
+                          alt={cms.founderName || 'Super Admin'}
+                          style={{ width: '56px', height: '56px', borderRadius: '16px', objectFit: 'cover', border: '2px solid #7869f5', boxShadow: '0 4px 14px rgba(120, 105, 245, 0.35)' }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: '56px',
+                          height: '56px',
+                          borderRadius: '16px',
+                          background: 'linear-gradient(135deg, #7869f5, #5b4bf0)',
+                          color: '#fff',
+                          display: 'grid',
+                          placeItems: 'center',
+                          fontWeight: 800,
+                          fontSize: '24px',
+                          boxShadow: '0 4px 14px rgba(120, 105, 245, 0.35)'
+                        }}>
+                          👑
+                        </div>
+                      )}
+                      <span style={{
+                        position: 'absolute',
+                        bottom: '-4px',
+                        right: '-4px',
+                        background: '#fff',
+                        borderRadius: '50%',
+                        padding: '2px',
+                        fontSize: '12px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.18)',
+                        lineHeight: 1
+                      }}>👑</span>
                     </div>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <h3 style={{ margin: 0, fontSize: '17px', color: 'var(--text)' }}>Soxibjon Gaybullayev</h3>
+                        <h3 style={{ margin: 0, fontSize: '17px', color: 'var(--text)' }}>{cms.founderName || 'Soxibjon Gaybullayev'}</h3>
                         <span style={{
                           background: '#7869f5',
                           color: '#fff',
@@ -4359,9 +4768,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         </span>
                         <span className="badge-verified">Daxlsiz & Himoyalangan</span>
                       </div>
-                      <p style={{ margin: '5px 0 0', fontSize: '12px', color: 'var(--muted)', lineHeight: '1.5' }}>
+                      <p style={{ margin: '5px 0 8px', fontSize: '12px', color: 'var(--muted)', lineHeight: '1.5' }}>
                         Ushbu hisob platformaning yagona egasi hisoblanadi. U umumiy o‘quvchilar ro‘yxatida ko‘rinmaydi va hech kim uni tizimdan chiqara olmaydi. Boshqa adminlarni saylash va ularning huquqlarini taqsimlash faqat Super Admin ixtiyorida.
                       </p>
+                      <label className="outline-btn" style={{ fontSize: '11px', padding: '5px 10px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <Camera size={13} />
+                        {uploadingFounder ? 'Yuklanmoqda...' : 'Super Admin Rasmini O‘zgartirish'}
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFounderPhotoUpload} disabled={uploadingFounder} />
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -4411,21 +4825,92 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               </div>
 
               <div className="panel" style={{ padding: '24px' }}>
-                <h2>Xavfsizlik va Platforma Funksiyalari</h2>
-                <p>Tizim parametrlari va ro‘yxatdan o‘tish qoidalari.</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '18px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h2 style={{ margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <ShieldCheck size={20} style={{ color: '#22c55e' }} />
+                      Platforma Xavfsizlik va Arxitektura Monitori
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
+                      Backend (ASP.NET Core & Supabase PostgreSQL) darajasida avtomatik ishlovchi asosiy himoya va mantiqiy qoidalar holati.
+                    </p>
+                  </div>
+                  <span style={{ fontSize: '11px', background: 'rgba(34, 197, 94, 0.12)', color: '#16a34a', padding: '4px 10px', borderRadius: '8px', fontWeight: 700, border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                    Barcha Himoyalar Faol ✓
+                  </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px', marginTop: '18px' }}>
                   {[
-                    ['Email tasdiqlash kodi (Resend OTP Tranzaksiyali Email)', true],
-                    ['Standart Email & Parol orqali xavfsiz kirish va ro‘yxatdan o‘tish', true],
-                    ['Mavjud hisobni tekshirish (Duplicate email protection)', true],
-                    ['1v1 So‘z bellashuvlarida CEFR daraja filtri', true],
-                    ['Yangi materiallarni avtomatik nashr qilish (IsPublished)', true],
-                    ['Anti-Cheat / Anti-Fraud tekshiruvi (Test mashqlarida)', true]
-                  ].map(([s, checked]) => (
-                    <label key={String(s)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', background: 'var(--bg)', borderRadius: '10px', cursor: 'pointer' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 600 }}>{String(s)}</span>
-                      <input type="checkbox" defaultChecked={Boolean(checked)} style={{ width: '16px', height: '16px', accentColor: 'var(--purple)' }} />
-                    </label>
+                    {
+                      title: 'Email Tasdiqlash Kodi (Resend OTP)',
+                      desc: 'Foydalanuvchi hisobini botlardan himoyalash va haqiqiy foydalanuvchini aniqlash uchun 6 xonali OTP yuborish.',
+                      badge: 'Faol & Majburiy',
+                      color: '#22c55e'
+                    },
+                    {
+                      title: 'Mavjud Hisobni Tekshirish (Anti-Duplicate)',
+                      desc: 'Bazada bitta email bilan faqat bitta hisob ochilishini PostgreSQL unikal indekslari orqali qatʼiy taʼminlaydi.',
+                      badge: 'Himoyalangan',
+                      color: '#22c55e'
+                    },
+                    {
+                      title: 'Standart Email & Parol Shifrlash',
+                      desc: 'Parollar xom holda saqlanmaydi, xavfsiz PBKDF2/BCrypt hashing algoritmi orqali shifrlanadi.',
+                      badge: 'Shifrlangan',
+                      color: '#22c55e'
+                    },
+                    {
+                      title: '1v1 Bellashuvda CEFR Daraja Moslashuvi',
+                      desc: 'Foydalanuvchilarga teng raqobatchi va o‘z bilim darajasiga (A1-C2) mos so‘zlar tanlanishini nazorat qiladi.',
+                      badge: 'Avtomatik',
+                      color: '#3b82f6'
+                    },
+                    {
+                      title: 'Yangi Materiallar Holati (IsPublished)',
+                      desc: 'O‘qituvchilar qo‘shgan reading, writing va lug‘at materiallari o‘quvchilarga ko‘rinishi uchun nashr statusi nazorati.',
+                      badge: 'Boshqaruvda',
+                      color: '#3b82f6'
+                    },
+                    {
+                      title: 'Anti-Cheat & Anti-Fraud Nazorati',
+                      desc: 'Test mashqlari va lug‘at viktorinalarida sunʼiy tezkor bot javoblarini va natijalarni soxtalashtirishni cheklaydi.',
+                      badge: 'Faol Nazorat',
+                      color: '#22c55e'
+                    }
+                  ].map((rule, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '14px 16px',
+                        background: 'var(--bg)',
+                        borderRadius: '12px',
+                        border: '1px solid var(--border)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '8px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                        <strong style={{ fontSize: '13px', color: 'var(--text)', lineHeight: '1.4' }}>{rule.title}</strong>
+                        <span style={{
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          background: `${rule.color}15`,
+                          color: rule.color,
+                          border: `1px solid ${rule.color}35`,
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {rule.badge}
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11px', color: 'var(--muted)', lineHeight: '1.5' }}>
+                        {rule.desc}
+                      </p>
+                    </div>
                   ))}
                 </div>
 

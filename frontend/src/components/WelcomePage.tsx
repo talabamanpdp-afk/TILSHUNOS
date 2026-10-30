@@ -1335,8 +1335,12 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                 <div className="team-cards-list scroll-stagger-parent">
                   {teamMembers.map(member => (
                     <div key={member.name} className="team-member-item">
-                      <div className="member-avatar">
-                        {member.avatar || member.name[0]}
+                      <div className="member-avatar" style={{ overflow: 'hidden' }}>
+                        {member.avatar && (member.avatar.startsWith('http') || member.avatar.startsWith('data:') || member.avatar.startsWith('/')) ? (
+                          <img src={member.avatar} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          member.avatar || member.name[0]?.toUpperCase() || 'F'
+                        )}
                       </div>
                       <div className="member-info">
                         <strong>{member.name}</strong>

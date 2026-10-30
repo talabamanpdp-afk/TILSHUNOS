@@ -25,7 +25,10 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
   const aboutDetailed = cms?.aboutDetailed || `TILSHUNOS — xalqaro CEFR (A1–C2) standartlariga moslashtirilgan, sun’iy intellekt va professional ustozlar metodikasini o‘zida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvchiga murakkab grammatik qoidalarsiz, interaktiv so‘z o‘yinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy o‘zlashtirish imkoniyatini taqdim etishdir.`;
 
   const founderName = cms?.founderName || 'Soxibjon Gaybullayev';
+  const founderTitle = cms?.founderTitle || 'LOYIHA ASOSCHISI VA RAHBARI';
   const founderBio = cms?.founderBio || `TILSHUNOS platformasi asoschisi. O‘zbekiston yoshlariga jahon tillarini eng samarali va qulay usulda o‘rganish uchun innovatsion ekotizim yaratish ustida ishlaydi.`;
+  const founderQuote = cms?.founderQuote || 'Bizning niyatimiz — O‘zbekiston yoshlariga jahonning istalgan tili bo‘yicha eng sifatli ta’limni o‘z ona tilida va zamonaviy texnologiyalar bilan taqdim etish.';
+  const founderPhoto = cms?.founderPhoto || '';
 
   const teamMembers = Array.isArray(cms?.team) ? cms.team : [
     { name: 'Soxibjon Gaybullayev', role: 'Asoschi & Bosh Muhandis', bio: 'Til o‘rganish texnologiyalari va raqamli ta’lim bo‘yicha mutaxassis.', avatar: 'S' },
@@ -145,8 +148,12 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
                 {teamMembers.map(member => (
                   <div key={member.name} className="team-profile-card">
                     <div className="profile-card-top">
-                      <div className="profile-avatar">
-                        {member.avatar || member.name[0]?.toUpperCase() || 'F'}
+                      <div className="profile-avatar" style={{ overflow: 'hidden' }}>
+                        {member.avatar && (member.avatar.startsWith('http') || member.avatar.startsWith('data:') || member.avatar.startsWith('/')) ? (
+                          <img src={member.avatar} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          member.avatar || member.name[0]?.toUpperCase() || 'F'
+                        )}
                       </div>
                       <div className="profile-meta">
                         <strong className="profile-name">{member.name}</strong>
@@ -163,15 +170,19 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
           {/* Founder Section */}
           <section className="about-founder-spotlight animate-fade-in-up">
             <div className="founder-spotlight-card">
-              <div className="founder-avatar-box">
-                <span className="founder-letter">{founderName[0]?.toUpperCase() || 'S'}</span>
+              <div className="founder-avatar-box" style={{ overflow: 'hidden' }}>
+                {founderPhoto ? (
+                  <img src={founderPhoto} alt={founderName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span className="founder-letter">{founderName[0]?.toUpperCase() || 'S'}</span>
+                )}
               </div>
               <div className="founder-details">
-                <span className="founder-kicker">LOYIHA ASOSCHISI VA RAHBARI</span>
+                <span className="founder-kicker">{founderTitle}</span>
                 <h2>{founderName}</h2>
                 <p className="founder-bio-text">{founderBio}</p>
                 <div className="founder-quote">
-                  “Bizning niyatimiz — O‘zbekiston yoshlariga jahonning istalgan tili bo‘yicha eng sifatli ta’limni o‘z ona tilida va zamonaviy texnologiyalar bilan taqdim etish.”
+                  “{founderQuote}”
                 </div>
               </div>
             </div>
