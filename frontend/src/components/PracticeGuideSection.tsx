@@ -88,6 +88,74 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     }
   };
 
+  // Render corner wave background SVG inside cards (Image 1 style)
+  const renderCardCornerWave = () => (
+    <>
+      <div className="practice-card-corner-wave bottom-left" aria-hidden="true">
+        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M-40 240C20 180 80 160 160 190C220 210 260 170 300 120C340 70 300 20 280 -20L-40 -20Z"
+            fill="url(#cardCornerWaveGrad1)"
+          />
+          <defs>
+            <linearGradient id="cardCornerWaveGrad1" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.55" />
+              <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.32" />
+              <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div className="practice-card-corner-wave bottom-right" aria-hidden="true">
+        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M360 240C300 180 240 160 160 190C100 210 60 170 20 120C-20 70 20 20 40 -20L360 -20Z"
+            fill="url(#cardCornerWaveGrad2)"
+          />
+          <defs>
+            <linearGradient id="cardCornerWaveGrad2" x1="100%" y1="100%" x2="0%" y2="0%">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.45" />
+              <stop offset="60%" stopColor="#8b5cf6" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </>
+  );
+
+  // Render bottom card navigation dots (Matching image 1)
+  const renderCardBottomNav = (slideIdx: number) => (
+    <div className="practice-card-bottom-nav">
+      <button
+        onClick={handlePrevSlide}
+        disabled={slideIdx === 0}
+        className="practice-slider-circle-btn"
+        title="Oldingi modul"
+      >
+        <ChevronLeft size={16} />
+      </button>
+      <div className="practice-bottom-dots">
+        {SKILL_MODULES.map((mod) => (
+          <span
+            key={mod.id}
+            onClick={() => goToSlide(mod.id)}
+            className={`practice-bottom-dot ${slideIdx === mod.id ? 'is-active' : ''}`}
+            title={mod.label}
+          />
+        ))}
+      </div>
+      <button
+        onClick={handleNextSlide}
+        disabled={slideIdx === SKILL_MODULES.length - 1}
+        className="practice-slider-circle-btn"
+        title="Keyingi modul"
+      >
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  );
+
   // Touch swipe support for mobile
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -491,33 +559,33 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         }
 
         /* ========================================================
-           CARD COMPONENT — DESKTOP ENLARGED (KOMPYUTER UCHUN KATTA)
+           CARD COMPONENT — MATCHING IMAGE 1 GLASSMORPHISM & GLOW
            ======================================================== */
         .practice-skill-card {
-          --pg-card-bg: rgba(15, 23, 42, 0.75);
-          --pg-card-border: rgba(255, 255, 255, 0.08);
-          --pg-card-shadow: 0 18px 52px rgba(0, 0, 0, 0.45);
-          --pg-box-bg: rgba(6, 9, 19, 0.75);
-          --pg-box-border: rgba(255, 255, 255, 0.08);
+          --pg-box-bg: rgba(6, 11, 26, 0.88);
+          --pg-box-border: rgba(59, 130, 246, 0.25);
           --pg-text-main: #f8fafc;
           --pg-text-heading: #ffffff;
           --pg-text-muted: #94a3b8;
           --pg-text-sub: #cbd5e1;
-          --pg-badge-bg: rgba(120, 105, 245, 0.16);
-          --pg-badge-color: #a5b4fc;
+          --pg-badge-bg: rgba(59, 130, 246, 0.16);
+          --pg-badge-color: #93c5fd;
           --pg-purple: #9387ff;
           --pg-green-text: #34d399;
 
-          background: var(--pg-card-bg) !important;
-          border: 1.5px solid var(--pg-card-border) !important;
-          border-radius: 28px;
-          padding: 42px 48px;
-          box-shadow: var(--pg-card-shadow);
-          position: relative;
-          overflow: hidden;
-          color: var(--pg-text-main) !important;
+          background: linear-gradient(135deg, rgba(13, 24, 60, 0.94) 0%, rgba(7, 14, 38, 0.97) 100%) !important;
+          border: 1.5px solid rgba(59, 130, 246, 0.45) !important;
+          border-radius: 26px !important;
+          padding: 38px 44px !important;
+          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 45px rgba(37, 99, 235, 0.22) !important;
+          backdrop-filter: blur(24px) !important;
+          -webkit-backdrop-filter: blur(24px) !important;
+          position: relative !important;
+          overflow: hidden !important;
+          color: #f8fafc !important;
           animation: slideFade 0.32s cubic-bezier(0.16, 1, 0.3, 1);
           touch-action: pan-y pinch-zoom;
+          z-index: 1;
         }
 
         @keyframes slideFade {
@@ -531,35 +599,22 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           }
         }
 
-        /* DARK THEME SCOPED OVERRIDES */
+        /* SCOPED OVERRIDES: KEEP NEON GLOW AT ALL TIMES */
         .welcome-root.dark .practice-skill-card,
         html.dark .practice-skill-card,
         .practice-skill-card.dark-card,
         .practice-slider-wrapper.is-dark .practice-skill-card {
-          --pg-card-bg: #14243a !important;
-          --pg-card-border: rgba(255, 255, 255, 0.11) !important;
-          --pg-card-shadow: 0 18px 52px rgba(0, 0, 0, 0.45) !important;
-          --pg-box-bg: #0b132b !important;
-          --pg-box-border: rgba(255, 255, 255, 0.09) !important;
-          --pg-text-main: #f8fafc !important;
-          --pg-text-heading: #ffffff !important;
-          --pg-text-muted: #94a3b8 !important;
-          --pg-text-sub: #cbd5e1 !important;
-          --pg-badge-bg: rgba(147, 135, 255, 0.18) !important;
-          --pg-badge-color: #a5b4fc !important;
-          --pg-purple: #9387ff !important;
-          --pg-green-text: #34d399 !important;
-
-          background: var(--pg-card-bg) !important;
-          border-color: var(--pg-card-border) !important;
-          color: var(--pg-text-main) !important;
+          background: linear-gradient(135deg, rgba(13, 24, 60, 0.94) 0%, rgba(7, 14, 38, 0.97) 100%) !important;
+          border: 1.5px solid rgba(59, 130, 246, 0.45) !important;
+          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 45px rgba(37, 99, 235, 0.22) !important;
+          color: #f8fafc !important;
         }
 
         .welcome-root.dark .practice-tab-pill,
         html.dark .practice-tab-pill,
         .practice-slider-wrapper.is-dark .practice-tab-pill {
-          background: #14243a;
-          border-color: rgba(255, 255, 255, 0.09);
+          background: rgba(15, 23, 42, 0.75);
+          border-color: rgba(255, 255, 255, 0.1);
           color: #94a3b8;
         }
 
@@ -1136,40 +1191,128 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           display: inline-flex;
           align-items: center;
           gap: 7px;
-          padding: 9px 18px;
-          border-radius: 12px;
+          padding: 9px 20px;
+          border-radius: 9999px;
           background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
           color: #ffffff;
           font-size: 13px;
           font-weight: 800;
           border: none;
           cursor: pointer;
-          box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+          box-shadow: 0 0 20px rgba(37, 99, 235, 0.8), 0 4px 14px rgba(37, 99, 235, 0.5);
           transition: all 0.2s;
         }
         .practice-action-btn-listen:hover {
           transform: translateY(-2px);
-          box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
+          box-shadow: 0 0 26px rgba(37, 99, 235, 0.95), 0 6px 18px rgba(37, 99, 235, 0.6);
         }
         .practice-action-btn-test {
           display: inline-flex;
           align-items: center;
           gap: 7px;
-          padding: 9px 18px;
-          border-radius: 12px;
-          background: rgba(20, 184, 166, 0.12);
-          border: 1.5px solid rgba(45, 212, 191, 0.4);
+          padding: 9px 20px;
+          border-radius: 9999px;
+          background: rgba(20, 184, 166, 0.14);
+          border: 1.5px solid rgba(45, 212, 191, 0.75);
           color: #2dd4bf;
           font-size: 13px;
           font-weight: 800;
           cursor: pointer;
+          box-shadow: 0 0 16px rgba(45, 212, 191, 0.45);
           transition: all 0.2s;
         }
         .practice-action-btn-test:hover,
         .practice-action-btn-test.is-active {
-          background: rgba(20, 184, 166, 0.25);
+          background: rgba(20, 184, 166, 0.28);
           border-color: #2dd4bf;
-          box-shadow: 0 0 16px rgba(45, 212, 191, 0.3);
+          box-shadow: 0 0 22px rgba(45, 212, 191, 0.65);
+          transform: translateY(-2px);
+        }
+        .practice-action-btn-purple {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 9px 20px;
+          border-radius: 9999px;
+          background: rgba(168, 85, 247, 0.14);
+          border: 1.5px solid rgba(168, 85, 247, 0.65);
+          color: #c084fc;
+          font-size: 13px;
+          font-weight: 800;
+          cursor: pointer;
+          box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);
+          transition: all 0.2s;
+        }
+        .practice-action-btn-purple:hover {
+          background: rgba(168, 85, 247, 0.28);
+          border-color: #c084fc;
+          box-shadow: 0 0 22px rgba(168, 85, 247, 0.55);
+          transform: translateY(-2px);
+        }
+        .practice-action-btn-green {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 9px 20px;
+          border-radius: 9999px;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 800;
+          border: none;
+          cursor: pointer;
+          box-shadow: 0 0 18px rgba(16, 185, 129, 0.6), 0 4px 14px rgba(16, 185, 129, 0.4);
+          transition: all 0.2s;
+        }
+        .practice-action-btn-green:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 0 24px rgba(16, 185, 129, 0.8);
+        }
+        .practice-card-corner-wave {
+          position: absolute;
+          pointer-events: none;
+          z-index: 0;
+          opacity: 0.85;
+        }
+        .practice-card-corner-wave.bottom-left {
+          bottom: -20px;
+          left: -20px;
+          width: 340px;
+          height: 250px;
+        }
+        .practice-card-corner-wave.bottom-right {
+          bottom: -30px;
+          right: -30px;
+          width: 320px;
+          height: 230px;
+        }
+        .practice-card-corner-wave svg {
+          width: 100%;
+          height: 100%;
+        }
+        .practice-ambient-blob-left {
+          position: absolute;
+          top: 15%;
+          left: -80px;
+          width: 420px;
+          height: 420px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(79, 70, 229, 0.32) 0%, rgba(59, 130, 246, 0.15) 50%, transparent 70%);
+          filter: blur(60px);
+          pointer-events: none;
+          z-index: 0;
+        }
+        .practice-ambient-blob-right {
+          position: absolute;
+          top: 35%;
+          right: -80px;
+          width: 440px;
+          height: 440px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(147, 51, 234, 0.28) 0%, rgba(59, 130, 246, 0.12) 50%, transparent 70%);
+          filter: blur(65px);
+          pointer-events: none;
+          z-index: 0;
         }
         .practice-phonetic-row {
           display: flex;
@@ -1186,18 +1329,19 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         .practice-pos-badge {
           padding: 2px 9px;
           border-radius: 6px;
-          background: rgba(148, 163, 184, 0.15);
-          border: 1px solid rgba(148, 163, 184, 0.2);
-          color: #cbd5e1;
+          background: rgba(59, 130, 246, 0.18);
+          border: 1px solid rgba(96, 165, 250, 0.3);
+          color: #93c5fd;
           font-size: 11px;
           font-weight: 750;
         }
         .practice-trans-green {
           font-size: 17.5px;
-          font-weight: 800;
+          font-weight: 850;
           color: #34d399;
           margin-bottom: 8px;
           line-height: 1.4;
+          filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.35));
         }
         .practice-explanation-text {
           margin: 0 0 16px;
@@ -1208,8 +1352,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         .practice-example-box {
           padding: 16px 20px;
           border-radius: 16px;
-          background: rgba(6, 9, 19, 0.85);
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(4, 8, 20, 0.9) !important;
+          border: 1px solid rgba(59, 130, 246, 0.25) !important;
+          box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5) !important;
           display: flex;
           flex-direction: column;
           gap: 10px;
@@ -1764,7 +1909,11 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       `}</style>
 
 
-      <div className="section-container">
+      <div className="section-container" style={{ position: 'relative' }}>
+        {/* Ambient Cosmic Glowing Blobs */}
+        <div className="practice-ambient-blob-left" aria-hidden="true" />
+        <div className="practice-ambient-blob-right" aria-hidden="true" />
+
         {/* Header Grid: Left 3D Book SVG | Center Kicker, Title, Selects | Right Handwritten Calligraphy */}
         <div className="practice-header-grid scroll-reveal">
           {/* Left: 3D Blue Book Artwork with Orbital Ring */}
@@ -1985,6 +2134,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {currentSlide === 0 && (
             <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              {renderCardCornerWave()}
+
               <div className="practice-card-head">
                 <span className="practice-card-badge">
                   <BookOpen size={15} /> 1. VOCABULARY (LUG‘AT & SO‘Z BOYLIGI)
@@ -2127,34 +2278,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
               </div>
 
               {/* Bottom Card Dots & Pagination */}
-              <div className="practice-card-bottom-nav">
-                <button
-                  onClick={handlePrevSlide}
-                  disabled={currentSlide === 0}
-                  className="practice-slider-circle-btn"
-                  title="Oldingi modul"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <div className="practice-bottom-dots">
-                  {SKILL_MODULES.map((mod) => (
-                    <span
-                      key={mod.id}
-                      onClick={() => goToSlide(mod.id)}
-                      className={`practice-bottom-dot ${currentSlide === mod.id ? 'is-active' : ''}`}
-                      title={mod.label}
-                    />
-                  ))}
-                </div>
-                <button
-                  onClick={handleNextSlide}
-                  disabled={currentSlide === SKILL_MODULES.length - 1}
-                  className="practice-slider-circle-btn"
-                  title="Keyingi modul"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
+              {renderCardBottomNav(0)}
             </div>
           )}
 
@@ -2163,18 +2287,20 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {currentSlide === 1 && (
             <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              {renderCardCornerWave()}
+
               <div className="practice-card-head">
                 <span className="practice-card-badge">
                   <PenLine size={15} /> 2. WRITING (AKADEMIK & RASMIY YOZISH)
                 </span>
                 <span className="practice-lang-tag">
-                  {currentLangData.flag} {currentLangData.langName}
+                  <Globe size={13} /> {currentLangData.flag} {currentLangData.langName}
                 </span>
               </div>
 
               <div className="practice-card-grid">
-                {/* Media Image */}
-                <div className="practice-card-media" style={{ height: '320px' }}>
+                {/* Media Image with badge */}
+                <div className="practice-card-media" style={{ position: 'relative' }}>
                   <img
                     src={currentLangData.writing.image}
                     alt={currentLangData.writing.letterTitle}
@@ -2182,87 +2308,106 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80';
                     }}
                   />
+                  <div className="practice-photo-badge">
+                    <PenLine size={13} />
+                    <span>1 / 1 Formal Letter</span>
+                  </div>
                 </div>
 
                 {/* Letter Content & Actions */}
                 <div className="practice-content-col">
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                    <h3 style={{ margin: 0, fontSize: 'clamp(22px, 2.3vw, 28px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
-                      {currentLangData.writing.letterTitle}
-                    </h3>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {/* Tag */}
+                  <div className="practice-tag-new">
+                    <Sparkles size={12} />
+                    <span>Akademik yozuv</span>
+                  </div>
+
+                  {/* Title + Dual Action Buttons */}
+                  <div className="practice-word-row">
+                    <div className="practice-word-title-wrap">
+                      <h3 className="practice-word-title" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)' }}>
+                        {currentLangData.writing.letterTitle}
+                      </h3>
+                    </div>
+
+                    <div className="practice-dual-action-btns">
                       <button
                         onClick={() => handlePlayTTS(currentLangData.writing.letterContent)}
-                        className="outline-btn"
-                        style={{
-                          padding: '8px 14px',
-                          fontSize: '12.5px',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          color: 'var(--pg-purple)',
-                          borderColor: 'var(--pg-purple)',
-                          background: 'var(--pg-box-bg)'
-                        }}
+                        className="practice-action-btn-listen"
+                        title="Xatni audio orqali tinglash"
                       >
-                        <Volume2 size={15} /> Xatni tinglash
+                        {activeSpeakingText === currentLangData.writing.letterContent ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                        <span>{activeSpeakingText === currentLangData.writing.letterContent ? "To'xtatish" : "Tinglash"}</span>
                       </button>
                       <button
                         onClick={() => setShowLetterTranslation(!showLetterTranslation)}
-                        className="outline-btn"
-                        style={{
-                          padding: '8px 14px',
-                          fontSize: '12.5px',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          color: 'var(--pg-text-main)',
-                          borderColor: 'var(--pg-box-border)',
-                          background: 'var(--pg-box-bg)'
-                        }}
+                        className="practice-action-btn-purple"
+                        title="Tarjimani ko'rish yoki yashirish"
                       >
                         {showLetterTranslation ? <EyeOff size={15} /> : <Eye size={15} />}
-                        {showLetterTranslation ? 'Tarjimani yashirish' : 'Tarjimani ko‘rish'}
+                        <span>{showLetterTranslation ? 'Yashirish' : 'Tarjima'}</span>
                       </button>
                     </div>
                   </div>
 
+                  {/* Translation & Subtitle */}
+                  <div>
+                    <div className="practice-trans-green">
+                      Rasmiy biznes va akademik xat namunasi
+                    </div>
+                    <p className="practice-explanation-text">
+                      Matn strukturasini va formal iboralarni o‘rganing.
+                    </p>
+                  </div>
+
                   {/* Letter Text Box */}
-                  <div style={{
-                    padding: '22px',
-                    background: 'var(--pg-box-bg)',
-                    borderRadius: '16px',
-                    border: '1px solid var(--pg-box-border)',
-                    fontSize: '15px',
-                    lineHeight: '1.8',
-                    whiteSpace: 'pre-line',
-                    color: 'var(--pg-text-main)',
-                    maxHeight: '260px',
-                    overflowY: 'auto'
-                  }}>
-                    {currentLangData.writing.letterContent}
+                  <div className="practice-example-box">
+                    <div className="practice-example-head">
+                      <span className="practice-example-label">
+                        RASMIY XAT MATNI (LETTER CONTENT):
+                      </span>
+                      <button
+                        onClick={() => handleCopyExample(currentLangData.writing.letterContent)}
+                        className="practice-copy-btn"
+                        title={copiedPhrase ? "Nusxa olindi!" : "Xatdan nusxa olish"}
+                      >
+                        {copiedPhrase ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+                      </button>
+                    </div>
+
+                    <div style={{
+                      fontSize: '14.5px',
+                      lineHeight: '1.75',
+                      whiteSpace: 'pre-line',
+                      color: '#f1f5f9',
+                      maxHeight: '220px',
+                      overflowY: 'auto',
+                      paddingRight: '6px'
+                    }}>
+                      {currentLangData.writing.letterContent}
+                    </div>
                   </div>
 
                   {/* Translation Box (Collapsible) */}
                   {showLetterTranslation && (
-                    <div style={{
-                      padding: '18px',
-                      background: isDarkMode ? 'rgba(120, 105, 245, 0.12)' : 'rgba(120, 105, 245, 0.08)',
-                      borderRadius: '14px',
-                      border: '1px solid rgba(120, 105, 245, 0.28)',
-                      fontSize: '14px',
-                      lineHeight: '1.7',
-                      color: 'var(--pg-text-main)',
-                      whiteSpace: 'pre-line'
+                    <div className="practice-example-box" style={{
+                      border: '1px solid rgba(168, 85, 247, 0.45) !important',
+                      background: 'rgba(20, 10, 40, 0.88) !important',
+                      boxShadow: '0 0 16px rgba(168, 85, 247, 0.25) !important'
                     }}>
-                      <strong style={{ color: 'var(--pg-purple)', display: 'block', marginBottom: '6px', fontSize: '11.5px', textTransform: 'uppercase' }}>
+                      <span style={{ color: '#c084fc', fontSize: '11px', fontWeight: 850, letterSpacing: '0.8px', textTransform: 'uppercase' }}>
                         🇺🇿 O‘zbekcha tarjimasi:
-                      </strong>
-                      {currentLangData.writing.letterTranslation}
+                      </span>
+                      <div style={{ fontSize: '14px', lineHeight: '1.7', color: '#cbd5e1', whiteSpace: 'pre-line' }}>
+                        {currentLangData.writing.letterTranslation}
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
+
+              {/* Bottom Card Dots & Pagination */}
+              {renderCardBottomNav(1)}
             </div>
           )}
 
@@ -2271,18 +2416,20 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {currentSlide === 2 && (
             <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              {renderCardCornerWave()}
+
               <div className="practice-card-head">
                 <span className="practice-card-badge">
                   <BookOpen size={15} /> 3. READING (MATN O‘QISH & TAHLIL)
                 </span>
                 <span className="practice-lang-tag">
-                  {currentLangData.flag} {currentLangData.langName}
+                  <Globe size={13} /> {currentLangData.flag} {currentLangData.langName}
                 </span>
               </div>
 
               <div className="practice-card-grid">
-                {/* Media Image */}
-                <div className="practice-card-media" style={{ height: '300px' }}>
+                {/* Media Image with badge */}
+                <div className="practice-card-media" style={{ position: 'relative' }}>
                   <img
                     src={currentLangData.reading.image}
                     alt={currentLangData.reading.title}
@@ -2290,112 +2437,133 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80';
                     }}
                   />
+                  <div className="practice-photo-badge">
+                    <BookOpen size={13} />
+                    <span>2 Min Read</span>
+                  </div>
                 </div>
 
                 {/* Reading Content & Questions */}
                 <div className="practice-content-col">
+                  {/* Tag */}
+                  <div className="practice-tag-new">
+                    <Sparkles size={12} />
+                    <span>O‘qish va tahlil</span>
+                  </div>
+
+                  {/* Title + Action */}
+                  <div className="practice-word-row">
+                    <div className="practice-word-title-wrap">
+                      <h3 className="practice-word-title" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)' }}>
+                        {currentLangData.reading.title}
+                      </h3>
+                    </div>
+
+                    <div className="practice-dual-action-btns">
+                      <button
+                        onClick={() => setShowReadingAnswers(!showReadingAnswers)}
+                        className="practice-action-btn-purple"
+                        title="Savollar javobini ko‘rish yoki yashirish"
+                      >
+                        {showReadingAnswers ? <EyeOff size={15} /> : <Eye size={15} />}
+                        <span>{showReadingAnswers ? 'Javoblarni yashirish' : 'Javoblarni ko‘rish'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Subtitle */}
                   <div>
-                    <h3 style={{ margin: '0 0 6px', fontSize: 'clamp(22px, 2.3vw, 28px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
-                      {currentLangData.reading.title}
-                    </h3>
-                    <p style={{ margin: 0, fontSize: '14px', color: 'var(--pg-text-muted)' }}>
-                      Matnni diqqat bilan o‘qing. <b>Qalin (bold)</b> so‘zlar asosiy leksik tayanchlardir.
+                    <div className="practice-trans-green">
+                      Matnni tahlil qiling va so‘z boyligingizni oshiring
+                    </div>
+                    <p className="practice-explanation-text">
+                      Qalin (bold) so‘zlar kontekstdagi asosiy leksik iboralardir.
                     </p>
                   </div>
 
-                  {/* Reading Text Container with HTML bold tags */}
-                  <div
-                    className="reading-content-box"
-                    style={{
-                      padding: '22px',
-                      background: 'var(--pg-box-bg)',
-                      borderRadius: '16px',
-                      border: '1px solid var(--pg-box-border)',
-                      fontSize: '16px',
-                      lineHeight: '1.9',
-                      color: 'var(--pg-text-main)'
-                    }}
-                    dangerouslySetInnerHTML={{ __html: currentLangData.reading.readingText }}
-                  />
+                  {/* Reading Text Container with HTML bold tags in dark glass box */}
+                  <div className="practice-example-box">
+                    <div className="practice-example-head">
+                      <span className="practice-example-label">
+                        MATN PARCHASI (READING PASSAGE):
+                      </span>
+                    </div>
+                    <div
+                      className="reading-content-box"
+                      style={{
+                        fontSize: '15px',
+                        lineHeight: '1.85',
+                        color: '#f1f5f9',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        paddingRight: '6px'
+                      }}
+                      dangerouslySetInnerHTML={{ __html: currentLangData.reading.readingText }}
+                    />
+                  </div>
 
                   {/* Comprehension Questions */}
-                  <div style={{
-                    padding: '18px',
-                    background: 'var(--pg-box-bg)',
-                    borderRadius: '14px',
-                    border: '1px solid var(--pg-box-border)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 850, color: 'var(--pg-purple)', textTransform: 'uppercase' }}>
-                        Savollar va to‘g‘ri javoblar:
+                  <div className="practice-example-box">
+                    <div className="practice-example-head">
+                      <span className="practice-example-label">
+                        SAVOLLAR VA TO‘G‘RI JAVOBLAR:
                       </span>
-                      <button
-                        onClick={() => setShowReadingAnswers(!showReadingAnswers)}
-                        className="outline-btn"
-                        style={{
-                          padding: '5px 12px',
-                          fontSize: '12px',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          background: 'var(--pg-card-bg)',
-                          borderColor: 'var(--pg-box-border)',
-                          color: 'var(--pg-text-main)'
-                        }}
-                      >
-                        {showReadingAnswers ? <EyeOff size={13} /> : <Eye size={13} />}
-                        {showReadingAnswers ? 'Javoblarni yashirish' : 'Javoblarni ko‘rish'}
-                      </button>
                     </div>
 
-                    {currentLangData.reading.questions.map((q, idx) => (
-                      <div key={idx} style={{ fontSize: '14px', lineHeight: '1.65', color: 'var(--pg-text-main)' }}>
-                        <div>{q.question}</div>
-                        {showReadingAnswers && (
-                          <div style={{ marginTop: '3px', color: 'var(--pg-green-text)', fontWeight: 750, fontSize: '13.5px' }}>
-                            (To‘g‘ri javob: {q.answer})
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {currentLangData.reading.questions.map((q, idx) => (
+                        <div key={idx} style={{ fontSize: '14px', lineHeight: '1.6', color: '#cbd5e1' }}>
+                          <div><b>{idx + 1}.</b> {q.question}</div>
+                          {showReadingAnswers && (
+                            <div style={{ marginTop: '4px', color: '#34d399', fontWeight: 800, fontSize: '13.5px', filter: 'drop-shadow(0 0 8px rgba(52, 211, 153, 0.4))' }}>
+                              ✓ To‘g‘ri javob: {q.answer}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Bottom Card Dots & Pagination */}
+              {renderCardBottomNav(2)}
             </div>
           )}
 
           {/* ===================================================== */}
           {/* SLIDE 3: LISTENING CARD WITH MODERN MUSIC PLAYER     */}
-          {/* (YOUTUBE VIDEO KO'RINMAYDI — MUSIQA PLAYER KO'RINISHI) */}
           {/* ===================================================== */}
           {currentSlide === 3 && (
             <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              {renderCardCornerWave()}
+
               <div className="practice-card-head">
                 <span className="practice-card-badge">
                   <Headphones size={15} /> 4. LISTENING (AUDIO TINGLASH & GAP-FILL)
                 </span>
                 <span className="practice-lang-tag">
-                  {currentLangData.flag} {currentLangData.langName}
+                  <Globe size={13} /> {currentLangData.flag} {currentLangData.langName}
                 </span>
               </div>
 
               <div className="practice-card-grid">
-                {/* Left Side: Modern Music Player (NO video shown!) */}
+                {/* Left Side: Modern Music Player */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div className="listening-music-player">
                     {/* Top Bar: Cover Art, Metadata, Equalizer */}
                     <div className="music-player-top">
-                      <img
-                        src={currentLangData.listening.image}
-                        alt="Album Cover"
-                        className="music-cover-art"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80';
-                        }}
-                      />
+                      <div style={{ position: 'relative', width: '64px', height: '64px', flexShrink: 0 }}>
+                        <img
+                          src={currentLangData.listening.image}
+                          alt="Album Cover"
+                          className="music-cover-art"
+                          style={{ width: '100%', height: '100%', borderRadius: '14px', objectFit: 'cover' }}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80';
+                          }}
+                        />
+                      </div>
                       <div className="music-meta">
                         <div className="music-meta-title">{currentLangData.listening.title}</div>
                         <div className="music-meta-artist">
@@ -2437,7 +2605,6 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
                     {/* Music Player Controls */}
                     <div className="music-controls-row">
-                      {/* Rewind 5s */}
                       <button
                         onClick={() => handleSeek(musicCurrentTime - 5)}
                         className="music-seek-btn"
@@ -2446,7 +2613,6 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         <RotateCcw size={14} /> -5s
                       </button>
 
-                      {/* Main Big Circular Play / Pause Button */}
                       <button
                         onClick={toggleMusicPlayer}
                         className="music-play-btn"
@@ -2455,7 +2621,6 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         {musicPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '3px' }} />}
                       </button>
 
-                      {/* Forward 5s */}
                       <button
                         onClick={() => handleSeek(musicCurrentTime + 5)}
                         className="music-seek-btn"
@@ -2464,7 +2629,6 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         +5s <FastForward size={14} />
                       </button>
 
-                      {/* Speed Toggle (1.0x, 1.25x, 1.5x, 2.0x, 0.75x) */}
                       <button
                         onClick={handleToggleSpeed}
                         className="music-speed-btn"
@@ -2474,7 +2638,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       </button>
                     </div>
 
-                    {/* Real YouTube Audio Iframe: Fully loaded, 100% invisible to user behind music player */}
+                    {/* Real YouTube Audio Iframe */}
                     <div style={{
                       position: 'absolute',
                       inset: 0,
@@ -2502,71 +2666,86 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
                 {/* Right Side: Gap-Fill Text and Check Button */}
                 <div className="practice-content-col">
+                  {/* Tag */}
+                  <div className="practice-tag-new">
+                    <Sparkles size={12} />
+                    <span>Audio tahlil</span>
+                  </div>
+
+                  {/* Title Row + Check Button */}
+                  <div className="practice-word-row">
+                    <div className="practice-word-title-wrap">
+                      <h3 className="practice-word-title" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)' }}>
+                        {currentLangData.listening.title}
+                      </h3>
+                    </div>
+
+                    <div className="practice-dual-action-btns">
+                      <button
+                        onClick={() => setShowListeningAnswers(!showListeningAnswers)}
+                        className="practice-action-btn-green"
+                        title="Javoblarni tekshirish"
+                      >
+                        <CheckCircle2 size={15} />
+                        <span>{showListeningAnswers ? 'Yashirish' : 'Tekshirish'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Subtitle */}
                   <div>
-                    <h3 style={{ margin: '0 0 6px', fontSize: 'clamp(22px, 2.3vw, 28px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
-                      {currentLangData.listening.title}
-                    </h3>
-                    <p style={{ margin: 0, fontSize: '14px', color: 'var(--pg-text-muted)' }}>
-                      Musiqa pleyeridan audioni tinglang va bo‘sh joylarga tushishi kerak bo‘lgan so‘zlarni aniqlang.
+                    <div className="practice-trans-green">
+                      Audioni tinglang va bo‘sh joylarni to‘ldiring
+                    </div>
+                    <p className="practice-explanation-text">
+                      Tabiiy suhbat tempiga e’tibor bering va kalit so‘zlarni aniqlang.
                     </p>
                   </div>
 
                   {/* Gap Fill Text Box */}
-                  <div style={{
-                    padding: '24px',
-                    background: 'var(--pg-box-bg)',
-                    borderRadius: '18px',
-                    border: '1px solid var(--pg-box-border)',
-                    fontSize: '16.5px',
-                    lineHeight: '2.3',
-                    color: 'var(--pg-text-main)'
-                  }}>
-                    {currentLangData.listening.textWithGaps.split(/\[\s*______\s*\]|\[\s*[^\]]+\s*\]/).map((part, index, arr) => (
-                      <React.Fragment key={index}>
-                        {part}
-                        {index < arr.length - 1 && (
-                          <span style={{
-                            display: 'inline-block',
-                            padding: showListeningAnswers ? '3px 12px' : '3px 20px',
-                            margin: '0 6px',
-                            borderRadius: '9px',
-                            border: showListeningAnswers ? '1.5px solid #10b981' : '1.5px dashed var(--pg-purple)',
-                            background: showListeningAnswers ? 'rgba(16, 185, 129, 0.15)' : 'rgba(120, 105, 245, 0.1)',
-                            color: showListeningAnswers ? '#10b981' : 'var(--pg-purple)',
-                            fontWeight: 800,
-                            fontSize: '14px',
-                            transition: 'all 0.3s ease'
-                          }}>
-                            {showListeningAnswers
-                              ? (currentLangData.listening.gapsAnswers[index] || 'to‘g‘ri javob')
-                              : `[ ${index + 1}-bo‘sh joy ]`}
-                          </span>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </div>
+                  <div className="practice-example-box">
+                    <div className="practice-example-head">
+                      <span className="practice-example-label">
+                        AUDIO DIALOG VA GAP-FILL TOPSHIRIG‘I:
+                      </span>
+                    </div>
 
-                  {/* "Javoblarni tekshirish" Button */}
-                  <div>
-                    <button
-                      onClick={() => setShowListeningAnswers(!showListeningAnswers)}
-                      className="primary-btn"
-                      style={{
-                        padding: '12px 22px',
-                        fontSize: '14px',
-                        fontWeight: 800,
-                        background: showListeningAnswers ? '#10b981' : 'var(--pg-purple)',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      <CheckCircle2 size={17} />
-                      <span>{showListeningAnswers ? 'Javoblarni yashirish' : 'Javoblarni tekshirish'}</span>
-                    </button>
+                    <div style={{
+                      fontSize: '15.5px',
+                      lineHeight: '2.1',
+                      color: '#f1f5f9'
+                    }}>
+                      {currentLangData.listening.textWithGaps.split(/\[\s*______\s*\]|\[\s*[^\]]+\s*\]/).map((part, index, arr) => (
+                        <React.Fragment key={index}>
+                          {part}
+                          {index < arr.length - 1 && (
+                            <span style={{
+                              display: 'inline-block',
+                              padding: showListeningAnswers ? '2px 10px' : '2px 14px',
+                              margin: '0 4px',
+                              borderRadius: '8px',
+                              border: showListeningAnswers ? '1.5px solid #10b981' : '1.5px dashed #818cf8',
+                              background: showListeningAnswers ? 'rgba(16, 185, 129, 0.18)' : 'rgba(99, 102, 241, 0.15)',
+                              color: showListeningAnswers ? '#34d399' : '#a5b4fc',
+                              fontWeight: 800,
+                              fontSize: '13.5px',
+                              boxShadow: showListeningAnswers ? '0 0 10px rgba(16, 185, 129, 0.3)' : 'none',
+                              transition: 'all 0.3s ease'
+                            }}>
+                              {showListeningAnswers
+                                ? (currentLangData.listening.gapsAnswers[index] || 'to‘g‘ri javob')
+                                : `[ ${index + 1}-bo‘sh joy ]`}
+                            </span>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Bottom Card Dots & Pagination */}
+              {renderCardBottomNav(3)}
             </div>
           )}
 
@@ -2575,19 +2754,21 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {currentSlide === 4 && (
             <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              {renderCardCornerWave()}
+
               <div className="practice-card-head">
                 <span className="practice-card-badge">
                   <MessageSquare size={15} /> 5. SPEAKING (JONLI INTERVYU & NUTQ)
                 </span>
                 <span className="practice-lang-tag">
-                  {currentLangData.flag} {currentLangData.langName}
+                  <Globe size={13} /> {currentLangData.flag} {currentLangData.langName}
                 </span>
               </div>
 
               <div className="practice-card-grid">
                 {/* Media Image & Progress */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div className="practice-card-media" style={{ height: '260px' }}>
+                  <div className="practice-card-media" style={{ position: 'relative', height: '260px' }}>
                     <img
                       src={currentLangData.speaking.image}
                       alt={currentLangData.speaking.title}
@@ -2595,27 +2776,26 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80';
                       }}
                     />
+                    <div className="practice-photo-badge">
+                      <MessageSquare size={13} />
+                      <span>1 / 3 Intervyu</span>
+                    </div>
                   </div>
 
-                  <div style={{
-                    padding: '16px',
-                    background: 'var(--pg-box-bg)',
-                    borderRadius: '14px',
-                    border: '1px solid var(--pg-box-border)'
-                  }}>
+                  <div className="practice-example-box">
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--pg-text-muted)', textTransform: 'uppercase' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 850, color: '#94a3b8', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
                         Javob berilgan savollar:
                       </span>
-                      <strong style={{ fontSize: '13px', color: 'var(--pg-purple)' }}>
+                      <strong style={{ fontSize: '13px', color: '#93c5fd' }}>
                         {answeredQuestionsCount} / {totalQuestionsCount}
                       </strong>
                     </div>
-                    <div style={{ width: '100%', height: '8px', borderRadius: '5px', background: 'var(--pg-box-border)', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '8px', borderRadius: '5px', background: 'rgba(255, 255, 255, 0.1)', overflow: 'hidden' }}>
                       <div style={{
                         width: `${(answeredQuestionsCount / (totalQuestionsCount || 1)) * 100}%`,
                         height: '100%',
-                        background: 'var(--pg-purple)',
+                        background: 'linear-gradient(90deg, #3b82f6 0%, #10b981 100%)',
                         transition: 'width 0.3s ease'
                       }} />
                     </div>
@@ -2624,12 +2804,41 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
                 {/* Questions List & Score Button */}
                 <div className="practice-content-col">
+                  {/* Tag */}
+                  <div className="practice-tag-new">
+                    <Sparkles size={12} />
+                    <span>Jonli intervyu</span>
+                  </div>
+
+                  {/* Title Row */}
+                  <div className="practice-word-row">
+                    <div className="practice-word-title-wrap">
+                      <h3 className="practice-word-title" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)' }}>
+                        {currentLangData.speaking.title}
+                      </h3>
+                    </div>
+
+                    {isAllSpeakingAnswered && (
+                      <div className="practice-dual-action-btns">
+                        <button
+                          onClick={() => setShowTotalSpeakingScore(!showTotalSpeakingScore)}
+                          className="practice-action-btn-green"
+                          title="Umumiy ballni ko‘rish"
+                        >
+                          <Trophy size={15} />
+                          <span>{showTotalSpeakingScore ? 'Yashirish' : 'Natija'}</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Subtitle */}
                   <div>
-                    <h3 style={{ margin: '0 0 6px', fontSize: 'clamp(22px, 2.3vw, 28px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
-                      {currentLangData.speaking.title}
-                    </h3>
-                    <p style={{ margin: 0, fontSize: '14px', color: 'var(--pg-text-muted)' }}>
-                      Har bir savolni o‘qing va "Javob berish" mikrofon tugmasi orqali erkin javob bering.
+                    <div className="practice-trans-green">
+                      Intervyu savollariga mikrofonda erkin javob bering
+                    </div>
+                    <p className="practice-explanation-text">
+                      Har bir savolni eshiting va mikrofonga aniq talaffuz bilan javob bering.
                     </p>
                   </div>
 
@@ -2640,25 +2849,14 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       const isRecordingThis = activeListeningQuestionId === q.id;
 
                       return (
-                        <div
-                          key={q.id}
-                          style={{
-                            padding: '18px',
-                            background: 'var(--pg-box-bg)',
-                            borderRadius: '16px',
-                            border: '1px solid var(--pg-box-border)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '12px'
-                          }}
-                        >
+                        <div key={q.id} className="practice-example-box">
                           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: '15px', fontWeight: 750, color: 'var(--pg-text-main)', lineHeight: '1.45' }}>
+                              <div style={{ fontSize: '15px', fontWeight: 750, color: '#f1f5f9', lineHeight: '1.45' }}>
                                 {q.id}. {q.question}
                               </div>
                               {q.hint && (
-                                <span style={{ fontSize: '12.5px', color: 'var(--pg-text-muted)', display: 'block', marginTop: '5px' }}>
+                                <span style={{ fontSize: '12.5px', color: '#94a3b8', display: 'block', marginTop: '5px' }}>
                                   💡 Maslahat: {q.hint}
                                 </span>
                               )}
@@ -2667,21 +2865,12 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                             {/* Mic Answer Button */}
                             <button
                               onClick={() => handleTestSpeakingQuestion(q.id, q.question)}
-                              className="primary-btn"
-                              style={{
-                                padding: '9px 16px',
-                                fontSize: '12.5px',
-                                fontWeight: 750,
-                                background: isRecordingThis ? '#ef4444' : scoreObj ? '#10b981' : 'var(--pg-purple)',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                animation: isRecordingThis ? 'pulse 1s infinite' : 'none',
-                                flexShrink: 0
-                              }}
+                              className={`practice-action-btn-test ${isRecordingThis ? 'is-active' : ''}`}
+                              title="Mikrofon orqali javob berish"
+                              style={{ flexShrink: 0 }}
                             >
-                              <Mic size={15} />
-                              <span>{isRecordingThis ? 'Eshityapman...' : scoreObj ? 'Qayta topshirish' : 'Javob berish'}</span>
+                              <Mic size={14} />
+                              <span>{isRecordingThis ? 'Eshityapman...' : scoreObj ? 'Qayta sinash' : 'Javob berish'}</span>
                             </button>
                           </div>
 
@@ -2690,14 +2879,15 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                             <div style={{
                               padding: '10px 14px',
                               borderRadius: '10px',
-                              background: 'rgba(16, 185, 129, 0.12)',
-                              color: '#10b981',
+                              background: 'rgba(16, 185, 129, 0.14)',
+                              border: '1px solid rgba(16, 185, 129, 0.4)',
+                              color: '#34d399',
                               fontSize: '13px',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'space-between'
                             }}>
-                              <span>Nutq tahlili qabul qilindi</span>
+                              <span>Nutq tahlili qabul qilindi ✓</span>
                               <strong style={{ fontWeight: 800 }}>⭐ Natija: {scoreObj.score} ball</strong>
                             </div>
                           )}
@@ -2706,65 +2896,41 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     })}
                   </div>
 
-                  {/* "Umumiy ballni ko'rish" Button - ONLY APPEARS IF ALL QUESTIONS ARE ANSWERED */}
-                  {isAllSpeakingAnswered && (
-                    <div style={{ marginTop: '8px' }}>
-                      <button
-                        onClick={() => setShowTotalSpeakingScore(true)}
-                        className="primary-btn"
-                        style={{
-                          padding: '14px 26px',
-                          fontSize: '15px',
-                          fontWeight: 800,
-                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          boxShadow: '0 4px 18px rgba(16, 185, 129, 0.35)'
-                        }}
-                      >
-                        <Trophy size={18} />
-                        <span>Umumiy ballni ko‘rish</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Final Score Reveal Modal/Card */}
+                  {/* Final Score Reveal Card */}
                   {showTotalSpeakingScore && isAllSpeakingAnswered && (
-                    <div style={{
-                      padding: '24px',
-                      borderRadius: '18px',
-                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(5, 150, 105, 0.06))',
-                      border: '2px solid #10b981',
-                      marginTop: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '16px'
+                    <div className="practice-example-box" style={{
+                      background: 'rgba(6, 25, 20, 0.9) !important',
+                      border: '1.5px solid rgba(16, 185, 129, 0.75) !important',
+                      boxShadow: '0 0 24px rgba(16, 185, 129, 0.3) !important',
+                      marginTop: '8px'
                     }}>
-                      <div>
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: '#10b981', textTransform: 'uppercase' }}>
-                          🎉 SPEAKING MUVAFFAQIYATLI YAKUNLANDI!
-                        </span>
-                        <h4 style={{ margin: '6px 0', fontSize: '20px', fontWeight: 850, color: 'var(--pg-text-heading)' }}>
-                          O‘rtacha natijangiz: {averageSpeakingScore} / 100 ball
-                        </h4>
-                        <p style={{ margin: 0, fontSize: '13px', color: 'var(--pg-text-muted)' }}>
-                          Nutqiy ravonlik va intonatsiyangiz a’lo darajada baholandi.
-                        </p>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+                        <div>
+                          <span style={{ fontSize: '12px', fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                            🎉 SPEAKING MUVAFFAQIYATLI YAKUNLANDI!
+                          </span>
+                          <h4 style={{ margin: '6px 0', fontSize: '20px', fontWeight: 850, color: '#ffffff' }}>
+                            O‘rtacha natijangiz: {averageSpeakingScore} / 100 ball
+                          </h4>
+                          <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>
+                            Nutqiy ravonlik va intonatsiyangiz a’lo darajada baholandi.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => onBegin('register')}
+                          className="practice-action-btn-green"
+                          style={{ padding: '10px 20px', fontSize: '13.5px' }}
+                        >
+                          To‘liq kursni boshlash
+                        </button>
                       </div>
-                      <button
-                        onClick={() => onBegin('register')}
-                        className="primary-btn"
-                        style={{ padding: '10px 18px', fontSize: '13px', fontWeight: 700 }}
-                      >
-                        To‘liq kursni boshlash
-                      </button>
                     </div>
                   )}
                 </div>
               </div>
+
+              {/* Bottom Card Dots & Pagination */}
+              {renderCardBottomNav(4)}
             </div>
           )}
 
@@ -2773,18 +2939,20 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {currentSlide === 5 && (
             <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              {renderCardCornerWave()}
+
               <div className="practice-card-head">
                 <span className="practice-card-badge">
                   <Sparkles size={15} /> 6. GRAMMAR (GRAMMATIKA & XATOLAR TAHLILI)
                 </span>
                 <span className="practice-lang-tag">
-                  {currentLangData.flag} {currentLangData.langName}
+                  <Globe size={13} /> {currentLangData.flag} {currentLangData.langName}
                 </span>
               </div>
 
               <div className="practice-card-grid">
-                {/* Media Image */}
-                <div className="practice-card-media" style={{ height: '300px' }}>
+                {/* Media Image with badge */}
+                <div className="practice-card-media" style={{ position: 'relative' }}>
                   <img
                     src={currentLangData.grammar.image}
                     alt={currentLangData.grammar.topicName}
@@ -2792,15 +2960,35 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80';
                     }}
                   />
+                  <div className="practice-photo-badge">
+                    <Sparkles size={13} />
+                    <span>Qoidalar tahlili</span>
+                  </div>
                 </div>
 
                 {/* Grammar Comparison Texts & Rules */}
                 <div className="practice-content-col">
+                  {/* Tag */}
+                  <div className="practice-tag-new">
+                    <Sparkles size={12} />
+                    <span>Grammatika qoidasi</span>
+                  </div>
+
+                  {/* Title Row */}
+                  <div className="practice-word-row">
+                    <div className="practice-word-title-wrap">
+                      <h3 className="practice-word-title" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)' }}>
+                        {currentLangData.grammar.topicName}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Subtitle */}
                   <div>
-                    <h3 style={{ margin: '0 0 6px', fontSize: 'clamp(22px, 2.3vw, 28px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
-                      {currentLangData.grammar.topicName}
-                    </h3>
-                    <p style={{ margin: 0, fontSize: '14.5px', color: 'var(--pg-text-sub)', lineHeight: '1.7' }}>
+                    <div className="practice-trans-green">
+                      Eng ko‘p uchraydigan nozik farqlar va xatolar
+                    </div>
+                    <p className="practice-explanation-text">
                       {currentLangData.grammar.topicExplanation}
                     </p>
                   </div>
@@ -2809,50 +2997,53 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '16px' }}>
                     {/* Incorrect Text */}
                     <div style={{
-                      padding: '18px',
-                      borderRadius: '14px',
-                      background: 'rgba(239, 68, 68, 0.08)',
-                      border: '1.5px solid #ef4444',
-                      color: '#ef4444'
+                      padding: '18px 20px',
+                      borderRadius: '16px',
+                      background: 'rgba(239, 68, 68, 0.12)',
+                      border: '1.5px solid rgba(239, 68, 68, 0.65)',
+                      boxShadow: '0 0 16px rgba(239, 68, 68, 0.25)',
+                      color: '#f87171'
                     }}>
-                      <div style={{ fontSize: '12px', fontWeight: 800, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <div style={{ fontSize: '11.5px', fontWeight: 850, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
                         <AlertCircle size={15} /> XATO VARIANT:
                       </div>
-                      <div style={{ fontSize: '14.5px', textDecoration: 'line-through', color: 'var(--pg-text-main)' }}>
+                      <div style={{ fontSize: '15px', textDecoration: 'line-through', color: '#fca5a5' }}>
                         "{currentLangData.grammar.incorrectText}"
                       </div>
                     </div>
 
                     {/* Corrected Text */}
                     <div style={{
-                      padding: '18px',
-                      borderRadius: '14px',
-                      background: 'rgba(16, 185, 129, 0.08)',
-                      border: '1.5px solid #10b981',
-                      color: '#10b981'
+                      padding: '18px 20px',
+                      borderRadius: '16px',
+                      background: 'rgba(16, 185, 129, 0.12)',
+                      border: '1.5px solid rgba(16, 185, 129, 0.75)',
+                      boxShadow: '0 0 16px rgba(16, 185, 129, 0.3)',
+                      color: '#34d399'
                     }}>
-                      <div style={{ fontSize: '12px', fontWeight: 800, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <div style={{ fontSize: '11.5px', fontWeight: 850, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
                         <CheckCircle2 size={15} /> TO‘G‘RI VARIANT:
                       </div>
-                      <div style={{ fontSize: '14.5px', fontWeight: 750, color: 'var(--pg-text-main)' }}>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#ecfdf5' }}>
                         "{currentLangData.grammar.correctedText}"
                       </div>
                     </div>
                   </div>
 
                   {/* Topic Rule Tip */}
-                  <div style={{
-                    padding: '14px 18px',
-                    borderRadius: '12px',
-                    background: 'var(--pg-box-bg)',
-                    border: '1px solid var(--pg-box-border)',
-                    fontSize: '13.5px',
-                    color: 'var(--pg-text-muted)'
-                  }}>
-                    💡 <strong>Qoidani eslab qoling:</strong> {currentLangData.grammar.ruleTip}
+                  <div className="practice-example-box">
+                    <div className="practice-example-head">
+                      <span className="practice-example-label">💡 QOIDANI ESLAB QOLING:</span>
+                    </div>
+                    <div style={{ fontSize: '14px', lineHeight: '1.7', color: '#cbd5e1' }}>
+                      {currentLangData.grammar.ruleTip}
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Bottom Card Dots & Pagination */}
+              {renderCardBottomNav(5)}
             </div>
           )}
 
@@ -2861,19 +3052,26 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {currentSlide === 6 && (
             <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              {renderCardCornerWave()}
+
               <div className="practice-card-head">
                 <span className="practice-card-badge">
                   <Award size={15} /> 7. SHADOWING (SOYA METODI & NUTQNI MOSLASHTIRISH)
                 </span>
                 <span className="practice-lang-tag">
-                  {currentLangData.flag} {currentLangData.langName}
+                  <Globe size={13} /> {currentLangData.flag} {currentLangData.langName}
                 </span>
               </div>
 
               {/* Large Shadowing Grid */}
               <div className="practice-shadowing-grid">
                 {/* Video Player: Large (330px height), autoplay=0 */}
-                <div className="practice-shadowing-media">
+                <div className="practice-shadowing-media" style={{
+                  borderRadius: '20px',
+                  overflow: 'hidden',
+                  border: '1.5px solid rgba(59, 130, 246, 0.35)',
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.5)'
+                }}>
                   <iframe
                     width="100%"
                     height="100%"
@@ -2887,108 +3085,114 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
                 {/* Shadowing Text & Live Compare Mic */}
                 <div className="practice-content-col">
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                    <div>
-                      <h3 style={{ margin: '0 0 4px', fontSize: 'clamp(20px, 2.2vw, 26px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
+                  {/* Tag */}
+                  <div className="practice-tag-new">
+                    <Sparkles size={12} />
+                    <span>Soya metodi</span>
+                  </div>
+
+                  {/* Title Row + Action Buttons */}
+                  <div className="practice-word-row">
+                    <div className="practice-word-title-wrap">
+                      <h3 className="practice-word-title" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)' }}>
                         {currentLangData.shadowing.title}
                       </h3>
                     </div>
 
-                    {/* Audio Listen & Mic Buttons */}
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div className="practice-dual-action-btns">
                       <button
                         onClick={() => handlePlayTTS(currentLangData.shadowing.audioText)}
-                        className="outline-btn"
-                        style={{
-                          padding: '7px 14px',
-                          fontSize: '12.5px',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          color: 'var(--pg-purple)',
-                          borderColor: 'var(--pg-purple)',
-                          background: 'var(--pg-box-bg)'
-                        }}
+                        className="practice-action-btn-listen"
+                        title="Audioni eshitish"
                       >
-                        <Volume2 size={15} /> Audioni eshitish
+                        {activeSpeakingText === currentLangData.shadowing.audioText ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                        <span>{activeSpeakingText === currentLangData.shadowing.audioText ? "To'xtatish" : "Tinglash"}</span>
                       </button>
                       <button
                         onClick={handleTestShadowing}
-                        className="primary-btn"
-                        style={{
-                          padding: '7px 16px',
-                          fontSize: '12.5px',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          background: isShadowingListening ? '#ef4444' : 'var(--pg-purple)',
-                          animation: isShadowingListening ? 'pulse 1s infinite' : 'none'
-                        }}
+                        className={`practice-action-btn-test ${isShadowingListening ? 'is-active' : ''}`}
+                        title="Nutqni mikrofonda solishtirish"
                       >
-                        <Mic size={15} /> {isShadowingListening ? 'Eshitilmoqda...' : 'Nutqni solishtirish'}
+                        <Mic size={15} />
+                        <span>{isShadowingListening ? 'Eshitilmoqda...' : 'Solishtirish'}</span>
                       </button>
                     </div>
                   </div>
 
-                  {/* Target Text with Word-by-Word Matching (never overflows) */}
-                  <div style={{
-                    padding: '22px',
-                    background: 'var(--pg-box-bg)',
-                    borderRadius: '16px',
-                    border: '1px solid var(--pg-box-border)',
-                    fontSize: '16.5px',
-                    lineHeight: '1.85',
-                    color: 'var(--pg-text-main)',
-                    minWidth: 0,
-                    maxWidth: '100%',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word',
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '5px'
-                  }}>
-                    {currentLangData.shadowing.shadowingText.split(' ').map((targetWord, idx) => {
-                      const cleanTarget = targetWord.replace(/[.,:;!?]/g, '').toLowerCase();
-                      const spokenWords = shadowingRecognizedText.toLowerCase().split(/\s+/);
-                      const isMatched = spokenWords.some((sw) => sw.includes(cleanTarget) || cleanTarget.includes(sw));
+                  {/* Subtitle */}
+                  <div>
+                    <div className="practice-trans-green">
+                      So‘zlovchining intonatsiyasi va urg‘usiga taqlid qiling
+                    </div>
+                    <p className="practice-explanation-text">
+                      Audioni eshiting va bir vaqtning o‘zida uning ortidan takrorlang.
+                    </p>
+                  </div>
 
-                      return (
-                        <span
-                          key={idx}
-                          style={{
-                            padding: '2px 6px',
-                            borderRadius: '5px',
-                            color: isMatched ? '#10b981' : 'inherit',
-                            fontWeight: isMatched ? 850 : 500,
-                            background: isMatched ? 'rgba(16, 185, 129, 0.18)' : 'transparent',
-                            transition: 'all 0.2s ease',
-                            display: 'inline-block'
-                          }}
-                        >
-                          {targetWord}
-                        </span>
-                      );
-                    })}
+                  {/* Target Text with Word-by-Word Matching (never overflows) */}
+                  <div className="practice-example-box">
+                    <div className="practice-example-head">
+                      <span className="practice-example-label">
+                        SOYA METODI UCHUN MATN (TARGET SPEECH):
+                      </span>
+                    </div>
+
+                    <div style={{
+                      fontSize: '15.5px',
+                      lineHeight: '1.9',
+                      color: '#f1f5f9',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '5px'
+                    }}>
+                      {currentLangData.shadowing.shadowingText.split(' ').map((targetWord, idx) => {
+                        const cleanTarget = targetWord.replace(/[.,:;!?]/g, '').toLowerCase();
+                        const spokenWords = shadowingRecognizedText.toLowerCase().split(/\s+/);
+                        const isMatched = spokenWords.some((sw) => sw.includes(cleanTarget) || cleanTarget.includes(sw));
+
+                        return (
+                          <span
+                            key={idx}
+                            style={{
+                              padding: '2px 6px',
+                              borderRadius: '5px',
+                              color: isMatched ? '#34d399' : 'inherit',
+                              fontWeight: isMatched ? 850 : 500,
+                              background: isMatched ? 'rgba(16, 185, 129, 0.22)' : 'transparent',
+                              boxShadow: isMatched ? '0 0 8px rgba(16, 185, 129, 0.35)' : 'none',
+                              transition: 'all 0.2s ease',
+                              display: 'inline-block'
+                            }}
+                          >
+                            {targetWord}
+                          </span>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Shadowing Score Feedback */}
                   {shadowingScore !== null && (
-                    <div style={{
-                      padding: '14px 18px',
-                      borderRadius: '12px',
-                      background: 'rgba(16, 185, 129, 0.12)',
-                      border: '1px solid #10b981',
-                      color: '#10b981',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
+                    <div className="practice-example-box" style={{
+                      background: 'rgba(6, 25, 20, 0.88) !important',
+                      border: '1.5px solid rgba(16, 185, 129, 0.6) !important',
+                      boxShadow: '0 0 16px rgba(16, 185, 129, 0.25) !important'
                     }}>
-                      <span>Aytilgan nutq bilan solishtirildi ✓</span>
-                      <strong style={{ fontSize: '15px' }}>⭐ Moslik darajasi: {shadowingScore}%</strong>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                        <span style={{ color: '#34d399', fontWeight: 800, fontSize: '14px' }}>
+                          ✓ Aytilgan nutq bilan solishtirildi
+                        </span>
+                        <strong style={{ fontSize: '15px', color: '#10b981', filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))' }}>
+                          ⭐ Moslik darajasi: {shadowingScore}%
+                        </strong>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
+
+              {/* Bottom Card Dots & Pagination */}
+              {renderCardBottomNav(6)}
             </div>
           )}
 
