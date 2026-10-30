@@ -827,6 +827,53 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     }
   };
 
+  const handleBottomBannerImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      notify('Faqat rasm fayllari (PNG, JPG, WebP) yuklanishi mumkin!');
+      return;
+    }
+    setUploadingGuideImage(true);
+    try {
+      let dataBase64 = '';
+      try {
+        dataBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(file);
+        });
+      } catch {}
+
+      const res = await api.uploadCmsImage({
+        file,
+        dataBase64,
+        fileName: `guide-bottom-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
+        contentType: file.type || 'image/jpeg'
+      });
+      if (!res || !res.url) throw new Error('Rasm yuklanmadi');
+
+      const currentPg = cms.practiceGuide || DEFAULT_PRACTICE_GUIDE;
+      const updatedCms = {
+        ...cms,
+        practiceGuide: {
+          ...currentPg,
+          bottomBannerImage: res.url
+        }
+      };
+      setCms(updatedCms);
+      localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+      await api.saveCms(updatedCms);
+      notify('Amaliy qo‘llanma pastki card rasmi yuklandi va Supabasega saqlandi! ✓');
+    } catch (err: any) {
+      notify(err.message || 'Rasm yuklashda xatolik yuz berdi', true);
+    } finally {
+      setUploadingGuideImage(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
   const handleSaveEditedTeamMember = async () => {
     if (editingTeamMemberIdx === null) return;
     if (!editingTeamMember.name.trim() || !editingTeamMember.role.trim()) {
@@ -4288,6 +4335,145 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             placeholder="O‘zingizni sinab ko‘ring"
                           />
                         </label>
+                      </div>
+                    </div>
+
+                    {/* Pastki Karta (Amaliy Qo'llanma / Sinab Ko'rish) Sozlamalari & Rasm yuklash */}
+                    <div className="panel" style={{ padding: '24px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Pastki Card Sozlamalari (Amaliy qo‘llanma — Sinab ko‘rish)</h3>
+                          <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
+                            Slide kartalarining eng ostida chiqadigan "O‘zingizni amalda sinab ko‘ring" kartasining matnlari va rasmi
+                          </p>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            try {
+                              localStorage.setItem('tilshunos_cms_data', JSON.stringify(cms));
+                              await api.saveCms(cms);
+                              notify('Pastki amaliy qo‘llanma kartasi sozlamalari saqlandi! ✓');
+                            } catch {
+                              notify('Saqlashda xatolik yuz berdi', true);
+                            }
+                          }}
+                          className="primary-btn"
+                          style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Save size={14} />
+                          <span>Saqlash</span>
+                        </button>
+                      </div>
+
+                      <div className="form-grid" style={{ gap: '14px' }}>
+                        <label>
+                          <b style={{ fontSize: '12px' }}>Kicker nishoni (Badge):</b>
+                          <input
+                            value={pg.bottomBannerKicker || ''}
+                            onChange={e => updatePgField('bottomBannerKicker', e.target.value)}
+                            placeholder="AMALIY QO‘LLANMA"
+                          />
+                        </label>
+                        <label>
+                          <b style={{ fontSize: '12px' }}>Karta Sarlavhasi (Title):</b>
+                          <input
+                            value={pg.bottomBannerTitle || ''}
+                            onChange={e => updatePgField('bottomBannerTitle', e.target.value)}
+                            placeholder="O‘zingizni amalda sinab ko‘ring"
+                          />
+                        </label>
+                        <label className="span-two">
+                          <b style={{ fontSize: '12px' }}>Karta Tavsifi (Description):</b>
+                          <textarea
+                            rows={2}
+                            value={pg.bottomBannerDesc || ''}
+                            onChange={e => updatePgField('bottomBannerDesc', e.target.value)}
+                            placeholder="7 ta ko‘nikma moduli bo‘yicha to‘liq interaktiv mashqlar, AI repetitor va shaxsiy testlarni boshlang."
+                            style={{ resize: 'vertical' }}
+                          />
+                        </label>
+                        <label className="span-two">
+                          <b style={{ fontSize: '12px' }}>Tugma Matni (Button text):</b>
+                          <input
+                            value={pg.bottomBannerBtnText || ''}
+                            onChange={e => updatePgField('bottomBannerBtnText', e.target.value)}
+                            placeholder="O‘zingizni sinab ko‘ring"
+                          />
+                        </label>
+
+                        {/* Image upload row */}
+                        <div className="span-two" style={{ marginTop: '6px', padding: '16px', background: 'var(--bg)', borderRadius: '14px', border: '1px solid var(--border)' }}>
+                          <b style={{ fontSize: '13px', display: 'block', marginBottom: '10px' }}>Karta Muqova Rasmi:</b>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                            <div style={{
+                              width: '130px',
+                              height: '82px',
+                              borderRadius: '10px',
+                              overflow: 'hidden',
+                              border: '1.5px solid var(--border)',
+                              background: '#000',
+                              flexShrink: 0
+                            }}>
+                              <img
+                                src={pg.bottomBannerImage || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80"}
+                                alt="Bottom Card"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80';
+                                }}
+                              />
+                            </div>
+                            <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              <input
+                                value={pg.bottomBannerImage || ''}
+                                onChange={e => updatePgField('bottomBannerImage', e.target.value)}
+                                placeholder="https://images.unsplash.com/... yoki qurilmadan rasm yuklang"
+                                style={{ fontSize: '12.5px' }}
+                              />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                <label
+                                  className="outline-btn"
+                                  style={{
+                                    padding: '7px 14px',
+                                    fontSize: '12px',
+                                    fontWeight: 700,
+                                    cursor: uploadingGuideImage ? 'wait' : 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    margin: 0
+                                  }}
+                                >
+                                  <ImageIcon size={14} />
+                                  <span>{uploadingGuideImage ? 'Yuklanmoqda...' : 'Qurilmadan rasm yuklash (Storage)'}</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleBottomBannerImageUpload}
+                                    style={{ display: 'none' }}
+                                    disabled={uploadingGuideImage}
+                                  />
+                                </label>
+                                {pg.bottomBannerImage && (
+                                  <button
+                                    type="button"
+                                    onClick={() => updatePgField('bottomBannerImage', '')}
+                                    style={{
+                                      background: 'none',
+                                      border: 'none',
+                                      color: 'var(--muted)',
+                                      fontSize: '12px',
+                                      cursor: 'pointer',
+                                      textDecoration: 'underline'
+                                    }}
+                                  >
+                                    Asl holatga qaytarish
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 

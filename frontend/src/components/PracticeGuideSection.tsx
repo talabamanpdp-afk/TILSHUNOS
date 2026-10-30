@@ -970,7 +970,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             gap: 20px;
           }
           .practice-card-media {
-            height: 200px;
+            height: 200px !important;
           }
           .practice-shadowing-media {
             height: 220px;
@@ -2275,28 +2275,63 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           </div>
 
           {/* ===================================================== */}
-          {/* BOTTOM CTA BANNER: AMALIY QO'LLANMA — SINAB KO'RISH */}
+          {/* BOTTOM CARD: AMALIY QO'LLANMA (ADMIN SOZLAYDI & RASM BILAN) */}
           {/* ===================================================== */}
-          <div className="practice-bottom-cta-banner">
-            <div className="practice-cta-content">
-              <span className="practice-cta-kicker">AMALIY QO‘LLANMA</span>
-              <h3 className="practice-cta-heading">
-                O‘zingizni amalda sinab ko‘ring
-              </h3>
-              <p className="practice-cta-desc">
-                7 ta ko‘nikma moduli bo‘yicha to‘liq interaktiv mashqlar, AI repetitor va shaxsiy testlarni boshlang.
-              </p>
-            </div>
+          <div className={`practice-skill-card practice-bottom-card ${isDarkMode ? 'dark-card' : ''}`}>
+            <div className="practice-card-grid">
+              {/* Media Image: Admin yuklagan rasm */}
+              <div className="practice-card-media" style={{ height: '280px' }}>
+                <img
+                  src={config.bottomBannerImage || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80"}
+                  alt={config.bottomBannerTitle || "Amaliy qo‘llanma"}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80';
+                  }}
+                />
+              </div>
 
-            <button
-              id="try-yourself-btn"
-              onClick={() => onBegin('register')}
-              className="practice-cta-action-btn"
-            >
-              <Sparkles size={18} />
-              <span>O‘zingizni sinab ko‘ring</span>
-              <ArrowRight size={17} />
-            </button>
+              {/* Content Column: Kicker, Title, Description & Action Button */}
+              <div className="practice-content-col" style={{ justifyContent: 'center' }}>
+                <div>
+                  <span className="practice-card-badge" style={{ marginBottom: '12px' }}>
+                    <Sparkles size={14} /> {config.bottomBannerKicker || "AMALIY QO‘LLANMA"}
+                  </span>
+                  <h3 style={{ margin: '4px 0 10px', fontSize: 'clamp(24px, 2.5vw, 32px)', fontWeight: 850, color: 'var(--pg-text-heading)' }}>
+                    {config.bottomBannerTitle || "O‘zingizni amalda sinab ko‘ring"}
+                  </h3>
+                  <p style={{ margin: '0 0 22px', fontSize: '15px', color: 'var(--pg-text-muted)', lineHeight: '1.7' }}>
+                    {config.bottomBannerDesc || "7 ta ko‘nikma moduli bo‘yicha to‘liq interaktiv mashqlar, AI repetitor va shaxsiy testlarni boshlang."}
+                  </p>
+                </div>
+
+                <div>
+                  <button
+                    id="try-yourself-btn"
+                    onClick={() => onBegin('register')}
+                    className="primary-btn practice-cta-action-btn"
+                    style={{
+                      padding: '14px 28px',
+                      borderRadius: '14px',
+                      fontSize: '15px',
+                      fontWeight: 800,
+                      background: 'linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%)',
+                      color: '#fff',
+                      boxShadow: '0 8px 24px rgba(120, 105, 245, 0.4)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '9px',
+                      cursor: 'pointer',
+                      transition: 'all 0.25s ease',
+                      border: 'none'
+                    }}
+                  >
+                    <Sparkles size={18} />
+                    <span>{config.bottomBannerBtnText || config.ctaButtonText || "O‘zingizni sinab ko‘ring"}</span>
+                    <ArrowRight size={17} />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -79,6 +79,11 @@ export interface PracticeGuideConfig {
   title: string;
   subtitle: string;
   ctaButtonText: string;
+  bottomBannerKicker?: string;
+  bottomBannerTitle?: string;
+  bottomBannerDesc?: string;
+  bottomBannerBtnText?: string;
+  bottomBannerImage?: string;
   languages: Record<string, LanguagePracticeGuide>;
 }
 
@@ -87,6 +92,11 @@ export const DEFAULT_PRACTICE_GUIDE: PracticeGuideConfig = {
   title: "Qisqacha ko‘zdan kechirish",
   subtitle: "O‘rganmoqchi bo‘lgan tilingiz va ko‘nikma modulini tanlang, dars materiallarini qisqacha ko‘zdan kechiring.",
   ctaButtonText: "O‘zingizni sinab ko‘ring",
+  bottomBannerKicker: "AMALIY QO‘LLANMA",
+  bottomBannerTitle: "O‘zingizni amalda sinab ko‘ring",
+  bottomBannerDesc: "7 ta ko‘nikma moduli bo‘yicha to‘liq interaktiv mashqlar, AI repetitor va shaxsiy testlarni boshlang.",
+  bottomBannerBtnText: "O‘zingizni sinab ko‘ring",
+  bottomBannerImage: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80",
   languages: {
     en: {
       langCode: "en",
