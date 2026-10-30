@@ -350,7 +350,7 @@ public class TeachersController : ControllerBase
             students = await _db.Users
                 .Include(u => u.Profile)
                 .Include(u => u.LearningLanguages)
-                .Where(u => u.Id != teacherId.Value && u.Role != UserRole.Teacher && u.Role != UserRole.SuperAdmin)
+                .Where(u => u.Id != teacherId.Value && u.Role == UserRole.Learner)
                 .Take(25)
                 .ToListAsync();
         }

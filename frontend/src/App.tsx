@@ -1801,16 +1801,29 @@ function App() {
 
   // Load public CMS content from Supabase
   useEffect(() => {
-    api.getCms()
-      .then(c => {
-        if (c) {
-          setCmsContent(c);
-          try {
-            localStorage.setItem('tilshunos_cms_data', JSON.stringify(c));
-          } catch {}
-        }
-      })
-      .catch(() => {});
+    let mounted = true;
+    const fetchCms = () => {
+      api.getCms()
+        .then(c => {
+          if (mounted && c) {
+            setCmsContent(c);
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchCms();
+
+    const handleCmsSaved = (e: any) => {
+      if (mounted && e.detail) {
+        setCmsContent(e.detail);
+      }
+    };
+    window.addEventListener('tilshunos_cms_saved', handleCmsSaved);
+    return () => {
+      mounted = false;
+      window.removeEventListener('tilshunos_cms_saved', handleCmsSaved);
+    };
   }, []);
 
   // Resend cooldown timer

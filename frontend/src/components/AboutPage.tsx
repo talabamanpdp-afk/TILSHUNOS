@@ -58,7 +58,7 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
             <div className="nav-divider-v" />
             <button className="about-nav-brand" onClick={handleBack}>
               <span className="brand-icon-box">
-                <img src="/brand_logo.png" alt="TILSHUNOS" className="brand-logo-img" />
+                <img src={cms?.brandLogo || "/brand_logo.png"} alt="TILSHUNOS" className="brand-logo-img" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }} />
               </span>
               <span className="brand-main">TILSHUNOS<span className="brand-dot">.</span></span>
             </button>

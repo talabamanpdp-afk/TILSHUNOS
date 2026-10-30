@@ -78,23 +78,13 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
     setLoading(true);
     try {
       const res = await (api as any).getAssignedStudents();
-      if (Array.isArray(res) && res.length > 0) {
+      if (Array.isArray(res)) {
         setStudents(res);
       } else {
-        // Fallback demo students if database is just seeded
-        setStudents([
-          { id: '11111111-1111-1111-1111-111111111111', name: 'Madina Karimova', email: 'madina@gmail.com', targetLevel: 'B2', dailyGoalMinutes: 30, assignedTasksCount: 4, vocabularyCount: 142, joinedDate: '2026-03-15' },
-          { id: '22222222-2222-2222-2222-222222222222', name: 'Jasur Bekmurodov', email: 'jasur@gmail.com', targetLevel: 'B1', dailyGoalMinutes: 20, assignedTasksCount: 2, vocabularyCount: 95, joinedDate: '2026-04-02' },
-          { id: '33333333-3333-3333-3333-333333333333', name: 'Malika Rustamova', email: 'malika@mail.uz', targetLevel: 'A2', dailyGoalMinutes: 15, assignedTasksCount: 1, vocabularyCount: 68, joinedDate: '2026-05-10' },
-          { id: '44444444-4444-4444-4444-444444444444', name: 'Azizbek Aliyev', email: 'azizbek@gmail.com', targetLevel: 'C1', dailyGoalMinutes: 45, assignedTasksCount: 5, vocabularyCount: 310, joinedDate: '2026-02-20' },
-        ]);
+        setStudents([]);
       }
     } catch {
-      setStudents([
-        { id: '11111111-1111-1111-1111-111111111111', name: 'Madina Karimova', email: 'madina@gmail.com', targetLevel: 'B2', dailyGoalMinutes: 30, assignedTasksCount: 4, vocabularyCount: 142, joinedDate: '2026-03-15' },
-        { id: '22222222-2222-2222-2222-222222222222', name: 'Jasur Bekmurodov', email: 'jasur@gmail.com', targetLevel: 'B1', dailyGoalMinutes: 20, assignedTasksCount: 2, vocabularyCount: 95, joinedDate: '2026-04-02' },
-        { id: '33333333-3333-3333-3333-333333333333', name: 'Malika Rustamova', email: 'malika@mail.uz', targetLevel: 'A2', dailyGoalMinutes: 15, assignedTasksCount: 1, vocabularyCount: 68, joinedDate: '2026-05-10' },
-      ]);
+      setStudents([]);
     } finally {
       setLoading(false);
     }
@@ -411,6 +401,20 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
 
             {loading ? (
               <div style={{ padding: '40px', textAlign: 'center', color: dark ? '#94a3b8' : '#64748b' }}>O'quvchilar yuklanmoqda...</div>
+            ) : students.length === 0 ? (
+              <div style={{
+                padding: '48px 24px',
+                textAlign: 'center',
+                background: dark ? '#202032' : '#ffffff',
+                border: dark ? '1px dashed #343449' : '1px dashed #cbd5e1',
+                borderRadius: '16px'
+              }}>
+                <GraduationCap size={44} style={{ color: dark ? '#6366f1' : '#4f46e5', margin: '0 auto 12px' }} />
+                <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '0 0 6px', color: dark ? '#f1f0fc' : '#0f172a' }}>Hozircha biriktirilgan o‘quvchilar yo‘q</h3>
+                <p style={{ fontSize: '13px', color: dark ? '#94a3b8' : '#64748b', maxWidth: '420px', margin: '0 auto' }}>
+                  Yangi o‘quvchilar platformaga a’zo bo‘lib sizga biriktirilganda bu yerda aks etadi va ularning barcha natijalari 0 dan boshlanadi.
+                </p>
+              </div>
             ) : (
               <div style={{
                 display: 'grid',

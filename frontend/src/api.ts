@@ -380,14 +380,106 @@ export const api = {
 
   // CMS
   async getCms() {
-    return request<{ hero: string; description: string; cta: string; about: string; header: string; footer: string; contact: string }>('/cms');
+    const supabaseUrl = 'https://yipexommqztxnvpckqyi.supabase.co';
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcGV4b21tcXp0eG52cGNrcXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwODU0MDYsImV4cCI6MjEwODY2MTQwNn0.P17uUwPdlEJnOxorTav-wIExlfzUJGPEIqryrvGvfPI';
+
+    try {
+      // 1. Direct fetch from Supabase PostgreSQL (instant 30-50ms, never sleeps)
+      const res = await fetch(`${supabaseUrl}/rest/v1/system_settings?key=eq.welcome_cms&select=*`, {
+        headers: {
+          'apikey': anonKey,
+          'Authorization': `Bearer ${anonKey}`
+        }
+      });
+      if (res.ok) {
+        const rows = await res.json();
+        if (Array.isArray(rows) && rows.length > 0 && rows[0].value_json) {
+          const cmsData = typeof rows[0].value_json === 'string'
+            ? JSON.parse(rows[0].value_json)
+            : rows[0].value_json;
+
+          try {
+            localStorage.setItem('tilshunos_cms_data', JSON.stringify(cmsData));
+          } catch {}
+          return cmsData;
+        }
+      }
+    } catch (err) {
+      console.warn('Direct Supabase getCms error, falling back to Render API:', err);
+    }
+
+    // 2. Fallback to Render backend API
+    try {
+      const data = await request<any>('/cms');
+      if (data) {
+        try {
+          localStorage.setItem('tilshunos_cms_data', JSON.stringify(data));
+        } catch {}
+        return data;
+      }
+    } catch {}
+
+    // 3. Fallback to local storage
+    try {
+      const cached = localStorage.getItem('tilshunos_cms_data');
+      if (cached) return JSON.parse(cached);
+    } catch {}
+
+    return null;
   },
 
   async saveCms(data: any) {
-    return request<any>('/cms', {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    });
+    const supabaseUrl = 'https://yipexommqztxnvpckqyi.supabase.co';
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcGV4b21tcXp0eG52cGNrcXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwODU0MDYsImV4cCI6MjEwODY2MTQwNn0.P17uUwPdlEJnOxorTav-wIExlfzUJGPEIqryrvGvfPI';
+    let saved = false;
+
+    // 1. Direct write to Supabase PostgreSQL table (instant, permanent, never sleeps)
+    try {
+      const res = await fetch(`${supabaseUrl}/rest/v1/system_settings`, {
+        method: 'POST',
+        headers: {
+          'apikey': anonKey,
+          'Authorization': `Bearer ${anonKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({
+          key: 'welcome_cms',
+          value_json: typeof data === 'string' ? data : JSON.stringify(data),
+          updated_at_utc: new Date().toISOString()
+        })
+      });
+      if (res.ok) {
+        saved = true;
+      }
+    } catch (err) {
+      console.warn('Direct Supabase saveCms error:', err);
+    }
+
+    // 2. Also sync to Render backend
+    try {
+      await request<any>('/cms', {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      saved = true;
+    } catch (err) {
+      console.warn('Render backend saveCms error:', err);
+    }
+
+    if (!saved) {
+      throw new Error('Supabasega saqlashda xatolik yuz berdi. Internet ulanishingizni tekshiring.');
+    }
+
+    // 3. Always update local storage and broadcast to active tabs
+    try {
+      localStorage.setItem('tilshunos_cms_data', JSON.stringify(data));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('tilshunos_cms_saved', { detail: data }));
+      }
+    } catch {}
+
+    return { success: true, data };
   },
 
   async uploadCmsImage(data: { dataBase64?: string; file?: File | Blob; fileName?: string; contentType?: string }) {

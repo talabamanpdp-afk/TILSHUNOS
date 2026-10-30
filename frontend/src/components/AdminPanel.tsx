@@ -78,6 +78,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   });
 
   // CMS Content from Supabase
+  const [cmsLoadedFromBackend, setCmsLoadedFromBackend] = useState(false);
   const [cms, setCms] = useState<any>(() => {
     try {
       const cached = localStorage.getItem('tilshunos_cms_data');
@@ -234,6 +235,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   const [editingTeamMember, setEditingTeamMember] = useState({ name: '', role: '', bio: '', avatar: '' });
   const [uploadingFounder, setUploadingFounder] = useState(false);
   const [uploadingTeamPhoto, setUploadingTeamPhoto] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [newFaq, setNewFaq] = useState({ q: '', a: '' });
 
   // Game Topics & Words from Supabase
@@ -309,6 +311,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       }
 
       if (cmsRes.status === 'fulfilled' && cmsRes.value) {
+        setCmsLoadedFromBackend(true);
+        try {
+          localStorage.setItem('tilshunos_cms_data', JSON.stringify(cmsRes.value));
+        } catch {}
         setCms((prev: any) => ({
           ...prev,
           ...cmsRes.value,
@@ -566,9 +572,20 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
 
   const saveCmsChanges = async () => {
     try {
-      await api.saveCms(cms);
+      let dataToSave = cms;
+      if (!cmsLoadedFromBackend) {
+        try {
+          const fresh = await api.getCms();
+          if (fresh) {
+            dataToSave = { ...fresh, ...cms };
+            setCms(dataToSave);
+            setCmsLoadedFromBackend(true);
+          }
+        } catch {}
+      }
+      await api.saveCms(dataToSave);
       try {
-        localStorage.setItem('tilshunos_cms_data', JSON.stringify(cms));
+        localStorage.setItem('tilshunos_cms_data', JSON.stringify(dataToSave));
       } catch {}
       notify('Welcome sahifasi va CMS ma’lumotlari Supabasega saqlandi! ✓');
     } catch (err: any) {
@@ -605,6 +622,46 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       notify('A’zo o‘chirildi va Supabasega saqlandi! ✓');
     } catch {
       notify('A’zo olib tashlandi. Saqlash tugmasini bosing! ✓');
+    }
+  };
+
+  const handleBrandLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      notify('Faqat rasm fayllari (PNG, SVG, JPG, WebP) yuklanishi mumkin!');
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      let dataBase64 = '';
+      try {
+        dataBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(file);
+        });
+      } catch {}
+
+      const res = await api.uploadCmsImage({
+        file,
+        dataBase64,
+        fileName: `brand-logo-${Date.now()}-${file.name}`,
+        contentType: file.type || 'image/png'
+      });
+      if (!res || !res.url) throw new Error('Logo yuklanmadi');
+
+      const updatedCms = { ...cms, brandLogo: res.url };
+      setCms(updatedCms);
+      localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+      await api.saveCms(updatedCms);
+      notify('Loyiha Brand Logosi muvaffaqiyatli yuklandi va Supabasega saqlandi! ✓');
+    } catch (err: any) {
+      notify(err.message || 'Logo yuklashda xatolik yuz berdi', true);
+    } finally {
+      setUploadingLogo(false);
+      if (e.target) e.target.value = '';
     }
   };
 
@@ -1023,7 +1080,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     return users.filter(u => {
       if (isSuperAdmin(u)) return false;
       const roleStr = String(u.role || '').toLowerCase();
-      return roleStr === 'learner' || u.role === 1 || (!roleStr && u.role !== 2 && u.role !== 3 && u.role !== 4);
+      return roleStr === 'learner' || u.role === 1;
     });
   }, [users]);
 
@@ -1294,8 +1351,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     });
   }, [generalVocab, vocabSearch]);
 
-  const totalStudents = stats.learnersCount !== undefined ? stats.learnersCount : learners.length;
-  const levelDist = stats.studentsByLevel || { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 };
+  const totalStudents = learners.length;
+  const levelDist = (totalStudents > 0 && stats.studentsByLevel)
+    ? stats.studentsByLevel
+    : { A1: totalStudents > 0 ? totalStudents : 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 };
   const verifiedPercent = stats.totalUsers > 0 ? Math.round(((stats.verifiedUsers || 0) / stats.totalUsers) * 100) : 100;
 
   return (
@@ -1305,7 +1364,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       <aside className={`sidebar ${mobileNav ? 'mobile-open' : ''}`}>
         <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div className="brand-mark" style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#fff', display: 'grid', placeItems: 'center', overflow: 'hidden', padding: '2px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', flexShrink: 0 }}>
-            <img src="/brand_logo.png" alt="TILSHUNOS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }} />
+            <img src={cms?.brandLogo || "/brand_logo.png"} alt="TILSHUNOS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }} />
           </div>
           <div>
             <div className="brand-name">TILSHUNOS<span>.</span></div>
@@ -2866,6 +2925,62 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               {/* TAB 1: HERO & TUGMALAR */}
               {cmsTab === 'hero' && (
                 <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                  {/* Brand Logo Uploader Card */}
+                  <div className="panel" style={{ padding: '24px', gridColumn: '1 / -1' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{
+                          width: '56px',
+                          height: '56px',
+                          borderRadius: '14px',
+                          background: '#ffffff',
+                          display: 'grid',
+                          placeItems: 'center',
+                          padding: '6px',
+                          border: '2px solid var(--border)',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                          flexShrink: 0
+                        }}>
+                          <img
+                            src={cms.brandLogo || '/brand_logo.png'}
+                            alt="TILSHUNOS Logo"
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }}
+                          />
+                        </div>
+                        <div>
+                          <h3 style={{ margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <ShieldCheck size={18} style={{ color: 'var(--purple)' }} /> Loyiha Brand Logosi (Platforma Logotipi)
+                          </h3>
+                          <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
+                            Platformaning barcha sahifalari, navbar, admin panel va mobil versiyasidagi rasmiy logoni yangilang.
+                          </p>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <label className="primary-btn" style={{ cursor: 'pointer', padding: '9px 16px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <Upload size={14} /> {uploadingLogo ? 'Yuklanmoqda...' : 'Yangi Logo Yuklash (PNG/SVG)'}
+                          <input type="file" accept="image/*" onChange={handleBrandLogoUpload} style={{ display: 'none' }} disabled={uploadingLogo} />
+                        </label>
+                        {cms.brandLogo && (
+                          <button
+                            className="secondary-btn"
+                            onClick={async () => {
+                              const updated = { ...cms, brandLogo: '' };
+                              setCms(updated);
+                              localStorage.setItem('tilshunos_cms_data', JSON.stringify(updated));
+                              await api.saveCms(updated);
+                              notify('Standart loyiha logosiga qaytarildi! ✓');
+                            }}
+                            style={{ padding: '9px 14px', fontSize: '12px' }}
+                          >
+                            Standartga Qaytarish
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="panel" style={{ padding: '24px' }}>
                     <h3 style={{ marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Sparkles size={18} style={{ color: 'var(--purple)' }} /> Asosiy Hero Matnlari
