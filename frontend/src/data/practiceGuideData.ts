@@ -480,3 +480,4 @@ export const DEFAULT_PRACTICE_GUIDE: PracticeGuideConfig = {
     }
   }
 };
+

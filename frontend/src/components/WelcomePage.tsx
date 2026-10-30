@@ -12,6 +12,7 @@ import {
 } from '../utils/speech';
 import { PracticeGuideSection } from './PracticeGuideSection';
 import { PracticeGuideConfig } from '../data/practiceGuideData';
+import { CEFRRoadmapSection } from './cefr-roadmap/CEFRRoadmapSection';
 
 export interface CmsConfig {
   hero?: string;
@@ -982,38 +983,12 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         dark={dark}
       />
 
-      {/* 4. CEFR ROADMAP SECTION */}
-      <section id="cefr" className="welcome-cefr-section">
-        <div className="section-container">
-          <div className="section-header scroll-reveal">
-            <span className="section-kicker">{cefrKicker}</span>
-            <h2>{cefrTitle}</h2>
-            <p>{cefrSubtitle}</p>
-          </div>
-
-          <div className="cefr-cards-grid scroll-stagger-parent">
-            {cefrLevelsList.map(lvl => (
-              <div key={lvl.code} className="cefr-card">
-                <div className="cefr-badge" style={{ background: `${lvl.color}15`, color: lvl.color, borderColor: `${lvl.color}40` }}>
-                  {lvl.code}
-                </div>
-                <h3 className="cefr-name">{lvl.name}</h3>
-                <p className="cefr-desc">{lvl.desc}</p>
-                <button
-                  className="cefr-action-btn"
-                  onClick={() => {
-                    if (onSelectLevel) onSelectLevel(lvl.code);
-                    onBegin('register');
-                  }}
-                >
-                  <span>{lvl.code} dan boshlash</span>
-                  <ArrowRight size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 4. ILLUSTRATED INTERACTIVE CEFR ROADMAP SECTION */}
+      <CEFRRoadmapSection
+        onBegin={onBegin}
+        onSelectLevel={onSelectLevel}
+        dark={dark}
+      />
 
       {/* 5. LEARNING SKILLS SECTION */}
       <section id="skills" className="welcome-skills-section">

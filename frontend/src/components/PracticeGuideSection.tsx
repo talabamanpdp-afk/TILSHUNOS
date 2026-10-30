@@ -1325,3 +1325,4 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     </section>
   );
 }
+
