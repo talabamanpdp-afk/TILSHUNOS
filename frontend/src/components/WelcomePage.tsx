@@ -18,6 +18,7 @@ import { LearningProcessSection } from './learning-process/LearningProcessSectio
 import { FeaturesSection } from './features/FeaturesSection';
 import { AboutSection } from './about/AboutSection';
 import { FaqSection } from './faq/FaqSection';
+import { FooterSection } from './footer/FooterSection';
 
 export interface CmsConfig {
   hero?: string;
@@ -1089,145 +1090,15 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         </div>
       </section>
 
-      {/* 11. DETAILED FOOTER (With Founder and Dynamic Contacts + Header Background Image) */}
-      <footer className={`welcome-footer ${(heroBgDesktop || heroBgMobile) ? 'has-custom-bg' : ''}`}>
-        {/* Header & Hero Background Image also displayed in Footer */}
-        {(heroBgDesktop || heroBgMobile) && (
-          <div className="holo-custom-bg-layer" aria-hidden="true">
-            {heroBgDesktop && (
-              <div
-                className={`holo-custom-bg holo-custom-bg-desktop ${heroBgMobile ? 'desktop-only-bg' : ''}`}
-                style={{
-                  backgroundImage: `url(${heroBgDesktop})`,
-                  backgroundPosition: 'center bottom'
-                }}
-              />
-            )}
-            {heroBgMobile && (
-              <div
-                className="holo-custom-bg holo-custom-bg-mobile mobile-only-bg"
-                style={{
-                  backgroundImage: `url(${heroBgMobile})`,
-                  backgroundPosition: 'center bottom'
-                }}
-              />
-            )}
-            <div
-              className="holo-custom-bg-overlay"
-              style={{
-                background: dark
-                  ? 'linear-gradient(180deg, rgba(11, 19, 43, 0.88) 0%, rgba(11, 19, 43, 0.96) 100%)'
-                  : 'linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.95) 100%)',
-                backdropFilter: 'blur(2px)',
-                WebkitBackdropFilter: 'blur(2px)'
-              }}
-            />
-          </div>
-        )}
-
-        <div className="footer-container">
-          <div className="footer-grid scroll-stagger-parent">
-            {/* Col 1: Brand & Founder */}
-            <div className="footer-col brand-col">
-              <div className="footer-brand">
-                <span className="brand-icon-box small">
-                  <img src={cms?.brandLogo || "/brand_logo.png"} alt="TILSHUNOS" className="brand-logo-img" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }} />
-                </span>
-                <span className="brand-main">TILSHUNOS<span>.</span></span>
-              </div>
-              <p className="footer-brand-desc">
-                Har bir inson uchun til o‘rganishni qulay, tizimli va maroqli qilishga yo‘naltirilgan zamonaviy ta’lim ekotizimi.
-              </p>
-
-              {/* Founder Spotlight */}
-              <div className="founder-card">
-                <span className="founder-caption">LOYIHA ASOSCHISI</span>
-                <strong className="founder-name">{founderName}</strong>
-                <p className="founder-text">{founderBio}</p>
-              </div>
-            </div>
-
-            {/* Group Col 2 & Col 3: Side-by-side on mobile */}
-            <div className="footer-links-duo">
-              {/* Col 2: Navigation Links */}
-              <div className="footer-col footer-col-nav">
-                <h4>Platforma</h4>
-                <ul className="footer-links-list">
-                  <li><a href="#preview">Interfeys ko‘rinishi</a></li>
-                  <li><a href="#cefr">CEFR Standartlari</a></li>
-                  <li><a href="#skills">5 ta Ko‘nikma</a></li>
-                  <li><a href="#how-it-works">Qanday ishlaydi?</a></li>
-                  <li><a href="#features">Imkoniyatlar</a></li>
-                </ul>
-              </div>
-
-              {/* Col 3: About & Help */}
-              <div className="footer-col footer-col-info">
-                <h4>Ma’lumotlar</h4>
-                <ul className="footer-links-list">
-                  <li><a href="#about" onClick={(e) => { e.preventDefault(); onOpenAbout(); }}>Biz haqimizda (Batafsil)</a></li>
-                  <li><a href="#faq">Ko‘p beriladigan savollar</a></li>
-                  <li><a href="#features">O‘qituvchilar bilan ishlash</a></li>
-                  <li><button className="footer-text-btn" onClick={() => onBegin('login')}>Hisobga kirish</button></li>
-                  <li><button className="footer-text-btn" onClick={() => onBegin('register')}>Ro‘yxatdan o‘tish</button></li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Col 4: Dynamic Contacts (Only shows what Admin enters!) */}
-            <div className="footer-col">
-              <h4>Aloqa va Tarmoqlar</h4>
-              <p className="contacts-intro">Taklif yoki savollaringiz bo‘lsa, biz bilan bog‘laning:</p>
-              <div className="dynamic-contacts-list">
-                {contacts.telegram && (
-                  <a
-                    href={contacts.telegram.startsWith('http') ? contacts.telegram : `https://t.me/${contacts.telegram.replace('@', '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="contact-pill-item telegram"
-                  >
-                    <Send size={15} />
-                    <span>Telegram: {contacts.telegram}</span>
-                  </a>
-                )}
-
-                {contacts.instagram && (
-                  <a
-                    href={contacts.instagram.startsWith('http') ? contacts.instagram : `https://instagram.com/${contacts.instagram.replace('@', '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="contact-pill-item instagram"
-                  >
-                    <ExternalLink size={15} />
-                    <span>Instagram: {contacts.instagram}</span>
-                  </a>
-                )}
-
-                {contacts.email && (
-                  <a href={`mailto:${contacts.email}`} className="contact-pill-item email">
-                    <span>Email: {contacts.email}</span>
-                  </a>
-                )}
-
-                {contacts.phone && (
-                  <a href={`tel:${contacts.phone}`} className="contact-pill-item phone">
-                    <span>Tel: {contacts.phone}</span>
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="footer-bottom-bar">
-            <span>{footerText}</span>
-            <div className="footer-bottom-links">
-              <a href="#about" onClick={(e) => { e.preventDefault(); onOpenAbout(); }}>Maxfiylik siyosati</a>
-              <span className="dot-sep">·</span>
-              <a href="#about" onClick={(e) => { e.preventDefault(); onOpenAbout(); }}>Foydalanish shartlari</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* 11. DETAILED FOOTER (Matching user mockup with floating glass card & mobile accordion) */}
+      <FooterSection
+        cms={cms}
+        heroBgDesktop={heroBgDesktop}
+        heroBgMobile={heroBgMobile}
+        dark={dark}
+        onBegin={onBegin}
+        onOpenAbout={onOpenAbout}
+      />
 
     </div>
   );
