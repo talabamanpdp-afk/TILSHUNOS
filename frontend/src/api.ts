@@ -503,85 +503,105 @@ export const api = {
       } catch {}
     }
 
-    // Client-side smart optimizer: scales down giant camera photos (>2560px) while maintaining pristine crispness
+    // Strict 100 KB file size optimizer for Supabase Storage efficiency
+    const MAX_ALLOWED_BYTES = 100 * 1024; // 100 KB limit
     let optimizedBlob: Blob | null = rawBlob;
     let finalContentType = initialType;
 
-    if (rawBlob && typeof window !== 'undefined' && !initialType.includes('svg') && !initialType.includes('gif')) {
+    if (rawBlob && typeof window !== 'undefined' && !initialType.includes('svg')) {
       try {
-        const optimized = await new Promise<{ blob: Blob; contentType: string }>((resolve) => {
-          // If already very small (< 1MB) and modern format, use directly
-          if (rawBlob!.size < 1024 * 1024 && (initialType === 'image/webp' || initialType === 'image/jpeg' || initialType === 'image/png')) {
-            resolve({ blob: rawBlob!, contentType: initialType });
-            return;
-          }
-
+        const optimized = await new Promise<{ blob: Blob; contentType: string }>((resolve, reject) => {
           const imgUrl = URL.createObjectURL(rawBlob!);
           const img = new Image();
           img.onload = () => {
             URL.revokeObjectURL(imgUrl);
-            let w = img.naturalWidth || img.width;
-            let h = img.naturalHeight || img.height;
-            const maxDim = 2560; // 2K/QHD quality for razor-sharp hero/background visuals
+            let originalW = img.naturalWidth || img.width;
+            let originalH = img.naturalHeight || img.height;
 
-            if (w > maxDim || h > maxDim) {
-              if (w > h) {
-                h = Math.round((h * maxDim) / w);
-                w = maxDim;
-              } else {
-                w = Math.round((w * maxDim) / h);
-                h = maxDim;
-              }
-            }
-
-            const canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-              resolve({ blob: rawBlob!, contentType: initialType });
-              return;
-            }
-
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, 0, 0, w, h);
-
-            // Compress to high quality WebP (0.90) or JPEG (0.90)
-            canvas.toBlob(
-              (b) => {
-                if (b && b.size < rawBlob!.size) {
-                  resolve({ blob: b, contentType: 'image/webp' });
+            // Step function to try compressing into <= 100 KB
+            const tryCompress = (maxDim: number, quality: number, callback: (resultBlob: Blob | null) => void) => {
+              let w = originalW;
+              let h = originalH;
+              if (w > maxDim || h > maxDim) {
+                if (w > h) {
+                  h = Math.round((h * maxDim) / w);
+                  w = maxDim;
                 } else {
-                  canvas.toBlob(
-                    (jb) => {
-                      if (jb && (jb.size < rawBlob!.size || rawBlob!.size > 2 * 1024 * 1024)) {
-                        resolve({ blob: jb, contentType: 'image/jpeg' });
-                      } else {
-                        resolve({ blob: rawBlob!, contentType: initialType });
-                      }
-                    },
-                    'image/jpeg',
-                    0.90
-                  );
+                  w = Math.round((w * maxDim) / h);
+                  h = maxDim;
                 }
-              },
-              'image/webp',
-              0.90
-            );
+              }
+
+              const canvas = document.createElement('canvas');
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                callback(rawBlob);
+                return;
+              }
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
+              ctx.drawImage(img, 0, 0, w, h);
+
+              canvas.toBlob(
+                (b) => callback(b),
+                'image/webp',
+                quality
+              );
+            };
+
+            // Attempt 1: 1600px, 0.82 quality
+            tryCompress(1600, 0.82, (b1) => {
+              if (b1 && b1.size <= MAX_ALLOWED_BYTES) {
+                resolve({ blob: b1, contentType: 'image/webp' });
+                return;
+              }
+              // Attempt 2: 1200px, 0.72 quality
+              tryCompress(1200, 0.72, (b2) => {
+                if (b2 && b2.size <= MAX_ALLOWED_BYTES) {
+                  resolve({ blob: b2, contentType: 'image/webp' });
+                  return;
+                }
+                // Attempt 3: 900px, 0.65 quality
+                tryCompress(900, 0.65, (b3) => {
+                  if (b3 && b3.size <= MAX_ALLOWED_BYTES) {
+                    resolve({ blob: b3, contentType: 'image/webp' });
+                    return;
+                  }
+                  const best = b3 || b2 || b1 || rawBlob!;
+                  if (best.size > MAX_ALLOWED_BYTES) {
+                    reject(new Error(`Rasm hajmi belgilangan 100 KB limitdan katta (${Math.round(best.size / 1024)} KB). Supabase xotirasi to‘lib qolmasligi uchun kichikroq rasm tanlang!`));
+                  } else {
+                    resolve({ blob: best, contentType: 'image/webp' });
+                  }
+                });
+              });
+            });
           };
           img.onerror = () => {
             URL.revokeObjectURL(imgUrl);
-            resolve({ blob: rawBlob!, contentType: initialType });
+            if (rawBlob!.size > MAX_ALLOWED_BYTES) {
+              reject(new Error(`Fayl hajmi 100 KB dan katta (${Math.round(rawBlob!.size / 1024)} KB)!`));
+            } else {
+              resolve({ blob: rawBlob!, contentType: initialType });
+            }
           };
           img.src = imgUrl;
         });
 
         optimizedBlob = optimized.blob;
         finalContentType = optimized.contentType;
-      } catch (err) {
-        console.warn('Image optimization skipped, using raw image:', err);
+      } catch (err: any) {
+        if (err?.message?.includes('100 KB')) {
+          throw err;
+        }
+        console.warn('Image optimization fallback:', err);
       }
+    }
+
+    if (optimizedBlob && optimizedBlob.size > MAX_ALLOWED_BYTES) {
+      throw new Error(`Rasm hajmi 100 KB dan oshmasligi kerak (hozirgi hajm: ${Math.round(optimizedBlob.size / 1024)} KB).`);
     }
 
     const cleanExt = finalContentType === 'image/webp' ? 'webp' : finalContentType === 'image/png' ? 'png' : finalContentType === 'image/svg+xml' ? 'svg' : finalContentType === 'image/gif' ? 'gif' : 'jpg';
