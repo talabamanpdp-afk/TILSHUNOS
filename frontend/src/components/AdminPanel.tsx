@@ -85,46 +85,48 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       if (cached) return JSON.parse(cached);
     } catch {}
     return {
-      heroImage: '/hero-tutor.jpg',
-    heroMobileImage: '/hero-tutor.jpg',
-    heroBgDesktop: '',
-    heroBgMobile: '',
-    hero: 'Yangi til. Yangi imkoniyatlar.',
-    description: 'TILSHUNOS bilan har kuni tizimli o‘rganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga chiqing.',
-    cta: 'Bepul boshlash',
-    secondaryCta: 'Platformani o‘rganish',
-    header: 'Imkoniyatlar, Biz haqimizda, Kirish',
-    heroFlags: ['🇬🇧', '🇷🇺', '🇩🇪', '🇺🇿'],
-    heroFlagsCount: '150+',
-    heroFlagsLabel: 'Tillarda',
-    metrics: {
-      useLiveStats: true,
-      metric1Value: '3+',
-      metric1Label: 'O‘quv Materiallari',
-      metric2Value: '50+',
-      metric2Label: 'Lug‘at So‘zlari',
-      metric3Value: '4+',
-      metric3Label: 'Jami Foydalanuvchilar'
-    },
-    authBanner: {
-      kicker: 'TILSHUNOS PLATFORMASI',
-      loginTitle: 'Qaytganingizdan xursandmiz!',
-      registerTitle: 'O‘rganish yo‘lingiz shu yerdan boshlanadi.',
-      verifyTitle: 'Emailingizni tasdiqlang',
-      subtitle: 'O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing.',
-      statNumber: '4+',
-      statLabel: 'asosiy ko‘nikma bitta platformada',
-      bgImage: ''
-    },
-    floatingBadge1: {
-      flag: '🇬🇧',
-      title: 'Basic English',
-      subtitle: '103 Darslik'
-    },
-    floatingBadge2: {
-      title: '9 / 12 Quiz',
-      subtitle: 'Speaking ✓'
-    },
+      heroImage: 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/Global%20Language%20Learning%20Workspace_ba49fd.jpg',
+      heroMobileImage: 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/Global%20Language%20Study%20Desk_195231.jpg',
+      heroBgDesktop: 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254439976_c6auer.webp',
+      heroBgMobile: 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254446169_xxtbf7.webp',
+      hero: 'Yangi tilni erkin gapiring',
+      heroBadge: '99 PERCENT',
+      heroBadgeFull: 'TILSHUNOS 2.0 · ILG‘OR TIL O‘RGANISH EKOTIZIMI',
+      description: 'TILSHUNOS bilan har kuni tizimli o‘rganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga chiqing.',
+      cta: 'Hoziroq Boshlash',
+      secondaryCta: 'Platformani o‘rganish',
+      header: 'Imkoniyatlar, Biz haqimizda, Kirish',
+      heroFlags: ['🇬🇧', '🇷🇺', '🇩🇪', '🇺🇿'],
+      heroFlagsCount: '5+',
+      heroFlagsLabel: 'Tillarda',
+      metrics: {
+        useLiveStats: true,
+        metric1Value: '3+',
+        metric1Label: 'O‘quv Materiallari',
+        metric2Value: '50+',
+        metric2Label: 'Lug‘at So‘zlari',
+        metric3Value: '4+',
+        metric3Label: 'Jami Foydalanuvchilar'
+      },
+      authBanner: {
+        kicker: 'TILSHUNOS PLATFORMASI',
+        loginTitle: 'Qaytganingizdan xursandmiz!',
+        registerTitle: 'Yangi til uchun yangi qadam!',
+        verifyTitle: 'Emailingizni tasdiqlang',
+        subtitle: 'O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing.',
+        statNumber: '4+',
+        statLabel: 'asosiy ko‘nikmalar TILSHUNOS platformasida',
+        bgImage: 'https://avatars.mds.yandex.net/i?id=c545bee4d827964a82e6bb08c63a88ca65bd3bcc-5320607-images-thumbs&n=13'
+      },
+      floatingBadge1: {
+        flag: '🇬🇧',
+        title: 'Basic English',
+        subtitle: '103 Lesson'
+      },
+      floatingBadge2: {
+        title: '9 / 12 Quiz',
+        subtitle: 'Speaking ✓'
+      },
     previewSection: {
       kicker: 'AMALIY TAJRIBA',
       title: 'Platformaning haqiqiy imkoniyatlarini sinab ko‘ring',
@@ -344,7 +346,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
           floatingBadge1: {
             flag: '🇬🇧',
             title: 'Basic English',
-            subtitle: '103 Darslik',
+            subtitle: '103 Lesson',
             ...(prev?.floatingBadge1 || {}),
             ...(cmsRes.value?.floatingBadge1 || {})
           },

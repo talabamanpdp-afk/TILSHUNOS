@@ -1773,6 +1773,13 @@ function App() {
       return null;
     }
   });
+  const [cmsLoading, setCmsLoading] = useState<boolean>(() => {
+    try {
+      return !localStorage.getItem('tilshunos_cms_data');
+    } catch {
+      return true;
+    }
+  });
   const [dark, setDark] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('tilshunos_theme');
@@ -1807,9 +1814,15 @@ function App() {
         .then(c => {
           if (mounted && c) {
             setCmsContent(c);
+            try {
+              localStorage.setItem('tilshunos_cms_data', JSON.stringify(c));
+            } catch {}
           }
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => {
+          if (mounted) setCmsLoading(false);
+        });
     };
 
     fetchCms();
@@ -1817,6 +1830,7 @@ function App() {
     const handleCmsSaved = (e: any) => {
       if (mounted && e.detail) {
         setCmsContent(e.detail);
+        setCmsLoading(false);
       }
     };
     window.addEventListener('tilshunos_cms_saved', handleCmsSaved);
@@ -1998,6 +2012,40 @@ function App() {
   }
 
   if (page === 'welcome') {
+    if (cmsLoading && !cmsContent) {
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: dark ? '#0f172a' : '#f8f9fc',
+          color: dark ? '#fff' : '#1e293b',
+          gap: '18px',
+          fontFamily: 'Inter, system-ui, sans-serif'
+        }}>
+          <div style={{
+            width: '68px',
+            height: '68px',
+            borderRadius: '20px',
+            background: '#fff',
+            display: 'grid',
+            placeItems: 'center',
+            boxShadow: '0 10px 30px rgba(120, 105, 245, 0.25)',
+            padding: '4px',
+            animation: 'pulse 1.8s ease-in-out infinite'
+          }}>
+            <img src="/brand_logo.png" alt="TILSHUNOS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: '#7869f5' }}>
+            <span className="animate-spin" style={{ display: 'inline-block', width: '16px', height: '16px', border: '2.5px solid rgba(120, 105, 245, 0.25)', borderTopColor: '#7869f5', borderRadius: '50%' }} />
+            <span>TILSHUNOS yuklanmoqda...</span>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <WelcomePage
         cms={cmsContent}

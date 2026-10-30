@@ -159,8 +159,8 @@ interface WelcomePageProps {
 
 export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelectLevel }: WelcomePageProps) {
   const ensureSecureUrl = (u?: string) => u ? u.replace(/^http:\/\/tilshunos\.onrender\.com/i, 'https://tilshunos.onrender.com') : u;
-  const desktopTutorImg = ensureSecureUrl(cms?.heroImage) || '/hero-tutor.jpg';
-  const mobileTutorImg = ensureSecureUrl(cms?.heroMobileImage || cms?.heroImage) || '/hero-tutor.jpg';
+  const desktopTutorImg = ensureSecureUrl(cms?.heroImage) || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/Global%20Language%20Learning%20Workspace_ba49fd.jpg';
+  const mobileTutorImg = ensureSecureUrl(cms?.heroMobileImage || cms?.heroImage) || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/Global%20Language%20Study%20Desk_195231.jpg';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [previewTab, setPreviewTab] = useState<'vocab' | 'lesson' | 'progress'>('vocab');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
@@ -313,16 +313,17 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   };
 
   // Safe defaults & Hero texts
-  const heroTitle = cms?.hero || 'Yangi til. Yangi imkoniyatlar.';
+  const heroTitle = cms?.hero || 'Yangi tilni erkin gapiring';
+  const heroBadge = cms?.heroBadge || '99 PERCENT';
   const heroDesc = cms?.description || 'TILSHUNOS bilan har kuni tizimli o‘rganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga chiqing.';
-  const primaryCta = cms?.cta || 'Bepul boshlash';
+  const primaryCta = cms?.cta || 'Hoziroq Boshlash';
   const secondaryCta = cms?.secondaryCta || 'Platformani o‘rganish';
-  const heroBgDesktop = cms?.heroBgDesktop || cms?.headerBgDesktop || '';
-  const heroBgMobile = cms?.heroBgMobile || cms?.headerBgMobile || '';
+  const heroBgDesktop = cms?.heroBgDesktop || cms?.headerBgDesktop || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254439976_c6auer.webp';
+  const heroBgMobile = cms?.heroBgMobile || cms?.headerBgMobile || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254446169_xxtbf7.webp';
   const heroFlags = (cms?.heroFlags && cms.heroFlags.length > 0)
     ? cms.heroFlags
     : ['🇬🇧', '🇷🇺', '🇩🇪', '🇺🇿'];
-  const heroFlagsCount = cms?.heroFlagsCount || '150+';
+  const heroFlagsCount = cms?.heroFlagsCount || '5+';
   const heroFlagsLabel = cms?.heroFlagsLabel || 'Tillarda';
 
   // Dynamic top menu anchor links from cms.header
@@ -403,7 +404,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
     ? cms.metrics.metric3Label
     : 'Jami Foydalanuvchilar';
 
-  const flBadge1 = cms?.floatingBadge1 || { flag: '🇬🇧', title: 'Basic English', subtitle: '103 Darslik' };
+  const flBadge1 = cms?.floatingBadge1 || { flag: '🇬🇧', title: 'Basic English', subtitle: '103 Lesson' };
   const flBadge2 = cms?.floatingBadge2 || { title: '9 / 12 Quiz', subtitle: 'Speaking ✓' };
 
   // Preview Section Data
@@ -775,10 +776,19 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
             {/* Left Hero Column */}
             <div className="holo-hero-copy animate-fade-in-up">
               <h1 className="holo-headline">
-                Yangi tilni{' '}
-                <span className="holo-pill-badge">99 PERCENT</span>
-                <br />
-                erkin gapiring
+                {heroTitle.includes('erkin gapiring') ? (
+                  <>
+                    {heroTitle.replace('erkin gapiring', '').trim()}{' '}
+                    <span className="holo-pill-badge">{heroBadge}</span>
+                    <br />
+                    erkin gapiring
+                  </>
+                ) : (
+                  <>
+                    {heroTitle}{' '}
+                    {heroBadge && <span className="holo-pill-badge">{heroBadge}</span>}
+                  </>
+                )}
               </h1>
 
               <p className="holo-description">
