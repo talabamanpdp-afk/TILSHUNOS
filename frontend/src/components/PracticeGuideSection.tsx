@@ -61,9 +61,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   const [showReadingAnswers, setShowReadingAnswers] = useState(false);
 
   // Listening card states: Dedicated Music Player (NO video shown!)
+  const ytIframeRef = useRef<HTMLIFrameElement | null>(null);
   const [musicPlaying, setMusicPlaying] = useState(false);
   const [musicCurrentTime, setMusicCurrentTime] = useState(0); // in seconds
-  const musicDuration = 145; // 2:25 audio duration
+  const [musicDuration, setMusicDuration] = useState<number>(145); // default duration
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
   const [showListeningAnswers, setShowListeningAnswers] = useState(false);
 
@@ -81,10 +82,23 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
 
+  // Send postMessage command to YouTube iframe
+  const postYTCommand = (func: string, args: any[] = []) => {
+    try {
+      if (ytIframeRef.current && ytIframeRef.current.contentWindow) {
+        ytIframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func, args }),
+          '*'
+        );
+      }
+    } catch {}
+  };
+
   // Stop active speech and audio when changing language or slide
   const stopAllAudio = () => {
     stopSpeech();
     setActiveSpeakingText(null);
+    postYTCommand('pauseVideo');
     setMusicPlaying(false);
     setIsListeningVocabWord(false);
     setIsListeningVocabPhrase(false);
@@ -193,22 +207,73 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     });
   };
 
-  // Toggle Listening Music Player
+  // Toggle Listening Music Player (Strictly controls YouTube audio, NEVER reads text via TTS)
   const toggleMusicPlayer = () => {
+    stopSpeech(); // Stop any other speech
     if (musicPlaying) {
+      postYTCommand('pauseVideo');
       setMusicPlaying(false);
-      stopSpeech();
     } else {
+      postYTCommand('playVideo');
       setMusicPlaying(true);
-      // Also speak the listening text naturally with gaps
-      const speechText = currentLangData.listening.textWithGaps.replace(/\[\s*[^\]]+\s*\]/g, ' ... ');
-      playSpeech(speechText, {
-        lang: selectedLang as SupportedLang,
-        rate: playbackSpeed,
-        onEnd: () => {},
-        onError: () => {}
-      });
     }
+  };
+
+  // Seek audio to specific seconds (-5s, +5s, or clicking timeline)
+  const handleSeek = (targetSecs: number) => {
+    const maxDur = musicDuration > 0 ? musicDuration : 145;
+    const clamped = Math.max(0, Math.min(maxDur, targetSecs));
+    setMusicCurrentTime(clamped);
+    postYTCommand('seekTo', [clamped, true]);
+    if (!musicPlaying) {
+      postYTCommand('playVideo');
+      setMusicPlaying(true);
+    }
+  };
+
+  // Change playback speed: 1.0x -> 1.25x -> 1.5x -> 2.0x -> 0.75x
+  const SPEED_OPTIONS = [1.0, 1.25, 1.5, 2.0, 0.75];
+  const handleToggleSpeed = () => {
+    const nextIdx = (SPEED_OPTIONS.indexOf(playbackSpeed) + 1) % SPEED_OPTIONS.length;
+    const newSpeed = SPEED_OPTIONS[nextIdx];
+    setPlaybackSpeed(newSpeed);
+    postYTCommand('setPlaybackRate', [newSpeed]);
+  };
+
+  // Real-time synchronization with YouTube IFrame Player
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (data && data.event === 'infoDelivery' && data.info) {
+          if (typeof data.info.currentTime === 'number') {
+            setMusicCurrentTime(Math.floor(data.info.currentTime));
+          }
+          if (typeof data.info.duration === 'number' && data.info.duration > 0) {
+            setMusicDuration(Math.floor(data.info.duration));
+          }
+          if (typeof data.info.playerState === 'number') {
+            // 1 = playing, 2 = paused, 0 = ended
+            if (data.info.playerState === 1) {
+              setMusicPlaying(true);
+            } else if (data.info.playerState === 2 || data.info.playerState === 0) {
+              setMusicPlaying(false);
+            }
+          }
+        }
+      } catch {}
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  const handleIframeLoad = () => {
+    try {
+      if (ytIframeRef.current && ytIframeRef.current.contentWindow) {
+        ytIframeRef.current.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
+      }
+    } catch {}
   };
 
   // Vocab Word Mic Test
@@ -843,18 +908,6 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         }
       `}</style>
 
-      {/* Hidden YouTube Audio IFrame Player (Completely offscreen with legitimate dimensions for Chrome) */}
-      <div style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: '320px', height: '240px', opacity: 0, pointerEvents: 'none' }}>
-        {musicPlaying && (
-          <iframe
-            width="320"
-            height="240"
-            src={getYoutubeEmbedUrl(currentLangData.listening.youtubeAudioUrl, true)}
-            title="Hidden YouTube Audio Stream"
-            allow="autoplay"
-          />
-        )}
-      </div>
 
       <div className="section-container">
         {/* Header with Title and Language Select Dropdown */}
@@ -1423,13 +1476,15 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         className="music-progress-bar"
                         onClick={(e) => {
                           const rect = e.currentTarget.getBoundingClientRect();
-                          const clickPos = (e.clientX - rect.left) / rect.width;
-                          setMusicCurrentTime(Math.round(clickPos * musicDuration));
+                          const clickPos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                          const targetSecs = Math.round(clickPos * (musicDuration || 145));
+                          handleSeek(targetSecs);
                         }}
+                        title="Audioni istalgan joyidan boshlab qo‘yish"
                       >
                         <div
                           className="music-progress-fill"
-                          style={{ width: `${(musicCurrentTime / musicDuration) * 100}%` }}
+                          style={{ width: `${Math.min(100, (musicCurrentTime / (musicDuration || 145)) * 100).toFixed(2)}%` }}
                         />
                       </div>
                       <div className="music-time-row">
@@ -1442,9 +1497,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     <div className="music-controls-row">
                       {/* Rewind 5s */}
                       <button
-                        onClick={() => setMusicCurrentTime((prev) => Math.max(0, prev - 5))}
+                        onClick={() => handleSeek(musicCurrentTime - 5)}
                         className="music-seek-btn"
-                        title="5 soniya orqaga"
+                        title="5 soniya orqaga (-5s)"
                       >
                         <RotateCcw size={14} /> -5s
                       </button>
@@ -1458,41 +1513,49 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         {musicPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '3px' }} />}
                       </button>
 
-                      {/* Speed Toggle (0.8x / 1.0x) */}
+                      {/* Forward 5s */}
                       <button
-                        onClick={() => setPlaybackSpeed((prev) => (prev === 1.0 ? 0.8 : 1.0))}
+                        onClick={() => handleSeek(musicCurrentTime + 5)}
+                        className="music-seek-btn"
+                        title="5 soniya oldinga (+5s)"
+                      >
+                        +5s <FastForward size={14} />
+                      </button>
+
+                      {/* Speed Toggle (1.0x, 1.25x, 1.5x, 2.0x, 0.75x) */}
+                      <button
+                        onClick={handleToggleSpeed}
                         className="music-speed-btn"
-                        title="Ijro tezligi"
+                        title="Ijro tezligi: 1x, 1.25x, 1.5x, 2x, 0.75x"
                       >
                         ⚡ {playbackSpeed}x
                       </button>
                     </div>
-                  </div>
 
-                  {/* Fast TTS Voice Option */}
-                  <button
-                    onClick={() => {
-                      const speechText = currentLangData.listening.textWithGaps.replace(/\[\s*[^\]]+\s*\]/g, ' ... ');
-                      handlePlayTTS(speechText);
-                    }}
-                    style={{
-                      padding: '10px 16px',
-                      borderRadius: '12px',
-                      background: activeSpeakingText ? '#10b981' : 'var(--pg-box-bg)',
-                      color: activeSpeakingText ? '#fff' : 'var(--pg-text-main)',
-                      border: '1px solid var(--pg-box-border)',
-                      fontSize: '12.5px',
-                      fontWeight: 750,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <Volume2 size={15} />
-                    <span>{activeSpeakingText ? 'Ovoz yangramoqda...' : 'Ovozli o‘qish (TTS Audio)'}</span>
-                  </button>
+                    {/* Real YouTube Audio Iframe: Fully loaded, 100% invisible to user behind music player */}
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      opacity: 0.001,
+                      pointerEvents: 'none',
+                      zIndex: -1,
+                      overflow: 'hidden',
+                      borderRadius: '22px'
+                    }}>
+                      <iframe
+                        ref={ytIframeRef}
+                        onLoad={handleIframeLoad}
+                        width="100%"
+                        height="100%"
+                        src={getYoutubeEmbedUrl(currentLangData.listening.youtubeAudioUrl, false)}
+                        title="Listening YouTube Audio Stream"
+                        style={{ border: 'none', width: '100%', height: '100%' }}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Right Side: Gap-Fill Text and Check Button */}
