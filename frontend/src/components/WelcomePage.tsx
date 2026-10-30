@@ -15,6 +15,7 @@ import { PracticeGuideConfig } from '../data/practiceGuideData';
 import { CEFRRoadmapSection } from './cefr-roadmap/CEFRRoadmapSection';
 import { LearningProcessSection } from './learning-process/LearningProcessSection';
 import { AboutSection } from './about/AboutSection';
+import { FaqSection } from './faq/FaqSection';
 
 export interface CmsConfig {
   hero?: string;
@@ -1098,39 +1099,11 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         dark={dark}
       />
 
-      {/* 9. FAQ SECTION */}
-      <section id="faq" className="welcome-faq-section">
-        <div className="section-container">
-          <div className="section-header scroll-reveal">
-            <span className="section-kicker">SAVOLLARGA JAVOBLAR</span>
-            <h2>Ko‘p beriladigan savollar (FAQ)</h2>
-            <p>Platformadan foydalanish, to‘lovlar va ta’lim jarayoni haqidagi eng muhim ma’lumotlar.</p>
-          </div>
-
-          <div className="faq-accordion-list scroll-stagger-parent">
-            {faqs.map((faq, index) => {
-              const isOpen = openFaqIndex === index;
-              return (
-                <div key={faq.q} className={`faq-item ${isOpen ? 'open' : ''}`}>
-                  <button
-                    className="faq-question-btn"
-                    onClick={() => setOpenFaqIndex(isOpen ? null : index)}
-                    aria-expanded={isOpen}
-                  >
-                    <span>{faq.q}</span>
-                    {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                  </button>
-                  {isOpen && (
-                    <div className="faq-answer-body animate-fade-in">
-                      <p>{faq.a}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* 9. FAQ SECTION (Matching reference image exactly) */}
+      <FaqSection
+        faqs={faqs}
+        dark={dark}
+      />
 
       {/* 10. FINAL SIGNUP CALL-TO-ACTION */}
       <section className="welcome-final-cta">
