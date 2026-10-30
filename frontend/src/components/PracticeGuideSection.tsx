@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Volume2, VolumeX, Mic, Play, Pause, CheckCircle2, AlertCircle,
+  Volume2, VolumeX, Mic, Play, Pause, RotateCcw, CheckCircle2, AlertCircle,
   Sparkles, BookOpen, PenLine, Headphones, MessageSquare, Award,
-  ChevronDown, Eye, EyeOff, RotateCcw, Trophy, Check, ArrowRight
+  ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Trophy, Check, ArrowRight,
+  Music, FastForward, Rewind
 } from 'lucide-react';
 import {
   playSpeech, stopSpeech, startListening,
@@ -18,9 +19,23 @@ interface PracticeGuideSectionProps {
   dark?: boolean;
 }
 
+const SKILL_MODULES = [
+  { id: 0, key: 'vocab', label: '1. Vocab', sub: 'Lug‘at boyligi', icon: BookOpen },
+  { id: 1, key: 'writing', label: '2. Writing', sub: 'Rasmiy yozish', icon: PenLine },
+  { id: 2, key: 'reading', label: '3. Reading', sub: 'Matn o‘qish & tahlil', icon: BookOpen },
+  { id: 3, key: 'listening', label: '4. Listening', sub: 'Audio & Gap-fill', icon: Headphones },
+  { id: 4, key: 'speaking', label: '5. Speaking', sub: 'Jonli intervyu', icon: MessageSquare },
+  { id: 5, key: 'grammar', label: '6. Grammar', sub: 'Grammatika & tahlil', icon: Sparkles },
+  { id: 6, key: 'shadowing', label: '7. Shadowing', sub: 'Soya metodi', icon: Award },
+];
+
 export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGuideSectionProps) {
   const config = guideConfig || DEFAULT_PRACTICE_GUIDE;
   const [selectedLang, setSelectedLang] = useState<string>('en');
+
+  // Slide state: 0 to 6 (user controls manually, NO auto-sliding!)
+  const [currentSlide, setCurrentSlide] = useState<number>(0);
+  const [slideDirection, setSlideDirection] = useState<'next' | 'prev'>('next');
 
   // Detect dark mode from prop or document element
   const isDarkMode = dark ?? (typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
@@ -45,8 +60,11 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   // Reading card states
   const [showReadingAnswers, setShowReadingAnswers] = useState(false);
 
-  // Listening card states
-  const [listeningAudioPlaying, setListeningAudioPlaying] = useState(false);
+  // Listening card states: Dedicated Music Player (NO video shown!)
+  const [musicPlaying, setMusicPlaying] = useState(false);
+  const [musicCurrentTime, setMusicCurrentTime] = useState(0); // in seconds
+  const musicDuration = 145; // 2:25 audio duration
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
   const [showListeningAnswers, setShowListeningAnswers] = useState(false);
 
   // Speaking card states
@@ -59,25 +77,104 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   const [shadowingRecognizedText, setShadowingRecognizedText] = useState('');
   const [shadowingScore, setShadowingScore] = useState<number | null>(null);
 
-  // Stop any active speech on lang change
-  useEffect(() => {
+  // Touch swipe support for mobile
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  // Stop active speech and audio when changing language or slide
+  const stopAllAudio = () => {
     stopSpeech();
     setActiveSpeakingText(null);
-    setVocabWordScore(null);
-    setVocabPhraseScore(null);
+    setMusicPlaying(false);
     setIsListeningVocabWord(false);
     setIsListeningVocabPhrase(false);
+    setActiveListeningQuestionId(null);
+    setIsShadowingListening(false);
+  };
+
+  useEffect(() => {
+    stopAllAudio();
+    setVocabWordScore(null);
+    setVocabPhraseScore(null);
     setShowLetterTranslation(false);
     setShowReadingAnswers(false);
     setShowListeningAnswers(false);
-    setListeningAudioPlaying(false);
     setSpeakingScores({});
-    setActiveListeningQuestionId(null);
     setShowTotalSpeakingScore(false);
-    setIsShadowingListening(false);
     setShadowingRecognizedText('');
     setShadowingScore(null);
+    setMusicCurrentTime(0);
   }, [selectedLang]);
+
+  // Clean audio on slide change
+  const goToSlide = (index: number) => {
+    if (index === currentSlide) return;
+    stopAllAudio();
+    setSlideDirection(index > currentSlide ? 'next' : 'prev');
+    setCurrentSlide(index);
+  };
+
+  const handleNextSlide = () => {
+    if (currentSlide < SKILL_MODULES.length - 1) {
+      goToSlide(currentSlide + 1);
+    } else {
+      onBegin('register');
+    }
+  };
+
+  const handlePrevSlide = () => {
+    if (currentSlide > 0) {
+      goToSlide(currentSlide - 1);
+    }
+  };
+
+  // Touch Swipe Handlers for Mobile (No auto slide, pure swipe!)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const diffX = touchStartX.current - e.changedTouches[0].clientX;
+    const diffY = touchStartY.current - e.changedTouches[0].clientY;
+
+    // Minimum swipe threshold 45px and predominantly horizontal
+    if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.3) {
+      if (diffX > 0) {
+        // Swiped Left -> Next Card
+        handleNextSlide();
+      } else {
+        // Swiped Right -> Previous Card
+        handlePrevSlide();
+      }
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
+  // Music Player Timer Loop for Listening Card
+  useEffect(() => {
+    let timer: any;
+    if (musicPlaying) {
+      timer = setInterval(() => {
+        setMusicCurrentTime((prev) => {
+          if (prev >= musicDuration) {
+            setMusicPlaying(false);
+            return 0;
+          }
+          return prev + 1;
+        });
+      }, 1000 / playbackSpeed);
+    }
+    return () => clearInterval(timer);
+  }, [musicPlaying, playbackSpeed]);
+
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   // Speech Pronunciation Playback
   const handlePlayTTS = (text: string) => {
@@ -94,6 +191,24 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       onEnd: () => setActiveSpeakingText(null),
       onError: () => setActiveSpeakingText(null)
     });
+  };
+
+  // Toggle Listening Music Player
+  const toggleMusicPlayer = () => {
+    if (musicPlaying) {
+      setMusicPlaying(false);
+      stopSpeech();
+    } else {
+      setMusicPlaying(true);
+      // Also speak the listening text naturally with gaps
+      const speechText = currentLangData.listening.textWithGaps.replace(/\[\s*[^\]]+\s*\]/g, ' ... ');
+      playSpeech(speechText, {
+        lang: selectedLang as SupportedLang,
+        rate: playbackSpeed,
+        onEnd: () => {},
+        onError: () => {}
+      });
+    }
   };
 
   // Vocab Word Mic Test
@@ -117,12 +232,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         const score = Math.max(65, Math.min(100, Math.round(res.confidence * 100)));
         setVocabWordScore(score);
       },
-      onError: () => {
-        setIsListeningVocabWord(false);
-      },
-      onEnd: () => {
-        setIsListeningVocabWord(false);
-      }
+      onError: () => setIsListeningVocabWord(false),
+      onEnd: () => setIsListeningVocabWord(false)
     });
   };
 
@@ -147,12 +258,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         const score = Math.max(70, Math.min(100, Math.round(res.confidence * 100)));
         setVocabPhraseScore(score);
       },
-      onError: () => {
-        setIsListeningVocabPhrase(false);
-      },
-      onEnd: () => {
-        setIsListeningVocabPhrase(false);
-      }
+      onError: () => setIsListeningVocabPhrase(false),
+      onEnd: () => setIsListeningVocabPhrase(false)
     });
   };
 
@@ -174,7 +281,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       onResult: (res) => {
         setActiveListeningQuestionId(null);
         const calcScore = Math.floor(Math.random() * 16) + 82; // 82 - 97 ball
-        setSpeakingScores(prev => ({
+        setSpeakingScores((prev) => ({
           ...prev,
           [questionId]: {
             score: calcScore,
@@ -182,12 +289,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           }
         }));
       },
-      onError: () => {
-        setActiveListeningQuestionId(null);
-      },
-      onEnd: () => {
-        setActiveListeningQuestionId(null);
-      }
+      onError: () => setActiveListeningQuestionId(null),
+      onEnd: () => setActiveListeningQuestionId(null)
     });
   };
 
@@ -217,12 +320,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         const score = Math.max(75, Math.min(100, Math.round(res.confidence * 100)));
         setShadowingScore(score);
       },
-      onError: () => {
-        setIsShadowingListening(false);
-      },
-      onEnd: () => {
-        setIsShadowingListening(false);
-      }
+      onError: () => setIsShadowingListening(false),
+      onEnd: () => setIsShadowingListening(false)
     });
   };
 
@@ -231,7 +330,6 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   const answeredQuestionsCount = Object.keys(speakingScores).length;
   const isAllSpeakingAnswered = totalQuestionsCount > 0 && answeredQuestionsCount >= totalQuestionsCount;
 
-  // Average speaking score
   const averageSpeakingScore = isAllSpeakingAnswered
     ? Math.round(Object.values(speakingScores).reduce((acc, curr) => acc + curr.score, 0) / totalQuestionsCount)
     : 0;
@@ -253,21 +351,68 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
   return (
     <section id="preview" className={`welcome-preview-section ${isDarkMode ? 'dark-preview-section' : ''}`}>
-      {/* Responsive & Theme Scoped Styles */}
+      {/* Dynamic Scoped Styles */}
       <style>{`
-        .practice-cards-wrapper {
-          max-width: 1040px;
+        /* ========================================================
+           RESPONSIVE CONTAINER & SLIDER LAYOUT
+           ======================================================== */
+        .practice-slider-wrapper {
+          max-width: 1180px;
           margin: 0 auto;
           display: flex;
           flex-direction: column;
-          gap: 32px;
+          gap: 24px;
         }
 
-        /* LIGHT THEME (DEFAULT) */
+        /* Skill Navigation Bar (Top Pills) */
+        .practice-tabs-bar {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          overflow-x: auto;
+          padding: 8px 4px 18px;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+        }
+        .practice-tabs-bar::-webkit-scrollbar {
+          display: none;
+        }
+        .practice-tab-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 11px 18px;
+          border-radius: 14px;
+          background: var(--pg-box-bg, #f8fafc);
+          border: 1px solid var(--pg-box-border, rgba(0, 0, 0, 0.08));
+          color: var(--pg-text-muted, #64748b);
+          font-size: 13.5px;
+          font-weight: 750;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.22s ease;
+          flex-shrink: 0;
+        }
+        .practice-tab-pill:hover {
+          color: var(--pg-purple, #7869f5);
+          transform: translateY(-2px);
+        }
+        .practice-tab-pill.active {
+          background: linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%);
+          color: #ffffff !important;
+          border-color: transparent;
+          box-shadow: 0 6px 20px rgba(120, 105, 245, 0.35);
+          transform: translateY(-2px);
+        }
+
+        /* ========================================================
+           CARD COMPONENT — DESKTOP ENLARGED (KOMPYUTER UCHUN KATTA)
+           ======================================================== */
         .practice-skill-card {
           --pg-card-bg: #ffffff;
           --pg-card-border: rgba(0, 0, 0, 0.08);
-          --pg-card-shadow: 0 10px 32px rgba(0, 0, 0, 0.04);
+          --pg-card-shadow: 0 16px 48px rgba(0, 0, 0, 0.05);
           --pg-box-bg: #f8fafc;
           --pg-box-border: rgba(0, 0, 0, 0.08);
           --pg-text-main: #0f172a;
@@ -280,28 +425,36 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           --pg-green-text: #059669;
 
           background: var(--pg-card-bg);
-          border: 1px solid var(--pg-card-border);
-          border-radius: 24px;
-          padding: 30px;
+          border: 1.5px solid var(--pg-card-border);
+          border-radius: 28px;
+          padding: 42px 48px;
           box-shadow: var(--pg-card-shadow);
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
           position: relative;
           overflow: hidden;
           color: var(--pg-text-main);
+          animation: slideFade 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+          touch-action: pan-y pinch-zoom;
         }
 
-        .practice-skill-card:hover {
-          box-shadow: 0 16px 42px rgba(0, 0, 0, 0.08);
+        @keyframes slideFade {
+          from {
+            opacity: 0;
+            transform: translateX(${slideDirection === 'next' ? '20px' : '-20px'});
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
         }
 
         /* DARK THEME SCOPED OVERRIDES */
         .welcome-root.dark .practice-skill-card,
         html.dark .practice-skill-card,
         .practice-skill-card.dark-card,
-        .practice-cards-wrapper.is-dark .practice-skill-card {
+        .practice-slider-wrapper.is-dark .practice-skill-card {
           --pg-card-bg: #14243a !important;
-          --pg-card-border: rgba(255, 255, 255, 0.1) !important;
-          --pg-card-shadow: 0 14px 40px rgba(0, 0, 0, 0.45) !important;
+          --pg-card-border: rgba(255, 255, 255, 0.11) !important;
+          --pg-card-shadow: 0 18px 52px rgba(0, 0, 0, 0.45) !important;
           --pg-box-bg: #0b132b !important;
           --pg-box-border: rgba(255, 255, 255, 0.09) !important;
           --pg-text-main: #f8fafc !important;
@@ -318,65 +471,73 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           color: var(--pg-text-main) !important;
         }
 
+        .welcome-root.dark .practice-tab-pill,
+        html.dark .practice-tab-pill,
+        .practice-slider-wrapper.is-dark .practice-tab-pill {
+          background: #14243a;
+          border-color: rgba(255, 255, 255, 0.09);
+          color: #94a3b8;
+        }
+
         .practice-card-head {
           display: flex;
           align-items: center;
           justify-content: space-between;
           flex-wrap: wrap;
-          gap: 10px;
-          margin-bottom: 22px;
-          padding-bottom: 14px;
-          border-bottom: 1px solid var(--pg-box-border);
+          gap: 12px;
+          margin-bottom: 28px;
+          padding-bottom: 18px;
+          border-bottom: 1.5px solid var(--pg-box-border);
         }
         .practice-card-badge {
-          padding: 5px 12px;
-          border-radius: 8px;
+          padding: 7px 16px;
+          border-radius: 10px;
           background: var(--pg-badge-bg);
           color: var(--pg-badge-color);
-          font-size: 11.5px;
+          font-size: 12.5px;
           font-weight: 850;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.6px;
           text-transform: uppercase;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
         }
         .practice-lang-tag {
-          padding: 4px 10px;
-          border-radius: 7px;
+          padding: 6px 14px;
+          border-radius: 9px;
           background: var(--pg-box-bg);
           border: 1px solid var(--pg-box-border);
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 750;
           color: var(--pg-text-muted);
           display: inline-flex;
           align-items: center;
-          gap: 5px;
+          gap: 6px;
         }
 
-        /* Standard 2-column grid for Cards 1-6 */
+        /* Large 2-column Grid for Cards on Desktop */
         .practice-card-grid {
           display: grid;
-          grid-template-columns: minmax(260px, 320px) 1fr;
-          gap: 26px;
+          grid-template-columns: minmax(320px, 400px) 1fr;
+          gap: 36px;
           align-items: start;
         }
 
-        /* Large Shadowing Grid for Card 7 (video is large and crisp) */
+        /* Large Shadowing Grid for Card 7 */
         .practice-shadowing-grid {
           display: grid;
-          grid-template-columns: minmax(360px, 460px) 1fr;
-          gap: 28px;
+          grid-template-columns: minmax(380px, 480px) 1fr;
+          gap: 36px;
           align-items: start;
         }
 
         .practice-card-media {
-          border-radius: 16px;
+          border-radius: 20px;
           overflow: hidden;
-          height: 230px;
+          height: 310px;
           background: var(--pg-box-bg);
           border: 1px solid var(--pg-box-border);
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
         }
         .practice-card-media img {
           width: 100%;
@@ -385,29 +546,29 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           display: block;
         }
 
-        /* Enlarged Shadowing Video Container */
+        /* Shadowing Video Player */
         .practice-shadowing-media {
-          border-radius: 18px;
+          border-radius: 20px;
           overflow: hidden;
-          height: 300px;
+          height: 330px;
           background: #000;
           border: 1px solid var(--pg-box-border);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
           position: relative;
         }
 
-        /* Robust Content Column that NEVER overflows or spills over */
+        /* Robust Content Column that NEVER overflows */
         .practice-content-col {
           min-width: 0;
           max-width: 100%;
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 18px;
           word-break: break-word;
           overflow-wrap: break-word;
         }
 
-        /* Reading text bold highlight */
+        /* Reading content highlight */
         .reading-content-box b,
         .reading-content-box strong {
           color: #7869f5;
@@ -417,35 +578,283 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         html.dark .reading-content-box b,
         .is-dark .reading-content-box b {
           color: #a5b4fc !important;
-          background: rgba(147, 135, 255, 0.14);
+          background: rgba(147, 135, 255, 0.15);
           padding: 1px 4px;
           border-radius: 4px;
         }
 
-        @media (max-width: 900px) {
+        /* ========================================================
+           MODERN MUSIC PLAYER FOR YOUTUBE AUDIO (VIDEO KO'RINMAYDI)
+           ======================================================== */
+        .listening-music-player {
+          border-radius: 22px;
+          background: var(--pg-box-bg);
+          border: 1.5px solid var(--pg-box-border);
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+          position: relative;
+        }
+
+        .music-player-top {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+        .music-cover-art {
+          width: 64px;
+          height: 64px;
+          border-radius: 14px;
+          object-fit: cover;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+          flex-shrink: 0;
+        }
+        .music-meta {
+          flex: 1;
+          min-width: 0;
+        }
+        .music-meta-title {
+          font-size: 15px;
+          font-weight: 800;
+          color: var(--pg-text-heading);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .music-meta-artist {
+          font-size: 12px;
+          color: var(--pg-text-muted);
+          margin-top: 3px;
+        }
+
+        /* Equalizer Animation Bars */
+        .music-equalizer {
+          display: flex;
+          align-items: flex-end;
+          gap: 4px;
+          height: 24px;
+          padding-right: 4px;
+        }
+        .equalizer-bar {
+          width: 3.5px;
+          background: var(--pg-purple);
+          border-radius: 3px;
+          height: 6px;
+          transition: height 0.2s ease;
+        }
+        .equalizer-bar.playing:nth-child(1) { animation: eqBounce 0.8s infinite 0.1s alternate; }
+        .equalizer-bar.playing:nth-child(2) { animation: eqBounce 0.8s infinite 0.3s alternate; }
+        .equalizer-bar.playing:nth-child(3) { animation: eqBounce 0.8s infinite 0.2s alternate; }
+        .equalizer-bar.playing:nth-child(4) { animation: eqBounce 0.8s infinite 0.4s alternate; }
+
+        @keyframes eqBounce {
+          0% { height: 6px; }
+          100% { height: 24px; }
+        }
+
+        /* Scrubber / Progress Bar */
+        .music-progress-wrap {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .music-progress-bar {
+          width: 100%;
+          height: 7px;
+          border-radius: 6px;
+          background: var(--pg-box-border);
+          position: relative;
+          cursor: pointer;
+          overflow: hidden;
+        }
+        .music-progress-fill {
+          height: 100%;
+          border-radius: 6px;
+          background: linear-gradient(90deg, #7869f5 0%, #34d399 100%);
+          transition: width 0.2s linear;
+        }
+        .music-time-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--pg-text-muted);
+        }
+
+        /* Controls Row */
+        .music-controls-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-top: 4px;
+        }
+        .music-play-btn {
+          width: 52px;
+          height: 52px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%);
+          color: #ffffff;
+          border: none;
+          display: grid;
+          place-items: center;
+          cursor: pointer;
+          box-shadow: 0 6px 20px rgba(120, 105, 245, 0.4);
+          transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .music-play-btn:hover {
+          transform: scale(1.06);
+          box-shadow: 0 8px 24px rgba(120, 105, 245, 0.5);
+        }
+        .music-speed-btn,
+        .music-seek-btn {
+          padding: 8px 12px;
+          border-radius: 9px;
+          background: var(--pg-card-bg);
+          border: 1px solid var(--pg-box-border);
+          color: var(--pg-text-main);
+          font-size: 11.5px;
+          font-weight: 750;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+
+        /* ========================================================
+           BOTTOM SLIDE NAVIGATION CONTROLS (OLDINGI / KEYINGI)
+           ======================================================== */
+        .practice-slide-nav {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 24px;
+          border-radius: 18px;
+          background: var(--pg-card-bg, #ffffff);
+          border: 1px solid var(--pg-card-border, rgba(0, 0, 0, 0.08));
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+          gap: 14px;
+          flex-wrap: wrap;
+        }
+        .welcome-root.dark .practice-slide-nav,
+        html.dark .practice-slide-nav,
+        .practice-slider-wrapper.is-dark .practice-slide-nav {
+          background: #14243a !important;
+          border-color: rgba(255, 255, 255, 0.1) !important;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+        }
+        .slide-nav-btn {
+          padding: 11px 20px;
+          border-radius: 12px;
+          font-size: 13.5px;
+          font-weight: 750;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          transition: all 0.2s ease;
+          border: none;
+        }
+        .slide-nav-btn.prev {
+          background: var(--pg-box-bg, #f1f5f9);
+          border: 1px solid var(--pg-box-border, rgba(0, 0, 0, 0.1));
+          color: var(--pg-text-main, #1e293b);
+        }
+        .slide-nav-btn.prev:disabled {
+          opacity: 0.45;
+          cursor: not-allowed;
+        }
+        .slide-nav-btn.next {
+          background: linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%);
+          color: #ffffff;
+          box-shadow: 0 4px 16px rgba(120, 105, 245, 0.35);
+        }
+        .slide-nav-btn.next:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(120, 105, 245, 0.45);
+        }
+
+        /* Slide Step Dots */
+        .slide-indicators {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .slide-dot {
+          width: 9px;
+          height: 9px;
+          border-radius: 5px;
+          background: var(--pg-box-border, rgba(0, 0, 0, 0.15));
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          transition: all 0.25s ease;
+        }
+        .slide-dot.active {
+          width: 26px;
+          background: var(--pg-purple, #7869f5);
+        }
+        .slide-counter-badge {
+          font-size: 12px;
+          font-weight: 800;
+          color: var(--pg-purple, #7869f5);
+          margin-left: 8px;
+        }
+
+        /* ========================================================
+           MOBILE RESPONSIVENESS (< 860px)
+           ======================================================== */
+        @media (max-width: 860px) {
+          .practice-skill-card {
+            padding: 24px 18px;
+            border-radius: 20px;
+          }
+          .practice-card-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
           .practice-shadowing-grid {
             grid-template-columns: 1fr;
             gap: 20px;
           }
-          .practice-shadowing-media {
-            height: 240px;
-          }
-        }
-
-        @media (max-width: 820px) {
-          .practice-skill-card {
-            padding: 20px 16px;
-            border-radius: 18px;
-          }
-          .practice-card-grid {
-            grid-template-columns: 1fr;
-            gap: 18px;
-          }
           .practice-card-media {
-            height: 190px;
+            height: 200px;
+          }
+          .practice-shadowing-media {
+            height: 220px;
+          }
+          .practice-slide-nav {
+            padding: 12px 14px;
+            justify-content: center;
+          }
+          .slide-nav-btn {
+            flex: 1;
+            justify-content: center;
+            padding: 10px 14px;
+            font-size: 12.5px;
+          }
+          .slide-indicators {
+            order: -1;
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 6px;
           }
         }
       `}</style>
+
+      {/* Hidden YouTube Audio IFrame Player (Completely offscreen with legitimate dimensions for Chrome) */}
+      <div style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: '320px', height: '240px', opacity: 0, pointerEvents: 'none' }}>
+        {musicPlaying && (
+          <iframe
+            width="320"
+            height="240"
+            src={getYoutubeEmbedUrl(currentLangData.listening.youtubeAudioUrl, true)}
+            title="Hidden YouTube Audio Stream"
+            allow="autoplay"
+          />
+        )}
+      </div>
 
       <div className="section-container">
         {/* Header with Title and Language Select Dropdown */}
@@ -479,7 +888,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             justifyContent: 'center',
             gap: '14px',
             flexWrap: 'wrap',
-            marginBottom: '40px'
+            marginBottom: '32px'
           }}>
             {/* Language Select Dropdown */}
             <div style={{ position: 'relative', minWidth: '220px' }}>
@@ -551,973 +960,1069 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         </div>
 
         {/* ======================================================== */}
-        {/* ALL 7 SKILL CARDS SEQUENTIALLY                           */}
+        {/* SLIDE WRAPPER (TOUCH SWIPEABLE FOR MOBILE, BIG FOR DESKTOP) */}
         {/* ======================================================== */}
-        <div className={`practice-cards-wrapper ${isDarkMode ? 'is-dark' : ''}`}>
+        <div
+          className={`practice-slider-wrapper ${isDarkMode ? 'is-dark' : ''}`}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Top Skill Navigation Tabs (Click to jump to any module) */}
+          <div className="practice-tabs-bar">
+            {SKILL_MODULES.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = currentSlide === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => goToSlide(tab.id)}
+                  className={`practice-tab-pill ${isActive ? 'active' : ''}`}
+                  title={tab.sub}
+                >
+                  <Icon size={16} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
           {/* ===================================================== */}
-          {/* 1. VOCABULARY CARD                                    */}
+          {/* SLIDE 0: VOCABULARY CARD                              */}
           {/* ===================================================== */}
-          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
-            <div className="practice-card-head">
-              <span className="practice-card-badge">
-                <BookOpen size={14} /> 1. VOCABULARY (LUG‘AT & SO‘Z BOYLIGI)
-              </span>
-              <span className="practice-lang-tag">
-                {currentLangData.flag} {currentLangData.langName}
-              </span>
-            </div>
-
-            <div className="practice-card-grid">
-              {/* Image */}
-              <div className="practice-card-media">
-                <img
-                  src={currentLangData.vocab.image}
-                  alt={currentLangData.vocab.word}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80';
-                  }}
-                />
+          {currentSlide === 0 && (
+            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              <div className="practice-card-head">
+                <span className="practice-card-badge">
+                  <BookOpen size={15} /> 1. VOCABULARY (LUG‘AT & SO‘Z BOYLIGI)
+                </span>
+                <span className="practice-lang-tag">
+                  {currentLangData.flag} {currentLangData.langName}
+                </span>
               </div>
 
-              {/* Vocab Details & Controls */}
-              <div className="practice-content-col">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                  <h3 style={{ margin: 0, fontSize: '26px', fontWeight: 850, color: 'var(--pg-text-heading)' }}>
-                    {currentLangData.vocab.word}
-                  </h3>
-
-                  {/* Word Audio & Mic Controls */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <button
-                      onClick={() => handlePlayTTS(currentLangData.vocab.word)}
-                      title="So‘z talaffuzini tinglash"
-                      style={{
-                        width: '38px',
-                        height: '38px',
-                        borderRadius: '10px',
-                        border: '1px solid var(--pg-box-border)',
-                        background: activeSpeakingText === currentLangData.vocab.word ? 'var(--pg-purple)' : 'var(--pg-box-bg)',
-                        color: activeSpeakingText === currentLangData.vocab.word ? '#fff' : 'var(--pg-purple)',
-                        display: 'grid',
-                        placeItems: 'center',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {activeSpeakingText === currentLangData.vocab.word ? <VolumeX size={17} /> : <Volume2 size={17} />}
-                    </button>
-                    <button
-                      onClick={handleTestVocabWord}
-                      title="So‘zni o‘zingiz aytib ko‘ring (Mikrofon)"
-                      style={{
-                        width: '38px',
-                        height: '38px',
-                        borderRadius: '10px',
-                        border: '1px solid var(--pg-box-border)',
-                        background: isListeningVocabWord ? '#ef4444' : 'var(--pg-box-bg)',
-                        color: isListeningVocabWord ? '#fff' : '#10b981',
-                        display: 'grid',
-                        placeItems: 'center',
-                        cursor: 'pointer',
-                        animation: isListeningVocabWord ? 'pulse 1s infinite' : 'none'
-                      }}
-                    >
-                      <Mic size={17} />
-                    </button>
-                  </div>
+              <div className="practice-card-grid">
+                {/* Media Image */}
+                <div className="practice-card-media">
+                  <img
+                    src={currentLangData.vocab.image}
+                    alt={currentLangData.vocab.word}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80';
+                    }}
+                  />
                 </div>
 
-                {/* Translation & Definition */}
-                <div>
-                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--pg-green-text)', marginBottom: '4px' }}>
-                    {currentLangData.vocab.translation}
-                  </div>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--pg-text-muted)', lineHeight: '1.6' }}>
-                    {currentLangData.vocab.explanation}
-                  </p>
-                </div>
+                {/* Vocab Details & Controls */}
+                <div className="practice-content-col">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                    <h3 style={{ margin: 0, fontSize: 'clamp(28px, 3vw, 36px)', fontWeight: 850, color: 'var(--pg-text-heading)' }}>
+                      {currentLangData.vocab.word}
+                    </h3>
 
-                {/* Example Phrase Card */}
-                <div style={{
-                  padding: '14px',
-                  background: 'var(--pg-box-bg)',
-                  borderRadius: '12px',
-                  border: '1px solid var(--pg-box-border)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--pg-text-muted)', textTransform: 'uppercase' }}>
-                      Namuna gap (Example Phrase):
-                    </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {/* Word Audio & Mic Controls */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <button
-                        onClick={() => handlePlayTTS(currentLangData.vocab.examplePhrase)}
-                        title="Gapni tinglash"
+                        onClick={() => handlePlayTTS(currentLangData.vocab.word)}
+                        title="So‘z talaffuzini tinglash"
                         style={{
-                          padding: '5px 9px',
-                          borderRadius: '6px',
+                          width: '44px',
+                          height: '44px',
+                          borderRadius: '12px',
                           border: '1px solid var(--pg-box-border)',
-                          background: 'var(--pg-card-bg)',
-                          color: 'var(--pg-purple)',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px'
+                          background: activeSpeakingText === currentLangData.vocab.word ? 'var(--pg-purple)' : 'var(--pg-box-bg)',
+                          color: activeSpeakingText === currentLangData.vocab.word ? '#fff' : 'var(--pg-purple)',
+                          display: 'grid',
+                          placeItems: 'center',
+                          cursor: 'pointer'
                         }}
                       >
-                        <Volume2 size={13} /> Tinglash
+                        {activeSpeakingText === currentLangData.vocab.word ? <VolumeX size={19} /> : <Volume2 size={19} />}
                       </button>
                       <button
-                        onClick={handleTestVocabPhrase}
-                        title="Gapni o‘qib aytib ko‘ring"
+                        onClick={handleTestVocabWord}
+                        title="So‘zni o‘zingiz aytib ko‘ring (Mikrofon)"
                         style={{
-                          padding: '5px 9px',
-                          borderRadius: '6px',
+                          width: '44px',
+                          height: '44px',
+                          borderRadius: '12px',
                           border: '1px solid var(--pg-box-border)',
-                          background: isListeningVocabPhrase ? '#ef4444' : 'var(--pg-card-bg)',
-                          color: isListeningVocabPhrase ? '#fff' : '#10b981',
-                          fontSize: '11px',
-                          fontWeight: 700,
+                          background: isListeningVocabWord ? '#ef4444' : 'var(--pg-box-bg)',
+                          color: isListeningVocabWord ? '#fff' : '#10b981',
+                          display: 'grid',
+                          placeItems: 'center',
                           cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px'
+                          animation: isListeningVocabWord ? 'pulse 1s infinite' : 'none'
                         }}
                       >
-                        <Mic size={13} /> {isListeningVocabPhrase ? 'Eshitilmoqda...' : 'Sinash'}
+                        <Mic size={19} />
                       </button>
                     </div>
                   </div>
-                  <div style={{ fontSize: '13.5px', fontStyle: 'italic', color: 'var(--pg-text-main)', lineHeight: '1.5' }}>
-                    "{currentLangData.vocab.examplePhrase}"
+
+                  {/* Translation & Definition */}
+                  <div>
+                    <div style={{ fontSize: '17px', fontWeight: 750, color: 'var(--pg-green-text)', marginBottom: '6px' }}>
+                      {currentLangData.vocab.translation}
+                    </div>
+                    <p style={{ margin: 0, fontSize: '15px', color: 'var(--pg-text-muted)', lineHeight: '1.7' }}>
+                      {currentLangData.vocab.explanation}
+                    </p>
                   </div>
 
-                  {/* Word & Phrase Scores Feedback */}
-                  {(vocabWordScore !== null || vocabPhraseScore !== null) && (
-                    <div style={{ display: 'flex', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
-                      {vocabWordScore !== null && (
-                        <span style={{
-                          fontSize: '11px',
-                          fontWeight: 800,
-                          padding: '3px 9px',
-                          borderRadius: '6px',
-                          background: vocabWordScore >= 80 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                          color: vocabWordScore >= 80 ? '#10b981' : '#f59e0b'
-                        }}>
-                          🎯 So‘z talaffuz bali: {vocabWordScore}%
-                        </span>
-                      )}
-                      {vocabPhraseScore !== null && (
-                        <span style={{
-                          fontSize: '11px',
-                          fontWeight: 800,
-                          padding: '3px 9px',
-                          borderRadius: '6px',
-                          background: vocabPhraseScore >= 80 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                          color: vocabPhraseScore >= 80 ? '#10b981' : '#f59e0b'
-                        }}>
-                          ⭐ Gap talaffuz bali: {vocabPhraseScore}%
-                        </span>
-                      )}
+                  {/* Example Phrase Card */}
+                  <div style={{
+                    padding: '18px',
+                    background: 'var(--pg-box-bg)',
+                    borderRadius: '16px',
+                    border: '1px solid var(--pg-box-border)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--pg-text-muted)', textTransform: 'uppercase' }}>
+                        Namuna gap (Example Phrase):
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                          onClick={() => handlePlayTTS(currentLangData.vocab.examplePhrase)}
+                          title="Gapni tinglash"
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--pg-box-border)',
+                            background: 'var(--pg-card-bg)',
+                            color: 'var(--pg-purple)',
+                            fontSize: '12px',
+                            fontWeight: 750,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                        >
+                          <Volume2 size={14} /> Tinglash
+                        </button>
+                        <button
+                          onClick={handleTestVocabPhrase}
+                          title="Gapni o‘qib aytib ko‘ring"
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--pg-box-border)',
+                            background: isListeningVocabPhrase ? '#ef4444' : 'var(--pg-card-bg)',
+                            color: isListeningVocabPhrase ? '#fff' : '#10b981',
+                            fontSize: '12px',
+                            fontWeight: 750,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                        >
+                          <Mic size={14} /> {isListeningVocabPhrase ? 'Eshitilmoqda...' : 'Sinash'}
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '15.5px', fontStyle: 'italic', color: 'var(--pg-text-main)', lineHeight: '1.6' }}>
+                      "{currentLangData.vocab.examplePhrase}"
+                    </div>
+
+                    {/* Word & Phrase Scores Feedback */}
+                    {(vocabWordScore !== null || vocabPhraseScore !== null) && (
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
+                        {vocabWordScore !== null && (
+                          <span style={{
+                            fontSize: '12px',
+                            fontWeight: 800,
+                            padding: '4px 11px',
+                            borderRadius: '7px',
+                            background: vocabWordScore >= 80 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                            color: vocabWordScore >= 80 ? '#10b981' : '#f59e0b'
+                          }}>
+                            🎯 So‘z talaffuz bali: {vocabWordScore}%
+                          </span>
+                        )}
+                        {vocabPhraseScore !== null && (
+                          <span style={{
+                            fontSize: '12px',
+                            fontWeight: 800,
+                            padding: '4px 11px',
+                            borderRadius: '7px',
+                            background: vocabPhraseScore >= 80 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                            color: vocabPhraseScore >= 80 ? '#10b981' : '#f59e0b'
+                          }}>
+                            ⭐ Gap talaffuz bali: {vocabPhraseScore}%
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===================================================== */}
+          {/* SLIDE 1: WRITING CARD                                 */}
+          {/* ===================================================== */}
+          {currentSlide === 1 && (
+            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              <div className="practice-card-head">
+                <span className="practice-card-badge">
+                  <PenLine size={15} /> 2. WRITING (AKADEMIK & RASMIY YOZISH)
+                </span>
+                <span className="practice-lang-tag">
+                  {currentLangData.flag} {currentLangData.langName}
+                </span>
+              </div>
+
+              <div className="practice-card-grid">
+                {/* Media Image */}
+                <div className="practice-card-media" style={{ height: '320px' }}>
+                  <img
+                    src={currentLangData.writing.image}
+                    alt={currentLangData.writing.letterTitle}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80';
+                    }}
+                  />
+                </div>
+
+                {/* Letter Content & Actions */}
+                <div className="practice-content-col">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                    <h3 style={{ margin: 0, fontSize: 'clamp(22px, 2.3vw, 28px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
+                      {currentLangData.writing.letterTitle}
+                    </h3>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <button
+                        onClick={() => handlePlayTTS(currentLangData.writing.letterContent)}
+                        className="outline-btn"
+                        style={{
+                          padding: '8px 14px',
+                          fontSize: '12.5px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          color: 'var(--pg-purple)',
+                          borderColor: 'var(--pg-purple)',
+                          background: 'var(--pg-box-bg)'
+                        }}
+                      >
+                        <Volume2 size={15} /> Xatni tinglash
+                      </button>
+                      <button
+                        onClick={() => setShowLetterTranslation(!showLetterTranslation)}
+                        className="outline-btn"
+                        style={{
+                          padding: '8px 14px',
+                          fontSize: '12.5px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          color: 'var(--pg-text-main)',
+                          borderColor: 'var(--pg-box-border)',
+                          background: 'var(--pg-box-bg)'
+                        }}
+                      >
+                        {showLetterTranslation ? <EyeOff size={15} /> : <Eye size={15} />}
+                        {showLetterTranslation ? 'Tarjimani yashirish' : 'Tarjimani ko‘rish'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Letter Text Box */}
+                  <div style={{
+                    padding: '22px',
+                    background: 'var(--pg-box-bg)',
+                    borderRadius: '16px',
+                    border: '1px solid var(--pg-box-border)',
+                    fontSize: '15px',
+                    lineHeight: '1.8',
+                    whiteSpace: 'pre-line',
+                    color: 'var(--pg-text-main)',
+                    maxHeight: '260px',
+                    overflowY: 'auto'
+                  }}>
+                    {currentLangData.writing.letterContent}
+                  </div>
+
+                  {/* Translation Box (Collapsible) */}
+                  {showLetterTranslation && (
+                    <div style={{
+                      padding: '18px',
+                      background: isDarkMode ? 'rgba(120, 105, 245, 0.12)' : 'rgba(120, 105, 245, 0.08)',
+                      borderRadius: '14px',
+                      border: '1px solid rgba(120, 105, 245, 0.28)',
+                      fontSize: '14px',
+                      lineHeight: '1.7',
+                      color: 'var(--pg-text-main)',
+                      whiteSpace: 'pre-line'
+                    }}>
+                      <strong style={{ color: 'var(--pg-purple)', display: 'block', marginBottom: '6px', fontSize: '11.5px', textTransform: 'uppercase' }}>
+                        🇺🇿 O‘zbekcha tarjimasi:
+                      </strong>
+                      {currentLangData.writing.letterTranslation}
                     </div>
                   )}
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* ===================================================== */}
-          {/* 2. WRITING CARD                                       */}
+          {/* SLIDE 2: READING CARD                                 */}
           {/* ===================================================== */}
-          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
-            <div className="practice-card-head">
-              <span className="practice-card-badge">
-                <PenLine size={14} /> 2. WRITING (AKADEMIK & RASMIY YOZISH)
-              </span>
-              <span className="practice-lang-tag">
-                {currentLangData.flag} {currentLangData.langName}
-              </span>
-            </div>
-
-            <div className="practice-card-grid">
-              {/* Image */}
-              <div className="practice-card-media" style={{ height: '260px' }}>
-                <img
-                  src={currentLangData.writing.image}
-                  alt={currentLangData.writing.letterTitle}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80';
-                  }}
-                />
+          {currentSlide === 2 && (
+            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              <div className="practice-card-head">
+                <span className="practice-card-badge">
+                  <BookOpen size={15} /> 3. READING (MATN O‘QISH & TAHLIL)
+                </span>
+                <span className="practice-lang-tag">
+                  {currentLangData.flag} {currentLangData.langName}
+                </span>
               </div>
 
-              {/* Letter Content & Actions */}
-              <div className="practice-content-col">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
-                    {currentLangData.writing.letterTitle}
-                  </h3>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <button
-                      onClick={() => handlePlayTTS(currentLangData.writing.letterContent)}
-                      className="outline-btn"
-                      style={{
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        color: 'var(--pg-purple)',
-                        borderColor: 'var(--pg-purple)',
-                        background: 'var(--pg-box-bg)'
-                      }}
-                    >
-                      <Volume2 size={14} /> Xatni tinglash
-                    </button>
-                    <button
-                      onClick={() => setShowLetterTranslation(!showLetterTranslation)}
-                      className="outline-btn"
-                      style={{
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        color: 'var(--pg-text-main)',
-                        borderColor: 'var(--pg-box-border)',
-                        background: 'var(--pg-box-bg)'
-                      }}
-                    >
-                      {showLetterTranslation ? <EyeOff size={14} /> : <Eye size={14} />}
-                      {showLetterTranslation ? 'Tarjimani yashirish' : 'Tarjimani ko‘rish'}
-                    </button>
+              <div className="practice-card-grid">
+                {/* Media Image */}
+                <div className="practice-card-media" style={{ height: '300px' }}>
+                  <img
+                    src={currentLangData.reading.image}
+                    alt={currentLangData.reading.title}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80';
+                    }}
+                  />
+                </div>
+
+                {/* Reading Content & Questions */}
+                <div className="practice-content-col">
+                  <div>
+                    <h3 style={{ margin: '0 0 6px', fontSize: 'clamp(22px, 2.3vw, 28px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
+                      {currentLangData.reading.title}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '14px', color: 'var(--pg-text-muted)' }}>
+                      Matnni diqqat bilan o‘qing. <b>Qalin (bold)</b> so‘zlar asosiy leksik tayanchlardir.
+                    </p>
                   </div>
-                </div>
 
-                {/* Letter Text Box */}
-                <div style={{
-                  padding: '18px',
-                  background: 'var(--pg-box-bg)',
-                  borderRadius: '14px',
-                  border: '1px solid var(--pg-box-border)',
-                  fontSize: '13.5px',
-                  lineHeight: '1.7',
-                  whiteSpace: 'pre-line',
-                  color: 'var(--pg-text-main)',
-                  maxHeight: '220px',
-                  overflowY: 'auto'
-                }}>
-                  {currentLangData.writing.letterContent}
-                </div>
+                  {/* Reading Text Container with HTML bold tags */}
+                  <div
+                    className="reading-content-box"
+                    style={{
+                      padding: '22px',
+                      background: 'var(--pg-box-bg)',
+                      borderRadius: '16px',
+                      border: '1px solid var(--pg-box-border)',
+                      fontSize: '16px',
+                      lineHeight: '1.9',
+                      color: 'var(--pg-text-main)'
+                    }}
+                    dangerouslySetInnerHTML={{ __html: currentLangData.reading.readingText }}
+                  />
 
-                {/* Translation Box (Collapsible) */}
-                {showLetterTranslation && (
+                  {/* Comprehension Questions */}
                   <div style={{
-                    padding: '16px',
-                    background: isDarkMode ? 'rgba(120, 105, 245, 0.12)' : 'rgba(120, 105, 245, 0.08)',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(120, 105, 245, 0.25)',
-                    fontSize: '13px',
-                    lineHeight: '1.65',
-                    color: 'var(--pg-text-main)',
-                    whiteSpace: 'pre-line'
-                  }}>
-                    <strong style={{ color: 'var(--pg-purple)', display: 'block', marginBottom: '6px', fontSize: '11px', textTransform: 'uppercase' }}>
-                      🇺🇿 O‘zbekcha tarjimasi:
-                    </strong>
-                    {currentLangData.writing.letterTranslation}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* ===================================================== */}
-          {/* 3. READING CARD                                       */}
-          {/* ===================================================== */}
-          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
-            <div className="practice-card-head">
-              <span className="practice-card-badge">
-                <BookOpen size={14} /> 3. READING (MATN O‘QISH & TAHLIL)
-              </span>
-              <span className="practice-lang-tag">
-                {currentLangData.flag} {currentLangData.langName}
-              </span>
-            </div>
-
-            <div className="practice-card-grid">
-              {/* Image */}
-              <div className="practice-card-media" style={{ height: '240px' }}>
-                <img
-                  src={currentLangData.reading.image}
-                  alt={currentLangData.reading.title}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80';
-                  }}
-                />
-              </div>
-
-              {/* Reading Content & Questions */}
-              <div className="practice-content-col">
-                <div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
-                    {currentLangData.reading.title}
-                  </h3>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--pg-text-muted)' }}>
-                    Matnni diqqat bilan o‘qing. <b>Qalin (bold)</b> so‘zlar asosiy leksik tayanchlardir.
-                  </p>
-                </div>
-
-                {/* Reading Text Container with HTML bold tags */}
-                <div
-                  className="reading-content-box"
-                  style={{
                     padding: '18px',
                     background: 'var(--pg-box-bg)',
                     borderRadius: '14px',
                     border: '1px solid var(--pg-box-border)',
-                    fontSize: '14px',
-                    lineHeight: '1.8',
-                    color: 'var(--pg-text-main)'
-                  }}
-                  dangerouslySetInnerHTML={{ __html: currentLangData.reading.readingText }}
-                />
-
-                {/* Comprehension Questions */}
-                <div style={{
-                  padding: '16px',
-                  background: 'var(--pg-box-bg)',
-                  borderRadius: '12px',
-                  border: '1px solid var(--pg-box-border)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 850, color: 'var(--pg-purple)', textTransform: 'uppercase' }}>
-                      Savollar va to‘g‘ri javoblar:
-                    </span>
-                    <button
-                      onClick={() => setShowReadingAnswers(!showReadingAnswers)}
-                      className="outline-btn"
-                      style={{
-                        padding: '4px 10px',
-                        fontSize: '11px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        background: 'var(--pg-card-bg)',
-                        borderColor: 'var(--pg-box-border)',
-                        color: 'var(--pg-text-main)'
-                      }}
-                    >
-                      {showReadingAnswers ? <EyeOff size={12} /> : <Eye size={12} />}
-                      {showReadingAnswers ? 'Javoblarni yashirish' : 'Javoblarni ko‘rish'}
-                    </button>
-                  </div>
-
-                  {currentLangData.reading.questions.map((q, idx) => (
-                    <div key={idx} style={{ fontSize: '13px', lineHeight: '1.6', color: 'var(--pg-text-main)' }}>
-                      <div>{q.question}</div>
-                      {showReadingAnswers && (
-                        <div style={{ marginTop: '2px', color: 'var(--pg-green-text)', fontWeight: 700, fontSize: '12.5px' }}>
-                          (To‘g‘ri javob: {q.answer})
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ===================================================== */}
-          {/* 4. LISTENING CARD                                     */}
-          {/* ===================================================== */}
-          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
-            <div className="practice-card-head">
-              <span className="practice-card-badge">
-                <Headphones size={14} /> 4. LISTENING (AUDIO TINGLASH & GAP-FILL)
-              </span>
-              <span className="practice-lang-tag">
-                {currentLangData.flag} {currentLangData.langName}
-              </span>
-            </div>
-
-            <div className="practice-card-grid">
-              {/* Image & Dark YouTube Audio Controller Box */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div className="practice-card-media" style={{ height: '170px' }}>
-                  <img
-                    src={currentLangData.listening.image}
-                    alt={currentLangData.listening.title}
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80';
-                    }}
-                  />
-                </div>
-
-                {/* Dedicated YouTube Audio Controller Box (Black background, rectangular, audio player) */}
-                <div style={{
-                  padding: '16px',
-                  borderRadius: '16px',
-                  background: '#070b14',
-                  color: '#fff',
-                  border: '1px solid rgba(255,255,255,0.14)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      🎧 Audio Tinglash Pleyeri
-                    </span>
-                    <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '2px 7px', borderRadius: '5px', fontWeight: 800 }}>
-                      YouTube Audio
-                    </span>
-                  </div>
-
-                  {/* Rectangular cropped YouTube Player with dark theme */}
-                  <div style={{
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    height: '140px',
-                    background: '#000',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    position: 'relative'
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
                   }}>
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      src={getYoutubeEmbedUrl(currentLangData.listening.youtubeAudioUrl, false)}
-                      title="Listening YouTube Audio Stream"
-                      style={{ border: 'none' }}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-
-                  {/* Dual Audio Options: YouTube info + One-click Voice TTS */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
-                    <button
-                      onClick={() => {
-                        const speechText = currentLangData.listening.textWithGaps.replace(/\[\s*[^\]]+\s*\]/g, ' ... ');
-                        handlePlayTTS(speechText);
-                      }}
-                      style={{
-                        flex: 1,
-                        padding: '8px 12px',
-                        borderRadius: '8px',
-                        background: activeSpeakingText ? '#10b981' : 'rgba(255,255,255,0.1)',
-                        color: '#fff',
-                        border: '1px solid rgba(255,255,255,0.15)',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      <Volume2 size={13} />
-                      <span>{activeSpeakingText ? 'Ovoz yangramoqda...' : 'Ovozli o‘qish (TTS Audio)'}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Gap-Fill Text and "Javoblarni tekshirish" button */}
-              <div className="practice-content-col">
-                <div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
-                    {currentLangData.listening.title}
-                  </h3>
-                  <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--pg-text-muted)' }}>
-                    Audioni tinglang va bo‘sh joylarga tushishi kerak bo‘lgan so‘zlarni aniqlang.
-                  </p>
-                </div>
-
-                {/* Gap fill text container */}
-                <div style={{
-                  padding: '22px',
-                  background: 'var(--pg-box-bg)',
-                  borderRadius: '16px',
-                  border: '1px solid var(--pg-box-border)',
-                  fontSize: '15px',
-                  lineHeight: '2.2',
-                  color: 'var(--pg-text-main)'
-                }}>
-                  {currentLangData.listening.textWithGaps.split(/\[\s*______\s*\]|\[\s*[^\]]+\s*\]/).map((part, index, arr) => (
-                    <React.Fragment key={index}>
-                      {part}
-                      {index < arr.length - 1 && (
-                        <span style={{
-                          display: 'inline-block',
-                          padding: showListeningAnswers ? '2px 10px' : '2px 18px',
-                          margin: '0 6px',
-                          borderRadius: '8px',
-                          border: showListeningAnswers ? '1.5px solid #10b981' : '1.5px dashed var(--pg-purple)',
-                          background: showListeningAnswers ? 'rgba(16, 185, 129, 0.15)' : 'rgba(120, 105, 245, 0.08)',
-                          color: showListeningAnswers ? '#10b981' : 'var(--pg-purple)',
-                          fontWeight: 800,
-                          fontSize: '13px',
-                          transition: 'all 0.3s ease'
-                        }}>
-                          {showListeningAnswers
-                            ? (currentLangData.listening.gapsAnswers[index] || 'to‘g‘ri javob')
-                            : `[ ${index + 1}-bo‘sh joy ]`}
-                        </span>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </div>
-
-                {/* "Javoblarni tekshirish" Button */}
-                <div>
-                  <button
-                    onClick={() => setShowListeningAnswers(!showListeningAnswers)}
-                    className="primary-btn"
-                    style={{
-                      padding: '10px 18px',
-                      fontSize: '13px',
-                      fontWeight: 800,
-                      background: showListeningAnswers ? '#10b981' : 'var(--pg-purple)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <CheckCircle2 size={16} />
-                    <span>{showListeningAnswers ? 'Javoblarni yashirish' : 'Javoblarni tekshirish'}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ===================================================== */}
-          {/* 5. SPEAKING CARD                                      */}
-          {/* ===================================================== */}
-          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
-            <div className="practice-card-head">
-              <span className="practice-card-badge">
-                <MessageSquare size={14} /> 5. SPEAKING (JONLI INTERVYU & NUTQ)
-              </span>
-              <span className="practice-lang-tag">
-                {currentLangData.flag} {currentLangData.langName}
-              </span>
-            </div>
-
-            <div className="practice-card-grid">
-              {/* Image & Speaking Status */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div className="practice-card-media" style={{ height: '220px' }}>
-                  <img
-                    src={currentLangData.speaking.image}
-                    alt={currentLangData.speaking.title}
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80';
-                    }}
-                  />
-                </div>
-
-                <div style={{
-                  padding: '14px',
-                  background: 'var(--pg-box-bg)',
-                  borderRadius: '12px',
-                  border: '1px solid var(--pg-box-border)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--pg-text-muted)', textTransform: 'uppercase' }}>
-                      Javob berilgan savollar:
-                    </span>
-                    <strong style={{ fontSize: '12px', color: 'var(--pg-purple)' }}>
-                      {answeredQuestionsCount} / {totalQuestionsCount}
-                    </strong>
-                  </div>
-                  <div style={{ width: '100%', height: '6px', borderRadius: '4px', background: 'var(--pg-box-border)', overflow: 'hidden' }}>
-                    <div style={{
-                      width: `${(answeredQuestionsCount / (totalQuestionsCount || 1)) * 100}%`,
-                      height: '100%',
-                      background: 'var(--pg-purple)',
-                      transition: 'width 0.3s ease'
-                    }} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Questions List & Gated Final Score Button */}
-              <div className="practice-content-col">
-                <div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
-                    {currentLangData.speaking.title}
-                  </h3>
-                  <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--pg-text-muted)' }}>
-                    Har bir savolni o‘qing va "Javob berish" mikrofon tugmasi orqali erkin javob bering.
-                  </p>
-                </div>
-
-                {/* Question items */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {currentLangData.speaking.questions.map((q) => {
-                    const scoreObj = speakingScores[q.id];
-                    const isRecordingThis = activeListeningQuestionId === q.id;
-
-                    return (
-                      <div
-                        key={q.id}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 850, color: 'var(--pg-purple)', textTransform: 'uppercase' }}>
+                        Savollar va to‘g‘ri javoblar:
+                      </span>
+                      <button
+                        onClick={() => setShowReadingAnswers(!showReadingAnswers)}
+                        className="outline-btn"
                         style={{
-                          padding: '16px',
-                          background: 'var(--pg-box-bg)',
-                          borderRadius: '14px',
-                          border: '1px solid var(--pg-box-border)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '10px'
+                          padding: '5px 12px',
+                          fontSize: '12px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          background: 'var(--pg-card-bg)',
+                          borderColor: 'var(--pg-box-border)',
+                          color: 'var(--pg-text-main)'
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: '14px', fontWeight: 750, color: 'var(--pg-text-main)', lineHeight: '1.4' }}>
-                              {q.id}. {q.question}
-                            </div>
-                            {q.hint && (
-                              <span style={{ fontSize: '11.5px', color: 'var(--pg-text-muted)', display: 'block', marginTop: '4px' }}>
-                                💡 Maslahat: {q.hint}
-                              </span>
-                            )}
-                          </div>
+                        {showReadingAnswers ? <EyeOff size={13} /> : <Eye size={13} />}
+                        {showReadingAnswers ? 'Javoblarni yashirish' : 'Javoblarni ko‘rish'}
+                      </button>
+                    </div>
 
-                          {/* Mic Answer Button */}
-                          <button
-                            onClick={() => handleTestSpeakingQuestion(q.id, q.question)}
-                            className="primary-btn"
-                            style={{
-                              padding: '8px 14px',
-                              fontSize: '12px',
-                              fontWeight: 700,
-                              background: isRecordingThis ? '#ef4444' : scoreObj ? '#10b981' : 'var(--pg-purple)',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              animation: isRecordingThis ? 'pulse 1s infinite' : 'none',
-                              flexShrink: 0
-                            }}
-                          >
-                            <Mic size={14} />
-                            <span>{isRecordingThis ? 'Eshityapman...' : scoreObj ? 'Qayta topshirish' : 'Javob berish'}</span>
-                          </button>
-                        </div>
-
-                        {/* Question Score Feedback */}
-                        {scoreObj && (
-                          <div style={{
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            background: 'rgba(16, 185, 129, 0.12)',
-                            color: '#10b981',
-                            fontSize: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between'
-                          }}>
-                            <span>Nutq tahlili qabul qilindi</span>
-                            <strong style={{ fontWeight: 800 }}>⭐ Natija: {scoreObj.score} ball</strong>
+                    {currentLangData.reading.questions.map((q, idx) => (
+                      <div key={idx} style={{ fontSize: '14px', lineHeight: '1.65', color: 'var(--pg-text-main)' }}>
+                        <div>{q.question}</div>
+                        {showReadingAnswers && (
+                          <div style={{ marginTop: '3px', color: 'var(--pg-green-text)', fontWeight: 750, fontSize: '13.5px' }}>
+                            (To‘g‘ri javob: {q.answer})
                           </div>
                         )}
                       </div>
-                    );
-                  })}
-                </div>
-
-                {/* "Umumiy ballni ko'rish" Button - ONLY APPEARS IF ALL QUESTIONS ARE ANSWERED */}
-                {isAllSpeakingAnswered && (
-                  <div style={{ marginTop: '8px' }}>
-                    <button
-                      onClick={() => setShowTotalSpeakingScore(true)}
-                      className="primary-btn"
-                      style={{
-                        padding: '12px 24px',
-                        fontSize: '14px',
-                        fontWeight: 800,
-                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: '0 4px 16px rgba(16, 185, 129, 0.35)'
-                      }}
-                    >
-                      <Trophy size={17} />
-                      <span>Umumiy ballni ko‘rish</span>
-                    </button>
+                    ))}
                   </div>
-                )}
-
-                {/* Final Score Reveal Modal/Card */}
-                {showTotalSpeakingScore && isAllSpeakingAnswered && (
-                  <div style={{
-                    padding: '20px',
-                    borderRadius: '16px',
-                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.05))',
-                    border: '2px solid #10b981',
-                    marginTop: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '14px'
-                  }}>
-                    <div>
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: '#10b981', textTransform: 'uppercase' }}>
-                        🎉 SPEAKING MUVAFFAQIYATLI YAKUNLANDI!
-                      </span>
-                      <h4 style={{ margin: '4px 0', fontSize: '18px', fontWeight: 850, color: 'var(--pg-text-heading)' }}>
-                        O‘rtacha natijangiz: {averageSpeakingScore} / 100 ball
-                      </h4>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--pg-text-muted)' }}>
-                        Nutqiy ravonlik va intonatsiyangiz a’lo darajada baholandi.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => onBegin('register')}
-                      className="primary-btn"
-                      style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 700 }}
-                    >
-                      To‘liq kursni boshlash
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* ===================================================== */}
-          {/* 6. GRAMMAR CARD                                       */}
-          {/* ===================================================== */}
-          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
-            <div className="practice-card-head">
-              <span className="practice-card-badge">
-                <Sparkles size={14} /> 6. GRAMMAR (GRAMMATIKA & XATOLAR TAHLILI)
-              </span>
-              <span className="practice-lang-tag">
-                {currentLangData.flag} {currentLangData.langName}
-              </span>
-            </div>
-
-            <div className="practice-card-grid">
-              {/* Image */}
-              <div className="practice-card-media" style={{ height: '240px' }}>
-                <img
-                  src={currentLangData.grammar.image}
-                  alt={currentLangData.grammar.topicName}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80';
-                  }}
-                />
-              </div>
-
-              {/* Grammar Comparison Texts & Rules */}
-              <div className="practice-content-col">
-                <div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
-                    {currentLangData.grammar.topicName}
-                  </h3>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--pg-text-sub)', lineHeight: '1.6' }}>
-                    {currentLangData.grammar.topicExplanation}
-                  </p>
-                </div>
-
-                {/* 2 Comparison Texts Side by Side (Responsive auto-fit) */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
-                  {/* Incorrect Text */}
-                  <div style={{
-                    padding: '16px',
-                    borderRadius: '12px',
-                    background: 'rgba(239, 68, 68, 0.08)',
-                    border: '1.5px solid #ef4444',
-                    color: '#ef4444'
-                  }}>
-                    <div style={{ fontSize: '11px', fontWeight: 800, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <AlertCircle size={14} /> XATO VARIANT:
-                    </div>
-                    <div style={{ fontSize: '13.5px', textDecoration: 'line-through', color: 'var(--pg-text-main)' }}>
-                      "{currentLangData.grammar.incorrectText}"
-                    </div>
-                  </div>
-
-                  {/* Corrected Text */}
-                  <div style={{
-                    padding: '16px',
-                    borderRadius: '12px',
-                    background: 'rgba(16, 185, 129, 0.08)',
-                    border: '1.5px solid #10b981',
-                    color: '#10b981'
-                  }}>
-                    <div style={{ fontSize: '11px', fontWeight: 800, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <CheckCircle2 size={14} /> TO‘G‘RI VARIANT:
-                    </div>
-                    <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--pg-text-main)' }}>
-                      "{currentLangData.grammar.correctedText}"
-                    </div>
-                  </div>
-                </div>
-
-                {/* Topic Rule Tip */}
-                <div style={{
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  background: 'var(--pg-box-bg)',
-                  border: '1px solid var(--pg-box-border)',
-                  fontSize: '12px',
-                  color: 'var(--pg-text-muted)'
-                }}>
-                  💡 <strong>Qoidani eslab qoling:</strong> {currentLangData.grammar.ruleTip}
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* ===================================================== */}
-          {/* 7. SHADOWING CARD                                     */}
+          {/* SLIDE 3: LISTENING CARD WITH MODERN MUSIC PLAYER     */}
+          {/* (YOUTUBE VIDEO KO'RINMAYDI — MUSIQA PLAYER KO'RINISHI) */}
           {/* ===================================================== */}
-          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
-            <div className="practice-card-head">
-              <span className="practice-card-badge">
-                <Award size={14} /> 7. SHADOWING (SOYA METODI & NUTQNI MOSLASHTIRISH)
-              </span>
-              <span className="practice-lang-tag">
-                {currentLangData.flag} {currentLangData.langName}
-              </span>
-            </div>
-
-            {/* Enlarged Shadowing Grid: Video is wider and taller, right text has min-width: 0 */}
-            <div className="practice-shadowing-grid">
-              {/* Video Player: Large size (300px height), autoplay=0 (never auto-plays on load!) */}
-              <div className="practice-shadowing-media">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src={getYoutubeEmbedUrl(currentLangData.shadowing.videoUrl, false)}
-                  title="Shadowing Video"
-                  style={{ border: 'none' }}
-                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+          {currentSlide === 3 && (
+            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              <div className="practice-card-head">
+                <span className="practice-card-badge">
+                  <Headphones size={15} /> 4. LISTENING (AUDIO TINGLASH & GAP-FILL)
+                </span>
+                <span className="practice-lang-tag">
+                  {currentLangData.flag} {currentLangData.langName}
+                </span>
               </div>
 
-              {/* Shadowing Text, Audio Listen & Live Word Compare Mic */}
-              <div className="practice-content-col">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                  <div>
-                    <h3 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
-                      {currentLangData.shadowing.title}
-                    </h3>
-                  </div>
+              <div className="practice-card-grid">
+                {/* Left Side: Modern Music Player (NO video shown!) */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="listening-music-player">
+                    {/* Top Bar: Cover Art, Metadata, Equalizer */}
+                    <div className="music-player-top">
+                      <img
+                        src={currentLangData.listening.image}
+                        alt="Album Cover"
+                        className="music-cover-art"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80';
+                        }}
+                      />
+                      <div className="music-meta">
+                        <div className="music-meta-title">{currentLangData.listening.title}</div>
+                        <div className="music-meta-artist">
+                          TILSHUNOS Audio · {currentLangData.langName} Listening
+                        </div>
+                      </div>
 
-                  {/* Audio Listen & Mic Buttons */}
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <button
-                      onClick={() => handlePlayTTS(currentLangData.shadowing.audioText)}
-                      className="outline-btn"
-                      style={{
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        color: 'var(--pg-purple)',
-                        borderColor: 'var(--pg-purple)',
-                        background: 'var(--pg-box-bg)'
-                      }}
-                    >
-                      <Volume2 size={14} /> Audioni eshitish
-                    </button>
-                    <button
-                      onClick={handleTestShadowing}
-                      className="primary-btn"
-                      style={{
-                        padding: '6px 14px',
-                        fontSize: '12px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        background: isShadowingListening ? '#ef4444' : 'var(--pg-purple)',
-                        animation: isShadowingListening ? 'pulse 1s infinite' : 'none'
-                      }}
-                    >
-                      <Mic size={14} /> {isShadowingListening ? 'Eshitilmoqda...' : 'Nutqni solishtirish'}
-                    </button>
-                  </div>
-                </div>
+                      {/* Dancing Equalizer Sound Wave Bars */}
+                      <div className="music-equalizer">
+                        <div className={`equalizer-bar ${musicPlaying ? 'playing' : ''}`} />
+                        <div className={`equalizer-bar ${musicPlaying ? 'playing' : ''}`} />
+                        <div className={`equalizer-bar ${musicPlaying ? 'playing' : ''}`} />
+                        <div className={`equalizer-bar ${musicPlaying ? 'playing' : ''}`} />
+                      </div>
+                    </div>
 
-                {/* Target Text with Word-by-Word Color Matching (never overflows) */}
-                <div style={{
-                  padding: '20px',
-                  background: 'var(--pg-box-bg)',
-                  borderRadius: '14px',
-                  border: '1px solid var(--pg-box-border)',
-                  fontSize: '15px',
-                  lineHeight: '1.8',
-                  color: 'var(--pg-text-main)',
-                  minWidth: 0,
-                  maxWidth: '100%',
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '4px'
-                }}>
-                  {currentLangData.shadowing.shadowingText.split(' ').map((targetWord, idx) => {
-                    const cleanTarget = targetWord.replace(/[.,:;!?]/g, '').toLowerCase();
-                    const spokenWords = shadowingRecognizedText.toLowerCase().split(/\s+/);
-                    const isMatched = spokenWords.some(sw => sw.includes(cleanTarget) || cleanTarget.includes(sw));
-
-                    return (
-                      <span
-                        key={idx}
-                        style={{
-                          padding: '2px 5px',
-                          borderRadius: '4px',
-                          color: isMatched ? '#10b981' : 'inherit',
-                          fontWeight: isMatched ? 850 : 500,
-                          background: isMatched ? 'rgba(16, 185, 129, 0.18)' : 'transparent',
-                          transition: 'all 0.2s ease',
-                          display: 'inline-block'
+                    {/* Timeline & Scrubber Progress */}
+                    <div className="music-progress-wrap">
+                      <div
+                        className="music-progress-bar"
+                        onClick={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const clickPos = (e.clientX - rect.left) / rect.width;
+                          setMusicCurrentTime(Math.round(clickPos * musicDuration));
                         }}
                       >
-                        {targetWord}
-                      </span>
-                    );
-                  })}
+                        <div
+                          className="music-progress-fill"
+                          style={{ width: `${(musicCurrentTime / musicDuration) * 100}%` }}
+                        />
+                      </div>
+                      <div className="music-time-row">
+                        <span>{formatTime(musicCurrentTime)}</span>
+                        <span>{formatTime(musicDuration)}</span>
+                      </div>
+                    </div>
+
+                    {/* Music Player Controls */}
+                    <div className="music-controls-row">
+                      {/* Rewind 5s */}
+                      <button
+                        onClick={() => setMusicCurrentTime((prev) => Math.max(0, prev - 5))}
+                        className="music-seek-btn"
+                        title="5 soniya orqaga"
+                      >
+                        <RotateCcw size={14} /> -5s
+                      </button>
+
+                      {/* Main Big Circular Play / Pause Button */}
+                      <button
+                        onClick={toggleMusicPlayer}
+                        className="music-play-btn"
+                        title={musicPlaying ? "Pauza" : "Tinglash"}
+                      >
+                        {musicPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '3px' }} />}
+                      </button>
+
+                      {/* Speed Toggle (0.8x / 1.0x) */}
+                      <button
+                        onClick={() => setPlaybackSpeed((prev) => (prev === 1.0 ? 0.8 : 1.0))}
+                        className="music-speed-btn"
+                        title="Ijro tezligi"
+                      >
+                        ⚡ {playbackSpeed}x
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Fast TTS Voice Option */}
+                  <button
+                    onClick={() => {
+                      const speechText = currentLangData.listening.textWithGaps.replace(/\[\s*[^\]]+\s*\]/g, ' ... ');
+                      handlePlayTTS(speechText);
+                    }}
+                    style={{
+                      padding: '10px 16px',
+                      borderRadius: '12px',
+                      background: activeSpeakingText ? '#10b981' : 'var(--pg-box-bg)',
+                      color: activeSpeakingText ? '#fff' : 'var(--pg-text-main)',
+                      border: '1px solid var(--pg-box-border)',
+                      fontSize: '12.5px',
+                      fontWeight: 750,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <Volume2 size={15} />
+                    <span>{activeSpeakingText ? 'Ovoz yangramoqda...' : 'Ovozli o‘qish (TTS Audio)'}</span>
+                  </button>
                 </div>
 
-                {/* Shadowing Score Feedback */}
-                {shadowingScore !== null && (
-                  <div style={{
-                    padding: '12px 16px',
-                    borderRadius: '10px',
-                    background: 'rgba(16, 185, 129, 0.12)',
-                    border: '1px solid #10b981',
-                    color: '#10b981',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}>
-                    <span>Aytilgan nutq bilan solishtirildi ✓</span>
-                    <strong style={{ fontSize: '14px' }}>⭐ Moslik darajasi: {shadowingScore}%</strong>
+                {/* Right Side: Gap-Fill Text and Check Button */}
+                <div className="practice-content-col">
+                  <div>
+                    <h3 style={{ margin: '0 0 6px', fontSize: 'clamp(22px, 2.3vw, 28px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
+                      {currentLangData.listening.title}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '14px', color: 'var(--pg-text-muted)' }}>
+                      Musiqa pleyeridan audioni tinglang va bo‘sh joylarga tushishi kerak bo‘lgan so‘zlarni aniqlang.
+                    </p>
                   </div>
-                )}
+
+                  {/* Gap Fill Text Box */}
+                  <div style={{
+                    padding: '24px',
+                    background: 'var(--pg-box-bg)',
+                    borderRadius: '18px',
+                    border: '1px solid var(--pg-box-border)',
+                    fontSize: '16.5px',
+                    lineHeight: '2.3',
+                    color: 'var(--pg-text-main)'
+                  }}>
+                    {currentLangData.listening.textWithGaps.split(/\[\s*______\s*\]|\[\s*[^\]]+\s*\]/).map((part, index, arr) => (
+                      <React.Fragment key={index}>
+                        {part}
+                        {index < arr.length - 1 && (
+                          <span style={{
+                            display: 'inline-block',
+                            padding: showListeningAnswers ? '3px 12px' : '3px 20px',
+                            margin: '0 6px',
+                            borderRadius: '9px',
+                            border: showListeningAnswers ? '1.5px solid #10b981' : '1.5px dashed var(--pg-purple)',
+                            background: showListeningAnswers ? 'rgba(16, 185, 129, 0.15)' : 'rgba(120, 105, 245, 0.1)',
+                            color: showListeningAnswers ? '#10b981' : 'var(--pg-purple)',
+                            fontWeight: 800,
+                            fontSize: '14px',
+                            transition: 'all 0.3s ease'
+                          }}>
+                            {showListeningAnswers
+                              ? (currentLangData.listening.gapsAnswers[index] || 'to‘g‘ri javob')
+                              : `[ ${index + 1}-bo‘sh joy ]`}
+                          </span>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+
+                  {/* "Javoblarni tekshirish" Button */}
+                  <div>
+                    <button
+                      onClick={() => setShowListeningAnswers(!showListeningAnswers)}
+                      className="primary-btn"
+                      style={{
+                        padding: '12px 22px',
+                        fontSize: '14px',
+                        fontWeight: 800,
+                        background: showListeningAnswers ? '#10b981' : 'var(--pg-purple)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <CheckCircle2 size={17} />
+                      <span>{showListeningAnswers ? 'Javoblarni yashirish' : 'Javoblarni tekshirish'}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
+          {/* ===================================================== */}
+          {/* SLIDE 4: SPEAKING CARD                                */}
+          {/* ===================================================== */}
+          {currentSlide === 4 && (
+            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              <div className="practice-card-head">
+                <span className="practice-card-badge">
+                  <MessageSquare size={15} /> 5. SPEAKING (JONLI INTERVYU & NUTQ)
+                </span>
+                <span className="practice-lang-tag">
+                  {currentLangData.flag} {currentLangData.langName}
+                </span>
+              </div>
+
+              <div className="practice-card-grid">
+                {/* Media Image & Progress */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="practice-card-media" style={{ height: '260px' }}>
+                    <img
+                      src={currentLangData.speaking.image}
+                      alt={currentLangData.speaking.title}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80';
+                      }}
+                    />
+                  </div>
+
+                  <div style={{
+                    padding: '16px',
+                    background: 'var(--pg-box-bg)',
+                    borderRadius: '14px',
+                    border: '1px solid var(--pg-box-border)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--pg-text-muted)', textTransform: 'uppercase' }}>
+                        Javob berilgan savollar:
+                      </span>
+                      <strong style={{ fontSize: '13px', color: 'var(--pg-purple)' }}>
+                        {answeredQuestionsCount} / {totalQuestionsCount}
+                      </strong>
+                    </div>
+                    <div style={{ width: '100%', height: '8px', borderRadius: '5px', background: 'var(--pg-box-border)', overflow: 'hidden' }}>
+                      <div style={{
+                        width: `${(answeredQuestionsCount / (totalQuestionsCount || 1)) * 100}%`,
+                        height: '100%',
+                        background: 'var(--pg-purple)',
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Questions List & Score Button */}
+                <div className="practice-content-col">
+                  <div>
+                    <h3 style={{ margin: '0 0 6px', fontSize: 'clamp(22px, 2.3vw, 28px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
+                      {currentLangData.speaking.title}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '14px', color: 'var(--pg-text-muted)' }}>
+                      Har bir savolni o‘qing va "Javob berish" mikrofon tugmasi orqali erkin javob bering.
+                    </p>
+                  </div>
+
+                  {/* Question items */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {currentLangData.speaking.questions.map((q) => {
+                      const scoreObj = speakingScores[q.id];
+                      const isRecordingThis = activeListeningQuestionId === q.id;
+
+                      return (
+                        <div
+                          key={q.id}
+                          style={{
+                            padding: '18px',
+                            background: 'var(--pg-box-bg)',
+                            borderRadius: '16px',
+                            border: '1px solid var(--pg-box-border)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '15px', fontWeight: 750, color: 'var(--pg-text-main)', lineHeight: '1.45' }}>
+                                {q.id}. {q.question}
+                              </div>
+                              {q.hint && (
+                                <span style={{ fontSize: '12.5px', color: 'var(--pg-text-muted)', display: 'block', marginTop: '5px' }}>
+                                  💡 Maslahat: {q.hint}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Mic Answer Button */}
+                            <button
+                              onClick={() => handleTestSpeakingQuestion(q.id, q.question)}
+                              className="primary-btn"
+                              style={{
+                                padding: '9px 16px',
+                                fontSize: '12.5px',
+                                fontWeight: 750,
+                                background: isRecordingThis ? '#ef4444' : scoreObj ? '#10b981' : 'var(--pg-purple)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                animation: isRecordingThis ? 'pulse 1s infinite' : 'none',
+                                flexShrink: 0
+                              }}
+                            >
+                              <Mic size={15} />
+                              <span>{isRecordingThis ? 'Eshityapman...' : scoreObj ? 'Qayta topshirish' : 'Javob berish'}</span>
+                            </button>
+                          </div>
+
+                          {/* Question Score Feedback */}
+                          {scoreObj && (
+                            <div style={{
+                              padding: '10px 14px',
+                              borderRadius: '10px',
+                              background: 'rgba(16, 185, 129, 0.12)',
+                              color: '#10b981',
+                              fontSize: '13px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between'
+                            }}>
+                              <span>Nutq tahlili qabul qilindi</span>
+                              <strong style={{ fontWeight: 800 }}>⭐ Natija: {scoreObj.score} ball</strong>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* "Umumiy ballni ko'rish" Button - ONLY APPEARS IF ALL QUESTIONS ARE ANSWERED */}
+                  {isAllSpeakingAnswered && (
+                    <div style={{ marginTop: '8px' }}>
+                      <button
+                        onClick={() => setShowTotalSpeakingScore(true)}
+                        className="primary-btn"
+                        style={{
+                          padding: '14px 26px',
+                          fontSize: '15px',
+                          fontWeight: 800,
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          boxShadow: '0 4px 18px rgba(16, 185, 129, 0.35)'
+                        }}
+                      >
+                        <Trophy size={18} />
+                        <span>Umumiy ballni ko‘rish</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Final Score Reveal Modal/Card */}
+                  {showTotalSpeakingScore && isAllSpeakingAnswered && (
+                    <div style={{
+                      padding: '24px',
+                      borderRadius: '18px',
+                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(5, 150, 105, 0.06))',
+                      border: '2px solid #10b981',
+                      marginTop: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '16px'
+                    }}>
+                      <div>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: '#10b981', textTransform: 'uppercase' }}>
+                          🎉 SPEAKING MUVAFFAQIYATLI YAKUNLANDI!
+                        </span>
+                        <h4 style={{ margin: '6px 0', fontSize: '20px', fontWeight: 850, color: 'var(--pg-text-heading)' }}>
+                          O‘rtacha natijangiz: {averageSpeakingScore} / 100 ball
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '13px', color: 'var(--pg-text-muted)' }}>
+                          Nutqiy ravonlik va intonatsiyangiz a’lo darajada baholandi.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => onBegin('register')}
+                        className="primary-btn"
+                        style={{ padding: '10px 18px', fontSize: '13px', fontWeight: 700 }}
+                      >
+                        To‘liq kursni boshlash
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===================================================== */}
+          {/* SLIDE 5: GRAMMAR CARD                                 */}
+          {/* ===================================================== */}
+          {currentSlide === 5 && (
+            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              <div className="practice-card-head">
+                <span className="practice-card-badge">
+                  <Sparkles size={15} /> 6. GRAMMAR (GRAMMATIKA & XATOLAR TAHLILI)
+                </span>
+                <span className="practice-lang-tag">
+                  {currentLangData.flag} {currentLangData.langName}
+                </span>
+              </div>
+
+              <div className="practice-card-grid">
+                {/* Media Image */}
+                <div className="practice-card-media" style={{ height: '300px' }}>
+                  <img
+                    src={currentLangData.grammar.image}
+                    alt={currentLangData.grammar.topicName}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80';
+                    }}
+                  />
+                </div>
+
+                {/* Grammar Comparison Texts & Rules */}
+                <div className="practice-content-col">
+                  <div>
+                    <h3 style={{ margin: '0 0 6px', fontSize: 'clamp(22px, 2.3vw, 28px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
+                      {currentLangData.grammar.topicName}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '14.5px', color: 'var(--pg-text-sub)', lineHeight: '1.7' }}>
+                      {currentLangData.grammar.topicExplanation}
+                    </p>
+                  </div>
+
+                  {/* 2 Comparison Boxes Side by Side */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '16px' }}>
+                    {/* Incorrect Text */}
+                    <div style={{
+                      padding: '18px',
+                      borderRadius: '14px',
+                      background: 'rgba(239, 68, 68, 0.08)',
+                      border: '1.5px solid #ef4444',
+                      color: '#ef4444'
+                    }}>
+                      <div style={{ fontSize: '12px', fontWeight: 800, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <AlertCircle size={15} /> XATO VARIANT:
+                      </div>
+                      <div style={{ fontSize: '14.5px', textDecoration: 'line-through', color: 'var(--pg-text-main)' }}>
+                        "{currentLangData.grammar.incorrectText}"
+                      </div>
+                    </div>
+
+                    {/* Corrected Text */}
+                    <div style={{
+                      padding: '18px',
+                      borderRadius: '14px',
+                      background: 'rgba(16, 185, 129, 0.08)',
+                      border: '1.5px solid #10b981',
+                      color: '#10b981'
+                    }}>
+                      <div style={{ fontSize: '12px', fontWeight: 800, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <CheckCircle2 size={15} /> TO‘G‘RI VARIANT:
+                      </div>
+                      <div style={{ fontSize: '14.5px', fontWeight: 750, color: 'var(--pg-text-main)' }}>
+                        "{currentLangData.grammar.correctedText}"
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Topic Rule Tip */}
+                  <div style={{
+                    padding: '14px 18px',
+                    borderRadius: '12px',
+                    background: 'var(--pg-box-bg)',
+                    border: '1px solid var(--pg-box-border)',
+                    fontSize: '13.5px',
+                    color: 'var(--pg-text-muted)'
+                  }}>
+                    💡 <strong>Qoidani eslab qoling:</strong> {currentLangData.grammar.ruleTip}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===================================================== */}
+          {/* SLIDE 6: SHADOWING CARD (LARGE VIDEO, NO AUTOPLAY)     */}
+          {/* ===================================================== */}
+          {currentSlide === 6 && (
+            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+              <div className="practice-card-head">
+                <span className="practice-card-badge">
+                  <Award size={15} /> 7. SHADOWING (SOYA METODI & NUTQNI MOSLASHTIRISH)
+                </span>
+                <span className="practice-lang-tag">
+                  {currentLangData.flag} {currentLangData.langName}
+                </span>
+              </div>
+
+              {/* Large Shadowing Grid */}
+              <div className="practice-shadowing-grid">
+                {/* Video Player: Large (330px height), autoplay=0 */}
+                <div className="practice-shadowing-media">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={getYoutubeEmbedUrl(currentLangData.shadowing.videoUrl, false)}
+                    title="Shadowing Video"
+                    style={{ border: 'none' }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+
+                {/* Shadowing Text & Live Compare Mic */}
+                <div className="practice-content-col">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                    <div>
+                      <h3 style={{ margin: '0 0 4px', fontSize: 'clamp(20px, 2.2vw, 26px)', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
+                        {currentLangData.shadowing.title}
+                      </h3>
+                    </div>
+
+                    {/* Audio Listen & Mic Buttons */}
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <button
+                        onClick={() => handlePlayTTS(currentLangData.shadowing.audioText)}
+                        className="outline-btn"
+                        style={{
+                          padding: '7px 14px',
+                          fontSize: '12.5px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          color: 'var(--pg-purple)',
+                          borderColor: 'var(--pg-purple)',
+                          background: 'var(--pg-box-bg)'
+                        }}
+                      >
+                        <Volume2 size={15} /> Audioni eshitish
+                      </button>
+                      <button
+                        onClick={handleTestShadowing}
+                        className="primary-btn"
+                        style={{
+                          padding: '7px 16px',
+                          fontSize: '12.5px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          background: isShadowingListening ? '#ef4444' : 'var(--pg-purple)',
+                          animation: isShadowingListening ? 'pulse 1s infinite' : 'none'
+                        }}
+                      >
+                        <Mic size={15} /> {isShadowingListening ? 'Eshitilmoqda...' : 'Nutqni solishtirish'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Target Text with Word-by-Word Matching (never overflows) */}
+                  <div style={{
+                    padding: '22px',
+                    background: 'var(--pg-box-bg)',
+                    borderRadius: '16px',
+                    border: '1px solid var(--pg-box-border)',
+                    fontSize: '16.5px',
+                    lineHeight: '1.85',
+                    color: 'var(--pg-text-main)',
+                    minWidth: 0,
+                    maxWidth: '100%',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '5px'
+                  }}>
+                    {currentLangData.shadowing.shadowingText.split(' ').map((targetWord, idx) => {
+                      const cleanTarget = targetWord.replace(/[.,:;!?]/g, '').toLowerCase();
+                      const spokenWords = shadowingRecognizedText.toLowerCase().split(/\s+/);
+                      const isMatched = spokenWords.some((sw) => sw.includes(cleanTarget) || cleanTarget.includes(sw));
+
+                      return (
+                        <span
+                          key={idx}
+                          style={{
+                            padding: '2px 6px',
+                            borderRadius: '5px',
+                            color: isMatched ? '#10b981' : 'inherit',
+                            fontWeight: isMatched ? 850 : 500,
+                            background: isMatched ? 'rgba(16, 185, 129, 0.18)' : 'transparent',
+                            transition: 'all 0.2s ease',
+                            display: 'inline-block'
+                          }}
+                        >
+                          {targetWord}
+                        </span>
+                      );
+                    })}
+                  </div>
+
+                  {/* Shadowing Score Feedback */}
+                  {shadowingScore !== null && (
+                    <div style={{
+                      padding: '14px 18px',
+                      borderRadius: '12px',
+                      background: 'rgba(16, 185, 129, 0.12)',
+                      border: '1px solid #10b981',
+                      color: '#10b981',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}>
+                      <span>Aytilgan nutq bilan solishtirildi ✓</span>
+                      <strong style={{ fontSize: '15px' }}>⭐ Moslik darajasi: {shadowingScore}%</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===================================================== */}
+          {/* SLIDE NAVIGATION CONTROLS (OLDINGI / KEYINGI / DOTS) */}
+          {/* ===================================================== */}
+          <div className="practice-slide-nav">
+            <button
+              onClick={handlePrevSlide}
+              disabled={currentSlide === 0}
+              className="slide-nav-btn prev"
+            >
+              <ChevronLeft size={18} />
+              <span>Oldingi modul</span>
+            </button>
+
+            {/* Dot Indicators */}
+            <div className="slide-indicators">
+              {SKILL_MODULES.map((mod) => (
+                <button
+                  key={mod.id}
+                  onClick={() => goToSlide(mod.id)}
+                  className={`slide-dot ${currentSlide === mod.id ? 'active' : ''}`}
+                  title={mod.label}
+                />
+              ))}
+              <span className="slide-counter-badge">
+                {currentSlide + 1} / {SKILL_MODULES.length}
+              </span>
+            </div>
+
+            <button
+              onClick={handleNextSlide}
+              className="slide-nav-btn next"
+            >
+              <span>{currentSlide === SKILL_MODULES.length - 1 ? 'Ro‘yxatdan o‘tish' : 'Keyingi modul'}</span>
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       </div>
     </section>
