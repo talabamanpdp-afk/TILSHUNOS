@@ -98,12 +98,22 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     heroFlagsLabel: 'Tillarda',
     metrics: {
       useLiveStats: true,
-      metric1Value: '6 M',
-      metric1Label: 'App Downloads',
-      metric2Value: '8.24 M',
-      metric2Label: 'Learned monthly',
-      metric3Value: '4.8 ★',
-      metric3Label: '177k Rating'
+      metric1Value: '3+',
+      metric1Label: 'O‘quv Materiallari',
+      metric2Value: '50+',
+      metric2Label: 'Lug‘at So‘zlari',
+      metric3Value: '4+',
+      metric3Label: 'Jami Foydalanuvchilar'
+    },
+    authBanner: {
+      kicker: 'TILSHUNOS PLATFORMASI',
+      loginTitle: 'Qaytganingizdan xursandmiz!',
+      registerTitle: 'O‘rganish yo‘lingiz shu yerdan boshlanadi.',
+      verifyTitle: 'Emailingizni tasdiqlang',
+      subtitle: 'O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing.',
+      statNumber: '4+',
+      statLabel: 'asosiy ko‘nikma bitta platformada',
+      bgImage: ''
     },
     floatingBadge1: {
       flag: '🇬🇧',
@@ -217,7 +227,8 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     ]
   };
 });
-  const [cmsTab, setCmsTab] = useState<'hero' | 'stats' | 'preview' | 'curriculum' | 'features' | 'about' | 'faq' | 'footer'>('hero');
+  const [cmsTab, setCmsTab] = useState<'hero' | 'stats' | 'auth' | 'preview' | 'curriculum' | 'features' | 'about' | 'faq' | 'footer'>('hero');
+  const [authPreviewMode, setAuthPreviewMode] = useState<'login' | 'register' | 'verify'>('login');
   const [newTeamMember, setNewTeamMember] = useState({ name: '', role: '', bio: '', avatar: '' });
   const [editingTeamMemberIdx, setEditingTeamMemberIdx] = useState<number | null>(null);
   const [editingTeamMember, setEditingTeamMember] = useState({ name: '', role: '', bio: '', avatar: '' });
@@ -303,14 +314,26 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
           ...cmsRes.value,
           metrics: {
             useLiveStats: true,
-            metric1Value: '6 M',
-            metric1Label: 'App Downloads',
-            metric2Value: '8.24 M',
-            metric2Label: 'Learned monthly',
-            metric3Value: '4.8 ★',
-            metric3Label: '177k Rating',
+            metric1Value: '3+',
+            metric2Value: '50+',
+            metric3Value: '4+',
             ...(prev?.metrics || {}),
-            ...(cmsRes.value?.metrics || {})
+            ...(cmsRes.value?.metrics || {}),
+            metric1Label: (cmsRes.value?.metrics?.metric1Label && cmsRes.value.metrics.metric1Label !== 'App Downloads') ? cmsRes.value.metrics.metric1Label : 'O‘quv Materiallari',
+            metric2Label: (cmsRes.value?.metrics?.metric2Label && cmsRes.value.metrics.metric2Label !== 'Learned monthly') ? cmsRes.value.metrics.metric2Label : 'Lug‘at So‘zlari',
+            metric3Label: (cmsRes.value?.metrics?.metric3Label && cmsRes.value.metrics.metric3Label !== '177k Rating' && cmsRes.value.metrics.metric3Label !== 'Mashq Bajarildi') ? cmsRes.value.metrics.metric3Label : 'Jami Foydalanuvchilar'
+          },
+          authBanner: {
+            kicker: 'TILSHUNOS PLATFORMASI',
+            loginTitle: 'Qaytganingizdan xursandmiz!',
+            registerTitle: 'O‘rganish yo‘lingiz shu yerdan boshlanadi.',
+            verifyTitle: 'Emailingizni tasdiqlang',
+            subtitle: 'O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing.',
+            statNumber: '4+',
+            statLabel: 'asosiy ko‘nikma bitta platformada',
+            bgImage: '',
+            ...(prev?.authBanner || {}),
+            ...(cmsRes.value?.authBanner || {})
           },
           floatingBadge1: {
             flag: '🇬🇧',
@@ -443,12 +466,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   const mobileFileInputRef = useRef<HTMLInputElement | null>(null);
   const bgDesktopFileInputRef = useRef<HTMLInputElement | null>(null);
   const bgMobileFileInputRef = useRef<HTMLInputElement | null>(null);
+  const authBgFileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingDesktop, setUploadingDesktop] = useState(false);
   const [uploadingMobile, setUploadingMobile] = useState(false);
   const [uploadingBgDesktop, setUploadingBgDesktop] = useState(false);
   const [uploadingBgMobile, setUploadingBgMobile] = useState(false);
+  const [uploadingAuthBg, setUploadingAuthBg] = useState(false);
 
-  const handleDeviceFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'desktop' | 'mobile' | 'bgDesktop' | 'bgMobile') => {
+  const handleDeviceFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'desktop' | 'mobile' | 'bgDesktop' | 'bgMobile' | 'authBg') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -461,6 +486,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     else if (target === 'mobile') setUploadingMobile(true);
     else if (target === 'bgDesktop') setUploadingBgDesktop(true);
     else if (target === 'bgMobile') setUploadingBgMobile(true);
+    else if (target === 'authBg') setUploadingAuthBg(true);
 
     try {
       // Direct upload exclusively to Supabase Storage Bucket ('tilshunos-media')
@@ -486,24 +512,40 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       const finalUrl = res.url;
 
       // Update CMS state and local cache
-      const fieldKey = target === 'desktop'
-        ? 'heroImage'
-        : target === 'mobile'
-        ? 'heroMobileImage'
-        : target === 'bgDesktop'
-        ? 'heroBgDesktop'
-        : 'heroBgMobile';
+      if (target === 'authBg') {
+        setCms((prev: any) => {
+          const next = {
+            ...prev,
+            authBanner: {
+              ...(prev?.authBanner || {}),
+              bgImage: finalUrl
+            }
+          };
+          try {
+            localStorage.setItem('tilshunos_cms_data', JSON.stringify(next));
+          } catch {}
+          return next;
+        });
+      } else {
+        const fieldKey = target === 'desktop'
+          ? 'heroImage'
+          : target === 'mobile'
+          ? 'heroMobileImage'
+          : target === 'bgDesktop'
+          ? 'heroBgDesktop'
+          : 'heroBgMobile';
 
-      setCms((prev: any) => {
-        const next = {
-          ...prev,
-          [fieldKey]: finalUrl
-        };
-        try {
-          localStorage.setItem('tilshunos_cms_data', JSON.stringify(next));
-        } catch {}
-        return next;
-      });
+        setCms((prev: any) => {
+          const next = {
+            ...prev,
+            [fieldKey]: finalUrl
+          };
+          try {
+            localStorage.setItem('tilshunos_cms_data', JSON.stringify(next));
+          } catch {}
+          return next;
+        });
+      }
 
       notify('Rasm muvaffaqiyatli Supabase "tilshunos-media" bucketiga yuklandi! ✓');
     } catch (err: any) {
@@ -517,6 +559,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       else if (target === 'mobile') setUploadingMobile(false);
       else if (target === 'bgDesktop') setUploadingBgDesktop(false);
       else if (target === 'bgMobile') setUploadingBgMobile(false);
+      else if (target === 'authBg') setUploadingAuthBg(false);
       if (e.target) e.target.value = '';
     }
   };
@@ -2790,6 +2833,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   {[
                     { id: 'hero', label: '🚀 Hero & Tugmalar' },
                     { id: 'stats', label: '📊 Statistika & Metrikalar' },
+                    { id: 'auth', label: '🔐 Kirish Vizuali (Auth)' },
                     { id: 'preview', label: '💻 Interaktiv Preview' },
                     { id: 'curriculum', label: '🗺️ CEFR, Ko‘nikma & Qadamlar' },
                     { id: 'features', label: '⚡ Ilg‘or Imkoniyatlar' },
@@ -3502,7 +3546,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '24px' }}>
                       {/* Metric 1 */}
                       <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '8px' }}>1-METRIKA (Chap)</span>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '8px' }}>1-METRIKA (Chap) · O‘QUV MATERIALLARI</span>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
                           <b style={{ fontSize: '11px' }}>Qiymat (agar qo‘lda bo‘lsa):</b>
                           <input
@@ -3511,7 +3555,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               ...cms,
                               metrics: { ...cms.metrics, metric1Value: e.target.value }
                             })}
-                            placeholder="6 M yoki 1200+"
+                            placeholder="3+ yoki 120+"
                           />
                         </label>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -3522,14 +3566,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               ...cms,
                               metrics: { ...cms.metrics, metric1Label: e.target.value }
                             })}
-                            placeholder="App Downloads yoki Faol O‘quvchi"
+                            placeholder="O‘quv Materiallari"
                           />
                         </label>
                       </div>
 
                       {/* Metric 2 */}
                       <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#10b981', display: 'block', marginBottom: '8px' }}>2-METRIKA (O‘rta)</span>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#10b981', display: 'block', marginBottom: '8px' }}>2-METRIKA (O‘rta) · LUG‘AT SO‘ZLARI</span>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
                           <b style={{ fontSize: '11px' }}>Qiymat (agar qo‘lda bo‘lsa):</b>
                           <input
@@ -3538,7 +3582,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               ...cms,
                               metrics: { ...cms.metrics, metric2Value: e.target.value }
                             })}
-                            placeholder="8.24 M yoki 5000+"
+                            placeholder="50+ yoki 5000+"
                           />
                         </label>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -3549,14 +3593,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               ...cms,
                               metrics: { ...cms.metrics, metric2Label: e.target.value }
                             })}
-                            placeholder="Learned monthly yoki Yodlangan So‘z"
+                            placeholder="Lug‘at So‘zlari"
                           />
                         </label>
                       </div>
 
                       {/* Metric 3 */}
                       <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#f59e0b', display: 'block', marginBottom: '8px' }}>3-METRIKA (O‘ng)</span>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#f59e0b', display: 'block', marginBottom: '8px' }}>3-METRIKA (O‘ng) · FOYDALANUVCHILAR SONI</span>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
                           <b style={{ fontSize: '11px' }}>Qiymat (agar qo‘lda bo‘lsa):</b>
                           <input
@@ -3565,8 +3609,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               ...cms,
                               metrics: { ...cms.metrics, metric3Value: e.target.value }
                             })}
-                            placeholder="4.8 ★ yoki 10K+"
+                            placeholder="4+ yoki 10K+"
                           />
+                          <small style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '2px' }}>
+                            Avtomatik rejimda bazadagi jami foydalanuvchilar ({cms.liveStats?.usersCount ?? stats.totalUsers ?? 0} nafar) o‘z-o‘zidan hisoblanib chiqadi.
+                          </small>
                         </label>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                           <b style={{ fontSize: '11px' }}>Yozuv / Nom:</b>
@@ -3576,7 +3623,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               ...cms,
                               metrics: { ...cms.metrics, metric3Label: e.target.value }
                             })}
-                            placeholder="177k Rating yoki Mashq Bajarildi"
+                            placeholder="Jami Foydalanuvchilar"
                           />
                         </label>
                       </div>
@@ -3646,6 +3693,367 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           />
                         </label>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: KIRISH / RO‘YXATDAN O‘TISH VIZUALI (AUTH BANNER) */}
+              {cmsTab === 'auth' && (
+                <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+                  {/* Left Column: Form Controls */}
+                  <div className="panel" style={{ padding: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                      <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Sparkles size={18} style={{ color: 'var(--purple)' }} /> Kirish / Ro‘yxatdan O‘tish Vizual Kartasi
+                      </h3>
+                      <button className="primary-btn" onClick={saveCmsChanges} style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 700 }}>
+                        <Save size={14} /> Saqlash
+                      </button>
+                    </div>
+                    <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--muted)', lineHeight: '1.6' }}>
+                      Foydalanuvchi tizimga kirish, ro‘yxatdan o‘tish va pochtani tasdiqlash sahifalarini ochganda chap tomonda chiqadigan vizual banner va uning orqa fon rasmini shu yerdan to‘liq boshqarasiz.
+                    </p>
+
+                    {/* Background image section */}
+                    <div style={{
+                      padding: '16px',
+                      background: 'var(--bg)',
+                      borderRadius: '12px',
+                      border: '1px solid var(--border)',
+                      marginBottom: '18px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                        <strong style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <ImageIcon size={15} style={{ color: 'var(--purple)' }} /> Orqa Fon Rasmi (Background Image)
+                        </strong>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            className="outline-btn"
+                            style={{ fontSize: '11px', padding: '5px 10px', cursor: 'pointer' }}
+                            onClick={() => authBgFileInputRef.current?.click()}
+                            disabled={uploadingAuthBg}
+                          >
+                            <Upload size={13} />
+                            {uploadingAuthBg ? 'Yuklanmoqda...' : '📁 Qurilmadan Yuklash'}
+                          </button>
+                          <input
+                            ref={authBgFileInputRef}
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleDeviceFileUpload(e, 'authBg')}
+                          />
+                          {cms.authBanner?.bgImage && (
+                            <button
+                              type="button"
+                              className="outline-btn"
+                              style={{ fontSize: '11px', padding: '5px 10px', color: '#e05656', borderColor: '#e0565655', cursor: 'pointer' }}
+                              onClick={() => {
+                                setCms({
+                                  ...cms,
+                                  authBanner: { ...cms.authBanner, bgImage: '' }
+                                });
+                                notify('Fon rasmi tozalandi (standart gradientga qaytarildi)');
+                              }}
+                            >
+                              <RotateCcw size={13} /> O‘chirish
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ marginBottom: '10px' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>
+                          1-bosishda tayyor zamonaviy fon variantlari:
+                        </span>
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          {[
+                            ['🌌 Yulduzli Tun', 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1200&q=80'],
+                            ['📚 Qulay Kutubxona', 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80'],
+                            ['💼 Zamonaviy IT Ofis', 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80'],
+                            ['🎨 Minimal Toza Fon', '']
+                          ].map(([title, url]) => (
+                            <button
+                              key={title}
+                              type="button"
+                              className="outline-btn"
+                              style={{ fontSize: '11px', padding: '4px 9px' }}
+                              onClick={() => {
+                                setCms({
+                                  ...cms,
+                                  authBanner: { ...cms.authBanner, bgImage: url }
+                                });
+                                notify(`${title} o‘rnatildi ✓`);
+                              }}
+                            >
+                              {title}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                        <b style={{ fontSize: '11px' }}>Rasm Havolasi (URL):</b>
+                        <input
+                          value={cms.authBanner?.bgImage || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            authBanner: { ...cms.authBanner, bgImage: e.target.value }
+                          })}
+                          placeholder="https://images.unsplash.com/... yoki yuqoridagi tugmadan yuklang"
+                        />
+                      </label>
+                    </div>
+
+                    {/* Texts section */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <b style={{ fontSize: '12px' }}>Kichik Kicker (Yuqori yozuv):</b>
+                        <input
+                          value={cms.authBanner?.kicker || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            authBanner: { ...cms.authBanner, kicker: e.target.value }
+                          })}
+                          placeholder="TILSHUNOS PLATFORMASI"
+                        />
+                      </label>
+
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <b style={{ fontSize: '12px' }}>Kirish Sahifasi Sarlavhasi (Login):</b>
+                        <input
+                          value={cms.authBanner?.loginTitle || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            authBanner: { ...cms.authBanner, loginTitle: e.target.value }
+                          })}
+                          placeholder="Qaytganingizdan xursandmiz!"
+                        />
+                      </label>
+
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <b style={{ fontSize: '12px' }}>Ro‘yxatdan O‘tish Sarlavhasi (Register):</b>
+                        <input
+                          value={cms.authBanner?.registerTitle || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            authBanner: { ...cms.authBanner, registerTitle: e.target.value }
+                          })}
+                          placeholder="O‘rganish yo‘lingiz shu yerdan boshlanadi."
+                        />
+                      </label>
+
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <b style={{ fontSize: '12px' }}>Emailni Tasdiqlash Sarlavhasi (Verify OTP):</b>
+                        <input
+                          value={cms.authBanner?.verifyTitle || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            authBanner: { ...cms.authBanner, verifyTitle: e.target.value }
+                          })}
+                          placeholder="Emailingizni tasdiqlang"
+                        />
+                      </label>
+
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <b style={{ fontSize: '12px' }}>Tavsif (Subtitle):</b>
+                        <textarea
+                          rows={2}
+                          value={cms.authBanner?.subtitle || ''}
+                          onChange={e => setCms({
+                            ...cms,
+                            authBanner: { ...cms.authBanner, subtitle: e.target.value }
+                          })}
+                          placeholder="O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing."
+                        />
+                      </label>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <b style={{ fontSize: '12px' }}>Ko‘rsatkich Raqami:</b>
+                          <input
+                            value={cms.authBanner?.statNumber || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              authBanner: { ...cms.authBanner, statNumber: e.target.value }
+                            })}
+                            placeholder="4+"
+                          />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <b style={{ fontSize: '12px' }}>Ko‘rsatkich Matni:</b>
+                          <input
+                            value={cms.authBanner?.statLabel || ''}
+                            onChange={e => setCms({
+                              ...cms,
+                              authBanner: { ...cms.authBanner, statLabel: e.target.value }
+                            })}
+                            placeholder="asosiy ko‘nikma bitta platformada"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <button className="primary-btn" onClick={saveCmsChanges} style={{ marginTop: '20px', width: '100%', padding: '12px', fontWeight: 700 }}>
+                      <Save size={16} /> O‘zgarishlarni Saqlash
+                    </button>
+                  </div>
+
+                  {/* Right Column: Live Visual Preview */}
+                  <div className="panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                        <h3 style={{ margin: 0, fontSize: '14px' }}>Jonli Ko‘rinish (Live Preview)</h3>
+                        <div style={{ display: 'flex', gap: '4px', background: 'var(--bg)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                          <button
+                            type="button"
+                            onClick={() => setAuthPreviewMode('login')}
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                              border: 0,
+                              fontSize: '11px',
+                              fontWeight: authPreviewMode === 'login' ? 700 : 500,
+                              background: authPreviewMode === 'login' ? 'var(--purple)' : 'transparent',
+                              color: authPreviewMode === 'login' ? '#fff' : 'var(--text)',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Kirish
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAuthPreviewMode('register')}
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                              border: 0,
+                              fontSize: '11px',
+                              fontWeight: authPreviewMode === 'register' ? 700 : 500,
+                              background: authPreviewMode === 'register' ? 'var(--purple)' : 'transparent',
+                              color: authPreviewMode === 'register' ? '#fff' : 'var(--text)',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Ro‘yxatdan o‘tish
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAuthPreviewMode('verify')}
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                              border: 0,
+                              fontSize: '11px',
+                              fontWeight: authPreviewMode === 'verify' ? 700 : 500,
+                              background: authPreviewMode === 'verify' ? 'var(--purple)' : 'transparent',
+                              color: authPreviewMode === 'verify' ? '#fff' : 'var(--text)',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Tasdiqlash
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Preview Card matching exact style */}
+                      <div
+                        style={{
+                          borderRadius: '24px',
+                          padding: '36px 30px',
+                          background: cms.authBanner?.bgImage
+                            ? `linear-gradient(145deg, rgba(25, 22, 45, 0.82), rgba(55, 45, 110, 0.78)), url("${cms.authBanner.bgImage}")`
+                            : 'linear-gradient(145deg, #292647, #5d51a0 75%, #8472ed)',
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          color: '#ffffff',
+                          minHeight: '380px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+                          border: '1px solid rgba(255,255,255,0.15)'
+                        }}
+                      >
+                        {/* Decorative circles if no background image */}
+                        {!cms.authBanner?.bgImage && (
+                          <div style={{
+                            position: 'absolute',
+                            width: '260px',
+                            height: '260px',
+                            border: '1px solid rgba(255,255,255,0.22)',
+                            borderRadius: '50%',
+                            right: '-70px',
+                            bottom: '-80px',
+                            boxShadow: '0 0 0 30px rgba(255,255,255,0.04), 0 0 0 65px rgba(255,255,255,0.03)',
+                            pointerEvents: 'none'
+                          }} />
+                        )}
+
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          fontSize: '10px',
+                          letterSpacing: '1.8px',
+                          fontWeight: 800,
+                          color: '#d4ceff',
+                          marginBottom: '16px',
+                          textTransform: 'uppercase'
+                        }}>
+                          {cms.authBanner?.kicker || 'TILSHUNOS PLATFORMASI'}
+                        </span>
+
+                        <h2 style={{
+                          fontSize: '30px',
+                          lineHeight: '1.18',
+                          letterSpacing: '-1px',
+                          margin: '0 0 14px',
+                          fontWeight: 800,
+                          color: '#ffffff'
+                        }}>
+                          {authPreviewMode === 'verify'
+                            ? (cms.authBanner?.verifyTitle || 'Emailingizni tasdiqlang')
+                            : authPreviewMode === 'login'
+                            ? (cms.authBanner?.loginTitle || 'Qaytganingizdan xursandmiz!')
+                            : (cms.authBanner?.registerTitle || 'O‘rganish yo‘lingiz shu yerdan boshlanadi.')}
+                        </h2>
+
+                        <p style={{
+                          fontSize: '13px',
+                          lineHeight: '1.8',
+                          color: '#dedbf6',
+                          margin: '0 0 24px',
+                          maxWidth: '340px'
+                        }}>
+                          {cms.authBanner?.subtitle || 'O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing.'}
+                        </p>
+
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '14px',
+                          marginTop: 'auto',
+                          paddingTop: '16px',
+                          borderTop: '1px solid rgba(255,255,255,0.12)'
+                        }}>
+                          <strong style={{ fontSize: '38px', lineHeight: 1, fontWeight: 900, color: '#ffffff' }}>
+                            {cms.authBanner?.statNumber || '4+'}
+                          </strong>
+                          <span style={{ fontSize: '11px', lineHeight: '1.6', color: '#e1ddff', whiteSpace: 'pre-line' }}>
+                            {cms.authBanner?.statLabel || 'asosiy ko‘nikma\nbitta platformada'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '16px', padding: '12px 14px', background: 'var(--bg)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                      <p style={{ margin: 0, fontSize: '11px', color: 'var(--muted)', lineHeight: '1.6' }}>
+                        💡 <strong>Maslahat:</strong> Rasm yuklaganingizda yoki havola kiritganingizda, matnlar o‘qilishi uchun avtomatik yarim shaffof qorong‘i qatlam (overlay) qo‘llaniladi. Foydalanuvchilar kirish sahifasini ochishi bilanoq ushbu dizaynni ko‘rishadi.
+                      </p>
                     </div>
                   </div>
                 </div>

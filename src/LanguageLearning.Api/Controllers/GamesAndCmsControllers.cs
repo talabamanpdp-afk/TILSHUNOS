@@ -321,13 +321,13 @@ public class CmsController : ControllerBase
         // Statistics & Floating Badges
         metrics = new
         {
-            useLiveStats = false, // When true, uses real live calculated database numbers
-            metric1Value = "6 M",
-            metric1Label = "App Downloads",
-            metric2Value = "8.24 M",
-            metric2Label = "Learned monthly",
-            metric3Value = "4.8",
-            metric3Label = "177k Rating"
+            useLiveStats = true, // When true, uses real live calculated database numbers
+            metric1Value = "3+",
+            metric1Label = "O‘quv Materiallari",
+            metric2Value = "50+",
+            metric2Label = "Lug‘at So‘zlari",
+            metric3Value = "4+",
+            metric3Label = "Jami Foydalanuvchilar"
         },
         floatingBadge1 = new
         {
@@ -459,6 +459,19 @@ public class CmsController : ControllerBase
             desc = "Bir necha soniyada bepul ro‘yxatdan o‘ting va birinchi darsingizni bugunoq boshlang.",
             btnRegister = "Bepul hisob yaratish",
             btnLogin = "Tizimga kirish"
+        },
+
+        // Auth / Register Page Left Banner
+        authBanner = new
+        {
+            kicker = "TILSHUNOS PLATFORMASI",
+            loginTitle = "Qaytganingizdan xursandmiz!",
+            registerTitle = "O‘rganish yo‘lingiz shu yerdan boshlanadi.",
+            verifyTitle = "Emailingizni tasdiqlang",
+            subtitle = "O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing.",
+            statNumber = "4+",
+            statLabel = "asosiy ko‘nikma\nbitta platformada",
+            bgImage = ""
         },
 
         // Footer & Contacts

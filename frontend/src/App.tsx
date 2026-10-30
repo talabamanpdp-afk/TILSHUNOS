@@ -2031,15 +2031,39 @@ function App() {
 
       {(page === 'login' || page === 'register' || page === 'verify') && (
         <section className="auth-wrap">
-          <div className="auth-visual">
-            <span className="entry-kicker">TILSHUNOS PLATFORMASI</span>
+          <div
+            className="auth-visual"
+            style={{
+              backgroundImage: cmsContent?.authBanner?.bgImage
+                ? `linear-gradient(145deg, rgba(25, 22, 45, 0.82), rgba(55, 45, 110, 0.78)), url("${cmsContent.authBanner.bgImage}")`
+                : undefined,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
+            <span className="entry-kicker">
+              {cmsContent?.authBanner?.kicker || 'TILSHUNOS PLATFORMASI'}
+            </span>
             <h1>
-              {page === 'verify' ? 'Emailingizni tasdiqlang' : page === 'login' ? 'Qaytganingizdan xursandmiz!' : 'O‘rganish yo‘lingiz shu yerdan boshlanadi.'}
+              {page === 'verify'
+                ? (cmsContent?.authBanner?.verifyTitle || 'Emailingizni tasdiqlang')
+                : page === 'login'
+                ? (cmsContent?.authBanner?.loginTitle || 'Qaytganingizdan xursandmiz!')
+                : (cmsContent?.authBanner?.registerTitle || 'O‘rganish yo‘lingiz shu yerdan boshlanadi.')}
             </h1>
-            <p>O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing.</p>
+            <p>
+              {cmsContent?.authBanner?.subtitle || 'O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing.'}
+            </p>
             <div className="auth-visual-stat">
-              <strong>4+</strong>
-              <span>asosiy ko‘nikma<br />bitta platformada</span>
+              <strong>{cmsContent?.authBanner?.statNumber || '4+'}</strong>
+              <span>
+                {cmsContent?.authBanner?.statLabel
+                  ? cmsContent.authBanner.statLabel.includes('\n')
+                    ? cmsContent.authBanner.statLabel.split('\n').map((line: string, i: number) => <React.Fragment key={i}>{line}<br /></React.Fragment>)
+                    : cmsContent.authBanner.statLabel
+                  : <>asosiy ko‘nikma<br />bitta platformada</>}
+              </span>
             </div>
           </div>
 

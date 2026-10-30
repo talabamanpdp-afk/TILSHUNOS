@@ -32,6 +32,16 @@ export interface CmsConfig {
     metric3Value?: string;
     metric3Label?: string;
   };
+  authBanner?: {
+    kicker?: string;
+    loginTitle?: string;
+    registerTitle?: string;
+    verifyTitle?: string;
+    subtitle?: string;
+    statNumber?: string;
+    statLabel?: string;
+    bgImage?: string;
+  };
   floatingBadge1?: {
     flag?: string;
     title?: string;
@@ -371,19 +381,27 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   const useLive = cms?.metrics?.useLiveStats ?? true;
 
   const metric1Val = useLive
-    ? `${(liveStats?.usersCount ?? 0) > 0 ? liveStats?.usersCount : 100}+`
-    : (cms?.metrics?.metric1Value || '6 M');
-  const metric1Lbl = useLive ? (cms?.metrics?.metric1Label || 'Faol O‘quvchi') : (cms?.metrics?.metric1Label || 'App Downloads');
+    ? `${(liveStats?.materialsCount ?? 0) > 0 ? liveStats?.materialsCount : 3}+`
+    : (cms?.metrics?.metric1Value && cms.metrics.metric1Value !== '6 M' ? cms.metrics.metric1Value : `${liveStats?.materialsCount ?? 3}+`);
+  const metric1Lbl = cms?.metrics?.metric1Label && cms.metrics.metric1Label !== 'App Downloads'
+    ? cms.metrics.metric1Label
+    : 'O‘quv Materiallari';
 
   const metric2Val = useLive
-    ? `${(liveStats?.wordsCount ?? 0) > 0 ? liveStats?.wordsCount : 500}+`
-    : (cms?.metrics?.metric2Value || '8.24 M');
-  const metric2Lbl = useLive ? (cms?.metrics?.metric2Label || 'Yodlangan So‘z') : (cms?.metrics?.metric2Label || 'Learned monthly');
+    ? `${liveStats?.wordsCount ?? 0}+`
+    : (cms?.metrics?.metric2Value && cms.metrics.metric2Value !== '8.24 M' ? cms.metrics.metric2Value : `${liveStats?.wordsCount ?? 0}+`);
+  const metric2Lbl = cms?.metrics?.metric2Label && cms.metrics.metric2Label !== 'Learned monthly'
+    ? cms.metrics.metric2Label
+    : 'Lug‘at So‘zlari';
 
   const metric3Val = useLive
-    ? `${(liveStats?.practicesCount ?? 0) > 0 ? liveStats?.practicesCount : 120}+`
-    : (cms?.metrics?.metric3Value || '4.8 ★');
-  const metric3Lbl = useLive ? (cms?.metrics?.metric3Label || 'Mashq Bajarildi') : (cms?.metrics?.metric3Label || '177k Rating');
+    ? `${liveStats?.usersCount ?? 0}+`
+    : (cms?.metrics?.metric3Value && cms.metrics.metric3Value !== '4.8 ★' && cms.metrics.metric3Value !== '4.8' && cms.metrics.metric3Value !== '120+'
+        ? cms.metrics.metric3Value
+        : `${liveStats?.usersCount ?? 0}+`);
+  const metric3Lbl = cms?.metrics?.metric3Label && cms.metrics.metric3Label !== '177k Rating' && cms.metrics.metric3Label !== 'Mashq Bajarildi'
+    ? cms.metrics.metric3Label
+    : 'Jami Foydalanuvchilar';
 
   const flBadge1 = cms?.floatingBadge1 || { flag: '🇬🇧', title: 'Basic English', subtitle: '103 Darslik' };
   const flBadge2 = cms?.floatingBadge2 || { title: '9 / 12 Quiz', subtitle: 'Speaking ✓' };
@@ -751,10 +769,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                 </div>
                 <div className="holo-metric-divider" />
                 <div className="holo-metric-item">
-                  <span className="metric-val">
-                    {metric3Val}{' '}
-                    <Star size={15} fill="#fbbf24" color="#fbbf24" style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '2px', marginBottom: '3px' }} />
-                  </span>
+                  <span className="metric-val">{metric3Val}</span>
                   <span className="metric-lbl">{metric3Lbl}</span>
                 </div>
               </div>
