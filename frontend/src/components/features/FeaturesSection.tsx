@@ -104,7 +104,7 @@ export function FeaturesSection({
   };
 
   return (
-    <section id="features" className="feat-modern-section">
+    <section id="features" className={`feat-modern-section ${dark ? 'is-dark' : 'is-light'}`}>
       {/* Scoped CSS strictly matching reference image 2 */}
       <style>{`
         .feat-modern-section {
@@ -114,6 +114,46 @@ export function FeaturesSection({
           position: relative;
           overflow: hidden;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* 100% LIGHT MODE SUPPORT */
+        .feat-modern-section.is-light {
+          background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%) !important;
+          color: #0f172a !important;
+        }
+        .feat-modern-section.is-light .feat-kicker-badge {
+          background: rgba(37, 99, 235, 0.08) !important;
+          border-color: rgba(37, 99, 235, 0.25) !important;
+          color: #2563eb !important;
+        }
+        .feat-modern-section.is-light .feat-main-title {
+          color: #0f172a !important;
+        }
+        .feat-modern-section.is-light .feat-subtitle {
+          color: #475569 !important;
+        }
+        .feat-modern-section.is-light .feat-card-item {
+          background: rgba(255, 255, 255, 0.96) !important;
+          border: 1.5px solid rgba(226, 232, 240, 0.95) !important;
+          box-shadow: 0 14px 34px rgba(0, 0, 0, 0.05) !important;
+        }
+        .feat-modern-section.is-light .feat-card-item:hover {
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 0 22px var(--feat-shadow) !important;
+        }
+        .feat-modern-section.is-light .feat-card-title {
+          color: #0f172a !important;
+        }
+        .feat-modern-section.is-light .feat-card-desc {
+          color: #475569 !important;
+        }
+        .feat-modern-section.is-light .feat-arrow-circle-btn {
+          background: rgba(241, 245, 249, 0.9) !important;
+          border-color: rgba(226, 232, 240, 0.95) !important;
+          color: #2563eb !important;
+        }
+        .feat-modern-section.is-light .feat-calligraphy-text {
+          color: #2563eb !important;
         }
 
         /* Ambient glowing backdrop spots */

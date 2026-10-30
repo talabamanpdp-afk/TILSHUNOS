@@ -176,7 +176,7 @@ export function SkillsSection({
   };
 
   return (
-    <section id="skills" className="skills-modern-section">
+    <section id="skills" className={`skills-modern-section ${dark ? 'is-dark' : 'is-light'}`}>
       {/* Scoped CSS Styles strictly mirroring Image 2 */}
       <style>{`
         .skills-modern-section {
@@ -186,6 +186,58 @@ export function SkillsSection({
           position: relative;
           overflow: hidden;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* 100% LIGHT MODE SUPPORT */
+        .skills-modern-section.is-light {
+          background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%) !important;
+          color: #0f172a !important;
+        }
+        .skills-modern-section.is-light .skills-kicker-badge {
+          background: rgba(37, 99, 235, 0.08) !important;
+          border-color: rgba(37, 99, 235, 0.25) !important;
+          color: #2563eb !important;
+        }
+        .skills-modern-section.is-light .skills-main-title {
+          color: #0f172a !important;
+        }
+        .skills-modern-section.is-light .skills-subtitle {
+          color: #475569 !important;
+        }
+        .skills-modern-section.is-light .skills-card {
+          background: rgba(255, 255, 255, 0.96) !important;
+          border: 1.5px solid rgba(226, 232, 240, 0.95) !important;
+          box-shadow: 0 14px 34px rgba(0, 0, 0, 0.05) !important;
+        }
+        .skills-modern-section.is-light .skills-card:hover {
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 0 22px var(--skill-shadow) !important;
+        }
+        .skills-modern-section.is-light .skills-card-title {
+          color: #0f172a !important;
+        }
+        .skills-modern-section.is-light .skills-card-desc {
+          color: #475569 !important;
+        }
+        .skills-modern-section.is-light .skills-arrow-btn {
+          background: rgba(241, 245, 249, 0.9) !important;
+          border-color: rgba(226, 232, 240, 0.95) !important;
+          color: #2563eb !important;
+        }
+        .skills-modern-section.is-light .skills-mobile-acc-btn {
+          background: #ffffff !important;
+          border-color: rgba(226, 232, 240, 0.95) !important;
+          color: #0f172a !important;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+        }
+        .skills-modern-section.is-light .skills-mobile-acc-title {
+          color: #0f172a !important;
+        }
+        .skills-modern-section.is-light .skills-mobile-acc-desc {
+          color: #475569 !important;
+        }
+        .skills-modern-section.is-light .skills-calligraphy-note {
+          color: #2563eb !important;
         }
 
         /* Ambient glowing backdrop spots */

@@ -15,6 +15,7 @@ import { PracticeGuideConfig } from '../data/practiceGuideData';
 import { CEFRRoadmapSection } from './cefr-roadmap/CEFRRoadmapSection';
 import { SkillsSection } from './skills/SkillsSection';
 import { LearningProcessSection } from './learning-process/LearningProcessSection';
+import { LearningProcessConfig } from '../data/learningProcessData';
 import { FeaturesSection } from './features/FeaturesSection';
 import { AboutSection } from './about/AboutSection';
 import { FaqSection } from './faq/FaqSection';
@@ -105,16 +106,7 @@ export interface CmsConfig {
       color?: string;
     }>;
   };
-  stepsSection?: {
-    kicker?: string;
-    title?: string;
-    subtitle?: string;
-    steps?: Array<{
-      step: string;
-      title: string;
-      desc: string;
-    }>;
-  };
+  stepsSection?: LearningProcessConfig;
   featuresSection?: {
     kicker?: string;
     title?: string;

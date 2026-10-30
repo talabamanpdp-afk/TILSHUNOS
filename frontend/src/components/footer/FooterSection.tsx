@@ -54,7 +54,7 @@ export function FooterSection({
   };
 
   return (
-    <footer className={`modern-footer-section ${heroBgDesktop || heroBgMobile ? 'has-custom-bg' : ''}`}>
+    <footer className={`modern-footer-section ${dark ? 'is-dark' : 'is-light'} ${heroBgDesktop || heroBgMobile ? 'has-custom-bg' : ''}`}>
       {/* Dynamic Background Image Layer (when user uploaded custom background) */}
       {(heroBgDesktop || heroBgMobile) && (
         <div className="footer-custom-bg-layer" aria-hidden="true">
@@ -89,6 +89,108 @@ export function FooterSection({
           padding: 70px 24px 34px;
           overflow: hidden;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* 100% LIGHT MODE SUPPORT */
+        .modern-footer-section.is-light {
+          background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%) !important;
+          color: #0f172a !important;
+        }
+        .modern-footer-section.is-light .footer-ambient-wave-top path,
+        .modern-footer-section.is-light .footer-ambient-wave-bottom path {
+          opacity: 0.35;
+        }
+        .modern-footer-section.is-light .footer-glass-card {
+          background: rgba(255, 255, 255, 0.94) !important;
+          border: 1.5px solid rgba(226, 232, 240, 0.95) !important;
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.08), 0 0 35px rgba(59, 130, 246, 0.06) !important;
+          color: #0f172a !important;
+        }
+        .modern-footer-section.is-light .footer-glass-card::before {
+          background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.25), rgba(124, 58, 237, 0.25), transparent) !important;
+        }
+        .modern-footer-section.is-light .footer-brand-title {
+          color: #0f172a !important;
+        }
+        .modern-footer-section.is-light .footer-brand-name {
+          color: #0f172a !important;
+        }
+        .modern-footer-section.is-light .footer-brand-slogan {
+          color: #475569 !important;
+        }
+        .modern-footer-section.is-light .footer-social-btn {
+          background: rgba(241, 245, 249, 0.9) !important;
+          border: 1px solid rgba(203, 213, 225, 0.8) !important;
+          color: #3b82f6 !important;
+        }
+        .modern-footer-section.is-light .footer-social-btn:hover {
+          background: #2563eb !important;
+          color: #ffffff !important;
+          box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35) !important;
+        }
+        .modern-footer-section.is-light .footer-col-title {
+          color: #0f172a !important;
+        }
+        .modern-footer-section.is-light .footer-col-icon-badge {
+          background: rgba(37, 99, 235, 0.12) !important;
+          color: #2563eb !important;
+        }
+        .modern-footer-section.is-light .footer-link {
+          color: #475569 !important;
+        }
+        .modern-footer-section.is-light .footer-link:hover {
+          color: #2563eb !important;
+        }
+        .modern-footer-section.is-light .footer-telegram-widget {
+          background: linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(224, 231, 255, 0.9) 100%) !important;
+          border: 1.5px solid rgba(191, 219, 254, 0.9) !important;
+          box-shadow: 0 10px 25px rgba(37, 99, 235, 0.08) !important;
+        }
+        .modern-footer-section.is-light .footer-widget-title {
+          color: #1e3a8a !important;
+        }
+        .modern-footer-section.is-light .footer-widget-desc {
+          color: #475569 !important;
+        }
+        .modern-footer-section.is-light .footer-contact-item {
+          background: rgba(241, 245, 249, 0.9) !important;
+          border: 1px solid rgba(226, 232, 240, 0.95) !important;
+          color: #1e293b !important;
+        }
+        .modern-footer-section.is-light .footer-contact-item:hover {
+          border-color: rgba(37, 99, 235, 0.4) !important;
+          color: #2563eb !important;
+        }
+        .modern-footer-section.is-light .footer-contact-icon-wrap {
+          background: rgba(37, 99, 235, 0.1) !important;
+          color: #2563eb !important;
+        }
+        .modern-footer-section.is-light .footer-accordion-item {
+          background: rgba(255, 255, 255, 0.95) !important;
+          border: 1px solid rgba(226, 232, 240, 0.95) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+        }
+        .modern-footer-section.is-light .footer-accordion-btn {
+          color: #0f172a !important;
+        }
+        .modern-footer-section.is-light .footer-accordion-btn.is-open {
+          border-bottom-color: rgba(226, 232, 240, 0.95) !important;
+        }
+        .modern-footer-section.is-light .footer-bottom-bar-modern {
+          border-top-color: rgba(226, 232, 240, 0.9) !important;
+        }
+        .modern-footer-section.is-light .footer-copyright-text {
+          color: #64748b !important;
+        }
+        .modern-footer-section.is-light .footer-legal-link {
+          color: #475569 !important;
+        }
+        .modern-footer-section.is-light .footer-legal-link:hover {
+          color: #2563eb !important;
+        }
+        .modern-footer-section.is-light .footer-legal-divider {
+          background: rgba(203, 213, 225, 0.8) !important;
         }
 
         /* Ambient Flowing Neon Waves (Matching Mockup Curves) */

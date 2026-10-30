@@ -38,7 +38,7 @@ export function FinalCtaSection({
   };
 
   return (
-    <section className="welcome-final-cta-section">
+    <section className={`welcome-final-cta-section ${dark ? 'is-dark' : 'is-light'}`}>
       <style>{`
         /* ========================================================
            FINAL CALL-TO-ACTION SECTION (MATCHING REFERENCE MOCKUP)
@@ -48,6 +48,45 @@ export function FinalCtaSection({
           background: linear-gradient(180deg, #060913 0%, #0a1022 50%, #060913 100%);
           position: relative;
           overflow: hidden;
+          transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* 100% LIGHT MODE SUPPORT */
+        .welcome-final-cta-section.is-light {
+          background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%) !important;
+          color: #0f172a !important;
+        }
+        .welcome-final-cta-section.is-light .final-cta-floating-card {
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%) !important;
+          border: 1.5px solid rgba(226, 232, 240, 0.95) !important;
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.08), 0 0 45px rgba(37, 99, 235, 0.08) !important;
+        }
+        .welcome-final-cta-section.is-light .final-cta-kicker {
+          background: rgba(37, 99, 235, 0.08) !important;
+          border-color: rgba(37, 99, 235, 0.25) !important;
+          color: #2563eb !important;
+          box-shadow: 0 0 16px rgba(37, 99, 235, 0.1) !important;
+        }
+        .welcome-final-cta-section.is-light .final-cta-title {
+          color: #0f172a !important;
+        }
+        .welcome-final-cta-section.is-light .final-cta-desc {
+          color: #475569 !important;
+        }
+        .welcome-final-cta-section.is-light .final-cta-btn-secondary {
+          background: #ffffff !important;
+          border: 1.5px solid rgba(226, 232, 240, 0.95) !important;
+          color: #0f172a !important;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+        }
+        .welcome-final-cta-section.is-light .final-cta-btn-secondary:hover {
+          background: #f8fafc !important;
+          border-color: rgba(37, 99, 235, 0.4) !important;
+          color: #2563eb !important;
+        }
+        .welcome-final-cta-section.is-light .btn-play-circle {
+          background: rgba(37, 99, 235, 0.1) !important;
+          color: #2563eb !important;
         }
 
         .final-cta-floating-card {
@@ -545,3 +584,4 @@ export function FinalCtaSection({
     </section>
   );
 }
+

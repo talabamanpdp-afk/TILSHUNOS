@@ -3,6 +3,7 @@ export interface LearningProcessStep {
   title: string;
   desc: string;
   badge?: string;
+  image?: string;
   imageDesktop?: string;
   imageMobile?: string;
 }

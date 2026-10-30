@@ -13,14 +13,18 @@ interface LearningProcessSectionProps {
 }
 
 export function LearningProcessSection({ config, dark }: LearningProcessSectionProps) {
-  const currentConfig: LearningProcessConfig = config?.steps && config.steps.length > 0
-    ? { ...DEFAULT_LEARNING_PROCESS_CONFIG, ...config }
-    : DEFAULT_LEARNING_PROCESS_CONFIG;
+  const currentConfig: LearningProcessConfig = {
+    ...DEFAULT_LEARNING_PROCESS_CONFIG,
+    ...(config || {}),
+    steps: (config?.steps && config.steps.length > 0)
+      ? config.steps
+      : DEFAULT_LEARNING_PROCESS_STEPS
+  };
 
   const steps = currentConfig.steps;
 
   return (
-    <section id="how-it-works" className="learning-process-section">
+    <section id="how-it-works" className={`learning-process-section ${dark ? 'is-dark' : 'is-light'}`}>
       {/* Scoped CSS Styles */}
       <style>{`
         .learning-process-section {
@@ -30,6 +34,54 @@ export function LearningProcessSection({ config, dark }: LearningProcessSectionP
           position: relative;
           overflow: hidden;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* 100% LIGHT MODE SUPPORT */
+        .learning-process-section.is-light {
+          background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%) !important;
+          color: #0f172a !important;
+        }
+        .learning-process-section.is-light .lp-hero-kicker {
+          color: #2563eb !important;
+        }
+        .learning-process-section.is-light .lp-hero-title {
+          color: #0f172a !important;
+        }
+        .learning-process-section.is-light .lp-hero-desc {
+          color: #475569 !important;
+        }
+        .learning-process-section.is-light .lp-steps-timeline::before {
+          border-left-color: rgba(59, 130, 246, 0.25) !important;
+        }
+        .learning-process-section.is-light .lp-step-kicker {
+          color: #2563eb !important;
+        }
+        .learning-process-section.is-light .lp-step-title {
+          color: #0f172a !important;
+        }
+        .learning-process-section.is-light .lp-step-desc {
+          color: #475569 !important;
+        }
+        .learning-process-section.is-light .lp-floating-flag {
+          background: #ffffff !important;
+          border-color: rgba(226, 232, 240, 0.9) !important;
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+        }
+        .learning-process-section.is-light .lp-custom-img-wrap {
+          background: #ffffff !important;
+          border-color: rgba(226, 232, 240, 0.9) !important;
+          box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08) !important;
+        }
+        .learning-process-section.is-light .lp-mock-card {
+          background: #ffffff !important;
+          border: 1.5px solid rgba(226, 232, 240, 0.95) !important;
+          box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08) !important;
+          color: #0f172a !important;
+        }
+        .learning-process-section.is-light .lp-quote-text {
+          color: #2563eb !important;
+          text-shadow: 0 0 15px rgba(37, 99, 235, 0.25) !important;
         }
 
         /* Ambient Glow Blobs */
@@ -415,7 +467,9 @@ export function LearningProcessSection({ config, dark }: LearningProcessSectionP
         <div className="lp-steps-timeline">
           {steps.map((stepItem, idx) => {
             const isReverse = idx % 2 === 1; // Alternates left/right
-            const hasCustomImage = Boolean(stepItem.imageDesktop || stepItem.imageMobile);
+            const dImg = stepItem.imageDesktop || (stepItem as any).image;
+            const mImg = stepItem.imageMobile || (stepItem as any).image;
+            const hasCustomImage = Boolean(dImg || mImg);
 
             return (
               <div
@@ -442,31 +496,31 @@ export function LearningProcessSection({ config, dark }: LearningProcessSectionP
                   {hasCustomImage ? (
                     /* User-Uploaded Custom Screenshot (Dual format: Desktop & Mobile responsive) */
                     <div className="lp-custom-img-wrap">
-                      {stepItem.imageDesktop && (
+                      {dImg && (
                         <img
-                          src={stepItem.imageDesktop}
+                          src={dImg}
                           alt={stepItem.title}
                           className="lp-custom-img lp-img-desktop"
                         />
                       )}
-                      {stepItem.imageMobile && (
+                      {mImg && (
                         <img
-                          src={stepItem.imageMobile}
+                          src={mImg}
                           alt={stepItem.title}
                           className="lp-custom-img lp-img-mobile"
                         />
                       )}
                       {/* Fallback if only one of them is provided */}
-                      {!stepItem.imageMobile && stepItem.imageDesktop && (
+                      {!mImg && dImg && (
                         <img
-                          src={stepItem.imageDesktop}
+                          src={dImg}
                           alt={stepItem.title}
                           className="lp-custom-img lp-img-mobile"
                         />
                       )}
-                      {!stepItem.imageDesktop && stepItem.imageMobile && (
+                      {!dImg && mImg && (
                         <img
-                          src={stepItem.imageMobile}
+                          src={mImg}
                           alt={stepItem.title}
                           className="lp-custom-img lp-img-desktop"
                         />

@@ -87,7 +87,7 @@ export function FaqSection({ faqs, dark }: FaqSectionProps) {
   };
 
   return (
-    <section id="faq" className="faq-modern-section">
+    <section id="faq" className={`faq-modern-section ${dark ? 'is-dark' : 'is-light'}`}>
       {/* Scoped CSS Styles strictly mirroring reference image */}
       <style>{`
         .faq-modern-section {
@@ -97,6 +97,48 @@ export function FaqSection({ faqs, dark }: FaqSectionProps) {
           position: relative;
           overflow: hidden;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* 100% LIGHT MODE SUPPORT */
+        .faq-modern-section.is-light {
+          background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%) !important;
+          color: #0f172a !important;
+        }
+        .faq-modern-section.is-light .faq-kicker-badge {
+          background: rgba(37, 99, 235, 0.08) !important;
+          border-color: rgba(37, 99, 235, 0.25) !important;
+          color: #2563eb !important;
+        }
+        .faq-modern-section.is-light .faq-main-title {
+          color: #0f172a !important;
+        }
+        .faq-modern-section.is-light .faq-subtitle {
+          color: #475569 !important;
+        }
+        .faq-modern-section.is-light .faq-calligraphy-text {
+          color: #2563eb !important;
+        }
+        .faq-modern-section.is-light .faq-card-item {
+          background: rgba(255, 255, 255, 0.96) !important;
+          border: 1.5px solid rgba(226, 232, 240, 0.95) !important;
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.04) !important;
+        }
+        .faq-modern-section.is-light .faq-card-item.open {
+          border-color: rgba(37, 99, 235, 0.4) !important;
+          box-shadow: 0 14px 35px rgba(37, 99, 235, 0.1) !important;
+        }
+        .faq-modern-section.is-light .faq-question-title {
+          color: #0f172a !important;
+        }
+        .faq-modern-section.is-light .faq-chevron-icon {
+          color: #2563eb !important;
+        }
+        .faq-modern-section.is-light .faq-card-item:not(.open) .faq-chevron-icon {
+          color: #64748b !important;
+        }
+        .faq-modern-section.is-light .faq-answer-panel p {
+          color: #475569 !important;
         }
 
         /* Ambient glowing backdrop spots */

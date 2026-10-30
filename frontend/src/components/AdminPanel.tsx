@@ -5384,8 +5384,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     const handleSaveSteps = async () => {
                       try {
                         localStorage.setItem('tilshunos_cms_data', JSON.stringify(cms));
+                        window.dispatchEvent(new CustomEvent('tilshunos_cms_saved', { detail: cms }));
                         await api.saveCms(cms);
-                        notify('O‘rganish jarayoni ma’lumotlari Supabasega saqlandi! 🎉');
+                        notify('O‘rganish jarayoni ma’lumotlari saqlandi! 🎉');
                       } catch {
                         notify('Saqlashda xatolik yuz berdi', true);
                       }

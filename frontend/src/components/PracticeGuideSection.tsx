@@ -494,7 +494,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   };
 
   return (
-    <section id="preview" className={`welcome-preview-section ${isDarkMode ? 'dark-preview-section' : ''}`}>
+    <section id="preview" className={`welcome-preview-section ${isDarkMode ? 'dark-preview-section' : 'light-preview-section'}`}>
       {/* Dynamic Scoped Styles */}
       <style>{`
         /* ========================================================
@@ -505,6 +505,104 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           color: #ffffff !important;
           border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .welcome-preview-section.light-preview-section {
+          background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%) !important;
+          color: #0f172a !important;
+          border-top: 1px solid rgba(226, 232, 240, 0.9) !important;
+          border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+        }
+
+        .welcome-preview-section.light-preview-section .practice-tab-pill {
+          background: #ffffff !important;
+          border: 1px solid rgba(226, 232, 240, 0.95) !important;
+          color: #64748b !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+        .welcome-preview-section.light-preview-section .practice-tab-pill:hover {
+          color: #2563eb !important;
+          border-color: rgba(37, 99, 235, 0.4) !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-tab-pill.active {
+          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+          color: #ffffff !important;
+          border-color: transparent !important;
+          box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35) !important;
+        }
+
+        .welcome-preview-section.light-preview-section .practice-skill-card {
+          --pg-box-bg: rgba(255, 255, 255, 0.96);
+          --pg-box-border: rgba(226, 232, 240, 0.95);
+          --pg-text-main: #0f172a;
+          --pg-text-heading: #0f172a;
+          --pg-text-muted: #64748b;
+          --pg-text-sub: #475569;
+          --pg-badge-bg: rgba(37, 99, 235, 0.08);
+          --pg-badge-color: #2563eb;
+          --pg-purple: #7c3aed;
+          --pg-green-text: #059669;
+
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.96) 100%) !important;
+          border: 1.5px solid rgba(226, 232, 240, 0.95) !important;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06), 0 0 40px rgba(37, 99, 235, 0.08) !important;
+          color: #0f172a !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-card-head {
+          border-bottom-color: rgba(226, 232, 240, 0.9) !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-head-badge {
+          background: rgba(37, 99, 235, 0.08) !important;
+          border-color: rgba(37, 99, 235, 0.25) !important;
+          color: #2563eb !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-lang-badge {
+          background: rgba(241, 245, 249, 0.9) !important;
+          border-color: rgba(226, 232, 240, 0.95) !important;
+          color: #475569 !important;
+        }
+        .welcome-preview-section.light-preview-section .vocab-word-large {
+          color: #0f172a !important;
+        }
+        .welcome-preview-section.light-preview-section .vocab-meaning-text {
+          color: #059669 !important;
+        }
+        .welcome-preview-section.light-preview-section .vocab-example-box {
+          background: rgba(248, 250, 252, 0.9) !important;
+          border-color: rgba(226, 232, 240, 0.95) !important;
+          color: #0f172a !important;
+        }
+        .welcome-preview-section.light-preview-section .vocab-example-box blockquote {
+          color: #0f172a !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-slide-nav {
+          background: #ffffff !important;
+          border-color: rgba(226, 232, 240, 0.95) !important;
+          color: #475569 !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-slide-nav:hover {
+          background: #f1f5f9 !important;
+          color: #0f172a !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-slide-dot {
+          background: rgba(203, 213, 225, 0.8) !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-slide-dot.active {
+          background: #2563eb !important;
+        }
+        .welcome-preview-section.light-preview-section .vocab-tag-pill {
+          background: rgba(37, 99, 235, 0.08) !important;
+          border-color: rgba(37, 99, 235, 0.25) !important;
+          color: #2563eb !important;
+        }
+        .welcome-preview-section.light-preview-section .vocab-sound-btn {
+          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+          color: #ffffff !important;
+        }
+        .welcome-preview-section.light-preview-section .vocab-mic-btn {
+          background: rgba(241, 245, 249, 0.9) !important;
+          border-color: rgba(226, 232, 240, 0.95) !important;
+          color: #059669 !important;
         }
 
         .practice-slider-wrapper {

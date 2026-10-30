@@ -74,16 +74,17 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
       {/* Scoped CSS Styles matching the uploaded mockup */}
       <style>{`
         .about-showcase-section {
-          background: linear-gradient(180deg, #060913 0%, #0a1022 50%, #060913 100%);
-          color: #ffffff;
+          background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%);
+          color: #0f172a;
           padding: 85px 20px 105px;
           position: relative;
           overflow: hidden;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          transition: background 0.3s ease, color 0.3s ease;
         }
         .about-showcase-section.dark {
-          background: linear-gradient(180deg, #060913 0%, #0a1022 50%, #060913 100%);
-          color: #ffffff;
+          background: linear-gradient(180deg, #060913 0%, #0a1022 50%, #060913 100%) !important;
+          color: #ffffff !important;
         }
 
         /* Ambient subtle backdrop blobs */
@@ -158,13 +159,13 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
           line-height: 1.25;
           letter-spacing: -0.6px;
           margin: 0 0 18px;
-          color: #ffffff;
+          color: #0f172a;
         }
         .about-showcase-section.dark .as-main-heading {
           color: #ffffff;
         }
         .as-highlight-brand {
-          color: #38bdf8;
+          color: #2563eb;
         }
         .about-showcase-section.dark .as-highlight-brand {
           color: #38bdf8;
@@ -173,13 +174,11 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
         .as-paragraph {
           font-size: 15.5px;
           line-height: 1.7;
-          color: #94a3b8;
+          color: #475569;
           margin: 0 0 28px;
           max-width: 560px;
         }
         .about-showcase-section.dark .as-paragraph {
-          color: #94a3b8;
-        }
           color: #94a3b8;
         }
 
@@ -443,15 +442,15 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
         }
 
         .as-value-card {
-          background: rgba(15, 23, 42, 0.72);
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.96);
+          border: 1.5px solid rgba(226, 232, 240, 0.95);
           border-radius: 20px;
           padding: 20px 18px;
           display: flex;
           flex-direction: column;
           align-items: flex-start;
           text-align: left;
-          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
           transition: all 0.28s ease;
           position: relative;
           overflow: hidden;
