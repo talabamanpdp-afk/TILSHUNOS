@@ -446,3 +446,4 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
     </div>
   );
 };
+

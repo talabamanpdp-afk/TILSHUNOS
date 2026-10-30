@@ -446,3 +446,4 @@ export const RoadmapLandscapeCanvas: React.FC<RoadmapLandscapeCanvasProps> = ({
     </div>
   );
 };
+

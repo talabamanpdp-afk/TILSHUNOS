@@ -99,3 +99,4 @@ export const RoadmapProgress: React.FC<RoadmapProgressProps> = ({ currentLevel, 
     </div>
   );
 };
+

@@ -187,3 +187,4 @@ export const CEFR_ROADMAP_LEVELS: CEFRLevelDetail[] = [
 export const ROADMAP_QUOTE = "Better English, Bigger Opportunities";
 export const MOTIVATIONAL_HEADING = "Small steps deliver big results.";
 export const MOTIVATIONAL_DESC = "You're not just learning a language, you're opening new doors.";
+

@@ -87,3 +87,4 @@ export const MotivationalCard: React.FC<MotivationalCardProps> = ({ dark }) => {
     </div>
   );
 };
+
