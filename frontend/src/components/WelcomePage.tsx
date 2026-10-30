@@ -13,6 +13,7 @@ import {
 import { PracticeGuideSection } from './PracticeGuideSection';
 import { PracticeGuideConfig } from '../data/practiceGuideData';
 import { CEFRRoadmapSection } from './cefr-roadmap/CEFRRoadmapSection';
+import { LearningProcessSection } from './learning-process/LearningProcessSection';
 
 export interface CmsConfig {
   hero?: string;
@@ -1051,26 +1052,11 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         </div>
       </section>
 
-      {/* 6. HOW IT WORKS SECTION */}
-      <section id="how-it-works" className="welcome-steps-section">
-        <div className="section-container">
-          <div className="section-header scroll-reveal">
-            <span className="section-kicker">{stepsKicker}</span>
-            <h2>{stepsTitle}</h2>
-            <p>{stepsSubtitle}</p>
-          </div>
-
-          <div className="steps-flow-grid scroll-stagger-parent">
-            {stepsList.map(item => (
-              <div key={item.step} className="step-card">
-                <div className="step-number">{item.step}</div>
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 6. HOW IT WORKS (7 CONNECTED STEPS WITH DUAL SCREENSHOTS) */}
+      <LearningProcessSection
+        config={cms?.stepsSection}
+        dark={dark}
+      />
 
       {/* 7. FEATURES & INNOVATION */}
       <section id="features" className="welcome-features-section">

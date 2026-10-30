@@ -1428,3 +1428,4 @@ export const INITIAL_TRIAL_CONFIG: TrialTestsConfig = {
   writing: DEFAULT_WRITING_TEST,
   grammar: DEFAULT_GRAMMAR_TEST
 };
+
