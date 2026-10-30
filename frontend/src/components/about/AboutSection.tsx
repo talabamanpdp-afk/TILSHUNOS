@@ -27,35 +27,45 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
       desc: 'Sizning maqsadingiz, vaqtingiz va darajangiz asosida individual o‘quv reja yaratiladi.',
       icon: Target,
       iconColor: '#3b82f6',
-      iconBg: 'rgba(59, 130, 246, 0.12)'
+      iconBg: 'rgba(59, 130, 246, 0.12)',
+      bgImage: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80',
+      tag: 'INDIVIDUAL REJA'
     },
     {
       title: 'Zamonaviy texnologiyalar',
       desc: 'Sun’iy intellekt yordamida til o‘rganish jarayoni yanada samarali va qiziqarli bo‘ladi.',
       icon: Cpu,
       iconColor: '#8b5cf6',
-      iconBg: 'rgba(139, 92, 246, 0.12)'
+      iconBg: 'rgba(139, 92, 246, 0.12)',
+      bgImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80',
+      tag: 'SUN’IY INTELLEKT'
     },
     {
       title: 'Xalqaro standartlar',
       desc: 'CEFR darajasidagi standartlar asosida bilimingiz mustahkamlanadi.',
       icon: Globe,
       iconColor: '#10b981',
-      iconBg: 'rgba(16, 185, 129, 0.12)'
+      iconBg: 'rgba(16, 185, 129, 0.12)',
+      bgImage: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=400&q=80',
+      tag: 'CEFR A1–C2'
     },
     {
       title: 'Qulay va moslashuvchan',
       desc: 'Har qanday qurilmada, har qanday vaqtda o‘rganish imkoniyati.',
       icon: BookOpen,
       iconColor: '#f59e0b',
-      iconBg: 'rgba(245, 158, 11, 0.12)'
+      iconBg: 'rgba(245, 158, 11, 0.12)',
+      bgImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=400&q=80',
+      tag: 'HAR QURILMADA'
     },
     {
       title: 'Natijaga yo‘naltirilgan',
       desc: 'Muntazam tahlil va progress kuzatuvi orqali real natijalarga erishasiz.',
       icon: Star,
       iconColor: '#ec4899',
-      iconBg: 'rgba(236, 72, 153, 0.12)'
+      iconBg: 'rgba(236, 72, 153, 0.12)',
+      bgImage: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=400&q=80',
+      tag: '100% NATIJA'
     }
   ];
 
@@ -434,49 +444,137 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
         .as-value-card {
           background: #ffffff;
           border: 1px solid rgba(0, 0, 0, 0.08);
-          border-radius: 18px;
-          padding: 22px 18px;
+          border-radius: 20px;
+          padding: 20px 18px;
           display: flex;
           flex-direction: column;
           align-items: flex-start;
           text-align: left;
           box-shadow: 0 10px 24px rgba(0, 0, 0, 0.03);
-          transition: all 0.25s ease;
+          transition: all 0.28s ease;
+          position: relative;
+          overflow: hidden;
         }
         .about-showcase-section.dark .as-value-card {
           background: #14192b;
           border-color: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
         }
         .as-value-card:hover {
           transform: translateY(-4px);
-          box-shadow: 0 16px 32px rgba(37, 99, 235, 0.12);
+          box-shadow: 0 18px 36px rgba(37, 99, 235, 0.14);
           border-color: #3b82f6;
         }
 
+        /* Subtle atmospheric background image across the card */
+        .as-card-bg-wrap {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          border-radius: 20px;
+          pointer-events: none;
+          z-index: 0;
+        }
+        .as-card-bg-layer {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          opacity: 0.07;
+          filter: saturate(1.2);
+          transition: transform 0.4s ease, opacity 0.3s ease;
+        }
+        .about-showcase-section.dark .as-card-bg-layer {
+          opacity: 0.12;
+        }
+        .as-value-card:hover .as-card-bg-layer {
+          opacity: 0.17;
+          transform: scale(1.06);
+        }
+        .as-card-bg-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, transparent 40%, rgba(255, 255, 255, 0.65) 100%);
+        }
+        .about-showcase-section.dark .as-card-bg-overlay {
+          background: linear-gradient(180deg, transparent 40%, rgba(20, 25, 43, 0.85) 100%);
+        }
+
+        /* Card Top Row: Left Icon, Right Mini Photo Thumbnail */
+        .as-card-top-row {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 12px;
+          position: relative;
+          z-index: 1;
+        }
         .as-value-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 14px;
+          width: 42px;
+          height: 42px;
+          border-radius: 12px;
           display: grid;
           place-items: center;
-          margin-bottom: 14px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
         }
+
+        /* Small visible background photo thumbnail */
+        .as-card-mini-thumb {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          overflow: hidden;
+          border: 1.5px solid rgba(255, 255, 255, 0.9);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+          flex-shrink: 0;
+          transition: transform 0.25s ease;
+        }
+        .about-showcase-section.dark .as-card-mini-thumb {
+          border-color: rgba(255, 255, 255, 0.15);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .as-value-card:hover .as-card-mini-thumb {
+          transform: scale(1.08) rotate(2deg);
+        }
+        .as-card-mini-thumb img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        .as-card-tag {
+          display: inline-block;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.5px;
+          padding: 2.5px 8px;
+          border-radius: 6px;
+          margin-bottom: 8px;
+          text-transform: uppercase;
+          position: relative;
+          z-index: 1;
+        }
+
         .as-value-title {
           font-size: 14.5px;
           font-weight: 800;
           color: #0f172a;
           margin: 0 0 6px;
           letter-spacing: -0.2px;
+          position: relative;
+          z-index: 1;
         }
         .about-showcase-section.dark .as-value-title {
           color: #ffffff;
         }
         .as-value-desc {
-          font-size: 12.5px;
+          font-size: 12px;
           line-height: 1.55;
           color: #64748b;
           margin: 0;
+          position: relative;
+          z-index: 1;
         }
         .about-showcase-section.dark .as-value-desc {
           color: #94a3b8;
@@ -486,30 +584,135 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
         @media (max-width: 1024px) {
           .as-hero-grid {
             grid-template-columns: 1fr;
-            gap: 50px;
+            gap: 40px;
           }
           .as-cards-grid {
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
           }
           .as-bottom-row-wrap::before {
             display: none;
           }
         }
 
-        @media (max-width: 640px) {
-          .as-floating-team-card {
-            position: relative;
-            top: 0;
-            left: 0;
+        @media (max-width: 768px) {
+          .about-showcase-section {
+            padding: 45px 16px 55px;
+          }
+          .as-hero-grid {
+            gap: 26px;
+            margin-bottom: 30px;
+          }
+
+          .as-main-heading {
+            font-size: clamp(21px, 5.5vw, 27px);
+            line-height: 1.3;
+            margin-bottom: 12px;
+          }
+          .as-paragraph {
+            font-size: 13.5px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+          }
+          .as-cta-btn {
             width: 100%;
-            margin-bottom: 16px;
+            justify-content: center;
+            padding: 12px 20px;
+          }
+
+          /* Visual Column on Mobile */
+          .as-visual-col {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+          }
+          .as-floating-team-card {
+            position: static;
+            width: 100%;
             box-sizing: border-box;
+            border-radius: 16px;
+            padding: 14px 16px;
+            transform: none;
+            margin-bottom: 0;
           }
           .as-desk-frame {
-            height: 300px;
+            height: 230px;
+            border-radius: 20px;
           }
+          .as-desk-calligraphy {
+            top: 14px;
+            right: 14px;
+            font-size: 13.5px;
+            line-height: 1.25;
+          }
+          .as-book-stack {
+            bottom: 12px;
+            left: 12px;
+            gap: 3px;
+          }
+          .as-book-spine {
+            padding: 4px 8px;
+            font-size: 9.5px;
+          }
+          .as-book-en { width: 90px; }
+          .as-book-de { width: 85px; }
+          .as-book-tr { width: 80px; }
+          .as-book-uz { width: 75px; }
+
+          .as-desk-laptop-mock {
+            width: 90px;
+            height: 60px;
+            right: 14px;
+            bottom: 12px;
+          }
+          .as-desk-laptop-mock img {
+            width: 22px;
+            height: 22px;
+          }
+          .as-desk-mug {
+            display: none;
+          }
+
+          /* 2 Cards per row on Mobile as explicitly requested! */
           .as-cards-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+          }
+          .as-value-card {
+            padding: 14px 12px !important;
+            border-radius: 16px !important;
+          }
+          .as-card-top-row {
+            margin-bottom: 8px !important;
+          }
+          .as-value-icon {
+            width: 34px !important;
+            height: 34px !important;
+            border-radius: 10px !important;
+          }
+          .as-card-mini-thumb {
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 8px !important;
+          }
+          .as-card-tag {
+            font-size: 8px !important;
+            padding: 2px 5px !important;
+            margin-bottom: 5px !important;
+          }
+          .as-value-title {
+            font-size: 12.5px !important;
+            margin-bottom: 3px !important;
+            line-height: 1.35 !important;
+          }
+          .as-value-desc {
+            font-size: 10.5px !important;
+            line-height: 1.45 !important;
+          }
+
+          /* 5th Card spans both columns on Mobile */
+          .as-value-card:nth-child(5) {
+            grid-column: span 2;
           }
         }
       `}</style>
@@ -625,9 +828,28 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
               const Icon = val.icon;
               return (
                 <div key={idx} className="as-value-card">
-                  <div className="as-value-icon" style={{ background: val.iconBg, color: val.iconColor }}>
-                    <Icon size={22} />
+                  {/* Atmospheric subtle background image */}
+                  <div className="as-card-bg-wrap">
+                    <img src={val.bgImage} alt="" className="as-card-bg-layer" loading="lazy" />
+                    <div className="as-card-bg-overlay" />
                   </div>
+
+                  {/* Top Row: Icon on left, Miniature Photo Thumbnail on right */}
+                  <div className="as-card-top-row">
+                    <div className="as-value-icon" style={{ background: val.iconBg, color: val.iconColor }}>
+                      <Icon size={20} />
+                    </div>
+
+                    <div className="as-card-mini-thumb" title={val.title}>
+                      <img src={val.bgImage} alt={val.title} loading="lazy" />
+                    </div>
+                  </div>
+
+                  {/* Tag Pill */}
+                  <span className="as-card-tag" style={{ color: val.iconColor, background: val.iconBg }}>
+                    {val.tag}
+                  </span>
+
                   <h4 className="as-value-title">{val.title}</h4>
                   <p className="as-value-desc">{val.desc}</p>
                 </div>
