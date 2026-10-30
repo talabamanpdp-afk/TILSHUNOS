@@ -711,3 +711,4 @@ function RenderStepMockup({ stepIndex }: { stepIndex: number }) {
       );
   }
 }
+

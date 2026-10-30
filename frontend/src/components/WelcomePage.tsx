@@ -14,6 +14,7 @@ import { PracticeGuideSection } from './PracticeGuideSection';
 import { PracticeGuideConfig } from '../data/practiceGuideData';
 import { CEFRRoadmapSection } from './cefr-roadmap/CEFRRoadmapSection';
 import { LearningProcessSection } from './learning-process/LearningProcessSection';
+import { AboutSection } from './about/AboutSection';
 
 export interface CmsConfig {
   hero?: string;
@@ -1090,51 +1091,12 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         </div>
       </section>
 
-      {/* 8. ABOUT US SECTION (With "Batafsil ma'lumot" modal/view) */}
-      <section id="about" className="welcome-about-section">
-        <div className="section-container">
-          <div className={`about-wrapper ${(!teamMembers || teamMembers.length === 0) ? 'no-team' : ''}`}>
-            <div className="about-left scroll-reveal-left">
-              <span className="section-kicker">BIZ HAQIMIZDA</span>
-              <h2>{aboutShort}</h2>
-              <p style={{ marginTop: '16px', lineHeight: '1.7', color: 'var(--muted)', fontSize: '15px' }}>
-                TILSHUNOS har bir o‘quvchi o‘z sur’atida, aniq xalqaro standartlar asosida va zamonaviy sun’iy
-                intellekt yordamida tilni erkin o‘zlashtirishi uchun ishlab chiqilgan.
-              </p>
-
-              <button className="about-readmore-btn" onClick={() => onOpenAbout()}>
-                <span>{aboutBtn}</span>
-                <ArrowRight size={16} />
-              </button>
-            </div>
-
-            {/* Team / Leadership spotlight */}
-            {teamMembers && teamMembers.length > 0 && (
-              <div className="about-team-box scroll-reveal-right delay-100">
-                <h3 className="team-box-title">Loyiha Faollari va Yetakchilari</h3>
-                <div className="team-cards-list scroll-stagger-parent">
-                  {teamMembers.map(member => (
-                    <div key={member.name} className="team-member-item">
-                      <div className="member-avatar" style={{ overflow: 'hidden' }}>
-                        {member.avatar && (member.avatar.startsWith('http') || member.avatar.startsWith('data:') || member.avatar.startsWith('/')) ? (
-                          <img src={member.avatar} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : (
-                          member.avatar || member.name[0]?.toUpperCase() || 'F'
-                        )}
-                      </div>
-                      <div className="member-info">
-                        <strong>{member.name}</strong>
-                        <span className="member-role">{member.role}</span>
-                        <p className="member-bio">{member.bio}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+      {/* 8. ABOUT US SECTION (MATCHING USER MOCKUP WITH DESK SCENE & 5 CONNECTED CARDS) */}
+      <AboutSection
+        cms={cms}
+        onOpenAbout={onOpenAbout}
+        dark={dark}
+      />
 
       {/* 9. FAQ SECTION */}
       <section id="faq" className="welcome-faq-section">

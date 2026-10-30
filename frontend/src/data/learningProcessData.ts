@@ -69,3 +69,4 @@ export const DEFAULT_LEARNING_PROCESS_CONFIG: LearningProcessConfig = {
   bottomQuote: 'Katta imkoniyatlar sizni kutmoqda!',
   steps: DEFAULT_LEARNING_PROCESS_STEPS
 };
+
