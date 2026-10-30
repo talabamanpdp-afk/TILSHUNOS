@@ -5,7 +5,8 @@ import {
   Search, Trash2, Edit3, Save, UserCog, Headphones, PenLine, BookMarked, ChartNoAxesCombined,
   Check, Sun, Moon, Sparkles, ArrowRight, Menu, X, RefreshCw, Database, CheckCircle2,
   AlertCircle, ExternalLink, ShieldAlert, Clock, Layers, MessageSquare, Zap,
-  Smartphone, Laptop, Image as ImageIcon, Upload, RotateCcw, Camera, ChevronDown
+  Smartphone, Laptop, Image as ImageIcon, Upload, RotateCcw, Camera, ChevronDown,
+  ArrowUp, ArrowDown
 } from 'lucide-react';
 import { api, authStorage } from '../api';
 import {
@@ -179,16 +180,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       ]
     },
     stepsSection: {
-      kicker: 'ODDIY VA TUSHUNARLI',
-      title: 'O‘rganish jarayoni qanday kechadi?',
-      subtitle: '5 ta oson qadam orqali maqsadingiz sari ishonch bilan yo‘l oling.',
-      steps: [
-        { step: '01', title: 'Til va maqsadni tanlaysiz', desc: 'Ingliz, rus, nemis yoki boshqa tillar hamda kunlik shug‘ullanish vaqti.' },
-        { step: '02', title: 'Boshlang‘ich daraja aniqlanadi', desc: 'CEFR A1 dan C2 gacha bo‘lgan aniq darajangiz belgilanadi.' },
-        { step: '03', title: 'Shaxsiy reja tuziladi', desc: 'Dashboardda har kungi yangi so‘zlar va mashqlar tartibli aks etadi.' },
-        { step: '04', title: 'Amaliyot va so‘z o‘yinlari', desc: 'Typing, so‘z zanjiri va 1v1 bellashuvlar orqali bilim mustahkamlanadi.' },
-        { step: '05', title: 'Natijalar va o‘sish', desc: 'O‘zlashtirilgan so‘zlar va yuqori CEFR darajalariga o‘tish.' }
-      ]
+      ...DEFAULT_LEARNING_PROCESS_CONFIG
     },
     featuresSection: {
       kicker: 'ILG‘OR IMKONIYATLAR',
@@ -5313,164 +5305,219 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     </div>
                   </div>
 
-                  {/* 7 Connected Steps (Desktop & Mobile Screenshots) */}
-                  <div className="panel" style={{ padding: '24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
-                      <div>
-                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>
-                          3. O‘rganish Jarayoni: 7 Ta Ketma-Ket Qadam (Desktop & Mobile Screenshotlar Bilan)
-                        </h3>
-                        <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
-                          Har bir qadam uchun kompyuter (desktop) va mobil (responsive) screenshotlarni alohida yuklashingiz mumkin.
-                        </p>
-                      </div>
+                  {/* 3. O‘rganish Jarayoni: Ketma-Ket Qadamlar & Tushuntirishlar */}
+                  {(() => {
+                    const currentSteps = (cms.stepsSection?.steps && cms.stepsSection.steps.length > 0)
+                      ? cms.stepsSection.steps
+                      : DEFAULT_LEARNING_PROCESS_STEPS;
 
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <button
-                          type="button"
-                          className="outline-btn"
-                          onClick={() => {
-                            if (confirm('O‘rganish jarayoni standart 7 ta qadamga qaytarilsinmi?')) {
-                              const updatedCms = {
-                                ...cms,
-                                stepsSection: {
-                                  ...cms.stepsSection,
-                                  steps: DEFAULT_LEARNING_PROCESS_STEPS
-                                }
-                              };
-                              setCms(updatedCms);
-                              try {
-                                localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
-                              } catch {}
-                              api.saveCms(updatedCms).catch(() => {});
-                              notify('Standart 7 ta qadam tiklandi! 🎉');
-                            }
-                          }}
-                          style={{ padding: '6px 12px', fontSize: '11px' }}
-                        >
-                          Standart 7 qadamni tiklash
-                        </button>
+                    const handleAddStep = () => {
+                      const nextNum = currentSteps.length + 1;
+                      const nextStepStr = String(nextNum).padStart(2, '0');
+                      const newStep = {
+                        step: nextStepStr,
+                        title: `${nextNum}-bosqich: Yangi o‘quv jarayoni`,
+                        desc: 'Ushbu bosqichda o‘quvchilar yangi bilim va ko‘nikmalarni chuqur o‘rganishadi hamda amaliy mashg‘ulotlar bajarishadi.',
+                        badge: `BOSQICH ${nextStepStr}`,
+                        imageDesktop: '',
+                        imageMobile: ''
+                      };
+                      const updated = [...currentSteps, newStep];
+                      setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                      notify(`Yangi ${nextNum}-bosqich muvaffaqiyatli qo‘shildi! 🎉`);
+                    };
 
-                        <button
-                          type="button"
-                          className="primary-btn"
-                          onClick={async () => {
-                            try {
-                              localStorage.setItem('tilshunos_cms_data', JSON.stringify(cms));
-                              await api.saveCms(cms);
-                              notify('O‘rganish jarayoni ma’lumotlari Supabasega saqlandi! 🎉');
-                            } catch {
-                              notify('Saqlashda xatolik yuz berdi', true);
-                            }
-                          }}
-                          style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700 }}
-                        >
-                          <Save size={14} /> Saqlash
-                        </button>
-                      </div>
-                    </div>
+                    const handleMoveUp = (idx: number) => {
+                      if (idx <= 0) return;
+                      const updated = [...currentSteps];
+                      const temp = updated[idx];
+                      updated[idx] = updated[idx - 1];
+                      updated[idx - 1] = temp;
+                      setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                      notify(`${idx + 1}-qadam yuqoriga surildi`);
+                    };
 
-                    {/* Step Cards Grid */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      {((cms.stepsSection?.steps && cms.stepsSection.steps.length > 0)
-                        ? cms.stepsSection.steps
-                        : DEFAULT_LEARNING_PROCESS_STEPS
-                      ).map((step: any, idx: number) => (
-                        <div
-                          key={step.step || idx}
-                          style={{
-                            background: 'var(--bg)',
-                            padding: '18px',
-                            borderRadius: '14px',
-                            border: '1px solid var(--border)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '12px'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    const handleMoveDown = (idx: number) => {
+                      if (idx >= currentSteps.length - 1) return;
+                      const updated = [...currentSteps];
+                      const temp = updated[idx];
+                      updated[idx] = updated[idx + 1];
+                      updated[idx + 1] = temp;
+                      setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                      notify(`${idx + 1}-qadam pastga surildi`);
+                    };
+
+                    const handleDeleteStep = (idx: number) => {
+                      if (confirm(`${idx + 1}-qadam (${currentSteps[idx].title || ''}) rostdan ham o‘chirilsinmi?`)) {
+                        const updated = currentSteps.filter((_: any, i: number) => i !== idx);
+                        setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                        notify(`${idx + 1}-qadam o‘chirildi`);
+                      }
+                    };
+
+                    const handleRenumberSteps = () => {
+                      const updated = currentSteps.map((s: any, i: number) => ({
+                        ...s,
+                        step: String(i + 1).padStart(2, '0')
+                      }));
+                      setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                      notify('Barcha qadamlar raqamlari (01, 02, ...) qayta tartiblandi! 🎉');
+                    };
+
+                    const handleResetDefaults = () => {
+                      if (confirm('O‘rganish jarayoni barcha standart sozlamalar va 7 ta qadamga qaytarilsinmi?')) {
+                        const updatedCms = {
+                          ...cms,
+                          stepsSection: {
+                            ...DEFAULT_LEARNING_PROCESS_CONFIG
+                          }
+                        };
+                        setCms(updatedCms);
+                        try {
+                          localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+                        } catch {}
+                        api.saveCms(updatedCms).catch(() => {});
+                        notify('Standart 7 ta qadam va sozlamalar tiklandi! 🎉');
+                      }
+                    };
+
+                    const handleSaveSteps = async () => {
+                      try {
+                        localStorage.setItem('tilshunos_cms_data', JSON.stringify(cms));
+                        await api.saveCms(cms);
+                        notify('O‘rganish jarayoni ma’lumotlari Supabasega saqlandi! 🎉');
+                      } catch {
+                        notify('Saqlashda xatolik yuz berdi', true);
+                      }
+                    };
+
+                    return (
+                      <div className="panel" style={{ padding: '24px' }}>
+                        {/* Section Header & Main Actions */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
+                          <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                background: 'var(--purple)',
-                                color: '#ffffff',
-                                display: 'grid',
-                                placeItems: 'center',
-                                fontSize: '13px',
-                                fontWeight: 900
-                              }}>
-                                {step.step || `0${idx + 1}`}
+                              <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
+                                3. O‘rganish Jarayoni: Qadamlar & Tushuntirishlar
+                              </h3>
+                              <span style={{ fontSize: '11px', fontWeight: 800, background: 'rgba(59, 130, 246, 0.15)', color: '#38bdf8', padding: '3px 9px', borderRadius: '20px' }}>
+                                Jami: {currentSteps.length} ta bosqich
                               </span>
-                              <strong style={{ fontSize: '14px' }}>{step.title || `${idx + 1}-Qadam`}</strong>
                             </div>
-
-                            <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700 }}>
-                              {idx % 2 === 0 ? 'Matn Chapda · Rasm O‘ngda' : 'Rasm Chapda · Matn O‘ngda'}
-                            </span>
+                            <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: 'var(--muted)' }}>
+                              Bo‘lim umumiy dizayni, talaba rasmi, bayroqlar va har bir qadam uchun matnlar hamda Desktop/Mobil screenshotlarni boshqaring.
+                            </p>
                           </div>
 
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              className="primary-btn"
+                              onClick={handleAddStep}
+                              style={{ padding: '7px 14px', fontSize: '12px', fontWeight: 700, background: '#10b981', borderColor: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                            >
+                              <Plus size={14} /> Yangi Qadam Qo‘shish
+                            </button>
+
+                            <button
+                              type="button"
+                              className="outline-btn"
+                              onClick={handleRenumberSteps}
+                              title="01, 02, 03... qilib qayta tartiblash"
+                              style={{ padding: '7px 12px', fontSize: '11px' }}
+                            >
+                              🔢 Raqamlarni tartiblash
+                            </button>
+
+                            <button
+                              type="button"
+                              className="outline-btn"
+                              onClick={handleResetDefaults}
+                              style={{ padding: '7px 12px', fontSize: '11px' }}
+                            >
+                              🔄 Standart 7 qadamni tiklash
+                            </button>
+
+                            <button
+                              type="button"
+                              className="primary-btn"
+                              onClick={handleSaveSteps}
+                              style={{ padding: '7px 16px', fontSize: '12px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                            >
+                              <Save size={14} /> Saqlash
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* General Section Settings: Kicker, Title, Subtitle, Student Image, Floating Flags, Bottom Quote */}
+                        <div style={{ background: 'var(--bg)', padding: '18px', borderRadius: '14px', border: '1px solid var(--border)', marginBottom: '22px' }}>
+                          <h4 style={{ margin: '0 0 14px', fontSize: '14px', fontWeight: 800, color: 'var(--purple)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Sparkles size={16} /> Bo‘limning Asosiy Dizayni va Matnlari
+                          </h4>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
                             <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                              <b style={{ fontSize: '11px' }}>Qadam Sarlavhasi:</b>
+                              <b style={{ fontSize: '11px' }}>Bo‘lim Kicker (Kichik sarlavha):</b>
                               <input
-                                value={step.title || ''}
-                                onChange={e => {
-                                  const currentSteps = (cms.stepsSection?.steps && cms.stepsSection.steps.length > 0) ? cms.stepsSection.steps : DEFAULT_LEARNING_PROCESS_STEPS;
-                                  const updated = [...currentSteps];
-                                  updated[idx] = { ...updated[idx], title: e.target.value };
-                                  setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
-                                }}
-                                placeholder="Qadam nomi"
+                                value={cms.stepsSection?.kicker ?? 'ODDIY VA TUSHUNARLI'}
+                                onChange={e => setCms({
+                                  ...cms,
+                                  stepsSection: { ...cms.stepsSection, kicker: e.target.value }
+                                })}
+                                placeholder="ODDIY VA TUSHUNARLI"
                               />
                             </label>
 
                             <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                              <b style={{ fontSize: '11px' }}>Kicker / Badge matni:</b>
+                              <b style={{ fontSize: '11px' }}>Bo‘lim Asosiy Sarlavhasi:</b>
                               <input
-                                value={step.badge || ''}
-                                onChange={e => {
-                                  const currentSteps = (cms.stepsSection?.steps && cms.stepsSection.steps.length > 0) ? cms.stepsSection.steps : DEFAULT_LEARNING_PROCESS_STEPS;
-                                  const updated = [...currentSteps];
-                                  updated[idx] = { ...updated[idx], badge: e.target.value };
-                                  setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
-                                }}
-                                placeholder="Masalan: BOSHLANG‘ICH QADAM"
+                                value={cms.stepsSection?.title ?? 'O‘rganish jarayoni qanday kechadi?'}
+                                onChange={e => setCms({
+                                  ...cms,
+                                  stepsSection: { ...cms.stepsSection, title: e.target.value }
+                                })}
+                                placeholder="O‘rganish jarayoni qanday kechadi?"
+                              />
+                            </label>
+
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <b style={{ fontSize: '11px' }}>Bo‘lim Ostki Matni / Tavsifi:</b>
+                              <input
+                                value={cms.stepsSection?.subtitle ?? '7 ta oson qadam orqali maqsadingiz sari ishonch bilan yo‘l oling.'}
+                                onChange={e => setCms({
+                                  ...cms,
+                                  stepsSection: { ...cms.stepsSection, subtitle: e.target.value }
+                                })}
+                                placeholder="7 ta oson qadam orqali maqsadingiz sari ishonch bilan yo‘l oling."
+                              />
+                            </label>
+
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <b style={{ fontSize: '11px' }}>Pastki Motivatsion Qo‘lyozma Yozuvi:</b>
+                              <input
+                                value={cms.stepsSection?.bottomQuote ?? 'Katta imkoniyatlar sizni kutmoqda!'}
+                                onChange={e => setCms({
+                                  ...cms,
+                                  stepsSection: { ...cms.stepsSection, bottomQuote: e.target.value }
+                                })}
+                                placeholder="Katta imkoniyatlar sizni kutmoqda!"
                               />
                             </label>
                           </div>
 
-                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <b style={{ fontSize: '11px' }}>Qadam Tavsifi:</b>
-                            <textarea
-                              value={step.desc || ''}
-                              onChange={e => {
-                                const currentSteps = (cms.stepsSection?.steps && cms.stepsSection.steps.length > 0) ? cms.stepsSection.steps : DEFAULT_LEARNING_PROCESS_STEPS;
-                                const updated = [...currentSteps];
-                                updated[idx] = { ...updated[idx], desc: e.target.value };
-                                setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
-                              }}
-                              rows={2}
-                              placeholder="Qadam tavsifi..."
-                            />
-                          </label>
-
-                          {/* Desktop & Mobile Screenshots Dual Upload */}
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginTop: '6px', padding: '12px', background: 'rgba(0,0,0,0.03)', borderRadius: '10px' }}>
-                            {/* Desktop Screenshot */}
+                          {/* Hero Visual: Student Image & Floating Flags */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--border)' }}>
+                            {/* Student Image Upload */}
                             <div>
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                                <b style={{ fontSize: '11.5px', color: 'var(--purple)' }}>💻 Desktop (Kompyuter) Rasmi:</b>
-                                {step.imageDesktop && (
+                                <b style={{ fontSize: '11px' }}>Hero Talaba Rasmi (Chap tomondagi visual):</b>
+                                {cms.stepsSection?.studentImage && (
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      const currentSteps = (cms.stepsSection?.steps && cms.stepsSection.steps.length > 0) ? cms.stepsSection.steps : DEFAULT_LEARNING_PROCESS_STEPS;
-                                      const updated = [...currentSteps];
-                                      updated[idx] = { ...updated[idx], imageDesktop: '' };
-                                      setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
-                                    }}
+                                    onClick={() => setCms({
+                                      ...cms,
+                                      stepsSection: { ...cms.stepsSection, studentImage: '' }
+                                    })}
                                     style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '11px', cursor: 'pointer' }}
                                   >
                                     Tozalash
@@ -5479,19 +5526,17 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               </div>
                               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 <input
-                                  value={step.imageDesktop || ''}
-                                  onChange={e => {
-                                    const currentSteps = (cms.stepsSection?.steps && cms.stepsSection.steps.length > 0) ? cms.stepsSection.steps : DEFAULT_LEARNING_PROCESS_STEPS;
-                                    const updated = [...currentSteps];
-                                    updated[idx] = { ...updated[idx], imageDesktop: e.target.value };
-                                    setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
-                                  }}
-                                  placeholder="Desktop rasm URL (ixtiyoriy)"
+                                  value={cms.stepsSection?.studentImage ?? ''}
+                                  onChange={e => setCms({
+                                    ...cms,
+                                    stepsSection: { ...cms.stepsSection, studentImage: e.target.value }
+                                  })}
+                                  placeholder="Talaba rasmi URL (bo‘sh bo‘lsa standart rasm chiqadi)"
                                   style={{ flex: 1, fontSize: '12px' }}
                                 />
                                 <input
                                   type="file"
-                                  id={`upload-step-desktop-${idx}`}
+                                  id="upload-lp-student-hero"
                                   accept="image/*"
                                   style={{ display: 'none' }}
                                   onChange={async (e) => {
@@ -5501,7 +5546,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                       const reader = new FileReader();
                                       reader.onload = async () => {
                                         const dataBase64 = reader.result as string;
-                                        const cleanName = `step-${idx + 1}-desktop-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+                                        const cleanName = `student-hero-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
                                         const res = await api.uploadCmsImage({
                                           file,
                                           dataBase64,
@@ -5509,11 +5554,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                           contentType: file.type || 'image/jpeg'
                                         });
                                         if (res?.url) {
-                                          const currentSteps = (cms.stepsSection?.steps && cms.stepsSection.steps.length > 0) ? cms.stepsSection.steps : DEFAULT_LEARNING_PROCESS_STEPS;
-                                          const updated = [...currentSteps];
-                                          updated[idx] = { ...updated[idx], imageDesktop: res.url };
-                                          setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
-                                          notify(`${idx + 1}-qadam uchun Desktop rasm yuklandi! 🎉`);
+                                          setCms({
+                                            ...cms,
+                                            stepsSection: { ...cms.stepsSection, studentImage: res.url }
+                                          });
+                                          notify('Talaba rasmi muvaffaqiyatli yuklandi! 🎉');
                                         }
                                       };
                                       reader.readAsDataURL(file);
@@ -5523,107 +5568,409 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                   }}
                                 />
                                 <label
-                                  htmlFor={`upload-step-desktop-${idx}`}
+                                  htmlFor="upload-lp-student-hero"
                                   className="outline-btn"
                                   style={{ padding: '6px 10px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                                 >
                                   <Upload size={13} /> Yuklash
                                 </label>
                               </div>
-                              {step.imageDesktop && (
+                              {cms.stepsSection?.studentImage && (
                                 <img
-                                  src={step.imageDesktop}
-                                  alt="Desktop preview"
-                                  style={{ height: '60px', width: 'auto', borderRadius: '6px', marginTop: '6px', border: '1px solid var(--border)', objectFit: 'cover' }}
+                                  src={cms.stepsSection.studentImage}
+                                  alt="Student preview"
+                                  style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', marginTop: '6px', border: '2px solid var(--purple)' }}
                                 />
                               )}
                             </div>
 
-                            {/* Mobile Screenshot */}
+                            {/* Floating Flags */}
                             <div>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                                <b style={{ fontSize: '11.5px', color: '#10b981' }}>📱 Mobil (Responsive) Rasmi:</b>
-                                {step.imageMobile && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const currentSteps = (cms.stepsSection?.steps && cms.stepsSection.steps.length > 0) ? cms.stepsSection.steps : DEFAULT_LEARNING_PROCESS_STEPS;
-                                      const updated = [...currentSteps];
-                                      updated[idx] = { ...updated[idx], imageMobile: '' };
-                                      setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
-                                    }}
-                                    style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '11px', cursor: 'pointer' }}
-                                  >
-                                    Tozalash
-                                  </button>
-                                )}
+                              <b style={{ fontSize: '11px', display: 'block', marginBottom: '6px' }}>
+                                Suzib yuruvchi Bayroqlar (vergul bilan ajrating):
+                              </b>
+                              <input
+                                value={(cms.stepsSection?.floatingFlags && Array.isArray(cms.stepsSection.floatingFlags))
+                                  ? cms.stepsSection.floatingFlags.join(', ')
+                                  : '🇬🇧, 🇫🇷, 🇩🇪, 🇰🇷'}
+                                onChange={e => {
+                                  const flags = e.target.value.split(',').map((f: string) => f.trim()).filter(Boolean);
+                                  setCms({
+                                    ...cms,
+                                    stepsSection: { ...cms.stepsSection, floatingFlags: flags }
+                                  });
+                                }}
+                                placeholder="🇬🇧, 🇫🇷, 🇩🇪, 🇰🇷"
+                                style={{ width: '100%', fontSize: '13px' }}
+                              />
+                              <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
+                                {(cms.stepsSection?.floatingFlags && Array.isArray(cms.stepsSection.floatingFlags) && cms.stepsSection.floatingFlags.length > 0
+                                  ? cms.stepsSection.floatingFlags
+                                  : ['🇬🇧', '🇫🇷', '🇩🇪', '🇰🇷']
+                                ).map((flag: string, idx: number) => (
+                                  <span key={idx} style={{ fontSize: '16px', background: 'var(--border)', padding: '2px 8px', borderRadius: '6px' }}>
+                                    {flag}
+                                  </span>
+                                ))}
                               </div>
-                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                <input
-                                  value={step.imageMobile || ''}
-                                  onChange={e => {
-                                    const currentSteps = (cms.stepsSection?.steps && cms.stepsSection.steps.length > 0) ? cms.stepsSection.steps : DEFAULT_LEARNING_PROCESS_STEPS;
-                                    const updated = [...currentSteps];
-                                    updated[idx] = { ...updated[idx], imageMobile: e.target.value };
-                                    setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
-                                  }}
-                                  placeholder="Mobil rasm URL (ixtiyoriy)"
-                                  style={{ flex: 1, fontSize: '12px' }}
-                                />
-                                <input
-                                  type="file"
-                                  id={`upload-step-mobile-${idx}`}
-                                  accept="image/*"
-                                  style={{ display: 'none' }}
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-                                    try {
-                                      const reader = new FileReader();
-                                      reader.onload = async () => {
-                                        const dataBase64 = reader.result as string;
-                                        const cleanName = `step-${idx + 1}-mobile-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-                                        const res = await api.uploadCmsImage({
-                                          file,
-                                          dataBase64,
-                                          fileName: cleanName,
-                                          contentType: file.type || 'image/jpeg'
-                                        });
-                                        if (res?.url) {
-                                          const currentSteps = (cms.stepsSection?.steps && cms.stepsSection.steps.length > 0) ? cms.stepsSection.steps : DEFAULT_LEARNING_PROCESS_STEPS;
-                                          const updated = [...currentSteps];
-                                          updated[idx] = { ...updated[idx], imageMobile: res.url };
-                                          setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
-                                          notify(`${idx + 1}-qadam uchun Mobil rasm yuklandi! 🎉`);
-                                        }
-                                      };
-                                      reader.readAsDataURL(file);
-                                    } catch (err: any) {
-                                      notify(err.message || 'Rasm yuklashda xatolik', true);
-                                    }
-                                  }}
-                                />
-                                <label
-                                  htmlFor={`upload-step-mobile-${idx}`}
-                                  className="outline-btn"
-                                  style={{ padding: '6px 10px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                                >
-                                  <Upload size={13} /> Yuklash
-                                </label>
-                              </div>
-                              {step.imageMobile && (
-                                <img
-                                  src={step.imageMobile}
-                                  alt="Mobile preview"
-                                  style={{ height: '60px', width: 'auto', borderRadius: '6px', marginTop: '6px', border: '1px solid var(--border)', objectFit: 'cover' }}
-                                />
-                              )}
                             </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
+
+                        {/* Steps Cards List */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          {currentSteps.map((step: any, idx: number) => (
+                            <div
+                              key={step.step || idx}
+                              style={{
+                                background: 'var(--bg)',
+                                padding: '18px',
+                                borderRadius: '14px',
+                                border: '1px solid var(--border)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '12px',
+                                position: 'relative'
+                              }}
+                            >
+                              {/* Step Card Top Bar */}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                  <span style={{
+                                    width: '34px',
+                                    height: '34px',
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, var(--purple) 0%, #38bdf8 100%)',
+                                    color: '#ffffff',
+                                    display: 'grid',
+                                    placeItems: 'center',
+                                    fontSize: '13px',
+                                    fontWeight: 900
+                                  }}>
+                                    {step.step || String(idx + 1).padStart(2, '0')}
+                                  </span>
+                                  <div>
+                                    <strong style={{ fontSize: '14.5px' }}>{step.title || `${idx + 1}-Qadam`}</strong>
+                                    <span style={{ display: 'block', fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>
+                                      {idx % 2 === 0 ? '📐 Matn Chapda · Rasm O‘ngda' : '📐 Rasm Chapda · Matn O‘ngda'}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Step Ordering & Delete Buttons */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveUp(idx)}
+                                    disabled={idx === 0}
+                                    title="Yuqoriga surish"
+                                    style={{
+                                      padding: '5px 8px',
+                                      fontSize: '11px',
+                                      background: 'var(--border)',
+                                      border: 'none',
+                                      borderRadius: '6px',
+                                      cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                                      opacity: idx === 0 ? 0.4 : 1,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '3px'
+                                    }}
+                                  >
+                                    <ArrowUp size={13} /> Yuqoriga
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveDown(idx)}
+                                    disabled={idx === currentSteps.length - 1}
+                                    title="Pastga surish"
+                                    style={{
+                                      padding: '5px 8px',
+                                      fontSize: '11px',
+                                      background: 'var(--border)',
+                                      border: 'none',
+                                      borderRadius: '6px',
+                                      cursor: idx === currentSteps.length - 1 ? 'not-allowed' : 'pointer',
+                                      opacity: idx === currentSteps.length - 1 ? 0.4 : 1,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '3px'
+                                    }}
+                                  >
+                                    <ArrowDown size={13} /> Pastga
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteStep(idx)}
+                                    title="Ushbu qadamni o‘chirish"
+                                    style={{
+                                      padding: '5px 8px',
+                                      fontSize: '11px',
+                                      background: 'rgba(239, 68, 68, 0.1)',
+                                      color: '#ef4444',
+                                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                                      borderRadius: '6px',
+                                      cursor: 'pointer',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '3px',
+                                      marginLeft: '4px'
+                                    }}
+                                  >
+                                    <Trash2 size={13} /> O‘chirish
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Form Inputs for Step */}
+                              <div style={{ display: 'grid', gridTemplateColumns: '80px 1.5fr 1fr', gap: '12px' }}>
+                                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                  <b style={{ fontSize: '11px' }}>Kodi:</b>
+                                  <input
+                                    value={step.step || ''}
+                                    onChange={e => {
+                                      const updated = [...currentSteps];
+                                      updated[idx] = { ...updated[idx], step: e.target.value };
+                                      setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                                    }}
+                                    placeholder="01"
+                                    style={{ textAlign: 'center', fontWeight: 800 }}
+                                  />
+                                </label>
+
+                                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                  <b style={{ fontSize: '11px' }}>Qadam Sarlavhasi:</b>
+                                  <input
+                                    value={step.title || ''}
+                                    onChange={e => {
+                                      const updated = [...currentSteps];
+                                      updated[idx] = { ...updated[idx], title: e.target.value };
+                                      setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                                    }}
+                                    placeholder="Qadam nomi"
+                                    style={{ fontWeight: 600 }}
+                                  />
+                                </label>
+
+                                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                  <b style={{ fontSize: '11px' }}>Kicker / Badge matni:</b>
+                                  <input
+                                    value={step.badge || ''}
+                                    onChange={e => {
+                                      const updated = [...currentSteps];
+                                      updated[idx] = { ...updated[idx], badge: e.target.value };
+                                      setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                                    }}
+                                    placeholder="Masalan: BOSHLANG‘ICH QADAM"
+                                  />
+                                </label>
+                              </div>
+
+                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <b style={{ fontSize: '11px' }}>Qadam Tavsifi / Tushuntirish matni:</b>
+                                <textarea
+                                  value={step.desc || ''}
+                                  onChange={e => {
+                                    const updated = [...currentSteps];
+                                    updated[idx] = { ...updated[idx], desc: e.target.value };
+                                    setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                                  }}
+                                  rows={2}
+                                  placeholder="Ushbu qadam haqida batafsil tushuntirish..."
+                                />
+                              </label>
+
+                              {/* Desktop & Mobile Screenshots Dual Upload */}
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginTop: '6px', padding: '14px', background: 'rgba(0,0,0,0.03)', borderRadius: '10px' }}>
+                                {/* Desktop Screenshot */}
+                                <div>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                    <b style={{ fontSize: '11.5px', color: 'var(--purple)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                      <Laptop size={14} /> Desktop (Kompyuter) Rasmi:
+                                    </b>
+                                    {step.imageDesktop && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const updated = [...currentSteps];
+                                          updated[idx] = { ...updated[idx], imageDesktop: '' };
+                                          setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                                        }}
+                                        style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '11px', cursor: 'pointer' }}
+                                      >
+                                        Tozalash
+                                      </button>
+                                    )}
+                                  </div>
+                                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <input
+                                      value={step.imageDesktop || ''}
+                                      onChange={e => {
+                                        const updated = [...currentSteps];
+                                        updated[idx] = { ...updated[idx], imageDesktop: e.target.value };
+                                        setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                                      }}
+                                      placeholder="Desktop rasm URL (ixtiyoriy)"
+                                      style={{ flex: 1, fontSize: '12px' }}
+                                    />
+                                    <input
+                                      type="file"
+                                      id={`upload-step-desktop-${idx}`}
+                                      accept="image/*"
+                                      style={{ display: 'none' }}
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        try {
+                                          const reader = new FileReader();
+                                          reader.onload = async () => {
+                                            const dataBase64 = reader.result as string;
+                                            const cleanName = `step-${idx + 1}-desktop-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+                                            const res = await api.uploadCmsImage({
+                                              file,
+                                              dataBase64,
+                                              fileName: cleanName,
+                                              contentType: file.type || 'image/jpeg'
+                                            });
+                                            if (res?.url) {
+                                              const updated = [...currentSteps];
+                                              updated[idx] = { ...updated[idx], imageDesktop: res.url };
+                                              setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                                              notify(`${idx + 1}-qadam uchun Desktop rasm yuklandi! 🎉`);
+                                            }
+                                          };
+                                          reader.readAsDataURL(file);
+                                        } catch (err: any) {
+                                          notify(err.message || 'Rasm yuklashda xatolik', true);
+                                        }
+                                      }}
+                                    />
+                                    <label
+                                      htmlFor={`upload-step-desktop-${idx}`}
+                                      className="outline-btn"
+                                      style={{ padding: '6px 10px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                    >
+                                      <Upload size={13} /> Yuklash
+                                    </label>
+                                  </div>
+                                  {step.imageDesktop && (
+                                    <img
+                                      src={step.imageDesktop}
+                                      alt="Desktop preview"
+                                      style={{ height: '64px', width: 'auto', borderRadius: '6px', marginTop: '6px', border: '1px solid var(--border)', objectFit: 'cover' }}
+                                    />
+                                  )}
+                                </div>
+
+                                {/* Mobile Screenshot */}
+                                <div>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                    <b style={{ fontSize: '11.5px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                      <Smartphone size={14} /> Mobil (Responsive) Rasmi:
+                                    </b>
+                                    {step.imageMobile && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const updated = [...currentSteps];
+                                          updated[idx] = { ...updated[idx], imageMobile: '' };
+                                          setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                                        }}
+                                        style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '11px', cursor: 'pointer' }}
+                                      >
+                                        Tozalash
+                                      </button>
+                                    )}
+                                  </div>
+                                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <input
+                                      value={step.imageMobile || ''}
+                                      onChange={e => {
+                                        const updated = [...currentSteps];
+                                        updated[idx] = { ...updated[idx], imageMobile: e.target.value };
+                                        setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                                      }}
+                                      placeholder="Mobil rasm URL (ixtiyoriy)"
+                                      style={{ flex: 1, fontSize: '12px' }}
+                                    />
+                                    <input
+                                      type="file"
+                                      id={`upload-step-mobile-${idx}`}
+                                      accept="image/*"
+                                      style={{ display: 'none' }}
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        try {
+                                          const reader = new FileReader();
+                                          reader.onload = async () => {
+                                            const dataBase64 = reader.result as string;
+                                            const cleanName = `step-${idx + 1}-mobile-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+                                            const res = await api.uploadCmsImage({
+                                              file,
+                                              dataBase64,
+                                              fileName: cleanName,
+                                              contentType: file.type || 'image/jpeg'
+                                            });
+                                            if (res?.url) {
+                                              const updated = [...currentSteps];
+                                              updated[idx] = { ...updated[idx], imageMobile: res.url };
+                                              setCms({ ...cms, stepsSection: { ...cms.stepsSection, steps: updated } });
+                                              notify(`${idx + 1}-qadam uchun Mobil rasm yuklandi! 🎉`);
+                                            }
+                                          };
+                                          reader.readAsDataURL(file);
+                                        } catch (err: any) {
+                                          notify(err.message || 'Rasm yuklashda xatolik', true);
+                                        }
+                                      }}
+                                    />
+                                    <label
+                                      htmlFor={`upload-step-mobile-${idx}`}
+                                      className="outline-btn"
+                                      style={{ padding: '6px 10px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                    >
+                                      <Upload size={13} /> Yuklash
+                                    </label>
+                                  </div>
+                                  {step.imageMobile && (
+                                    <img
+                                      src={step.imageMobile}
+                                      alt="Mobile preview"
+                                      style={{ height: '64px', width: 'auto', borderRadius: '6px', marginTop: '6px', border: '1px solid var(--border)', objectFit: 'cover' }}
+                                    />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Bottom Action Bar */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                          <button
+                            type="button"
+                            className="primary-btn"
+                            onClick={handleAddStep}
+                            style={{ padding: '8px 18px', fontSize: '13px', fontWeight: 700, background: '#10b981', borderColor: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Plus size={16} /> Yangi Qadam / Tushuntirish Qo‘shish
+                          </button>
+
+                          <button
+                            type="button"
+                            className="primary-btn"
+                            onClick={handleSaveSteps}
+                            style={{ padding: '8px 20px', fontSize: '13px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Save size={16} /> O‘rganish Jarayonini Saqlash
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 

@@ -12,6 +12,7 @@ export interface LearningProcessConfig {
   title?: string;
   subtitle?: string;
   studentImage?: string;
+  floatingFlags?: string[];
   bottomQuote?: string;
   steps: LearningProcessStep[];
 }
@@ -66,6 +67,7 @@ export const DEFAULT_LEARNING_PROCESS_CONFIG: LearningProcessConfig = {
   title: 'O‘rganish jarayoni qanday kechadi?',
   subtitle: '7 ta oson qadam orqali maqsadingiz sari ishonch bilan yo‘l oling.',
   studentImage: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=700&q=80',
+  floatingFlags: ['🇬🇧', '🇫🇷', '🇩🇪', '🇰🇷'],
   bottomQuote: 'Katta imkoniyatlar sizni kutmoqda!',
   steps: DEFAULT_LEARNING_PROCESS_STEPS
 };

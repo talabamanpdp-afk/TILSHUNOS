@@ -370,10 +370,18 @@ export function LearningProcessSection({ config, dark }: LearningProcessSectionP
                 className="lp-student-img"
               />
               {/* Floating Flags */}
-              <div className="lp-floating-flag lp-flag-1" title="United Kingdom">🇬🇧</div>
-              <div className="lp-floating-flag lp-flag-2" title="France">🇫🇷</div>
-              <div className="lp-floating-flag lp-flag-3" title="Germany">🇩🇪</div>
-              <div className="lp-floating-flag lp-flag-4" title="Korea">🇰🇷</div>
+              {(currentConfig.floatingFlags && currentConfig.floatingFlags.length > 0
+                ? currentConfig.floatingFlags
+                : ['🇬🇧', '🇫🇷', '🇩🇪', '🇰🇷']
+              ).slice(0, 6).map((flag, fIdx) => (
+                <div
+                  key={fIdx}
+                  className={`lp-floating-flag lp-flag-${(fIdx % 4) + 1}`}
+                  style={{ animationDelay: `${(fIdx * 0.7).toFixed(1)}s` }}
+                >
+                  {flag}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -381,7 +389,21 @@ export function LearningProcessSection({ config, dark }: LearningProcessSectionP
           <div className="lp-hero-text">
             <span className="lp-hero-kicker">{currentConfig.kicker || 'ODDIY VA TUSHUNARLI'}</span>
             <h2 className="lp-hero-title">
-              O‘rganish jarayoni <span>qanday kechadi?</span>
+              {(() => {
+                const title = currentConfig.title || 'O‘rganish jarayoni qanday kechadi?';
+                const parts = title.split(' ');
+                if (parts.length > 2) {
+                  const firstPart = parts.slice(0, parts.length - 2).join(' ');
+                  const lastPart = parts.slice(parts.length - 2).join(' ');
+                  return (
+                    <>
+                      {firstPart}{' '}
+                      <span>{lastPart}</span>
+                    </>
+                  );
+                }
+                return title;
+              })()}
             </h2>
             <p className="lp-hero-desc">
               {currentConfig.subtitle || '7 ta oson qadam orqali maqsadingiz sari ishonch bilan yo‘l oling.'}
