@@ -815,3 +815,4 @@ export function WorldFlagsBackground({ dark = true }: { dark?: boolean }) {
     </div>
   );
 }
+

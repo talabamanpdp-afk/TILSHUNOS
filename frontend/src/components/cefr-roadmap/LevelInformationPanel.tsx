@@ -53,6 +53,21 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
     }
   };
 
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'Grammar':
+        return 'Grammatika';
+      case 'Vocabulary':
+        return 'So‘z boyligi';
+      case 'Listening & Speaking':
+        return 'Tinglash & Gapirish';
+      case 'Reading & Writing':
+        return 'O‘qish & Yozish';
+      default:
+        return category;
+    }
+  };
+
   return (
     <div
       className="cefr-info-panel"
@@ -123,7 +138,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
                   textTransform: 'uppercase'
                 }}
               >
-                LEVEL {level.code}
+                {level.code} DARAJASI
               </span>
             </div>
             <h3
@@ -158,7 +173,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
               }}
             >
               <CheckCircle2 size={14} strokeWidth={2.5} />
-              <span>Completed</span>
+              <span>O‘zlashtirilgan ✓</span>
             </span>
           )}
 
@@ -187,7 +202,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
                   boxShadow: '0 0 8px #3b82f6'
                 }}
               />
-              <span>Current Level</span>
+              <span>Joriy daraja</span>
             </span>
           )}
 
@@ -207,7 +222,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
               }}
             >
               <Lock size={13} />
-              <span>Locked</span>
+              <span>Bloklangan</span>
             </span>
           )}
         </div>
@@ -249,9 +264,9 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
             gap: '4px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--muted)', fontSize: '11px', fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--muted)', fontSize: '11px', fontWeight: 750 }}>
             <Clock size={13} style={{ color: level.color }} />
-            <span>ESTIMATED TIME</span>
+            <span>TAXMINIY VAQT</span>
           </div>
           <strong style={{ fontSize: '15px', color: 'var(--text)', fontWeight: 800 }}>
             {level.estimatedDuration}
@@ -270,9 +285,9 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
             gap: '4px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--muted)', fontSize: '11px', fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--muted)', fontSize: '11px', fontWeight: 750 }}>
             <Compass size={13} style={{ color: level.color }} />
-            <span>PROFICIENCY</span>
+            <span>BILIM DARAJASI</span>
           </div>
           <strong style={{ fontSize: '15px', color: 'var(--text)', fontWeight: 800 }}>
             {level.proficiencyLevel}
@@ -295,7 +310,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
             marginBottom: '10px'
           }}
         >
-          Learning Objectives
+          O‘rganish maqsadlari
         </span>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -333,7 +348,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
       </div>
 
       {/* ======================================================== */}
-      {/* E. WHAT YOU'LL LEARN (4 Category Cards)                  */}
+      {/* E. WHAT YOU'LL LEARN (4 Category Cards - ZERO TRUNCATION) */}
       {/* ======================================================== */}
       <div>
         <span
@@ -347,7 +362,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
             marginBottom: '10px'
           }}
         >
-          What You'll Learn
+          Nimalarni o‘rganasiz
         </span>
 
         <div
@@ -361,13 +376,14 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
             <div
               key={idx}
               style={{
-                padding: '10px 12px',
+                padding: '12px 14px',
                 borderRadius: '12px',
                 background: dark ? 'rgba(255, 255, 255, 0.025)' : 'rgba(0, 0, 0, 0.02)',
                 border: dark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid rgba(0, 0, 0, 0.05)',
                 display: 'flex',
-                alignItems: 'center',
-                gap: '10px'
+                alignItems: 'flex-start',
+                gap: '10px',
+                minHeight: '62px'
               }}
             >
               <div
@@ -379,23 +395,24 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
                   color: level.color,
                   display: 'grid',
                   placeItems: 'center',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  marginTop: '2px'
                 }}
               >
                 {renderCategoryIcon(item.iconName)}
               </div>
-              <div style={{ minWidth: 0 }}>
-                <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, display: 'block' }}>
-                  {item.category}
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <span style={{ fontSize: '10.5px', color: 'var(--muted)', fontWeight: 700, display: 'block', marginBottom: '2px' }}>
+                  {getCategoryLabel(item.category)}
                 </span>
                 <strong
                   style={{
                     fontSize: '12px',
                     color: 'var(--text)',
                     fontWeight: 750,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                    lineHeight: '1.35',
+                    whiteSpace: 'normal',
+                    wordBreak: 'break-word',
                     display: 'block'
                   }}
                 >
@@ -419,7 +436,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
           borderRadius: '14px',
           background: level.gradient,
           color: '#ffffff',
-          fontSize: '14px',
+          fontSize: '14.5px',
           fontWeight: 800,
           border: 'none',
           cursor: 'pointer',
@@ -440,7 +457,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
           e.currentTarget.style.boxShadow = `0 8px 25px ${level.color}45`;
         }}
       >
-        <span>Explore {level.code} Level</span>
+        <span>{level.code} darajasini o‘rganish</span>
         <ArrowRight size={17} strokeWidth={2.5} />
       </button>
     </div>

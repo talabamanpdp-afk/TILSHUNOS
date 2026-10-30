@@ -44,17 +44,17 @@ export const RoadmapProgress: React.FC<RoadmapProgressProps> = ({ currentLevel, 
           </div>
           <div>
             <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-              Your Progress
+              Sizning natijangiz
             </span>
             <div style={{ fontSize: '15px', fontWeight: 850, color: 'var(--text)' }}>
-              {completedCount}/{totalLevels} levels completed ({progressPercent}%)
+              {completedCount}/{totalLevels} daraja o‘zlashtirildi ({progressPercent}%)
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 700, color: '#10b981' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 750, color: '#10b981' }}>
           <CheckCircle2 size={15} />
-          <span>A1 Completed • A2 in progress</span>
+          <span>A1 O‘zlashtirilgan • A2 O‘rganilmoqda</span>
         </div>
       </div>
 
