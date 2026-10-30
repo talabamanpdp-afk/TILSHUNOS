@@ -10,7 +10,7 @@ import { RoadmapProgress } from './RoadmapProgress';
 import { MotivationalCard } from './MotivationalCard';
 
 interface CEFRRoadmapSectionProps {
-  onBegin: (intent: 'login' | 'register') => void;
+  onBegin: (intent: 'login' | 'register' | 'trial') => void;
   onSelectLevel?: (level: string) => void;
   dark?: boolean;
 }

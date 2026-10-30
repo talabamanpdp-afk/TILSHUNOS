@@ -15,7 +15,7 @@ import {
 
 interface PracticeGuideSectionProps {
   guideConfig?: PracticeGuideConfig;
-  onBegin: (intent: 'login' | 'register') => void;
+  onBegin: (intent: 'login' | 'register' | 'trial') => void;
   dark?: boolean;
 }
 
@@ -408,7 +408,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       if (match && match[2].length === 11) {
         const videoId = match[2];
         const ap = autoPlay ? 1 : 0;
-        return `https://www.youtube.com/embed/${videoId}?autoplay=${ap}&enablejsapi=1&rel=0&playsinline=1`;
+        const originParam = typeof window !== 'undefined' && window.location.origin ? `&origin=${encodeURIComponent(window.location.origin)}` : '';
+        return `https://www.youtube.com/embed/${videoId}?autoplay=${ap}&enablejsapi=1&rel=0&playsinline=1${originParam}`;
       }
     } catch {}
     return url;
@@ -2307,7 +2308,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 <div>
                   <button
                     id="try-yourself-btn"
-                    onClick={() => onBegin('register')}
+                    onClick={() => onBegin('trial')}
                     className="primary-btn practice-cta-action-btn"
                     style={{
                       padding: '14px 28px',

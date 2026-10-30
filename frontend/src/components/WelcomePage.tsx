@@ -154,7 +154,7 @@ export interface CmsConfig {
 
 interface WelcomePageProps {
   cms: CmsConfig | null;
-  onBegin: (intent: 'login' | 'register') => void;
+  onBegin: (intent: 'login' | 'register' | 'trial') => void;
   onOpenAbout: () => void;
   dark: boolean;
   setDark: (val: boolean) => void;
@@ -366,6 +366,10 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
       } else if (lower.includes('namoyish') || lower.includes('preview') || lower.includes('interfeys') || lower.includes('o‘rganish')) {
         href = '#preview';
         icon = <Play size={15} />;
+      } else if (lower.includes('sinab') || lower.includes('sinov') || lower.includes('trial') || lower.includes('test')) {
+        href = '#trial';
+        icon = <Sparkles size={15} />;
+        action = () => onBegin('trial');
       } else if (lower.includes('cefr') || lower.includes('daraja')) {
         href = '#cefr';
         icon = <Target size={15} />;
@@ -805,6 +809,29 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                   <button className="holo-start-btn" onClick={() => onBegin('register')}>
                     <span>{primaryCta || 'Start Learning'}</span>
                     <ChevronRight size={18} />
+                  </button>
+
+                  <button
+                    className="holo-trial-btn"
+                    onClick={() => onBegin('trial')}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      padding: '12px 20px',
+                      borderRadius: '14px',
+                      background: 'rgba(120, 105, 245, 0.15)',
+                      border: '1.5px solid rgba(120, 105, 245, 0.4)',
+                      color: 'var(--hero-text, #ffffff)',
+                      fontWeight: 800,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 4px 16px rgba(120, 105, 245, 0.2)'
+                    }}
+                  >
+                    <Sparkles size={16} style={{ color: '#7869f5' }} />
+                    <span>O‘zingizni sinab ko‘ring</span>
                   </button>
 
                   {secondaryCta && (

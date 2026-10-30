@@ -3,6 +3,7 @@ import { TeacherPanel } from './components/TeacherPanel';
 import { DuelMatchModal } from './components/DuelMatchModal';
 import { WelcomePage } from './components/WelcomePage';
 import { AboutPage } from './components/AboutPage';
+import { TrialTestPage } from './components/trial/TrialTestPage';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Award, BookA, BookOpen, Bookmark, Brain,
@@ -1744,7 +1745,7 @@ function Stat({ icon: Icon, label, value, note, color, trend }: { icon: LucideIc
 }
 
 function App() {
-  const [page, setPage] = useState<'welcome' | 'about' | 'login' | 'register' | 'verify' | 'onboarding' | 'dashboard'>(() => {
+  const [page, setPage] = useState<'welcome' | 'about' | 'login' | 'register' | 'verify' | 'onboarding' | 'dashboard' | 'trial'>(() => {
     const token = authStorage.getToken();
     if (!token) return 'welcome';
     const currentRole = localStorage.getItem('tilshunos_role') || 'user';
@@ -1848,7 +1849,11 @@ function App() {
     }
   }, [resendCooldown]);
 
-  const begin = (v: 'login' | 'register') => {
+  const begin = (v: 'login' | 'register' | 'trial') => {
+    if (v === 'trial') {
+      setPage('trial');
+      return;
+    }
     setIntent(v);
     setPage(v);
     setMessage('');
@@ -2082,6 +2087,24 @@ function App() {
         onBegin={begin}
         dark={dark}
         setDark={setDark}
+      />
+    );
+  }
+
+  if (page === 'trial') {
+    return (
+      <TrialTestPage
+        onBack={() => setPage('welcome')}
+        onRegister={() => begin('register')}
+        dark={dark}
+        setDark={setDark}
+        cms={cmsContent}
+        onUpdateCms={(updatedCms) => {
+          setCmsContent(updatedCms);
+          try {
+            localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+          } catch {}
+        }}
       />
     );
   }

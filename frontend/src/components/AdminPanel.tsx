@@ -11,10 +11,12 @@ import { api, authStorage } from '../api';
 import {
   DEFAULT_PRACTICE_GUIDE, PracticeGuideConfig, LanguagePracticeGuide
 } from '../data/practiceGuideData';
+import { AdminTrialTestsTab } from './admin/AdminTrialTestsTab';
 
 const adminNav = [
   ['Dashboard & Statistika', 'dashboard', LayoutDashboard],
   ['Welcome Sahifa / CMS', 'cms', Globe],
+  ['Boshlang‘ich Sinov Testlari', 'trial_tests', Sparkles],
   ['Foydalanuvchilar', 'users', Users],
   ['Umumiy Lug‘at', 'vocab', BookOpen],
   ['O‘yin Mavzulari', 'games', Gamepad2],
@@ -6037,7 +6039,22 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
             </>
           )}
 
-
+          {/* BOSHLANG‘ICH SINOV (TRIAL TESTS) SOZLAMALARI */}
+          {section === 'trial_tests' && (
+            <AdminTrialTestsTab
+              cms={cms}
+              onSaveCms={async (updatedCms) => {
+                setCms(updatedCms);
+                try {
+                  localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+                } catch {}
+                await api.saveCms(updatedCms);
+                window.dispatchEvent(new CustomEvent('tilshunos_cms_saved', { detail: updatedCms }));
+              }}
+              notify={notify}
+              dark={dark}
+            />
+          )}
 
           {/* TIZIM SOZLAMALARI & SUPABASE STATUS */}
           {section === 'settings' && (
