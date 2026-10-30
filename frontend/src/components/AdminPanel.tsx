@@ -1152,34 +1152,15 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   // Tab 1: All Users filter
   const filteredAllUsers = useMemo(() => {
     return users.filter(u => {
-      // Role filter
-      if (usersRoleFilter === 'learners') {
-        const roleStr = String(u.role || '').toLowerCase();
-        if (isSuperAdmin(u) || roleStr === 'admin' || u.role === 3 || roleStr === 'teacher' || u.role === 2) return false;
-      } else if (usersRoleFilter === 'teachers') {
-        const roleStr = String(u.role || '').toLowerCase();
-        if (roleStr !== 'teacher' && u.role !== 2) return false;
-      } else if (usersRoleFilter === 'admins') {
-        const roleStr = String(u.role || '').toLowerCase();
-        if (!isSuperAdmin(u) && roleStr !== 'admin' && u.role === 3) return false;
-      }
-
-      // Status filter
-      if (usersStatusFilter === 'verified' && !u.emailConfirmed) return false;
-      if (usersStatusFilter === 'unverified' && u.emailConfirmed) return false;
-      if (usersStatusFilter === 'active' && u.isActive === false) return false;
-
-      // Search query
       if (allUsersSearch) {
         const q = allUsersSearch.toLowerCase();
         const name = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
         const email = (u.email || '').toLowerCase();
         return name.includes(q) || email.includes(q);
       }
-
       return true;
     });
-  }, [users, usersRoleFilter, usersStatusFilter, allUsersSearch]);
+  }, [users, allUsersSearch]);
 
   // Tab 3: Teachers filter
   const filteredTeachers = useMemo(() => {
@@ -1282,6 +1263,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   });
   const [appointModalOpen, setAppointModalOpen] = useState(false);
   const [selectedUserToAppoint, setSelectedUserToAppoint] = useState('');
+  const [permsModalAdmin, setPermsModalAdmin] = useState<any | null>(null);
 
   const handleAppointAdmin = async () => {
     if (!selectedUserToAppoint) {
@@ -1690,16 +1672,6 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
-                  {usersSubTab === 'teachers' && (
-                    <button className="primary-btn" onClick={() => setAppointTeacherModalOpen(true)}>
-                      <GraduationCap size={15} /> Ustoz Tayinlash
-                    </button>
-                  )}
-                  {usersSubTab === 'admins' && (
-                    <button className="primary-btn" onClick={() => setAppointModalOpen(true)}>
-                      <Plus size={15} /> Yangi Admin Saylash
-                    </button>
-                  )}
                   <button className="primary-btn" onClick={() => loadSupabaseData(true)} disabled={refreshing}>
                     <RefreshCw size={15} className={refreshing ? 'animate-spin' : ''} />
                     Yangilash
@@ -1764,77 +1736,19 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               {usersSubTab === 'all' && (
                 <>
                   <div className="panel" style={{ padding: '14px 18px', marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, minWidth: '240px' }}>
-                        <Search size={18} style={{ color: 'var(--muted)', flexShrink: 0 }} />
-                        <input
-                          value={allUsersSearch}
-                          onChange={e => setAllUsersSearch(e.target.value)}
-                          placeholder="Foydalanuvchi ismi, familiyasi yoki email bo‘yicha qidirish..."
-                          style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '12px', color: 'var(--text)' }}
-                        />
-                        {allUsersSearch && (
-                          <button onClick={() => setAllUsersSearch('')} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
-                            <X size={16} />
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Role Filter Pills */}
-                      <div className="admin-filters-scroll" style={{ display: 'flex', gap: '6px' }}>
-                        {[
-                          ['all', `Barchasi (${users.length})`],
-                          ['learners', `O‘quvchilar (${learners.length})`],
-                          ['teachers', `Ustozlar (${teachers.length})`],
-                          ['admins', `Adminlar (${subAdmins.length})`]
-                        ].map(([rf, rfLabel]) => (
-                          <button
-                            key={rf}
-                            onClick={() => setUsersRoleFilter(rf as any)}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '8px',
-                              border: usersRoleFilter === rf ? '1px solid var(--purple)' : '1px solid var(--border)',
-                              background: usersRoleFilter === rf ? 'var(--soft)' : 'var(--panel)',
-                              color: usersRoleFilter === rf ? 'var(--purple)' : 'var(--muted)',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              whiteSpace: 'nowrap'
-                            }}
-                          >
-                            {rfLabel}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Status Filter Pills */}
-                      <div className="admin-filters-scroll" style={{ display: 'flex', gap: '6px' }}>
-                        {[
-                          ['all', 'Barcha Holatlar'],
-                          ['verified', 'Tasdiqlangan'],
-                          ['unverified', 'Tasdiqlanmagan'],
-                          ['active', 'Faol']
-                        ].map(([sf, sfLabel]) => (
-                          <button
-                            key={sf}
-                            onClick={() => setUsersStatusFilter(sf as any)}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '8px',
-                              border: usersStatusFilter === sf ? '1px solid var(--purple)' : '1px solid var(--border)',
-                              background: usersStatusFilter === sf ? 'var(--soft)' : 'var(--panel)',
-                              color: usersStatusFilter === sf ? 'var(--purple)' : 'var(--muted)',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              whiteSpace: 'nowrap'
-                            }}
-                          >
-                            {sfLabel}
-                          </button>
-                        ))}
-                      </div>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', width: '100%' }}>
+                      <Search size={18} style={{ color: 'var(--muted)', flexShrink: 0 }} />
+                      <input
+                        value={allUsersSearch}
+                        onChange={e => setAllUsersSearch(e.target.value)}
+                        placeholder="Foydalanuvchi ismi, familiyasi yoki email bo‘yicha qidirish..."
+                        style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '13px', color: 'var(--text)' }}
+                      />
+                      {allUsersSearch && (
+                        <button onClick={() => setAllUsersSearch('')} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', padding: '4px' }}>
+                          <X size={16} />
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -2085,30 +1999,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                   <td style={{ textAlign: 'right' }}>
                                     <div style={{ display: 'inline-flex', gap: '6px' }}>
                                       <button
-                                        className="outline-btn"
-                                        onClick={() => {
-                                          setSelectedUserToAppointTeacher(u.id);
-                                          setAppointTeacherModalOpen(true);
-                                        }}
-                                        title="O‘qituvchi qilib tayinlash"
-                                        style={{ padding: '6px 9px', fontSize: '11px', color: 'var(--purple)', borderColor: 'var(--purple)' }}
-                                      >
-                                        <GraduationCap size={14} /> Ustoz qilish
-                                      </button>
-                                      <button
-                                        className="outline-btn"
-                                        onClick={() => setSelectedUserForEdit(u)}
-                                        title="Rolni o‘zgartirish"
-                                        style={{ padding: '6px 9px', fontSize: '11px' }}
-                                      >
-                                        <UserCog size={14} /> Rol
-                                      </button>
-                                      <button
                                         onClick={() => handleDeleteUser(u.id, u.email)}
                                         title="O‘chirish"
                                         style={{ background: 'none', border: 0, color: '#e05656', cursor: 'pointer', padding: '6px' }}
                                       >
-                                        <Trash2 size={15} />
+                                        <Trash2 size={16} />
                                       </button>
                                     </div>
                                   </td>
@@ -2147,26 +2042,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                 </span>
                               </div>
 
-                              <div className="learner-card-actions">
-                                <button
-                                  className="outline-btn"
-                                  onClick={() => {
-                                    setSelectedUserToAppointTeacher(u.id);
-                                    setAppointTeacherModalOpen(true);
-                                  }}
-                                  style={{ padding: '6px 10px', fontSize: '11px', color: 'var(--purple)', borderColor: 'var(--purple)' }}
-                                >
-                                  <GraduationCap size={13} /> Ustoz qilish
-                                </button>
-                                <button
-                                  className="outline-btn"
-                                  onClick={() => setSelectedUserForEdit(u)}
-                                  style={{ padding: '6px 10px', fontSize: '11px' }}
-                                >
-                                  <UserCog size={13} /> Rol
-                                </button>
+                              <div className="learner-card-actions" style={{ justifyContent: 'flex-end' }}>
                                 <button
                                   onClick={() => handleDeleteUser(u.id, u.email)}
+                                  title="O‘chirish"
                                   style={{ background: 'none', border: 0, color: '#e05656', cursor: 'pointer', padding: '6px' }}
                                 >
                                   <Trash2 size={16} />
@@ -2184,41 +2063,6 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               {/* SUB-TAB 3: O‘QITUVCHILAR (TEACHERS) */}
               {usersSubTab === 'teachers' && (
                 <>
-                  {/* In-System Teacher Appointment Banner */}
-                  <div className="panel" style={{
-                    padding: '22px',
-                    marginBottom: '20px',
-                    background: 'linear-gradient(135deg, rgba(120, 105, 245, 0.08), rgba(91, 75, 240, 0.03))',
-                    border: '1.5px solid rgba(120, 105, 245, 0.25)',
-                    borderRadius: '16px'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <div style={{
-                          width: '44px',
-                          height: '44px',
-                          borderRadius: '12px',
-                          background: 'linear-gradient(135deg, #7869f5, #5b4bf0)',
-                          color: '#fff',
-                          display: 'grid',
-                          placeItems: 'center',
-                          boxShadow: '0 4px 12px rgba(120, 105, 245, 0.3)'
-                        }}>
-                          <GraduationCap size={22} />
-                        </div>
-                        <div>
-                          <h3 style={{ margin: '0 0 4px', fontSize: '16px' }}>Foydalanuvchilar Orasidan O‘qituvchi Tayinlash</h3>
-                          <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
-                            O‘qituvchilar tizimda ro‘yxatdan o‘tgan umumiy foydalanuvchilar orasidan tanlab olinadi va Supabase bazasiga biriktiriladi.
-                          </p>
-                        </div>
-                      </div>
-                      <button className="primary-btn" onClick={() => setAppointTeacherModalOpen(true)} style={{ padding: '9px 18px', fontSize: '12px' }}>
-                        <Plus size={16} /> Yangi Ustoz Tayinlash
-                      </button>
-                    </div>
-                  </div>
-
                   {/* Teachers Search & Table */}
                   <div className="panel" style={{ padding: '20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
@@ -2402,9 +2246,6 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           Umumiy foydalanuvchilar orasidan Super Admin tomonidan tayinlangan moderatorlar va ularning faol ruxsatlari.
                         </p>
                       </div>
-                      <button className="outline-btn" onClick={() => setAppointModalOpen(true)} style={{ padding: '7px 12px' }}>
-                        <Plus size={14} /> Yangi Admin Tayinlash
-                      </button>
                     </div>
 
                     {subAdmins.length === 0 ? (
@@ -2420,13 +2261,22 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           Hozircha qo‘shimcha admin tayinlanmagan
                         </strong>
                         <p style={{ margin: 0, fontSize: '11px', color: 'var(--muted)' }}>
-                          Super Admin sifatida yuqoridagi <strong>"+ Yangi Admin Tayinlash"</strong> tugmasi orqali umumiy foydalanuvchilar orasidan moderator saylashingiz mumkin.
+                          Super Admin sifatida <strong>"Umumiy Foydalanuvchilar"</strong> ro‘yxatidan istalgan foydalanuvchini moderator admin qilib tayinlashingiz mumkin.
                         </p>
                       </div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                         {subAdmins.map((admin: any) => {
                           const perms = adminPerms[admin.id] || { canVocab: true, canTeachers: false, canCMS: true, canMaterials: true, canStudents: true };
+                          const permItems = [
+                            { key: 'canVocab', label: 'Umumiy Lug‘at', icon: '📚' },
+                            { key: 'canCMS', label: 'Welcome (CMS)', icon: '🌐' },
+                            { key: 'canTeachers', label: 'O‘qituvchilar', icon: '🎓' },
+                            { key: 'canMaterials', label: 'Materiallar', icon: '✍️' },
+                            { key: 'canStudents', label: 'Reestr / O‘quvchilar', icon: '📊' }
+                          ];
+                          const activePerms = permItems.filter(p => Boolean((perms as any)[p.key]));
+
                           return (
                             <div key={admin.id} style={{
                               background: 'var(--bg)',
@@ -2435,70 +2285,96 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               padding: '16px 18px',
                               display: 'flex',
                               flexDirection: 'column',
-                              gap: '14px'
+                              gap: '12px'
                             }}>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                  <div className="avatar" style={{ width: '38px', height: '38px', fontSize: '14px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
+                                  <div className="avatar" style={{ width: '40px', height: '40px', fontSize: '15px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
                                     {(admin.firstName?.[0] || admin.email?.[0] || 'A').toUpperCase()}
                                   </div>
                                   <div>
-                                    <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text)' }}>
-                                      {admin.firstName || admin.lastName ? `${admin.firstName || ''} ${admin.lastName || ''}`.trim() : 'Admin'}
-                                    </strong>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <strong style={{ fontSize: '13.5px', color: 'var(--text)' }}>
+                                        {admin.firstName || admin.lastName ? `${admin.firstName || ''} ${admin.lastName || ''}`.trim() : 'Admin'}
+                                      </strong>
+                                      <span className="badge-role-admin">
+                                        Moderator Admin
+                                      </span>
+                                    </div>
                                     <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{admin.email}</span>
                                   </div>
-                                  <span className="badge-role-admin" style={{ marginLeft: '6px' }}>
-                                    Moderator Admin
-                                  </span>
                                 </div>
 
-                                <button
-                                  onClick={() => handleDemoteAdmin(admin.id, admin.email)}
-                                  style={{
-                                    padding: '6px 12px',
-                                    border: '1px solid #fee2e2',
-                                    background: '#fef2f2',
-                                    color: '#b91c1c',
-                                    borderRadius: '8px',
-                                    fontSize: '11px',
-                                    fontWeight: 700,
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  Adminlikdan olish
-                                </button>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                  <button
+                                    className="outline-btn"
+                                    onClick={() => setPermsModalAdmin(admin)}
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '6px',
+                                      padding: '7px 12px',
+                                      fontSize: '11.5px',
+                                      fontWeight: 700,
+                                      color: 'var(--purple)',
+                                      borderColor: 'var(--purple)',
+                                      borderRadius: '8px',
+                                      background: 'rgba(120, 105, 245, 0.06)'
+                                    }}
+                                  >
+                                    <ShieldCheck size={14} /> Admin Ruxsatlari
+                                  </button>
+                                  <button
+                                    onClick={() => handleDemoteAdmin(admin.id, admin.email)}
+                                    style={{
+                                      padding: '7px 12px',
+                                      border: '1px solid #fee2e2',
+                                      background: '#fef2f2',
+                                      color: '#b91c1c',
+                                      borderRadius: '8px',
+                                      fontSize: '11.5px',
+                                      fontWeight: 700,
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    Adminlikdan olish
+                                  </button>
+                                </div>
                               </div>
 
-                              {/* Permissions toggles */}
+                              {/* Active permissions summary badges row */}
                               <div style={{
-                                padding: '12px',
-                                background: 'var(--panel)',
-                                borderRadius: '10px',
-                                border: '1px solid var(--border)'
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                flexWrap: 'wrap',
+                                paddingTop: '8px',
+                                borderTop: '1px solid var(--border)'
                               }}>
-                                <span style={{ display: 'block', fontSize: '10px', fontWeight: 800, color: 'var(--muted)', marginBottom: '10px', letterSpacing: '0.5px' }}>
-                                  SUPER ADMIN TOMONIDAN BERILGAN RUXSATLAR:
-                                </span>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
-                                  {[
-                                    ['canVocab', '📚 Umumiy Lug‘atni boshqarish'],
-                                    ['canCMS', '🌐 Welcome Sahifa (CMS)'],
-                                    ['canTeachers', '🎓 O‘qituvchilarni boshqarish'],
-                                    ['canMaterials', '✍️ O‘quv Materiallari'],
-                                    ['canStudents', '📊 Foydalanuvchilar reestrini ko‘rish']
-                                  ].map(([k, label]) => (
-                                    <label key={k} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', cursor: 'pointer', color: 'var(--text)' }}>
-                                      <input
-                                        type="checkbox"
-                                        checked={Boolean((perms as any)[k])}
-                                        onChange={() => handleToggleAdminPerm(admin.id, k as any)}
-                                        style={{ width: '15px', height: '15px', accentColor: 'var(--purple)' }}
-                                      />
-                                      <span>{label}</span>
-                                    </label>
-                                  ))}
-                                </div>
+                                <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Faol ruxsatlar:</span>
+                                {activePerms.length === 0 ? (
+                                  <span style={{ fontSize: '11px', color: '#e05656', fontWeight: 600 }}>Hech qanday ruxsat yo‘q</span>
+                                ) : (
+                                  activePerms.map(p => (
+                                    <span
+                                      key={p.key}
+                                      style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        fontSize: '11px',
+                                        padding: '2px 8px',
+                                        borderRadius: '6px',
+                                        background: 'var(--panel)',
+                                        border: '1px solid var(--border)',
+                                        color: 'var(--text)'
+                                      }}
+                                    >
+                                      <span>{p.icon}</span>
+                                      <span>{p.label}</span>
+                                    </span>
+                                  ))
+                                )}
                               </div>
                             </div>
                           );
@@ -5786,6 +5662,95 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               <button className="outline-btn" onClick={() => setEditingTeacher(null)}>Bekor qilish</button>
               <button className="primary-btn" onClick={handleUpdateTeacher}>
                 <Save size={16} /> Saqlash
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADMIN PERMISSIONS MODAL */}
+      {permsModalAdmin && (
+        <div className="modal-backdrop" onClick={() => setPermsModalAdmin(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px', width: '95%' }}>
+            <div className="modal-heading">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  background: 'rgba(120, 105, 245, 0.12)',
+                  color: 'var(--purple)',
+                  display: 'grid',
+                  placeItems: 'center',
+                  flexShrink: 0
+                }}>
+                  <ShieldCheck size={22} />
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '17px' }}>Admin Ruxsatlarini Sozlash</h2>
+                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
+                    {permsModalAdmin.firstName || permsModalAdmin.email} uchun tizim imkoniyatlarini yoqing yoki o‘chiring
+                  </p>
+                </div>
+              </div>
+              <button className="icon-btn" onClick={() => setPermsModalAdmin(null)} aria-label="Yopish"><X size={18} /></button>
+            </div>
+
+            <div style={{ margin: '18px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {[
+                { key: 'canVocab', title: 'Umumiy Lug‘atni boshqarish', desc: 'Yangi so‘zlar qo‘shish, tahrirlash va o‘chirish ruxsati', icon: '📚' },
+                { key: 'canCMS', title: 'Welcome Sahifa (CMS)', desc: 'Bosh sahifa matnlari, bannerlar, fon rasmlarini sozlash', icon: '🌐' },
+                { key: 'canTeachers', title: 'O‘qituvchilarni boshqarish', desc: 'O‘qituvchilar ma’lumotlarini ko‘rish va tahrirlash', icon: '🎓' },
+                { key: 'canMaterials', title: 'O‘quv Materiallari', desc: 'Reading, Writing, Listening va Video darslarni boshqarish', icon: '✍️' },
+                { key: 'canStudents', title: 'Foydalanuvchilar reestrini ko‘rish', desc: 'O‘quvchilar ro‘yxati, hisoblar va statistikalarni kuzatish', icon: '📊' }
+              ].map(opt => {
+                const currentPerms = adminPerms[permsModalAdmin.id] || { canVocab: true, canTeachers: false, canCMS: true, canMaterials: true, canStudents: true };
+                const isChecked = Boolean((currentPerms as any)[opt.key]);
+                return (
+                  <div
+                    key={opt.key}
+                    onClick={() => handleToggleAdminPerm(permsModalAdmin.id, opt.key as any)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 14px',
+                      borderRadius: '12px',
+                      border: isChecked ? '1.5px solid var(--purple)' : '1px solid var(--border)',
+                      background: isChecked ? 'rgba(120, 105, 245, 0.05)' : 'var(--bg)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontSize: '20px' }}>{opt.icon}</span>
+                      <div>
+                        <strong style={{ display: 'block', fontSize: '13px', color: 'var(--text)' }}>
+                          {opt.title}
+                        </strong>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                          {opt.desc}
+                        </span>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      readOnly
+                      style={{ width: '18px', height: '18px', accentColor: 'var(--purple)', pointerEvents: 'none', flexShrink: 0 }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="modal-footer" style={{ marginTop: '20px' }}>
+              <button
+                className="primary-btn"
+                onClick={() => setPermsModalAdmin(null)}
+                style={{ width: '100%', justifyContent: 'center', padding: '10px 16px' }}
+              >
+                <Check size={16} /> Saqlash va Yopish
               </button>
             </div>
           </div>
