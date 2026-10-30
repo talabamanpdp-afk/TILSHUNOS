@@ -2734,6 +2734,7 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   object-fit: contain;
   display: block;
   border-radius: inherit;
+  overflow: hidden !important;
 }
 
 .holo-brand-icon {

@@ -2034,9 +2034,22 @@ function App() {
             placeItems: 'center',
             boxShadow: '0 10px 30px rgba(120, 105, 245, 0.25)',
             padding: '4px',
+            overflow: 'hidden',
             animation: 'pulse 1.8s ease-in-out infinite'
           }}>
-            <img src="/brand_logo.png" alt="TILSHUNOS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }} />
+            <img
+              src="/brand_logo.png"
+              alt="TILSHUNOS"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                display: 'block'
+              }}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }}
+            />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: '#7869f5' }}>
             <span className="animate-spin" style={{ display: 'inline-block', width: '16px', height: '16px', border: '2.5px solid rgba(120, 105, 245, 0.25)', borderTopColor: '#7869f5', borderRadius: '50%' }} />
