@@ -13,8 +13,10 @@ import {
 import { PracticeGuideSection } from './PracticeGuideSection';
 import { PracticeGuideConfig } from '../data/practiceGuideData';
 import { CEFRRoadmapSection } from './cefr-roadmap/CEFRRoadmapSection';
+import { WorldFlagsBackground } from './WorldFlagsBackground';
 
 export interface CmsConfig {
+  worldFlagsBgEnabled?: boolean;
   hero?: string;
   heroBadge?: string;
   heroImage?: string;
@@ -590,6 +592,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
             <div className="holo-radial-mesh" />
           </div>
         </div>
+
+        {/* 100 TA MASHHUR BAYROQ VA DAVLATLAR KARTALARI UCHIB YURUVCHI ORQA FON */}
+        {cms?.worldFlagsBgEnabled !== false && <WorldFlagsBackground dark={dark} />}
 
         {/* Global Split Nav Header */}
         <header

@@ -2938,6 +2938,11 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   flex-direction: column;
   justify-content: center;
   padding: 105px 48px 44px;
+  pointer-events: none;
+}
+
+.holo-hero-grid > * {
+  pointer-events: auto;
 }
 
 .holo-hero-grid {

@@ -3198,6 +3198,51 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           <Trash2 size={13} /> Standart Toza Fonga Qaytarish (O‘chirish)
                         </button>
                       </div>
+
+                      {/* 100 ta Bayroq va Davlatlar Kartalari Fonini Yoqish/O'chirish */}
+                      <div style={{
+                        marginTop: '14px',
+                        padding: '12px 16px',
+                        background: 'var(--bg)',
+                        borderRadius: '12px',
+                        border: '1px solid var(--border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '12px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ fontSize: '22px' }}>🌍</span>
+                          <div>
+                            <strong style={{ fontSize: '13px', display: 'block' }}>100 ta Mashhur Bayroqlar va Davlatlar Kartalari Orqa Foni</strong>
+                            <span style={{ fontSize: '11.5px', color: 'var(--muted)' }}>
+                              Welcome sahifasida uchib yuruvchi 100 ta dunyo bayrog‘i, interaktiv davlat kartalari va jonli oqim lentalari
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setCms({ ...cms, worldFlagsBgEnabled: cms.worldFlagsBgEnabled === false ? true : false })}
+                          style={{
+                            padding: '7px 16px',
+                            borderRadius: '9px',
+                            border: 'none',
+                            background: cms.worldFlagsBgEnabled !== false ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'var(--border)',
+                            color: cms.worldFlagsBgEnabled !== false ? '#fff' : 'var(--muted)',
+                            fontWeight: 800,
+                            fontSize: '12.5px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: cms.worldFlagsBgEnabled !== false ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          {cms.worldFlagsBgEnabled !== false ? '✓ Faol (Ko‘rsatilmoqda)' : '✕ O‘chirilgan'}
+                        </button>
+                      </div>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
