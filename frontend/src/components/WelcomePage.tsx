@@ -14,6 +14,7 @@ import { PracticeGuideSection } from './PracticeGuideSection';
 import { PracticeGuideConfig } from '../data/practiceGuideData';
 import { CEFRRoadmapSection } from './cefr-roadmap/CEFRRoadmapSection';
 import { LearningProcessSection } from './learning-process/LearningProcessSection';
+import { FeaturesSection } from './features/FeaturesSection';
 import { AboutSection } from './about/AboutSection';
 import { FaqSection } from './faq/FaqSection';
 
@@ -1060,37 +1061,23 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         dark={dark}
       />
 
-      {/* 7. FEATURES & INNOVATION */}
-      <section id="features" className="welcome-features-section">
-        <div className="section-container">
-          <div className="section-header scroll-reveal">
-            <span className="section-kicker">{featuresKicker}</span>
-            <h2>{featuresTitle}</h2>
-            <p>{featuresSubtitle}</p>
-          </div>
-
-          <div className="features-grid scroll-stagger-parent">
-            {featuresList.map(item => {
-              const iconMap: Record<string, any> = {
-                ai: Sparkles,
-                pvp: Gamepad2,
-                anticheat: ShieldCheck,
-                teachers: Users
-              };
-              const Icon = iconMap[item.key] || Sparkles;
-              return (
-                <div key={item.key || item.title} className="feature-box">
-                  <div className={`feature-icon-box ${item.color || 'purple'}`}>
-                    <Icon size={22} />
-                  </div>
-                  <h3>{item.title}</h3>
-                  <p>{item.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* 7. FEATURES & INNOVATION (Matching reference image 2) */}
+      <FeaturesSection
+        kicker={featuresKicker}
+        title={featuresTitle}
+        subtitle={featuresSubtitle}
+        features={featuresList}
+        dark={dark}
+        onExploreFeature={(featKey) => {
+          if (featKey === 'teachers') {
+            const el = document.getElementById('teachers');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+            else onBegin('register');
+          } else {
+            onBegin('register');
+          }
+        }}
+      />
 
       {/* 8. ABOUT US SECTION (MATCHING USER MOCKUP WITH DESK SCENE & 5 CONNECTED CARDS) */}
       <AboutSection
