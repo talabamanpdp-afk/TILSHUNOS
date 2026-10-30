@@ -1821,11 +1821,22 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
 
 /* 11. Footer */
 .welcome-footer {
+  position: relative;
   background: var(--w-surface);
   border-top: 1px solid var(--w-border);
   padding: 70px 0 30px;
+  overflow: hidden;
 }
-.footer-container { max-width: 1360px; margin: 0 auto; padding: 0 28px; }
+.welcome-footer.has-custom-bg {
+  background: transparent;
+}
+.welcome-footer .footer-container {
+  position: relative;
+  z-index: 2;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
 .footer-grid {
   display: grid;
   grid-template-columns: 1.4fr 0.8fr 0.8fr 1fr;
@@ -4793,10 +4804,21 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
 
 /* Footer */
 .about-page-footer {
+  position: relative;
   background: #ffffff;
   border-top: 1px solid rgba(226, 232, 240, 0.85);
   padding: 36px 24px 28px;
   margin-top: auto;
+  overflow: hidden;
+}
+
+.about-page-footer.has-custom-bg {
+  background: transparent;
+}
+
+.about-page-footer .about-footer-container {
+  position: relative;
+  z-index: 2;
 }
 
 .about-page-root.dark .about-page-footer {

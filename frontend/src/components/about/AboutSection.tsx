@@ -639,3 +639,4 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
     </section>
   );
 }
+

@@ -1152,8 +1152,42 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         </div>
       </section>
 
-      {/* 11. DETAILED FOOTER (With Founder and Dynamic Contacts) */}
-      <footer className="welcome-footer">
+      {/* 11. DETAILED FOOTER (With Founder and Dynamic Contacts + Header Background Image) */}
+      <footer className={`welcome-footer ${(heroBgDesktop || heroBgMobile) ? 'has-custom-bg' : ''}`}>
+        {/* Header & Hero Background Image also displayed in Footer */}
+        {(heroBgDesktop || heroBgMobile) && (
+          <div className="holo-custom-bg-layer" aria-hidden="true">
+            {heroBgDesktop && (
+              <div
+                className={`holo-custom-bg holo-custom-bg-desktop ${heroBgMobile ? 'desktop-only-bg' : ''}`}
+                style={{
+                  backgroundImage: `url(${heroBgDesktop})`,
+                  backgroundPosition: 'center bottom'
+                }}
+              />
+            )}
+            {heroBgMobile && (
+              <div
+                className="holo-custom-bg holo-custom-bg-mobile mobile-only-bg"
+                style={{
+                  backgroundImage: `url(${heroBgMobile})`,
+                  backgroundPosition: 'center bottom'
+                }}
+              />
+            )}
+            <div
+              className="holo-custom-bg-overlay"
+              style={{
+                background: dark
+                  ? 'linear-gradient(180deg, rgba(11, 19, 43, 0.88) 0%, rgba(11, 19, 43, 0.96) 100%)'
+                  : 'linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.95) 100%)',
+                backdropFilter: 'blur(2px)',
+                WebkitBackdropFilter: 'blur(2px)'
+              }}
+            />
+          </div>
+        )}
+
         <div className="footer-container">
           <div className="footer-grid scroll-stagger-parent">
             {/* Col 1: Brand & Founder */}

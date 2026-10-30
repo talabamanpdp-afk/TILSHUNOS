@@ -44,6 +44,8 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
   };
 
   const footerText = cms?.footer || '© 2026 TILSHUNOS · Barcha huquqlar himoyalangan';
+  const heroBgDesktop = cms?.heroBgDesktop || cms?.headerBgDesktop || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254439976_c6auer.webp';
+  const heroBgMobile = cms?.heroBgMobile || cms?.headerBgMobile || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254446169_xxtbf7.webp';
 
   return (
     <div className={`about-page-root ${dark ? 'dark' : ''}`}>
@@ -206,7 +208,39 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
       </main>
 
       {/* Footer */}
-      <footer className="about-page-footer">
+      <footer className={`about-page-footer ${(heroBgDesktop || heroBgMobile) ? 'has-custom-bg' : ''}`}>
+        {(heroBgDesktop || heroBgMobile) && (
+          <div className="holo-custom-bg-layer" aria-hidden="true">
+            {heroBgDesktop && (
+              <div
+                className={`holo-custom-bg holo-custom-bg-desktop ${heroBgMobile ? 'desktop-only-bg' : ''}`}
+                style={{
+                  backgroundImage: `url(${heroBgDesktop})`,
+                  backgroundPosition: 'center bottom'
+                }}
+              />
+            )}
+            {heroBgMobile && (
+              <div
+                className="holo-custom-bg holo-custom-bg-mobile mobile-only-bg"
+                style={{
+                  backgroundImage: `url(${heroBgMobile})`,
+                  backgroundPosition: 'center bottom'
+                }}
+              />
+            )}
+            <div
+              className="holo-custom-bg-overlay"
+              style={{
+                background: dark
+                  ? 'linear-gradient(180deg, rgba(11, 19, 43, 0.88) 0%, rgba(11, 19, 43, 0.96) 100%)'
+                  : 'linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.95) 100%)',
+                backdropFilter: 'blur(2px)',
+                WebkitBackdropFilter: 'blur(2px)'
+              }}
+            />
+          </div>
+        )}
         <div className="about-footer-container">
           <div className="about-footer-top">
             <div>
