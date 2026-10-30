@@ -5,6 +5,8 @@ export interface VocabCardData {
   translation: string;
   explanation: string;
   examplePhrase: string;
+  phonetic?: string;
+  partOfSpeech?: string;
 }
 
 export interface WritingCardData {
@@ -105,6 +107,8 @@ export const DEFAULT_PRACTICE_GUIDE: PracticeGuideConfig = {
       vocab: {
         image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80",
         word: "Persevere",
+        phonetic: "/,pɜ:sə'vɪə/",
+        partOfSpeech: "Fe'l",
         translation: "Matonat bilan davom etmoq, taslim bo‘lmaslik",
         explanation: "Qiyinchiliklar yoki tushkunliklarga qaramay, o‘z maqsad sari to‘xtovsiz intilish va qat’iyat ko‘rsatish.",
         examplePhrase: "If you persevere with daily speaking practice, natural fluency will follow."

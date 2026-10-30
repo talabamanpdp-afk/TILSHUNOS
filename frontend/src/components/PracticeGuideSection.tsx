@@ -3,7 +3,7 @@ import {
   Volume2, VolumeX, Mic, Play, Pause, RotateCcw, CheckCircle2, AlertCircle,
   Sparkles, BookOpen, PenLine, Headphones, MessageSquare, Award,
   ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Trophy, Check, ArrowRight,
-  Music, FastForward, Rewind
+  Music, FastForward, Rewind, Copy, Globe, Shield, BarChart3, User, Cpu, Users
 } from 'lucide-react';
 import {
   playSpeech, stopSpeech, startListening,
@@ -77,6 +77,16 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   const [isShadowingListening, setIsShadowingListening] = useState(false);
   const [shadowingRecognizedText, setShadowingRecognizedText] = useState('');
   const [shadowingScore, setShadowingScore] = useState<number | null>(null);
+
+  // Copy example phrase state
+  const [copiedPhrase, setCopiedPhrase] = useState(false);
+  const handleCopyExample = (text: string) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text);
+      setCopiedPhrase(true);
+      setTimeout(() => setCopiedPhrase(false), 2000);
+    }
+  };
 
   // Touch swipe support for mobile
   const touchStartX = useRef<number | null>(null);
@@ -959,12 +969,654 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         }
 
         /* ========================================================
-           MOBILE RESPONSIVENESS (< 860px & < 600px)
+           NEW MOCKUP STYLING: HEADER, CARDS, AMALIY MODUL & FEATURES
            ======================================================== */
+        .practice-header-grid {
+          display: grid;
+          grid-template-columns: 180px 1fr 180px;
+          align-items: center;
+          justify-items: center;
+          gap: 16px;
+          margin-bottom: 26px;
+          width: 100%;
+        }
+        .practice-3d-book-wrap {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+        }
+        .practice-3d-book-svg {
+          width: 150px;
+          height: 130px;
+          filter: drop-shadow(0 14px 28px rgba(59, 130, 246, 0.45));
+          animation: floatBook 4s ease-in-out infinite alternate;
+        }
+        @keyframes floatBook {
+          0% { transform: translateY(0px) rotate(0deg); }
+          100% { transform: translateY(-8px) rotate(-2deg); }
+        }
+
+        .practice-header-center {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          max-width: 680px;
+          width: 100%;
+        }
+        .practice-kicker-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 6px 16px;
+          border-radius: 9999px;
+          background: rgba(59, 130, 246, 0.12);
+          border: 1px solid rgba(96, 165, 250, 0.35);
+          color: #93c5fd;
+          font-size: 11.5px;
+          font-weight: 850;
+          letter-spacing: 0.8px;
+          text-transform: uppercase;
+          margin-bottom: 12px;
+          box-shadow: 0 0 16px rgba(59, 130, 246, 0.2);
+        }
+        .practice-kicker-pill svg {
+          color: #60a5fa;
+        }
+        .practice-gradient-text {
+          background: linear-gradient(135deg, #38bdf8 0%, #c084fc 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .practice-gradient-text-alt {
+          background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .practice-header-calligraphy {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          position: relative;
+          padding-top: 10px;
+        }
+        .practice-calligraphy-text,
+        .amaliy-calligraphy-text,
+        .feat-calligraphy-text {
+          font-family: 'Caveat', 'Comic Sans MS', 'Patrick Hand', cursive, sans-serif;
+          font-size: 17px;
+          color: #cbd5e1;
+          font-weight: 700;
+          letter-spacing: 0.2px;
+          line-height: 1.25;
+        }
+        .practice-curved-arrow-top {
+          margin-top: 6px;
+          margin-right: 18px;
+          filter: drop-shadow(0 2px 6px rgba(129, 140, 248, 0.4));
+        }
+
+        /* Slide 0: Vocab Card New Elements */
+        .practice-photo-badge {
+          position: absolute;
+          bottom: 12px;
+          left: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border-radius: 9999px;
+          background: rgba(10, 16, 32, 0.88);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: #ffffff;
+          font-size: 12px;
+          font-weight: 800;
+          z-index: 2;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        }
+        .practice-tag-new {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 12px;
+          border-radius: 9999px;
+          background: rgba(99, 102, 241, 0.18);
+          border: 1px solid rgba(129, 140, 248, 0.32);
+          color: #a5b4fc;
+          font-size: 11.5px;
+          font-weight: 800;
+          margin-bottom: 8px;
+          width: fit-content;
+        }
+        .practice-word-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          flex-wrap: wrap;
+          margin-bottom: 6px;
+        }
+        .practice-word-title-wrap {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .practice-word-title {
+          margin: 0;
+          font-size: clamp(28px, 3.2vw, 40px);
+          font-weight: 900;
+          color: #ffffff;
+          letter-spacing: -0.5px;
+        }
+        .practice-word-speaker-btn {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: rgba(59, 130, 246, 0.15);
+          border: 1px solid rgba(59, 130, 246, 0.35);
+          color: #60a5fa;
+          display: grid;
+          place-items: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .practice-word-speaker-btn:hover {
+          background: rgba(59, 130, 246, 0.3);
+          transform: scale(1.08);
+        }
+        .practice-dual-action-btns {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .practice-action-btn-listen {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 9px 18px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 800;
+          border: none;
+          cursor: pointer;
+          box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+          transition: all 0.2s;
+        }
+        .practice-action-btn-listen:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
+        }
+        .practice-action-btn-test {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 9px 18px;
+          border-radius: 12px;
+          background: rgba(20, 184, 166, 0.12);
+          border: 1.5px solid rgba(45, 212, 191, 0.4);
+          color: #2dd4bf;
+          font-size: 13px;
+          font-weight: 800;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .practice-action-btn-test:hover,
+        .practice-action-btn-test.is-active {
+          background: rgba(20, 184, 166, 0.25);
+          border-color: #2dd4bf;
+          box-shadow: 0 0 16px rgba(45, 212, 191, 0.3);
+        }
+        .practice-phonetic-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 12px;
+        }
+        .practice-phonetic-text {
+          font-size: 14.5px;
+          color: #94a3b8;
+          font-weight: 600;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+        .practice-pos-badge {
+          padding: 2px 9px;
+          border-radius: 6px;
+          background: rgba(148, 163, 184, 0.15);
+          border: 1px solid rgba(148, 163, 184, 0.2);
+          color: #cbd5e1;
+          font-size: 11px;
+          font-weight: 750;
+        }
+        .practice-trans-green {
+          font-size: 17.5px;
+          font-weight: 800;
+          color: #34d399;
+          margin-bottom: 8px;
+          line-height: 1.4;
+        }
+        .practice-explanation-text {
+          margin: 0 0 16px;
+          font-size: 14.5px;
+          color: #94a3b8;
+          line-height: 1.65;
+        }
+        .practice-example-box {
+          padding: 16px 20px;
+          border-radius: 16px;
+          background: rgba(6, 9, 19, 0.85);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .practice-example-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .practice-example-label {
+          font-size: 11px;
+          font-weight: 850;
+          letter-spacing: 0.8px;
+          color: #64748b;
+          text-transform: uppercase;
+        }
+        .practice-copy-btn {
+          background: transparent;
+          border: none;
+          color: #94a3b8;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 6px;
+          display: grid;
+          place-items: center;
+          transition: color 0.2s;
+        }
+        .practice-copy-btn:hover {
+          color: #ffffff;
+        }
+        .practice-example-sentence {
+          font-size: 15px;
+          font-style: italic;
+          color: #f1f5f9;
+          line-height: 1.6;
+        }
+        .practice-card-bottom-nav {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 14px;
+          margin-top: 26px;
+          padding-top: 18px;
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .practice-slider-circle-btn {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #94a3b8;
+          display: grid;
+          place-items: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .practice-slider-circle-btn:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.15);
+          color: #ffffff;
+        }
+        .practice-slider-circle-btn:disabled {
+          opacity: 0.35;
+          cursor: not-allowed;
+        }
+        .practice-bottom-dots {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .practice-bottom-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 3px;
+          background: rgba(255, 255, 255, 0.2);
+          transition: all 0.25s;
+          cursor: pointer;
+        }
+        .practice-bottom-dot.is-active {
+          width: 24px;
+          background: #6366f1;
+          box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+        }
+
+        /* Slide Navigation Bar (Above AMALIY MODUL) */
+        .practice-slide-nav-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin: 18px 0;
+        }
+        .nav-bar-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 24px;
+          border-radius: 9999px;
+          font-size: 14px;
+          font-weight: 800;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: none;
+        }
+        .nav-bar-btn.prev {
+          background: rgba(15, 23, 42, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: #cbd5e1;
+        }
+        .nav-bar-btn.prev:hover:not(:disabled) {
+          background: rgba(30, 41, 59, 0.9);
+          color: #ffffff;
+        }
+        .nav-bar-btn.prev:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+        .nav-bar-btn.next {
+          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+          color: #ffffff;
+          box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4);
+        }
+        .nav-bar-btn.next:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 24px rgba(99, 102, 241, 0.55);
+        }
+        .nav-bar-capsule-progress {
+          flex: 1;
+          max-width: 440px;
+          height: 36px;
+          border-radius: 9999px;
+          background: rgba(15, 23, 42, 0.7);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 16px;
+        }
+        .capsule-active-bar {
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+          opacity: 0.35;
+          border-radius: 9999px;
+          transition: width 0.3s ease;
+        }
+        .capsule-dots {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          z-index: 1;
+        }
+        .capsule-mini-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.2);
+          transition: all 0.25s;
+        }
+        .capsule-mini-dot.active {
+          background: #ffffff;
+          box-shadow: 0 0 6px #818cf8;
+        }
+        .capsule-counter-text {
+          font-size: 12.5px;
+          font-weight: 850;
+          color: #a5b4fc;
+          z-index: 1;
+        }
+
+        /* AMALIY MODUL Card (Featured banner) */
+        .practice-amaliy-card {
+          display: grid;
+          grid-template-columns: minmax(280px, 340px) 1fr minmax(200px, 240px);
+          gap: 28px;
+          align-items: center;
+          padding: 34px 40px;
+          border-radius: 28px;
+          background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 27, 75, 0.4) 100%);
+          border: 1.5px solid rgba(99, 102, 241, 0.25);
+          box-shadow: 0 16px 44px rgba(0, 0, 0, 0.4);
+          position: relative;
+          overflow: hidden;
+        }
+        .practice-amaliy-left {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .amaliy-calligraphy-wrap {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 2px;
+        }
+        .amaliy-calligraphy-arrow {
+          filter: drop-shadow(0 2px 6px rgba(129, 140, 248, 0.4));
+        }
+        .practice-amaliy-media {
+          position: relative;
+          border-radius: 20px;
+          overflow: hidden;
+          height: 200px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .practice-amaliy-media img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .amaliy-group-badge {
+          position: absolute;
+          bottom: 10px;
+          left: 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border-radius: 9999px;
+          background: rgba(15, 23, 42, 0.88);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: #ffffff;
+          font-size: 12px;
+          font-weight: 800;
+        }
+        .practice-amaliy-center {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .practice-amaliy-kicker {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 5px 12px;
+          border-radius: 9999px;
+          background: rgba(99, 102, 241, 0.16);
+          border: 1px solid rgba(129, 140, 248, 0.3);
+          color: #a5b4fc;
+          font-size: 11.5px;
+          font-weight: 850;
+          letter-spacing: 0.6px;
+          width: fit-content;
+        }
+        .practice-amaliy-title {
+          margin: 0;
+          font-size: clamp(24px, 2.5vw, 32px);
+          font-weight: 900;
+          color: #ffffff;
+          line-height: 1.25;
+        }
+        .practice-amaliy-desc {
+          margin: 0;
+          font-size: 14.5px;
+          color: #94a3b8;
+          line-height: 1.65;
+          max-width: 520px;
+        }
+        .practice-amaliy-cta-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 26px;
+          border-radius: 9999px;
+          background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+          color: #ffffff;
+          font-size: 15px;
+          font-weight: 800;
+          border: none;
+          cursor: pointer;
+          box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+          width: fit-content;
+          transition: all 0.22s;
+          margin-top: 6px;
+        }
+        .practice-amaliy-cta-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 28px rgba(124, 58, 237, 0.55);
+        }
+        .cta-play-circle {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.2);
+          display: grid;
+          place-items: center;
+        }
+        .practice-amaliy-art-right {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .amaliy-3d-laptop-svg {
+          width: 210px;
+          height: 170px;
+          filter: drop-shadow(0 14px 28px rgba(99, 102, 241, 0.4));
+        }
+
+        /* 4 Bottom Feature Pills Row */
+        .practice-features-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 20px;
+          flex-wrap: wrap;
+          margin-top: 24px;
+        }
+        .practice-features-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 14px;
+          flex: 1;
+          min-width: 0;
+        }
+        .practice-feature-card {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 18px;
+          border-radius: 16px;
+          background: rgba(15, 23, 42, 0.7);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          transition: transform 0.2s, border-color 0.2s;
+        }
+        .practice-feature-card:hover {
+          transform: translateY(-2px);
+          border-color: rgba(99, 102, 241, 0.3);
+          background: rgba(15, 23, 42, 0.85);
+        }
+        .practice-feat-icon-badge {
+          width: 38px;
+          height: 38px;
+          border-radius: 12px;
+          background: rgba(99, 102, 241, 0.15);
+          border: 1px solid rgba(99, 102, 241, 0.25);
+          color: #818cf8;
+          display: grid;
+          place-items: center;
+          flex-shrink: 0;
+        }
+        .practice-feat-text {
+          min-width: 0;
+        }
+        .practice-feat-title {
+          margin: 0;
+          font-size: 13.5px;
+          font-weight: 800;
+          color: #f8fafc;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .practice-feat-sub {
+          margin: 2px 0 0;
+          font-size: 11.5px;
+          color: #94a3b8;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .practice-features-calligraphy {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+        .feat-calligraphy-arrow {
+          filter: drop-shadow(0 2px 6px rgba(129, 140, 248, 0.4));
+        }
+
+        /* ========================================================
+           RESPONSIVE BREAKPOINTS (DESKTOP / TABLET / MOBILE)
+           ======================================================== */
+        @media (max-width: 1024px) {
+          .practice-header-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+          .practice-3d-book-wrap,
+          .practice-header-calligraphy {
+            display: none;
+          }
+          .practice-amaliy-card {
+            grid-template-columns: 1fr;
+            gap: 22px;
+            padding: 26px 20px;
+          }
+          .practice-amaliy-art-right {
+            display: none;
+          }
+          .practice-features-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
         @media (max-width: 860px) {
-          /* Hide desktop pills bar on mobile — mobile uses the side-by-side select dropdown! */
+          /* Tabs bar horizontal scroll on tablet/mobile */
           .practice-tabs-bar {
-            display: none !important;
+            justify-content: flex-start;
           }
           .practice-skill-card {
             padding: 22px 16px;
@@ -984,21 +1636,40 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           .practice-shadowing-media {
             height: 220px;
           }
-          .practice-slide-nav {
-            padding: 12px 14px;
-            justify-content: center;
+        }
+
+        @media (max-width: 640px) {
+          .practice-features-grid {
+            grid-template-columns: 1fr;
           }
-          .slide-nav-btn {
-            flex: 1;
-            justify-content: center;
-            padding: 10px 14px;
-            font-size: 12.5px;
+          .practice-features-calligraphy {
+            display: none;
           }
-          .slide-indicators {
-            order: -1;
+          .practice-slide-nav-bar {
+            flex-direction: column;
+            width: 100%;
+            gap: 12px;
+          }
+          .nav-bar-btn {
             width: 100%;
             justify-content: center;
-            margin-bottom: 6px;
+          }
+          .nav-bar-capsule-progress {
+            width: 100%;
+            max-width: 100%;
+            order: -1;
+          }
+          .practice-word-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+          }
+          .practice-dual-action-btns {
+            width: 100%;
+            justify-content: flex-start;
+          }
+          .amaliy-calligraphy-wrap {
+            display: none;
           }
         }
 
@@ -1094,117 +1765,191 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
 
       <div className="section-container">
-        {/* Header with Title and Language + Skill Module Selects */}
-        <div className="section-header scroll-reveal">
-          <span className="section-kicker" style={{ color: '#a5b4fc' }}>
-            {config.kicker || "QISQACHA KO‘ZDAN KECHIRISH"}
-          </span>
-          <h2 style={{
-            fontSize: 'clamp(28px, 4vw, 42px)',
-            fontWeight: 850,
-            letterSpacing: '-1px',
-            margin: '10px 0 14px',
-            color: '#ffffff'
-          }}>
-            {config.title || "Qisqacha ko‘zdan kechirish"}
-          </h2>
-          <p style={{
-            maxWidth: '640px',
-            margin: '0 auto 24px',
-            fontSize: '15px',
-            color: '#94a3b8',
-            lineHeight: '1.7'
-          }}>
-            {config.subtitle || "O‘rganmoqchi bo‘lgan tilingiz va ko‘nikma modulini tanlang, har bir dars turini qisqacha ko‘rib chiqing."}
-          </p>
+        {/* Header Grid: Left 3D Book SVG | Center Kicker, Title, Selects | Right Handwritten Calligraphy */}
+        <div className="practice-header-grid scroll-reveal">
+          {/* Left: 3D Blue Book Artwork with Orbital Ring */}
+          <div className="practice-3d-book-wrap">
+            <svg className="practice-3d-book-svg" viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Orbital Ring behind */}
+              <ellipse cx="80" cy="72" rx="72" ry="24" transform="rotate(-15 80 72)" stroke="url(#ringGrad)" strokeWidth="2.5" opacity="0.8" />
+              
+              {/* Book Pages bottom edge */}
+              <path d="M42 85L80 108L122 84L86 64Z" fill="#e2e8f0" filter="drop-shadow(0 6px 14px rgba(0,0,0,0.4))" />
+              <path d="M42 88L80 111L122 87L122 84L80 108L42 85Z" fill="#cbd5e1" />
+              <path d="M42 91L80 114L122 90L122 87L80 111L42 88Z" fill="#94a3b8" />
 
-          {/* Action Row: Language Select & Skill Module Select (Yonma-yon) */}
-          <div className="practice-selects-row">
-            {/* 1. Language Select Dropdown */}
-            <div className="practice-select-box">
-              <select
-                id="practice-lang-select"
-                className="practice-select-input"
-                value={selectedLang}
-                onChange={(e) => setSelectedLang(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 36px 12px 14px',
-                  borderRadius: '12px',
-                  border: isDarkMode ? '1.5px solid #9387ff' : '1.5px solid #7869f5',
-                  background: isDarkMode ? '#14243a' : '#ffffff',
-                  color: isDarkMode ? '#f8fafc' : '#0f172a',
-                  fontSize: '13.5px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  outline: 'none',
-                  appearance: 'none',
-                  WebkitAppearance: 'none',
-                  boxShadow: isDarkMode ? '0 4px 16px rgba(0,0,0,0.4)' : '0 4px 14px rgba(120, 105, 245, 0.15)'
-                }}
+              {/* 3D Book Cover */}
+              <path d="M38 78L80 104L125 78L84 54Z" fill="url(#bookCoverGrad)" filter="drop-shadow(0 12px 24px rgba(59,130,246,0.35))" />
+              <path d="M38 82L80 108L84 104L38 78Z" fill="#1d4ed8" />
+              <path d="M80 108L125 82L125 78L80 104Z" fill="#1e40af" />
+
+              {/* Spine accent */}
+              <path d="M37 78L40 82L81 107L80 104Z" fill="#60a5fa" opacity="0.6" />
+
+              {/* Book "Aa" lettermark */}
+              <text
+                x="80"
+                y="86"
+                fill="#ffffff"
+                fontSize="28"
+                fontWeight="900"
+                fontFamily="sans-serif"
+                textAnchor="middle"
+                transform="rotate(-8 80 86) skewX(-12)"
+                filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
               >
-                <option value="en">🇬🇧 English</option>
-                <option value="de">🇩🇪 Deutsch</option>
-                <option value="tr">🇹🇷 Türkçe</option>
-                <option value="ru">🇷🇺 Русский</option>
-                <option value="uz">🇺🇿 O‘zbek</option>
-              </select>
-              <div className="practice-select-icon" style={{
-                position: 'absolute',
-                right: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                pointerEvents: 'none',
-                color: isDarkMode ? '#9387ff' : '#7869f5',
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                <ChevronDown size={18} strokeWidth={2.5} />
+                Aa
+              </text>
+
+              {/* Orbital Ring front */}
+              <path d="M12 85C25 102 85 106 142 75" stroke="#38bdf8" strokeWidth="2.8" strokeLinecap="round" filter="drop-shadow(0 0 6px #38bdf8)" />
+
+              {/* Sparkles */}
+              <path d="M138 25L140 31L146 33L140 35L138 41L136 35L130 33L136 31Z" fill="#c084fc" filter="drop-shadow(0 0 4px #c084fc)" />
+              <path d="M22 42L24 47L29 49L24 51L22 56L20 51L15 49L20 47Z" fill="#38bdf8" filter="drop-shadow(0 0 4px #38bdf8)" />
+              <circle cx="145" cy="65" r="2" fill="#fff" opacity="0.8" />
+              <circle cx="28" cy="78" r="1.5" fill="#38bdf8" opacity="0.8" />
+
+              <defs>
+                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#818cf8" stopOpacity="0.1" />
+                  <stop offset="50%" stopColor="#38bdf8" />
+                  <stop offset="100%" stopColor="#c084fc" stopOpacity="0.2" />
+                </linearGradient>
+                <linearGradient id="bookCoverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#3b82f6" />
+                  <stop offset="50%" stopColor="#2563eb" />
+                  <stop offset="100%" stopColor="#1d4ed8" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          {/* Center: Kicker Pill, Heading, Subtitle & Dropdowns */}
+          <div className="practice-header-center">
+            <div className="practice-kicker-pill">
+              <Sparkles size={13} />
+              <span>{config.kicker || "QISQACHA"}</span>
+            </div>
+            
+            <h2 style={{
+              fontSize: 'clamp(28px, 4vw, 42px)',
+              fontWeight: 850,
+              letterSpacing: '-1px',
+              margin: '6px 0 12px',
+              color: '#ffffff'
+            }}>
+              Qisqacha ko‘zdan <span className="practice-gradient-text">kechiring</span>
+            </h2>
+
+            <p style={{
+              maxWidth: '640px',
+              margin: '0 auto 20px',
+              fontSize: '15px',
+              color: '#94a3b8',
+              lineHeight: '1.6'
+            }}>
+              {config.subtitle || "Til ko‘nikmalari haqida qanday shug‘ullanishni ko‘zdan kechirib chiqing!"}
+            </p>
+
+            {/* Action Row: Language Select & Skill Module Select (Yonma-yon) */}
+            <div className="practice-selects-row" style={{ marginBottom: 0 }}>
+              {/* 1. Language Select Dropdown */}
+              <div className="practice-select-box">
+                <select
+                  id="practice-lang-select"
+                  className="practice-select-input"
+                  value={selectedLang}
+                  onChange={(e) => setSelectedLang(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 36px 12px 14px',
+                    borderRadius: '12px',
+                    border: '1.5px solid rgba(99, 102, 241, 0.4)',
+                    background: 'rgba(15, 23, 42, 0.85)',
+                    color: '#f8fafc',
+                    fontSize: '13.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    outline: 'none',
+                    appearance: 'none',
+                    WebkitAppearance: 'none',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
+                  }}
+                >
+                  <option value="en">🇬🇧 GB English</option>
+                  <option value="de">🇩🇪 Deutsch</option>
+                  <option value="tr">🇹🇷 Türkçe</option>
+                  <option value="ru">🇷🇺 Русский</option>
+                  <option value="uz">🇺🇿 O‘zbek</option>
+                </select>
+                <div className="practice-select-icon" style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  pointerEvents: 'none',
+                  color: '#9387ff',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <ChevronDown size={18} strokeWidth={2.5} />
+                </div>
+              </div>
+
+              {/* 2. Skill Module Select Dropdown */}
+              <div className="practice-select-box">
+                <select
+                  id="practice-module-select"
+                  className="practice-select-input"
+                  value={currentSlide}
+                  onChange={(e) => goToSlide(Number(e.target.value))}
+                  style={{
+                    width: '100%',
+                    padding: '12px 36px 12px 14px',
+                    borderRadius: '12px',
+                    border: '1.5px solid rgba(99, 102, 241, 0.4)',
+                    background: 'rgba(15, 23, 42, 0.85)',
+                    color: '#f8fafc',
+                    fontSize: '13.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    outline: 'none',
+                    appearance: 'none',
+                    WebkitAppearance: 'none',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
+                  }}
+                >
+                  {SKILL_MODULES.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.label} ({m.sub.split(' ')[0]})
+                    </option>
+                  ))}
+                </select>
+                <div className="practice-select-icon" style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  pointerEvents: 'none',
+                  color: '#9387ff',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <ChevronDown size={18} strokeWidth={2.5} />
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* 2. Skill Module Select Dropdown (Mobile uchun chiroyli select til tanlash bilan yonma-yon) */}
-            <div className="practice-select-box">
-              <select
-                id="practice-module-select"
-                className="practice-select-input"
-                value={currentSlide}
-                onChange={(e) => goToSlide(Number(e.target.value))}
-                style={{
-                  width: '100%',
-                  padding: '12px 36px 12px 14px',
-                  borderRadius: '12px',
-                  border: isDarkMode ? '1.5px solid #9387ff' : '1.5px solid #7869f5',
-                  background: isDarkMode ? '#14243a' : '#ffffff',
-                  color: isDarkMode ? '#f8fafc' : '#0f172a',
-                  fontSize: '13.5px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  outline: 'none',
-                  appearance: 'none',
-                  WebkitAppearance: 'none',
-                  boxShadow: isDarkMode ? '0 4px 16px rgba(0,0,0,0.4)' : '0 4px 14px rgba(120, 105, 245, 0.15)'
-                }}
-              >
-                {SKILL_MODULES.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.label} ({m.sub.split(' ')[0]})
-                  </option>
-                ))}
-              </select>
-              <div className="practice-select-icon" style={{
-                position: 'absolute',
-                right: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                pointerEvents: 'none',
-                color: isDarkMode ? '#9387ff' : '#7869f5',
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                <ChevronDown size={18} strokeWidth={2.5} />
-              </div>
-            </div>
+          {/* Right: Handwritten Calligraphy Note + Curved Arrow */}
+          <div className="practice-header-calligraphy">
+            <span className="practice-calligraphy-text">
+              Yangi so‘zlar —<br />katta imkoniyatlar! ✨
+            </span>
+            <svg className="practice-curved-arrow-top" width="46" height="42" viewBox="0 0 46 42" fill="none">
+              <path d="M6 6C20 4 36 12 38 32M38 32L30 28M38 32L42 22" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
         </div>
 
@@ -1236,7 +1981,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           </div>
 
           {/* ===================================================== */}
-          {/* SLIDE 0: VOCABULARY CARD                              */}
+          {/* SLIDE 0: VOCABULARY CARD (MATCHING REFERENCE MOCKUP) */}
           {/* ===================================================== */}
           {currentSlide === 0 && (
             <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
@@ -1245,13 +1990,13 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   <BookOpen size={15} /> 1. VOCABULARY (LUG‘AT & SO‘Z BOYLIGI)
                 </span>
                 <span className="practice-lang-tag">
-                  {currentLangData.flag} {currentLangData.langName}
+                  <Globe size={13} /> {currentLangData.flag} {currentLangData.langName}
                 </span>
               </div>
 
               <div className="practice-card-grid">
-                {/* Media Image */}
-                <div className="practice-card-media">
+                {/* Media Image with 12 / 50 badge */}
+                <div className="practice-card-media" style={{ position: 'relative' }}>
                   <img
                     src={currentLangData.vocab.image}
                     alt={currentLangData.vocab.word}
@@ -1259,121 +2004,92 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80';
                     }}
                   />
+                  <div className="practice-photo-badge">
+                    <BookOpen size={13} />
+                    <span>12 / 50</span>
+                  </div>
                 </div>
 
                 {/* Vocab Details & Controls */}
                 <div className="practice-content-col">
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                    <h3 style={{ margin: 0, fontSize: 'clamp(28px, 3vw, 36px)', fontWeight: 850, color: 'var(--pg-text-heading)' }}>
-                      {currentLangData.vocab.word}
-                    </h3>
+                  {/* Yangi so'z Tag */}
+                  <div className="practice-tag-new">
+                    <Sparkles size={12} />
+                    <span>Yangi so‘z</span>
+                  </div>
 
-                    {/* Word Audio & Mic Controls */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {/* Word title + Audio/Mic Action Buttons */}
+                  <div className="practice-word-row">
+                    <div className="practice-word-title-wrap">
+                      <h3 className="practice-word-title">
+                        {currentLangData.vocab.word}
+                      </h3>
                       <button
                         onClick={() => handlePlayTTS(currentLangData.vocab.word)}
+                        className="practice-word-speaker-btn"
                         title="So‘z talaffuzini tinglash"
-                        style={{
-                          width: '44px',
-                          height: '44px',
-                          borderRadius: '12px',
-                          border: '1px solid var(--pg-box-border)',
-                          background: activeSpeakingText === currentLangData.vocab.word ? 'var(--pg-purple)' : 'var(--pg-box-bg)',
-                          color: activeSpeakingText === currentLangData.vocab.word ? '#fff' : 'var(--pg-purple)',
-                          display: 'grid',
-                          placeItems: 'center',
-                          cursor: 'pointer'
-                        }}
                       >
-                        {activeSpeakingText === currentLangData.vocab.word ? <VolumeX size={19} /> : <Volume2 size={19} />}
+                        {activeSpeakingText === currentLangData.vocab.word ? <VolumeX size={17} /> : <Volume2 size={17} />}
+                      </button>
+                    </div>
+
+                    {/* Dual Action Buttons: Tinglash (Blue) & Sinash (Teal) */}
+                    <div className="practice-dual-action-btns">
+                      <button
+                        onClick={() => handlePlayTTS(currentLangData.vocab.word)}
+                        className="practice-action-btn-listen"
+                        title="Talaffuzni tinglash"
+                      >
+                        <Volume2 size={15} />
+                        <span>Tinglash</span>
                       </button>
                       <button
                         onClick={handleTestVocabWord}
-                        title="So‘zni o‘zingiz aytib ko‘ring (Mikrofon)"
-                        style={{
-                          width: '44px',
-                          height: '44px',
-                          borderRadius: '12px',
-                          border: '1px solid var(--pg-box-border)',
-                          background: isListeningVocabWord ? '#ef4444' : 'var(--pg-box-bg)',
-                          color: isListeningVocabWord ? '#fff' : '#10b981',
-                          display: 'grid',
-                          placeItems: 'center',
-                          cursor: 'pointer',
-                          animation: isListeningVocabWord ? 'pulse 1s infinite' : 'none'
-                        }}
+                        className={`practice-action-btn-test ${isListeningVocabWord ? 'is-active' : ''}`}
+                        title="Talaffuzingizni mikrofonda sinash"
                       >
-                        <Mic size={19} />
+                        <Mic size={15} />
+                        <span>{isListeningVocabWord ? 'Eshitilmoqda...' : 'Sinash'}</span>
                       </button>
                     </div>
+                  </div>
+
+                  {/* Phonetic & Part of speech */}
+                  <div className="practice-phonetic-row">
+                    <span className="practice-phonetic-text">
+                      {currentLangData.vocab.phonetic || "/,pɜ:sə'vɪə/"}
+                    </span>
+                    <span className="practice-pos-badge">
+                      {currentLangData.vocab.partOfSpeech || "Fe'l"}
+                    </span>
                   </div>
 
                   {/* Translation & Definition */}
                   <div>
-                    <div style={{ fontSize: '17px', fontWeight: 750, color: 'var(--pg-green-text)', marginBottom: '6px' }}>
+                    <div className="practice-trans-green">
                       {currentLangData.vocab.translation}
                     </div>
-                    <p style={{ margin: 0, fontSize: '15px', color: 'var(--pg-text-muted)', lineHeight: '1.7' }}>
+                    <p className="practice-explanation-text">
                       {currentLangData.vocab.explanation}
                     </p>
                   </div>
 
-                  {/* Example Phrase Card */}
-                  <div style={{
-                    padding: '18px',
-                    background: 'var(--pg-box-bg)',
-                    borderRadius: '16px',
-                    border: '1px solid var(--pg-box-border)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--pg-text-muted)', textTransform: 'uppercase' }}>
-                        Namuna gap (Example Phrase):
+                  {/* Example Phrase Card with Copy Icon */}
+                  <div className="practice-example-box">
+                    <div className="practice-example-head">
+                      <span className="practice-example-label">
+                        NAMUNA GAP (EXAMPLE PHRASE):
                       </span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <button
-                          onClick={() => handlePlayTTS(currentLangData.vocab.examplePhrase)}
-                          title="Gapni tinglash"
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            border: '1px solid var(--pg-box-border)',
-                            background: 'var(--pg-card-bg)',
-                            color: 'var(--pg-purple)',
-                            fontSize: '12px',
-                            fontWeight: 750,
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '5px'
-                          }}
-                        >
-                          <Volume2 size={14} /> Tinglash
-                        </button>
-                        <button
-                          onClick={handleTestVocabPhrase}
-                          title="Gapni o‘qib aytib ko‘ring"
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            border: '1px solid var(--pg-box-border)',
-                            background: isListeningVocabPhrase ? '#ef4444' : 'var(--pg-card-bg)',
-                            color: isListeningVocabPhrase ? '#fff' : '#10b981',
-                            fontSize: '12px',
-                            fontWeight: 750,
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '5px'
-                          }}
-                        >
-                          <Mic size={14} /> {isListeningVocabPhrase ? 'Eshitilmoqda...' : 'Sinash'}
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleCopyExample(currentLangData.vocab.examplePhrase)}
+                        className="practice-copy-btn"
+                        title={copiedPhrase ? "Nusxa olindi!" : "Gapdan nusxa olish"}
+                      >
+                        {copiedPhrase ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+                      </button>
                     </div>
-                    <div style={{ fontSize: '15.5px', fontStyle: 'italic', color: 'var(--pg-text-main)', lineHeight: '1.6' }}>
+
+                    <div className="practice-example-sentence">
                       "{currentLangData.vocab.examplePhrase}"
                     </div>
 
@@ -1408,6 +2124,36 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     )}
                   </div>
                 </div>
+              </div>
+
+              {/* Bottom Card Dots & Pagination */}
+              <div className="practice-card-bottom-nav">
+                <button
+                  onClick={handlePrevSlide}
+                  disabled={currentSlide === 0}
+                  className="practice-slider-circle-btn"
+                  title="Oldingi modul"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <div className="practice-bottom-dots">
+                  {SKILL_MODULES.map((mod) => (
+                    <span
+                      key={mod.id}
+                      onClick={() => goToSlide(mod.id)}
+                      className={`practice-bottom-dot ${currentSlide === mod.id ? 'is-active' : ''}`}
+                      title={mod.label}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={handleNextSlide}
+                  disabled={currentSlide === SKILL_MODULES.length - 1}
+                  className="practice-slider-circle-btn"
+                  title="Keyingi modul"
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
             </div>
           )}
@@ -2247,36 +2993,40 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           )}
 
           {/* ===================================================== */}
-          {/* SLIDE NAVIGATION CONTROLS (OLDINGI / KEYINGI / DOTS) */}
+          {/* SLIDE NAVIGATION CONTROLS (IMAGE 2 MATCHING BAR)      */}
           {/* ===================================================== */}
-          <div className="practice-slide-nav">
+          <div className="practice-slide-nav-bar">
             <button
               onClick={handlePrevSlide}
               disabled={currentSlide === 0}
-              className="slide-nav-btn prev"
+              className="nav-bar-btn prev"
             >
               <ChevronLeft size={18} />
               <span>Oldingi modul</span>
             </button>
 
-            {/* Dot Indicators */}
-            <div className="slide-indicators">
-              {SKILL_MODULES.map((mod) => (
-                <button
-                  key={mod.id}
-                  onClick={() => goToSlide(mod.id)}
-                  className={`slide-dot ${currentSlide === mod.id ? 'active' : ''}`}
-                  title={mod.label}
-                />
-              ))}
-              <span className="slide-counter-badge">
+            {/* Modern Capsule Progress Indicator */}
+            <div className="nav-bar-capsule-progress">
+              <div
+                className="capsule-active-bar"
+                style={{ width: `${((currentSlide + 1) / SKILL_MODULES.length) * 100}%` }}
+              />
+              <div className="capsule-dots">
+                {SKILL_MODULES.map((mod) => (
+                  <span
+                    key={mod.id}
+                    className={`capsule-mini-dot ${currentSlide >= mod.id ? 'active' : ''}`}
+                  />
+                ))}
+              </div>
+              <span className="capsule-counter-text">
                 {currentSlide + 1} / {SKILL_MODULES.length}
               </span>
             </div>
 
             <button
               onClick={handleNextSlide}
-              className="slide-nav-btn next"
+              className="nav-bar-btn next"
             >
               <span>{currentSlide === SKILL_MODULES.length - 1 ? 'Ro‘yxatdan o‘tish' : 'Keyingi modul'}</span>
               <ChevronRight size={18} />
@@ -2284,62 +3034,206 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           </div>
 
           {/* ===================================================== */}
-          {/* BOTTOM CARD: AMALIY QO'LLANMA (ADMIN SOZLAYDI & RASM BILAN) */}
+          {/* FEATURED BANNER: AMALIY MODUL (MATCHING IMAGE 2)      */}
           {/* ===================================================== */}
-          <div className={`practice-skill-card practice-bottom-card ${isDarkMode ? 'dark-card' : ''}`}>
-            <div className="practice-card-grid">
-              {/* Media Image: Admin yuklagan rasm */}
-              <div className="practice-card-media" style={{ height: '280px' }}>
+          <div className={`practice-amaliy-card ${isDarkMode ? 'dark-card' : ''}`}>
+            {/* Left Column: Calligraphy Note & Student Learning Photo */}
+            <div className="practice-amaliy-left">
+              <div className="amaliy-calligraphy-wrap">
+                <span className="amaliy-calligraphy-text">Birgalikda o‘rganish — osonroq!</span>
+                <svg className="amaliy-calligraphy-arrow" width="34" height="26" viewBox="0 0 34 26" fill="none">
+                  <path d="M4 4C14 2 26 8 28 20M28 20L22 17M28 20L31 13" stroke="#818cf8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+
+              <div className="practice-amaliy-media">
                 <img
                   src={config.bottomBannerImage || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80"}
-                  alt={config.bottomBannerTitle || "Amaliy qo‘llanma"}
+                  alt={config.bottomBannerTitle || "Amaliy modul"}
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80';
                   }}
                 />
+                <div className="amaliy-group-badge">
+                  <Users size={14} />
+                  <span>4-8 kishilik guruh</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Center Column: Badge, Title, Desc & Boshlash Button */}
+            <div className="practice-amaliy-center">
+              <div className="practice-amaliy-kicker">
+                <Users size={14} />
+                <span>{config.bottomBannerKicker || "AMALIY MODUL"}</span>
               </div>
 
-              {/* Content Column: Kicker, Title, Description & Action Button */}
-              <div className="practice-content-col" style={{ justifyContent: 'center' }}>
-                <div>
-                  <span className="practice-card-badge" style={{ marginBottom: '12px' }}>
-                    <Sparkles size={14} /> {config.bottomBannerKicker || "AMALIY QO‘LLANMA"}
+              <h3 className="practice-amaliy-title">
+                O‘zingizni amalda <span className="practice-gradient-text-alt">sinab ko‘ring</span>
+              </h3>
+
+              <p className="practice-amaliy-desc">
+                {config.bottomBannerDesc || "7 ta ko‘nikma moduli bo‘yicha to‘liq interaktiv mashqlar, AI repetitor va shaxsiy testlarni boshlang."}
+              </p>
+
+              <div>
+                <button
+                  id="try-yourself-btn"
+                  onClick={() => onBegin('trial')}
+                  className="practice-amaliy-cta-btn"
+                >
+                  <span className="cta-play-circle">
+                    <Play size={13} fill="#ffffff" color="#ffffff" style={{ marginLeft: '2px' }} />
                   </span>
-                  <h3 style={{ margin: '4px 0 10px', fontSize: 'clamp(24px, 2.5vw, 32px)', fontWeight: 850, color: 'var(--pg-text-heading)' }}>
-                    {config.bottomBannerTitle || "O‘zingizni amalda sinab ko‘ring"}
-                  </h3>
-                  <p style={{ margin: '0 0 22px', fontSize: '15px', color: 'var(--pg-text-muted)', lineHeight: '1.7' }}>
-                    {config.bottomBannerDesc || "7 ta ko‘nikma moduli bo‘yicha to‘liq interaktiv mashqlar, AI repetitor va shaxsiy testlarni boshlang."}
-                  </p>
-                </div>
+                  <span>{config.bottomBannerBtnText || "Boshlash"}</span>
+                  <ChevronRight size={17} />
+                </button>
+              </div>
+            </div>
 
-                <div>
-                  <button
-                    id="try-yourself-btn"
-                    onClick={() => onBegin('trial')}
-                    className="primary-btn practice-cta-action-btn"
-                    style={{
-                      padding: '14px 28px',
-                      borderRadius: '14px',
-                      fontSize: '15px',
-                      fontWeight: 800,
-                      background: 'linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%)',
-                      color: '#fff',
-                      boxShadow: '0 8px 24px rgba(120, 105, 245, 0.4)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '9px',
-                      cursor: 'pointer',
-                      transition: 'all 0.25s ease',
-                      border: 'none'
-                    }}
-                  >
-                    <Sparkles size={18} />
-                    <span>{config.bottomBannerBtnText || config.ctaButtonText || "O‘zingizni sinab ko‘ring"}</span>
-                    <ArrowRight size={17} />
-                  </button>
+            {/* Right Column: 3D Laptop with Graduation Cap, AI Cube & Books */}
+            <div className="practice-amaliy-art-right">
+              <svg className="amaliy-3d-laptop-svg" viewBox="0 0 220 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Background Glow */}
+                <circle cx="110" cy="90" r="75" fill="url(#laptopGlow)" opacity="0.38" />
+                
+                {/* Stack of books beneath laptop */}
+                <path d="M125 155L190 145L200 155L135 165Z" fill="#1e293b" />
+                <path d="M135 165L200 155L200 162L135 172Z" fill="#3b82f6" />
+                <path d="M125 145L185 136L195 145L135 154Z" fill="#6366f1" />
+                
+                {/* Laptop base */}
+                <path d="M45 145L175 145L195 162L25 162Z" fill="url(#laptopBaseGrad)" filter="drop-shadow(0 10px 18px rgba(0,0,0,0.5))" />
+                <rect x="95" y="148" width="30" height="4" rx="2" fill="#94a3b8" />
+                
+                {/* Laptop screen body */}
+                <rect x="52" y="55" width="116" height="85" rx="8" transform="skewX(-6)" fill="#0f172a" stroke="#3b82f6" strokeWidth="2.5" />
+                {/* Screen display */}
+                <rect x="57" y="60" width="104" height="73" rx="5" transform="skewX(-6)" fill="url(#screenGrad)" />
+                
+                {/* Code / interface lines on screen */}
+                <line x1="68" y1="74" x2="110" y2="74" stroke="#60a5fa" strokeWidth="2.5" strokeLinecap="round" />
+                <line x1="68" y1="84" x2="135" y2="84" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" />
+                <line x1="68" y1="94" x2="120" y2="94" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" />
+                <line x1="68" y1="104" x2="140" y2="104" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="140" cy="74" r="5" fill="#34d399" />
+                
+                {/* Floating Chat Bubble */}
+                <g filter="drop-shadow(0 4px 10px rgba(0,0,0,0.3))">
+                  <rect x="150" y="80" width="36" height="24" rx="8" fill="#3b82f6" />
+                  <circle cx="160" cy="92" r="2" fill="#fff" />
+                  <circle cx="168" cy="92" r="2" fill="#fff" />
+                  <circle cx="176" cy="92" r="2" fill="#fff" />
+                </g>
+                
+                {/* Graduation Cap (Mortarboard) */}
+                <g transform="translate(100, 22) rotate(-8)">
+                  <polygon points="35,0 70,12 35,24 0,12" fill="#1e1b4b" stroke="#6366f1" strokeWidth="1.5" />
+                  <polygon points="35,0 70,12 35,24 0,12" fill="url(#capGrad)" />
+                  <path d="M15 17L15 26C15 32 55 32 55 26L55 17" fill="#1e1b4b" stroke="#4338ca" strokeWidth="1" />
+                  {/* Tassel */}
+                  <circle cx="35" cy="12" r="2.5" fill="#fbbf24" />
+                  <path d="M35 12C38 18 48 22 50 30" stroke="#fbbf24" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+                  <rect x="48" y="30" width="4" height="6" rx="1" fill="#fbbf24" />
+                </g>
+
+                {/* Floating 3D "AI" Cube */}
+                <g transform="translate(20, 95)" filter="drop-shadow(0 6px 14px rgba(59,130,246,0.4))">
+                  {/* Cube top */}
+                  <polygon points="20,0 35,8 20,16 5,8" fill="#60a5fa" />
+                  {/* Cube left */}
+                  <polygon points="5,8 20,16 20,34 5,26" fill="#2563eb" />
+                  {/* Cube right */}
+                  <polygon points="20,16 35,8 35,26 20,34" fill="#1d4ed8" />
+                  {/* AI text on cube */}
+                  <text x="13" y="26" fill="#ffffff" fontSize="11" fontWeight="800" fontFamily="sans-serif">AI</text>
+                </g>
+
+                {/* Sparkles */}
+                <path d="M190 40L193 48L201 51L193 54L190 62L187 54L179 51L187 48Z" fill="#38bdf8" />
+                <path d="M40 45L42 50L47 52L42 54L40 59L38 54L33 52L38 50Z" fill="#c084fc" />
+
+                <defs>
+                  <radialGradient id="laptopGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                  </radialGradient>
+                  <linearGradient id="laptopBaseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#1e293b" />
+                    <stop offset="50%" stopColor="#334155" />
+                    <stop offset="100%" stopColor="#1e293b" />
+                  </linearGradient>
+                  <linearGradient id="screenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#0b132b" />
+                    <stop offset="100%" stopColor="#1e1b4b" />
+                  </linearGradient>
+                  <linearGradient id="capGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#4338ca" />
+                    <stop offset="100%" stopColor="#1e1b4b" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          {/* ===================================================== */}
+          {/* 4 FEATURE PILLS ROW (MATCHING IMAGE 2 BOTTOM ROW)     */}
+          {/* ===================================================== */}
+          <div className="practice-features-wrapper">
+            <div className="practice-features-grid">
+              {/* Feature 1 */}
+              <div className="practice-feature-card">
+                <div className="practice-feat-icon-badge">
+                  <User size={18} />
+                </div>
+                <div className="practice-feat-text">
+                  <h4 className="practice-feat-title">Interaktiv mashqlar</h4>
+                  <p className="practice-feat-sub">Nazariya + amaliyot</p>
                 </div>
               </div>
+
+              {/* Feature 2 */}
+              <div className="practice-feature-card">
+                <div className="practice-feat-icon-badge">
+                  <Cpu size={18} />
+                </div>
+                <div className="practice-feat-text">
+                  <h4 className="practice-feat-title">AI repetitor</h4>
+                  <p className="practice-feat-sub">Har doim yoningizda</p>
+                </div>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="practice-feature-card">
+                <div className="practice-feat-icon-badge">
+                  <Shield size={18} />
+                </div>
+                <div className="practice-feat-text">
+                  <h4 className="practice-feat-title">Shaxsiy testlar</h4>
+                  <p className="practice-feat-sub">Bilimingizni tekshiring</p>
+                </div>
+              </div>
+
+              {/* Feature 4 */}
+              <div className="practice-feature-card">
+                <div className="practice-feat-icon-badge">
+                  <BarChart3 size={18} />
+                </div>
+                <div className="practice-feat-text">
+                  <h4 className="practice-feat-title">Progress kuzatuvi</h4>
+                  <p className="practice-feat-sub">Natijangizni ko‘ring</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Calligraphy Note on Right */}
+            <div className="practice-features-calligraphy">
+              <span className="feat-calligraphy-text">
+                Yangi bilimlar —<br />yangi imkoniyatlar! ✨
+              </span>
+              <svg className="feat-calligraphy-arrow" width="34" height="26" viewBox="0 0 34 26" fill="none">
+                <path d="M4 4C12 2 24 6 26 18M26 18L20 15M26 18L29 11" stroke="#818cf8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
           </div>
         </div>
