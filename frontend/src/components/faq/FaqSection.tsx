@@ -563,3 +563,4 @@ export function FaqSection({ faqs, dark }: FaqSectionProps) {
     </section>
   );
 }
+

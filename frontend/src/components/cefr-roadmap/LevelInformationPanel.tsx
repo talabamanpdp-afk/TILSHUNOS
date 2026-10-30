@@ -89,6 +89,52 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
         overflow: 'hidden'
       }}
     >
+      {/* Scoped CSS styles for LevelInformationPanel & Mobile single-column stacking */}
+      <style>{`
+        .cefr-wyl-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+        }
+        .cefr-wyl-card {
+          padding: 12px 14px;
+          border-radius: 12px;
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          min-height: 62px;
+          transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .cefr-wyl-card:hover {
+          transform: translateY(-1px);
+        }
+
+        /* Mobile responsive: 4 ta to'rtburchak ketma-ket (1 ustun qilib) joylashadi */
+        @media (max-width: 768px) {
+          .cefr-info-panel {
+            padding: 20px 16px !important;
+            border-radius: 20px !important;
+            gap: 18px !important;
+          }
+          .cefr-wyl-grid {
+            grid-template-columns: 1fr !important;
+            gap: 9px !important;
+          }
+          .cefr-wyl-card {
+            padding: 11px 14px !important;
+            min-height: auto !important;
+            align-items: center !important;
+            gap: 12px !important;
+          }
+          .cefr-wyl-title-text {
+            font-size: 13px !important;
+            line-height: 1.38 !important;
+            white-space: normal !important;
+            word-break: normal !important;
+            overflow-wrap: break-word !important;
+          }
+        }
+      `}</style>
       {/* Top Ambient Glow matching level color */}
       <div
         style={{
@@ -365,38 +411,26 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
           Nimalarni o‘rganasiz
         </span>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-            gap: '10px'
-          }}
-        >
+        <div className="cefr-wyl-grid">
           {level.whatYouLearn.map((item, idx) => (
             <div
               key={idx}
+              className="cefr-wyl-card"
               style={{
-                padding: '12px 14px',
-                borderRadius: '12px',
                 background: dark ? 'rgba(255, 255, 255, 0.025)' : 'rgba(0, 0, 0, 0.02)',
-                border: dark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid rgba(0, 0, 0, 0.05)',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '10px',
-                minHeight: '62px'
+                border: dark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid rgba(0, 0, 0, 0.05)'
               }}
             >
               <div
                 style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '9px',
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '10px',
                   background: `${level.color}15`,
                   color: level.color,
                   display: 'grid',
                   placeItems: 'center',
-                  flexShrink: 0,
-                  marginTop: '2px'
+                  flexShrink: 0
                 }}
               >
                 {renderCategoryIcon(item.iconName)}
@@ -406,13 +440,15 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
                   {getCategoryLabel(item.category)}
                 </span>
                 <strong
+                  className="cefr-wyl-title-text"
                   style={{
-                    fontSize: '12px',
+                    fontSize: '12.5px',
                     color: 'var(--text)',
                     fontWeight: 750,
-                    lineHeight: '1.35',
+                    lineHeight: '1.38',
                     whiteSpace: 'normal',
-                    wordBreak: 'break-word',
+                    wordBreak: 'normal',
+                    overflowWrap: 'break-word',
                     display: 'block'
                   }}
                 >
