@@ -74,17 +74,16 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
       {/* Scoped CSS Styles matching the uploaded mockup */}
       <style>{`
         .about-showcase-section {
-          background: #f8fafc;
-          color: #0f172a;
-          padding: 90px 20px 100px;
+          background: linear-gradient(180deg, #060913 0%, #0a1022 50%, #060913 100%);
+          color: #ffffff;
+          padding: 85px 20px 105px;
           position: relative;
           overflow: hidden;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          transition: background-color 0.25s ease, color 0.25s ease;
         }
         .about-showcase-section.dark {
-          background: #0b0f19;
-          color: #f1f5f9;
+          background: linear-gradient(180deg, #060913 0%, #0a1022 50%, #060913 100%);
+          color: #ffffff;
         }
 
         /* Ambient subtle backdrop blobs */
@@ -159,13 +158,13 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
           line-height: 1.25;
           letter-spacing: -0.6px;
           margin: 0 0 18px;
-          color: #0f172a;
+          color: #ffffff;
         }
         .about-showcase-section.dark .as-main-heading {
           color: #ffffff;
         }
         .as-highlight-brand {
-          color: #2563eb;
+          color: #38bdf8;
         }
         .about-showcase-section.dark .as-highlight-brand {
           color: #38bdf8;
@@ -174,11 +173,13 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
         .as-paragraph {
           font-size: 15.5px;
           line-height: 1.7;
-          color: #475569;
+          color: #94a3b8;
           margin: 0 0 28px;
           max-width: 560px;
         }
         .about-showcase-section.dark .as-paragraph {
+          color: #94a3b8;
+        }
           color: #94a3b8;
         }
 
@@ -442,21 +443,21 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
         }
 
         .as-value-card {
-          background: #ffffff;
-          border: 1px solid rgba(0, 0, 0, 0.08);
+          background: rgba(15, 23, 42, 0.72);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 20px;
           padding: 20px 18px;
           display: flex;
           flex-direction: column;
           align-items: flex-start;
           text-align: left;
-          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.03);
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
           transition: all 0.28s ease;
           position: relative;
           overflow: hidden;
         }
         .about-showcase-section.dark .as-value-card {
-          background: #14192b;
+          background: rgba(15, 23, 42, 0.72);
           border-color: rgba(255, 255, 255, 0.08);
           box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
         }

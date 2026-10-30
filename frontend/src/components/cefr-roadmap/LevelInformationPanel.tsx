@@ -72,15 +72,14 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
     <div
       className="cefr-info-panel"
       style={{
-        background: dark ? 'rgba(21, 21, 34, 0.88)' : 'rgba(255, 255, 255, 0.95)',
+        background: 'rgba(15, 23, 42, 0.85)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
-        border: dark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
         borderRadius: '24px',
         padding: '28px',
-        boxShadow: dark
-          ? '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-          : '0 20px 50px rgba(53, 108, 246, 0.08), 0 2px 10px rgba(0, 0, 0, 0.03)',
+        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+        color: '#ffffff',
         display: 'flex',
         flexDirection: 'column',
         gap: '22px',

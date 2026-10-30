@@ -60,7 +60,8 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
       style={{
         padding: '80px 20px',
         position: 'relative',
-        background: dark ? 'transparent' : 'rgba(240, 246, 255, 0.4)'
+        background: 'linear-gradient(180deg, #060913 0%, #0a1022 50%, #060913 100%)',
+        color: '#ffffff'
       }}
     >
       <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
@@ -107,7 +108,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
               fontWeight: 900,
               letterSpacing: '-1.5px',
               lineHeight: 1.15,
-              color: 'var(--text)'
+              color: '#ffffff'
             }}
           >
             Ingliz tili sayohatingiz{' '}
@@ -129,7 +130,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
               margin: '0 0 24px',
               fontSize: '15.5px',
               lineHeight: '1.7',
-              color: 'var(--muted)',
+              color: '#94a3b8',
               maxWidth: '580px'
             }}
           >

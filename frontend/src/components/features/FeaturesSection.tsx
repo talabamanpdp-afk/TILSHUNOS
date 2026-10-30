@@ -108,7 +108,7 @@ export function FeaturesSection({
       {/* Scoped CSS strictly matching reference image 2 */}
       <style>{`
         .feat-modern-section {
-          background: linear-gradient(180deg, #050a18 0%, #071024 50%, #050a18 100%);
+          background: linear-gradient(180deg, #060913 0%, #0a1022 50%, #060913 100%);
           color: #ffffff;
           padding: 85px 20px 105px;
           position: relative;
@@ -685,3 +685,4 @@ export function FeaturesSection({
     </section>
   );
 }
+

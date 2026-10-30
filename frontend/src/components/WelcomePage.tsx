@@ -13,6 +13,7 @@ import {
 import { PracticeGuideSection } from './PracticeGuideSection';
 import { PracticeGuideConfig } from '../data/practiceGuideData';
 import { CEFRRoadmapSection } from './cefr-roadmap/CEFRRoadmapSection';
+import { SkillsSection } from './skills/SkillsSection';
 import { LearningProcessSection } from './learning-process/LearningProcessSection';
 import { FeaturesSection } from './features/FeaturesSection';
 import { AboutSection } from './about/AboutSection';
@@ -1021,39 +1022,15 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         dark={dark}
       />
 
-      {/* 5. LEARNING SKILLS SECTION */}
-      <section id="skills" className="welcome-skills-section">
-        <div className="section-container">
-          <div className="section-header scroll-reveal">
-            <span className="section-kicker">{skillsKicker}</span>
-            <h2>{skillsTitle}</h2>
-            <p>{skillsSubtitle}</p>
-          </div>
-
-          <div className="skills-grid scroll-stagger-parent">
-            {skillsList.map((skill, idx) => {
-              const iconMap: Record<string, any> = {
-                reading: BookOpen,
-                writing: PenLine,
-                listening: Headphones,
-                speaking: Mic2,
-                vocab: Layers
-              };
-              const Icon = iconMap[skill.key] || [BookOpen, PenLine, Headphones, Mic2, Layers][idx % 5];
-              const color = skill.color || ['#356cf6', '#8b5cf6', '#0ea5e9', '#10b981', '#f59e0b'][idx % 5];
-              return (
-                <div key={skill.title || idx} className="skill-card">
-                  <div className="skill-icon-wrap" style={{ background: `${color}15`, color }}>
-                    <Icon size={24} />
-                  </div>
-                  <h3>{skill.title}</h3>
-                  <p>{skill.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* 5. LEARNING SKILLS SECTION (MATCHING REFERENCE IMAGE 2) */}
+      <SkillsSection
+        kicker={skillsKicker}
+        title={skillsTitle}
+        subtitle={skillsSubtitle}
+        skills={skillsList}
+        dark={dark}
+        onSelectSkill={(key) => onBegin('trial')}
+      />
 
       {/* 6. HOW IT WORKS (7 CONNECTED STEPS WITH DUAL SCREENSHOTS) */}
       <LearningProcessSection

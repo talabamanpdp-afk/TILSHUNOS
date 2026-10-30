@@ -422,6 +422,13 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         /* ========================================================
            RESPONSIVE CONTAINER & SLIDER LAYOUT
            ======================================================== */
+        .welcome-preview-section {
+          background: linear-gradient(180deg, #060913 0%, #0a1022 50%, #060913 100%) !important;
+          color: #ffffff !important;
+          border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
         .practice-slider-wrapper {
           max-width: 1180px;
           margin: 0 auto;
@@ -450,9 +457,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           gap: 8px;
           padding: 11px 18px;
           border-radius: 14px;
-          background: var(--pg-box-bg, #f8fafc);
-          border: 1px solid var(--pg-box-border, rgba(0, 0, 0, 0.08));
-          color: var(--pg-text-muted, #64748b);
+          background: rgba(15, 23, 42, 0.72) !important;
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+          color: #94a3b8 !important;
           font-size: 13.5px;
           font-weight: 750;
           cursor: pointer;
@@ -461,13 +468,14 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           flex-shrink: 0;
         }
         .practice-tab-pill:hover {
-          color: var(--pg-purple, #7869f5);
+          color: #ffffff !important;
+          border-color: rgba(120, 105, 245, 0.4) !important;
           transform: translateY(-2px);
         }
         .practice-tab-pill.active {
-          background: linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%);
+          background: linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%) !important;
           color: #ffffff !important;
-          border-color: transparent;
+          border-color: transparent !important;
           box-shadow: 0 6px 20px rgba(120, 105, 245, 0.35);
           transform: translateY(-2px);
         }
@@ -476,28 +484,28 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
            CARD COMPONENT — DESKTOP ENLARGED (KOMPYUTER UCHUN KATTA)
            ======================================================== */
         .practice-skill-card {
-          --pg-card-bg: #ffffff;
-          --pg-card-border: rgba(0, 0, 0, 0.08);
-          --pg-card-shadow: 0 16px 48px rgba(0, 0, 0, 0.05);
-          --pg-box-bg: #f8fafc;
-          --pg-box-border: rgba(0, 0, 0, 0.08);
-          --pg-text-main: #0f172a;
-          --pg-text-heading: #0f172a;
-          --pg-text-muted: #64748b;
-          --pg-text-sub: #475569;
-          --pg-badge-bg: rgba(120, 105, 245, 0.12);
-          --pg-badge-color: #7869f5;
-          --pg-purple: #7869f5;
-          --pg-green-text: #059669;
+          --pg-card-bg: rgba(15, 23, 42, 0.75);
+          --pg-card-border: rgba(255, 255, 255, 0.08);
+          --pg-card-shadow: 0 18px 52px rgba(0, 0, 0, 0.45);
+          --pg-box-bg: rgba(6, 9, 19, 0.75);
+          --pg-box-border: rgba(255, 255, 255, 0.08);
+          --pg-text-main: #f8fafc;
+          --pg-text-heading: #ffffff;
+          --pg-text-muted: #94a3b8;
+          --pg-text-sub: #cbd5e1;
+          --pg-badge-bg: rgba(120, 105, 245, 0.16);
+          --pg-badge-color: #a5b4fc;
+          --pg-purple: #9387ff;
+          --pg-green-text: #34d399;
 
-          background: var(--pg-card-bg);
-          border: 1.5px solid var(--pg-card-border);
+          background: var(--pg-card-bg) !important;
+          border: 1.5px solid var(--pg-card-border) !important;
           border-radius: 28px;
           padding: 42px 48px;
           box-shadow: var(--pg-card-shadow);
           position: relative;
           overflow: hidden;
-          color: var(--pg-text-main);
+          color: var(--pg-text-main) !important;
           animation: slideFade 0.32s cubic-bezier(0.16, 1, 0.3, 1);
           touch-action: pan-y pinch-zoom;
         }
@@ -1088,7 +1096,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       <div className="section-container">
         {/* Header with Title and Language + Skill Module Selects */}
         <div className="section-header scroll-reveal">
-          <span className="section-kicker" style={{ color: isDarkMode ? '#a5b4fc' : '#7869f5' }}>
+          <span className="section-kicker" style={{ color: '#a5b4fc' }}>
             {config.kicker || "QISQACHA KO‘ZDAN KECHIRISH"}
           </span>
           <h2 style={{
@@ -1096,7 +1104,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             fontWeight: 850,
             letterSpacing: '-1px',
             margin: '10px 0 14px',
-            color: isDarkMode ? '#ffffff' : '#0f172a'
+            color: '#ffffff'
           }}>
             {config.title || "Qisqacha ko‘zdan kechirish"}
           </h2>
@@ -1104,7 +1112,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             maxWidth: '640px',
             margin: '0 auto 24px',
             fontSize: '15px',
-            color: isDarkMode ? '#94a3b8' : '#64748b',
+            color: '#94a3b8',
             lineHeight: '1.7'
           }}>
             {config.subtitle || "O‘rganmoqchi bo‘lgan tilingiz va ko‘nikma modulini tanlang, har bir dars turini qisqacha ko‘rib chiqing."}
