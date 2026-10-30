@@ -867,12 +867,98 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           margin-left: 8px;
         }
 
+        /* Dual Dropdowns Row (Til tanlash & Modul tanlash yonma-yon) */
+        .practice-selects-row {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          flex-wrap: wrap;
+          margin-bottom: 26px;
+          width: 100%;
+        }
+        .practice-select-box {
+          position: relative;
+          min-width: 190px;
+          flex: 1;
+          max-width: 260px;
+        }
+
+        /* Bottom CTA Banner (Amaliy qo'llanma bo'limi) */
+        .practice-bottom-cta-banner {
+          margin-top: 32px;
+          padding: 28px 36px;
+          border-radius: 24px;
+          background: linear-gradient(135deg, rgba(120, 105, 245, 0.12) 0%, rgba(91, 75, 240, 0.05) 100%);
+          border: 1.5px solid rgba(120, 105, 245, 0.25);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 20px;
+          box-shadow: 0 10px 32px rgba(120, 105, 245, 0.08);
+        }
+        .welcome-root.dark .practice-bottom-cta-banner,
+        html.dark .practice-bottom-cta-banner {
+          background: linear-gradient(135deg, rgba(120, 105, 245, 0.18) 0%, rgba(20, 36, 58, 0.85) 100%) !important;
+          border-color: rgba(147, 135, 255, 0.28) !important;
+        }
+        .practice-cta-content {
+          flex: 1;
+          min-width: 260px;
+        }
+        .practice-cta-kicker {
+          font-size: 11.5px;
+          font-weight: 850;
+          color: var(--pg-purple);
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          display: block;
+          margin-bottom: 6px;
+        }
+        .practice-cta-heading {
+          margin: 0 0 6px;
+          font-size: clamp(20px, 2.2vw, 25px);
+          font-weight: 850;
+          color: var(--pg-text-heading);
+        }
+        .practice-cta-desc {
+          margin: 0;
+          font-size: 14px;
+          color: var(--pg-text-muted);
+          line-height: 1.6;
+        }
+        .practice-cta-action-btn {
+          padding: 13px 26px;
+          border-radius: 14px;
+          font-size: 14.5px;
+          font-weight: 800;
+          background: linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%);
+          color: #fff;
+          box-shadow: 0 8px 24px rgba(120, 105, 245, 0.38);
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          cursor: pointer;
+          transition: all 0.25s ease;
+          border: none;
+          flex-shrink: 0;
+        }
+        .practice-cta-action-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 28px rgba(120, 105, 245, 0.5);
+        }
+
         /* ========================================================
-           MOBILE RESPONSIVENESS (< 860px)
+           MOBILE RESPONSIVENESS (< 860px & < 600px)
            ======================================================== */
         @media (max-width: 860px) {
+          /* Hide desktop pills bar on mobile — mobile uses the side-by-side select dropdown! */
+          .practice-tabs-bar {
+            display: none !important;
+          }
           .practice-skill-card {
-            padding: 24px 18px;
+            padding: 22px 16px;
             border-radius: 20px;
           }
           .practice-card-grid {
@@ -906,14 +992,103 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             margin-bottom: 6px;
           }
         }
+
+        @media (max-width: 600px) {
+          /* Side-by-side 2-column selects on mobile */
+          .practice-selects-row {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+            max-width: 100% !important;
+          }
+          .practice-select-box {
+            min-width: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+          }
+          .practice-select-input {
+            padding: 10px 28px 10px 10px !important;
+            font-size: 12px !important;
+            border-radius: 10px !important;
+          }
+          .practice-select-icon {
+            right: 8px !important;
+            width: 15px !important;
+            height: 15px !important;
+          }
+
+          /* Music Player 100% mobile responsive */
+          .listening-music-player {
+            padding: 14px 14px !important;
+            border-radius: 18px !important;
+            gap: 12px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+          }
+          .music-cover-art {
+            width: 46px !important;
+            height: 46px !important;
+            border-radius: 10px !important;
+          }
+          .music-meta-title {
+            font-size: 13px !important;
+          }
+          .music-meta-artist {
+            font-size: 10.5px !important;
+          }
+          .music-equalizer {
+            height: 18px !important;
+            gap: 2.5px !important;
+          }
+          .equalizer-bar {
+            width: 2.5px !important;
+          }
+          .music-controls-row {
+            padding-top: 2px !important;
+            gap: 6px !important;
+          }
+          .music-play-btn {
+            width: 44px !important;
+            height: 44px !important;
+          }
+          .music-seek-btn {
+            padding: 6px 8px !important;
+            font-size: 11px !important;
+          }
+          .music-speed-btn {
+            padding: 6px 8px !important;
+            font-size: 11px !important;
+          }
+          .music-time-row {
+            font-size: 10.5px !important;
+          }
+
+          /* Bottom CTA Banner on mobile */
+          .practice-bottom-cta-banner {
+            padding: 20px 16px !important;
+            border-radius: 18px !important;
+            text-align: center !important;
+            justify-content: center !important;
+          }
+          .practice-cta-content {
+            min-width: 0 !important;
+          }
+          .practice-cta-action-btn {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 12px 18px !important;
+            font-size: 14px !important;
+          }
+        }
       `}</style>
 
 
       <div className="section-container">
-        {/* Header with Title and Language Select Dropdown */}
+        {/* Header with Title and Language + Skill Module Selects */}
         <div className="section-header scroll-reveal">
           <span className="section-kicker" style={{ color: isDarkMode ? '#a5b4fc' : '#7869f5' }}>
-            {config.kicker || "AMALIY QO‘LLANMA"}
+            {config.kicker || "QISQACHA KO‘ZDAN KECHIRISH"}
           </span>
           <h2 style={{
             fontSize: 'clamp(28px, 4vw, 42px)',
@@ -922,7 +1097,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             margin: '10px 0 14px',
             color: isDarkMode ? '#ffffff' : '#0f172a'
           }}>
-            {config.title || "Amaliy qo‘llanma"}
+            {config.title || "Qisqacha ko‘zdan kechirish"}
           </h2>
           <p style={{
             maxWidth: '640px',
@@ -931,32 +1106,26 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             color: isDarkMode ? '#94a3b8' : '#64748b',
             lineHeight: '1.7'
           }}>
-            {config.subtitle || "O‘rganmoqchi bo‘lgan tilingizni tanlang va har bir ko‘nikma moduli bo‘yicha interaktiv mashqlarni bajaring."}
+            {config.subtitle || "O‘rganmoqchi bo‘lgan tilingiz va ko‘nikma modulini tanlang, har bir dars turini qisqacha ko‘rib chiqing."}
           </p>
 
-          {/* Action Row: Language Select + CTA Button */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '14px',
-            flexWrap: 'wrap',
-            marginBottom: '32px'
-          }}>
-            {/* Language Select Dropdown */}
-            <div style={{ position: 'relative', minWidth: '220px' }}>
+          {/* Action Row: Language Select & Skill Module Select (Yonma-yon) */}
+          <div className="practice-selects-row">
+            {/* 1. Language Select Dropdown */}
+            <div className="practice-select-box">
               <select
                 id="practice-lang-select"
+                className="practice-select-input"
                 value={selectedLang}
                 onChange={(e) => setSelectedLang(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '12px 38px 12px 16px',
+                  padding: '12px 36px 12px 14px',
                   borderRadius: '12px',
                   border: isDarkMode ? '1.5px solid #9387ff' : '1.5px solid #7869f5',
                   background: isDarkMode ? '#14243a' : '#ffffff',
                   color: isDarkMode ? '#f8fafc' : '#0f172a',
-                  fontSize: '14px',
+                  fontSize: '13.5px',
                   fontWeight: 700,
                   cursor: 'pointer',
                   outline: 'none',
@@ -965,15 +1134,15 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   boxShadow: isDarkMode ? '0 4px 16px rgba(0,0,0,0.4)' : '0 4px 14px rgba(120, 105, 245, 0.15)'
                 }}
               >
-                <option value="en">🇬🇧 English (Ingliz tili)</option>
-                <option value="de">🇩🇪 Deutsch (Nemis tili)</option>
-                <option value="tr">🇹🇷 Türkçe (Turk tili)</option>
-                <option value="ru">🇷🇺 Русский (Rus tili)</option>
-                <option value="uz">🇺🇿 O‘zbek (O‘zbek tili)</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="tr">🇹🇷 Türkçe</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="uz">🇺🇿 O‘zbek</option>
               </select>
-              <div style={{
+              <div className="practice-select-icon" style={{
                 position: 'absolute',
-                right: '14px',
+                right: '12px',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 pointerEvents: 'none',
@@ -985,30 +1154,48 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
               </div>
             </div>
 
-            {/* "O'zingizni sinab ko'ring" Button */}
-            <button
-              id="try-yourself-btn"
-              onClick={() => onBegin('register')}
-              className="primary-btn"
-              style={{
-                padding: '12px 24px',
-                borderRadius: '12px',
-                fontSize: '14px',
-                fontWeight: 800,
-                background: 'linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%)',
-                color: '#fff',
-                boxShadow: '0 6px 20px rgba(120, 105, 245, 0.35)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.25s ease'
-              }}
-            >
-              <Sparkles size={17} />
-              <span>{config.ctaButtonText || "O‘zingizni sinab ko‘ring"}</span>
-              <ArrowRight size={16} />
-            </button>
+            {/* 2. Skill Module Select Dropdown (Mobile uchun chiroyli select til tanlash bilan yonma-yon) */}
+            <div className="practice-select-box">
+              <select
+                id="practice-module-select"
+                className="practice-select-input"
+                value={currentSlide}
+                onChange={(e) => goToSlide(Number(e.target.value))}
+                style={{
+                  width: '100%',
+                  padding: '12px 36px 12px 14px',
+                  borderRadius: '12px',
+                  border: isDarkMode ? '1.5px solid #9387ff' : '1.5px solid #7869f5',
+                  background: isDarkMode ? '#14243a' : '#ffffff',
+                  color: isDarkMode ? '#f8fafc' : '#0f172a',
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  outline: 'none',
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  boxShadow: isDarkMode ? '0 4px 16px rgba(0,0,0,0.4)' : '0 4px 14px rgba(120, 105, 245, 0.15)'
+                }}
+              >
+                {SKILL_MODULES.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label} ({m.sub.split(' ')[0]})
+                  </option>
+                ))}
+              </select>
+              <div className="practice-select-icon" style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none',
+                color: isDarkMode ? '#9387ff' : '#7869f5',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                <ChevronDown size={18} strokeWidth={2.5} />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -2084,6 +2271,31 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             >
               <span>{currentSlide === SKILL_MODULES.length - 1 ? 'Ro‘yxatdan o‘tish' : 'Keyingi modul'}</span>
               <ChevronRight size={18} />
+            </button>
+          </div>
+
+          {/* ===================================================== */}
+          {/* BOTTOM CTA BANNER: AMALIY QO'LLANMA — SINAB KO'RISH */}
+          {/* ===================================================== */}
+          <div className="practice-bottom-cta-banner">
+            <div className="practice-cta-content">
+              <span className="practice-cta-kicker">AMALIY QO‘LLANMA</span>
+              <h3 className="practice-cta-heading">
+                O‘zingizni amalda sinab ko‘ring
+              </h3>
+              <p className="practice-cta-desc">
+                7 ta ko‘nikma moduli bo‘yicha to‘liq interaktiv mashqlar, AI repetitor va shaxsiy testlarni boshlang.
+              </p>
+            </div>
+
+            <button
+              id="try-yourself-btn"
+              onClick={() => onBegin('register')}
+              className="practice-cta-action-btn"
+            >
+              <Sparkles size={18} />
+              <span>O‘zingizni sinab ko‘ring</span>
+              <ArrowRight size={17} />
             </button>
           </div>
         </div>

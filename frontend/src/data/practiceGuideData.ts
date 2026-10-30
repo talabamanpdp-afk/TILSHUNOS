@@ -83,9 +83,9 @@ export interface PracticeGuideConfig {
 }
 
 export const DEFAULT_PRACTICE_GUIDE: PracticeGuideConfig = {
-  kicker: "AMALIY QO‘LLANMA",
-  title: "Amaliy qo‘llanma",
-  subtitle: "O‘rganmoqchi bo‘lgan tilingizni tanlang va har bir ko‘nikma moduli bo‘yicha interaktiv mashqlarni bajaring.",
+  kicker: "QISQACHA KO‘ZDAN KECHIRISH",
+  title: "Qisqacha ko‘zdan kechirish",
+  subtitle: "O‘rganmoqchi bo‘lgan tilingiz va ko‘nikma modulini tanlang, dars materiallarini qisqacha ko‘zdan kechiring.",
   ctaButtonText: "O‘zingizni sinab ko‘ring",
   languages: {
     en: {
