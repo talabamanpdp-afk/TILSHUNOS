@@ -650,54 +650,122 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               </button>
 
               <button
-                className="holo-mobile-hamburger"
+                className={`holo-mobile-hamburger ${mobileMenuOpen ? 'is-active' : ''}`}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Menyu"
               >
-                {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
           </div>
 
-          {/* Mobile Drawer */}
+          {/* Mobile Select-Style Dropdown Menu */}
           {mobileMenuOpen && (
-            <div className="mobile-drawer animate-fade-in">
-              <nav className="mobile-nav-links">
-                {navItems.map((item, idx) => (
-                  <a
-                    key={`m-${idx}`}
-                    href={item.href}
-                    onClick={(e) => {
-                      setMobileMenuOpen(false);
-                      if (item.action) {
-                        e.preventDefault();
-                        item.action();
-                      } else if (item.href.startsWith('#')) {
-                        const targetId = item.href.slice(1);
-                        const el = document.getElementById(targetId);
-                        if (el) {
+            <>
+              <div className="holo-mobile-scrim" onClick={() => setMobileMenuOpen(false)} />
+              <div className="holo-mobile-select-menu">
+                <div className="mobile-select-header">
+                  <span className="mobile-select-eyebrow">
+                    <Compass size={12} /> Bo‘limni tanlang
+                  </span>
+                  <span className="mobile-select-pill">TILSHUNOS</span>
+                </div>
+
+                <div className="mobile-select-list">
+                  {[
+                    {
+                      text: 'Imkoniyatlar',
+                      desc: 'Platformaning asosiy afzalliklari',
+                      href: '#features',
+                      icon: <Sparkles size={15} />,
+                      color: '#7869f5',
+                      bg: 'rgba(120, 105, 245, 0.12)'
+                    },
+                    {
+                      text: 'Biz haqimizda',
+                      desc: 'Loyiha maqsadi va asoschi',
+                      href: '#about',
+                      icon: <BookOpen size={15} />,
+                      color: '#2563eb',
+                      bg: 'rgba(37, 99, 235, 0.12)',
+                      action: () => onOpenAbout()
+                    },
+                    {
+                      text: 'Interaktiv tajriba',
+                      desc: 'Haqiqiy so‘z va dars namunasi',
+                      href: '#preview',
+                      icon: <Play size={15} />,
+                      color: '#10b981',
+                      bg: 'rgba(16, 185, 129, 0.12)'
+                    },
+                    {
+                      text: 'CEFR Xaritasi',
+                      desc: 'A1 dan C2 gacha bosqichlar',
+                      href: '#cefr',
+                      icon: <Target size={15} />,
+                      color: '#8b5cf6',
+                      bg: 'rgba(139, 92, 246, 0.12)'
+                    },
+                    {
+                      text: 'Savol-javoblar',
+                      desc: 'Ko‘p beriladigan savollar',
+                      href: '#faq',
+                      icon: <HelpCircle size={15} />,
+                      color: '#f59e0b',
+                      bg: 'rgba(245, 158, 11, 0.12)'
+                    }
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      className="mobile-select-row"
+                      onClick={(e) => {
+                        setMobileMenuOpen(false);
+                        if (item.action) {
                           e.preventDefault();
-                          el.scrollIntoView({ behavior: 'smooth' });
+                          item.action();
+                        } else if (item.href.startsWith('#')) {
+                          const targetId = item.href.slice(1);
+                          const el = document.getElementById(targetId);
+                          if (el) {
+                            e.preventDefault();
+                            el.scrollIntoView({ behavior: 'smooth' });
+                          }
                         }
-                      }
-                    }}
+                      }}
+                    >
+                      <div className="mobile-select-row-left">
+                        <span className="mobile-select-icon-box" style={{ background: item.bg, color: item.color }}>
+                          {item.icon}
+                        </span>
+                        <div className="mobile-select-row-text">
+                          <span className="mobile-select-row-title">{item.text}</span>
+                          <span className="mobile-select-row-desc">{item.desc}</span>
+                        </div>
+                      </div>
+                      <ChevronRight size={14} className="mobile-select-row-chevron" />
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mobile-select-divider" />
+
+                <div className="mobile-select-actions">
+                  <button
+                    className="mobile-select-login-btn"
+                    onClick={() => { setMobileMenuOpen(false); onBegin('login'); }}
                   >
-                    {item.text}
-                  </a>
-                ))}
-                <a href="#preview" onClick={() => setMobileMenuOpen(false)}>Interfeys ko‘rinishi</a>
-                <a href="#cefr" onClick={() => setMobileMenuOpen(false)}>CEFR Xaritasi</a>
-                <a href="#faq" onClick={() => setMobileMenuOpen(false)}>Ko‘p beriladigan savollar</a>
-              </nav>
-              <div className="mobile-drawer-footer">
-                <button className="nav-btn-secondary" style={{ width: '100%' }} onClick={() => { setMobileMenuOpen(false); onBegin('login'); }}>
-                  Kirish
-                </button>
-                <button className="holo-get-started" style={{ width: '100%', marginTop: '8px' }} onClick={() => { setMobileMenuOpen(false); onBegin('register'); }}>
-                  Boshlash
-                </button>
+                    Kirish
+                  </button>
+                  <button
+                    className="mobile-select-start-btn"
+                    onClick={() => { setMobileMenuOpen(false); onBegin('register'); }}
+                  >
+                    <span>Boshlash</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </header>
 
