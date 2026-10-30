@@ -575,6 +575,119 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         .welcome-preview-section.light-preview-section .vocab-example-box blockquote {
           color: #0f172a !important;
         }
+        /* Card Bottom Navigation (Chevrons & Dots) in Light Mode */
+        .welcome-preview-section.light-preview-section .practice-card-bottom-nav {
+          border-top: 1.5px solid rgba(226, 232, 240, 0.9) !important;
+          position: relative !important;
+          z-index: 10 !important;
+          margin-top: 28px !important;
+          padding-top: 20px !important;
+        }
+
+        /* Subtle Light Mode Wave Tint (Prevents dark blob under pagination) */
+        .welcome-preview-section.light-preview-section .practice-card-corner-wave {
+          opacity: 0.1 !important;
+          filter: saturate(0.6) !important;
+        }
+
+        /* High-contrast tactile circle buttons */
+        .welcome-preview-section.light-preview-section .practice-slider-circle-btn {
+          width: 36px !important;
+          height: 36px !important;
+          border-radius: 50% !important;
+          background: #ffffff !important;
+          border: 1.5px solid #cbd5e1 !important;
+          color: #0f172a !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+          display: grid !important;
+          place-items: center !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-slider-circle-btn svg {
+          stroke: #0f172a !important;
+          stroke-width: 2.4px !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-slider-circle-btn:hover:not(:disabled) {
+          background: #2563eb !important;
+          border-color: #2563eb !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+          transform: translateY(-1px) !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-slider-circle-btn:hover:not(:disabled) svg {
+          stroke: #ffffff !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-slider-circle-btn:disabled {
+          background: #f8fafc !important;
+          border-color: #e2e8f0 !important;
+          color: #cbd5e1 !important;
+          opacity: 0.55 !important;
+          cursor: not-allowed !important;
+          box-shadow: none !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-slider-circle-btn:disabled svg {
+          stroke: #cbd5e1 !important;
+        }
+
+        /* Light mode pill capsule for all dots */
+        .welcome-preview-section.light-preview-section .practice-bottom-dots {
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          background: #f1f5f9 !important;
+          padding: 7px 16px !important;
+          border-radius: 9999px !important;
+          border: 1.5px solid #e2e8f0 !important;
+          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-bottom-dot {
+          width: 7px !important;
+          height: 7px !important;
+          border-radius: 50% !important;
+          background: #94a3b8 !important;
+          opacity: 0.7 !important;
+          cursor: pointer !important;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-bottom-dot:hover {
+          background: #475569 !important;
+          opacity: 1 !important;
+          transform: scale(1.25) !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-bottom-dot.is-active {
+          width: 26px !important;
+          height: 7px !important;
+          border-radius: 9999px !important;
+          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+          opacity: 1 !important;
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.45) !important;
+        }
+
+        /* AMALIY MODUL Card in Light Mode */
+        .welcome-preview-section.light-preview-section .practice-amaliy-card {
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.98) 100%) !important;
+          border: 1.5px solid rgba(226, 232, 240, 0.95) !important;
+          box-shadow: 0 16px 44px rgba(0, 0, 0, 0.06), 0 0 30px rgba(37, 99, 235, 0.06) !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-amaliy-kicker {
+          background: rgba(37, 99, 235, 0.08) !important;
+          border-color: rgba(37, 99, 235, 0.25) !important;
+          color: #2563eb !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-amaliy-title {
+          color: #0f172a !important;
+        }
+        .welcome-preview-section.light-preview-section .practice-amaliy-desc {
+          color: #475569 !important;
+        }
+        .welcome-preview-section.light-preview-section .amaliy-calligraphy-text {
+          color: #2563eb !important;
+        }
+        .welcome-preview-section.light-preview-section .amaliy-calligraphy-arrow path {
+          stroke: #2563eb !important;
+        }
+
         .welcome-preview-section.light-preview-section .practice-slide-nav {
           background: #ffffff !important;
           border-color: rgba(226, 232, 240, 0.95) !important;
@@ -1496,45 +1609,59 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           gap: 14px;
           margin-top: 26px;
           padding-top: 18px;
-          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          position: relative;
+          z-index: 10;
         }
         .practice-slider-circle-btn {
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: #94a3b8;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1.5px solid rgba(255, 255, 255, 0.16);
+          color: #f8fafc;
           display: grid;
           place-items: center;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.2s ease;
         }
         .practice-slider-circle-btn:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.15);
+          background: #6366f1;
+          border-color: #6366f1;
           color: #ffffff;
+          box-shadow: 0 0 16px rgba(99, 102, 241, 0.5);
+          transform: translateY(-1px);
         }
         .practice-slider-circle-btn:disabled {
           opacity: 0.35;
           cursor: not-allowed;
         }
         .practice-bottom-dots {
-          display: flex;
+          display: inline-flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
+          background: rgba(15, 23, 42, 0.65);
+          padding: 6px 14px;
+          border-radius: 9999px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .practice-bottom-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 3px;
-          background: rgba(255, 255, 255, 0.2);
-          transition: all 0.25s;
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.3);
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           cursor: pointer;
+        }
+        .practice-bottom-dot:hover {
+          background: rgba(255, 255, 255, 0.7);
+          transform: scale(1.2);
         }
         .practice-bottom-dot.is-active {
           width: 24px;
-          background: #6366f1;
-          box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+          border-radius: 9999px;
+          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+          box-shadow: 0 0 12px rgba(99, 102, 241, 0.7);
         }
 
         /* Slide Navigation Bar (Above AMALIY MODUL) */
