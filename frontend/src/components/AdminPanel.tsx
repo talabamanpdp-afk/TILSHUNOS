@@ -8,6 +8,9 @@ import {
   Smartphone, Laptop, Image as ImageIcon, Upload, RotateCcw, Camera, ChevronDown
 } from 'lucide-react';
 import { api, authStorage } from '../api';
+import {
+  DEFAULT_PRACTICE_GUIDE, PracticeGuideConfig, LanguagePracticeGuide
+} from '../data/practiceGuideData';
 
 const adminNav = [
   ['Dashboard & Statistika', 'dashboard', LayoutDashboard],
@@ -146,6 +149,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
         choiceB: 'Faqat haftada bir marta 4 soat o‘rganish'
       }
     },
+    practiceGuide: DEFAULT_PRACTICE_GUIDE,
     cefrSection: {
       kicker: 'XALQARO METODIKA',
       title: 'CEFR bo‘yicha aniq yo‘l xaritasi (A1–C2)',
@@ -238,6 +242,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   const [uploadingFounder, setUploadingFounder] = useState(false);
   const [uploadingTeamPhoto, setUploadingTeamPhoto] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [guideEditLang, setGuideEditLang] = useState<string>('en');
+  const [guideEditSkill, setGuideEditSkill] = useState<'vocab' | 'writing' | 'reading' | 'listening' | 'speaking' | 'grammar' | 'shadowing'>('vocab');
+  const [uploadingGuideImage, setUploadingGuideImage] = useState(false);
   const [newFaq, setNewFaq] = useState({ q: '', a: '' });
 
   // Game Topics & Words from Supabase
@@ -359,6 +366,16 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
           previewSection: {
             ...(prev?.previewSection || {}),
             ...(cmsRes.value?.previewSection || {})
+          },
+          practiceGuide: {
+            ...DEFAULT_PRACTICE_GUIDE,
+            ...(prev?.practiceGuide || {}),
+            ...(cmsRes.value?.practiceGuide || {}),
+            languages: {
+              ...DEFAULT_PRACTICE_GUIDE.languages,
+              ...(prev?.practiceGuide?.languages || {}),
+              ...(cmsRes.value?.practiceGuide?.languages || {})
+            }
           },
           cefrSection: {
             ...(prev?.cefrSection || {}),
@@ -747,6 +764,65 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       notify(err.message || 'Rasm yuklashda xatolik yuz berdi', true);
     } finally {
       setUploadingTeamPhoto(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleGuideCardImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, skillKey: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      notify('Faqat rasm fayllari (PNG, JPG, WebP) yuklanishi mumkin!');
+      return;
+    }
+    setUploadingGuideImage(true);
+    try {
+      let dataBase64 = '';
+      try {
+        dataBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(file);
+        });
+      } catch {}
+
+      const res = await api.uploadCmsImage({
+        file,
+        dataBase64,
+        fileName: `guide-${guideEditLang}-${skillKey}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
+        contentType: file.type || 'image/jpeg'
+      });
+      if (!res || !res.url) throw new Error('Rasm yuklanmadi');
+
+      const currentPg = cms.practiceGuide || DEFAULT_PRACTICE_GUIDE;
+      const currentLangObj = currentPg.languages?.[guideEditLang] || DEFAULT_PRACTICE_GUIDE.languages[guideEditLang] || DEFAULT_PRACTICE_GUIDE.languages.en;
+      const currentSkillObj = (currentLangObj as any)[skillKey] || {};
+
+      const updatedCms = {
+        ...cms,
+        practiceGuide: {
+          ...currentPg,
+          languages: {
+            ...currentPg.languages,
+            [guideEditLang]: {
+              ...currentLangObj,
+              [skillKey]: {
+                ...currentSkillObj,
+                image: res.url
+              }
+            }
+          }
+        }
+      };
+      setCms(updatedCms);
+      localStorage.setItem('tilshunos_cms_data', JSON.stringify(updatedCms));
+      await api.saveCms(updatedCms);
+      notify(`"${skillKey.toUpperCase()}" kartasi uchun rasm yuklandi va Supabasega saqlandi! ✓`);
+    } catch (err: any) {
+      notify(err.message || 'Rasm yuklashda xatolik yuz berdi', true);
+    } finally {
+      setUploadingGuideImage(false);
       if (e.target) e.target.value = '';
     }
   };
@@ -2800,7 +2876,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         { id: 'hero', label: '🚀 Hero & Tugmalar' },
                         { id: 'stats', label: '📊 Statistika & Metrikalar' },
                         { id: 'auth', label: '🔐 Kirish Vizuali (Auth)' },
-                        { id: 'preview', label: '💻 Interaktiv Preview' },
+                        { id: 'preview', label: '📖 Amaliy Qo‘llanma (7 Ko‘nikma)' },
                         { id: 'curriculum', label: '🗺️ CEFR, Ko‘nikma & Qadamlar' },
                         { id: 'features', label: '⚡ Ilg‘or Imkoniyatlar' },
                         { id: 'about', label: '👥 Biz Haqimizda & Jamoa' },
@@ -2837,7 +2913,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       <option value="hero">🚀 Hero & Tugmalar</option>
                       <option value="stats">📊 Statistika & Metrikalar</option>
                       <option value="auth">🔐 Kirish Vizuali (Auth)</option>
-                      <option value="preview">💻 Interaktiv Preview</option>
+                      <option value="preview">📖 Amaliy Qo‘llanma (7 Ko‘nikma)</option>
                       <option value="curriculum">🗺️ CEFR, Ko‘nikma & Qadamlar</option>
                       <option value="features">⚡ Ilg‘or Imkoniyatlar</option>
                       <option value="about">👥 Biz Haqimizda & Jamoa</option>
@@ -4115,236 +4191,843 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                 </div>
               )}
 
-              {/* TAB 3: INTERAKTIV PREVIEW */}
-              {cmsTab === 'preview' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div className="panel" style={{ padding: '24px' }}>
-                    <h3 style={{ marginBottom: '14px' }}>Bo‘lim Sarlavhalari</h3>
-                    <div className="form-grid" style={{ gap: '14px' }}>
-                      <label>
-                        <b style={{ fontSize: '12px' }}>Yuqori Kicker:</b>
-                        <input
-                          value={cms.previewSection?.kicker || ''}
-                          onChange={e => setCms({
-                            ...cms,
-                            previewSection: { ...cms.previewSection, kicker: e.target.value }
-                          })}
-                          placeholder="AMALIY TAJRIBA"
-                        />
-                      </label>
-                      <label>
-                        <b style={{ fontSize: '12px' }}>Asosiy Sarlavha:</b>
-                        <input
-                          value={cms.previewSection?.title || ''}
-                          onChange={e => setCms({
-                            ...cms,
-                            previewSection: { ...cms.previewSection, title: e.target.value }
-                          })}
-                          placeholder="Platformaning haqiqiy imkoniyatlarini sinab ko‘ring"
-                        />
-                      </label>
-                      <label className="span-two">
-                        <b style={{ fontSize: '12px' }}>Tavsif (Subtitle):</b>
-                        <input
-                          value={cms.previewSection?.subtitle || ''}
-                          onChange={e => setCms({
-                            ...cms,
-                            previewSection: { ...cms.previewSection, subtitle: e.target.value }
-                          })}
-                          placeholder="Ro‘yxatdan o‘tishdan avval asosiy 3 ta modulimiz qanday ishlashini amalda ko‘ring."
-                        />
-                      </label>
-                    </div>
-                  </div>
+              {/* TAB 3: AMALIY QO'LLANMA (7 KO'NIKMA) */}
+              {cmsTab === 'preview' && (() => {
+                const pg = cms.practiceGuide || DEFAULT_PRACTICE_GUIDE;
+                const activeLangObj = pg.languages?.[guideEditLang] || DEFAULT_PRACTICE_GUIDE.languages[guideEditLang] || DEFAULT_PRACTICE_GUIDE.languages.en;
 
-                  {/* 3 Vocab Demo Items */}
-                  <div className="panel" style={{ padding: '24px' }}>
-                    <h3 style={{ marginBottom: '14px' }}>1-Modul: Lug‘at & Namuna So‘zlar (3 ta karta)</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-                      {(cms.previewSection?.vocabItems || []).map((item: any, idx: number) => (
-                        <div key={idx} style={{ background: 'var(--bg)', padding: '18px', borderRadius: '14px', border: '1px solid var(--border)', minWidth: 0, boxSizing: 'border-box' }}>
-                          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '10px', letterSpacing: '0.5px' }}>
-                            {idx + 1}-NAMUNA SO‘Z
-                          </span>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                              <b style={{ fontSize: '11px' }}>Inglizcha so‘z:</b>
-                              <input
-                                value={item.word || ''}
-                                onChange={e => {
-                                  const updated = [...(cms.previewSection?.vocabItems || [])];
-                                  updated[idx] = { ...updated[idx], word: e.target.value };
-                                  setCms({ ...cms, previewSection: { ...cms.previewSection, vocabItems: updated } });
-                                }}
-                                placeholder="Achieve"
-                              />
-                            </label>
-                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                              <b style={{ fontSize: '11px' }}>O‘zbekcha tarjimasi:</b>
-                              <input
-                                value={item.tr || ''}
-                                onChange={e => {
-                                  const updated = [...(cms.previewSection?.vocabItems || [])];
-                                  updated[idx] = { ...updated[idx], tr: e.target.value };
-                                  setCms({ ...cms, previewSection: { ...cms.previewSection, vocabItems: updated } });
-                                }}
-                                placeholder="Erishmoq, zabt etmoq"
-                              />
-                            </label>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.8fr)', gap: '10px' }}>
-                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                                <b style={{ fontSize: '11px' }}>Daraja:</b>
-                                <input
-                                  value={item.lvl || ''}
-                                  onChange={e => {
-                                    const updated = [...(cms.previewSection?.vocabItems || [])];
-                                    updated[idx] = { ...updated[idx], lvl: e.target.value };
-                                    setCms({ ...cms, previewSection: { ...cms.previewSection, vocabItems: updated } });
-                                  }}
-                                  placeholder="B1"
-                                />
-                              </label>
-                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                                <b style={{ fontSize: '11px' }}>Mavzu:</b>
-                                <input
-                                  value={item.topic || ''}
-                                  onChange={e => {
-                                    const updated = [...(cms.previewSection?.vocabItems || [])];
-                                    updated[idx] = { ...updated[idx], topic: e.target.value };
-                                    setCms({ ...cms, previewSection: { ...cms.previewSection, vocabItems: updated } });
-                                  }}
-                                  placeholder="Motivatsiya"
-                                />
-                              </label>
-                            </div>
-                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                              <b style={{ fontSize: '11px' }}>Misol jumla:</b>
-                              <textarea
-                                value={item.ex || ''}
-                                onChange={e => {
-                                  const updated = [...(cms.previewSection?.vocabItems || [])];
-                                  updated[idx] = { ...updated[idx], ex: e.target.value };
-                                  setCms({ ...cms, previewSection: { ...cms.previewSection, vocabItems: updated } });
-                                }}
-                                rows={2}
-                                placeholder="You can achieve any language goal..."
-                              />
-                            </label>
-                          </div>
+                const updatePgField = (field: keyof PracticeGuideConfig, value: any) => {
+                  setCms({
+                    ...cms,
+                    practiceGuide: {
+                      ...pg,
+                      [field]: value
+                    }
+                  });
+                };
+
+                const updateSkillData = (skillKey: string, field: string, value: any) => {
+                  const currentSkill = (activeLangObj as any)[skillKey] || {};
+                  setCms({
+                    ...cms,
+                    practiceGuide: {
+                      ...pg,
+                      languages: {
+                        ...pg.languages,
+                        [guideEditLang]: {
+                          ...activeLangObj,
+                          [skillKey]: {
+                            ...currentSkill,
+                            [field]: value
+                          }
+                        }
+                      }
+                    }
+                  });
+                };
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {/* General Header Settings */}
+                    <div className="panel" style={{ padding: '24px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Amaliy Qo‘llanma — Umumiy Sozlamalar</h3>
+                          <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
+                            Welcome sahifadagi sarlavha va "O‘zingizni sinab ko‘ring" tugmasini tahrirlash
+                          </p>
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                        <button
+                          onClick={async () => {
+                            try {
+                              localStorage.setItem('tilshunos_cms_data', JSON.stringify(cms));
+                              await api.saveCms(cms);
+                              notify('Amaliy qo‘llanma sozlamalari saqlandi! ✓');
+                            } catch {
+                              notify('Saqlashda xatolik yuz berdi', true);
+                            }
+                          }}
+                          className="primary-btn"
+                          style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Save size={14} />
+                          <span>Saqlash</span>
+                        </button>
+                      </div>
 
-                  {/* Sample Reading Lesson */}
-                  <div className="panel" style={{ padding: '24px' }}>
-                    <h3 style={{ marginBottom: '14px' }}>2-Modul: Namuna Dars & Reading Matni</h3>
-                    <div className="form-grid" style={{ gap: '14px' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '12px' }}>
+                      <div className="form-grid" style={{ gap: '14px' }}>
                         <label>
-                          <b style={{ fontSize: '11px' }}>Daraja / Rukn:</b>
+                          <b style={{ fontSize: '12px' }}>Yuqori Kicker:</b>
                           <input
-                            value={cms.previewSection?.sampleLesson?.level || ''}
-                            onChange={e => setCms({
-                              ...cms,
-                              previewSection: {
-                                ...cms.previewSection,
-                                sampleLesson: { ...cms.previewSection?.sampleLesson, level: e.target.value }
-                              }
-                            })}
-                            placeholder="CEFR B1 · READING"
+                            value={pg.kicker || ''}
+                            onChange={e => updatePgField('kicker', e.target.value)}
+                            placeholder="AMALIY QO‘LLANMA"
                           />
                         </label>
                         <label>
-                          <b style={{ fontSize: '11px' }}>Vaqt:</b>
+                          <b style={{ fontSize: '12px' }}>Asosiy Sarlavha:</b>
                           <input
-                            value={cms.previewSection?.sampleLesson?.time || ''}
-                            onChange={e => setCms({
-                              ...cms,
-                              previewSection: {
-                                ...cms.previewSection,
-                                sampleLesson: { ...cms.previewSection?.sampleLesson, time: e.target.value }
-                              }
-                            })}
-                            placeholder="5 daqiqa"
+                            value={pg.title || ''}
+                            onChange={e => updatePgField('title', e.target.value)}
+                            placeholder="Amaliy qo‘llanma"
+                          />
+                        </label>
+                        <label className="span-two">
+                          <b style={{ fontSize: '12px' }}>Tavsif (Subtitle):</b>
+                          <input
+                            value={pg.subtitle || ''}
+                            onChange={e => updatePgField('subtitle', e.target.value)}
+                            placeholder="O‘rganmoqchi bo‘lgan tilingizni tanlang va har bir ko‘nikma moduli bo‘yicha interaktiv mashqlarni bajaring."
+                          />
+                        </label>
+                        <label className="span-two">
+                          <b style={{ fontSize: '12px' }}>CTA Tugma Matni:</b>
+                          <input
+                            value={pg.ctaButtonText || ''}
+                            onChange={e => updatePgField('ctaButtonText', e.target.value)}
+                            placeholder="O‘zingizni sinab ko‘ring"
                           />
                         </label>
                       </div>
-                      <label className="span-two">
-                        <b style={{ fontSize: '11px' }}>Dars Sarlavhasi:</b>
-                        <input
-                          value={cms.previewSection?.sampleLesson?.title || ''}
-                          onChange={e => setCms({
-                            ...cms,
-                            previewSection: {
-                              ...cms.previewSection,
-                              sampleLesson: { ...cms.previewSection?.sampleLesson, title: e.target.value }
+                    </div>
+
+                    {/* Language and Skill Selector Tabs */}
+                    <div className="panel" style={{ padding: '24px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+                        {/* Language Selector */}
+                        <div>
+                          <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--muted)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                            1. Tahrirlanadigan Tilni Tanlang:
+                          </span>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {[
+                              { code: 'en', name: 'English', flag: '🇬🇧' },
+                              { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+                              { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+                              { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+                              { code: 'uz', name: 'O‘zbek', flag: '🇺🇿' }
+                            ].map(lang => (
+                              <button
+                                key={lang.code}
+                                type="button"
+                                onClick={() => setGuideEditLang(lang.code)}
+                                style={{
+                                  padding: '8px 16px',
+                                  borderRadius: '10px',
+                                  border: guideEditLang === lang.code ? '1.5px solid var(--purple)' : '1px solid var(--border)',
+                                  background: guideEditLang === lang.code ? 'rgba(120, 105, 245, 0.12)' : 'var(--bg)',
+                                  color: guideEditLang === lang.code ? 'var(--purple)' : 'var(--text)',
+                                  fontWeight: guideEditLang === lang.code ? 800 : 600,
+                                  fontSize: '13px',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}
+                              >
+                                <span>{lang.flag}</span>
+                                <span>{lang.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 7 Skills Selector */}
+                        <div>
+                          <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--muted)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                            2. Tahrirlanadigan Ko‘nikma Modulini Tanlang:
+                          </span>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {[
+                              { key: 'vocab', label: '📖 Vocab (Lug‘at)' },
+                              { key: 'writing', label: '✍️ Writing (Yozish)' },
+                              { key: 'reading', label: '📑 Reading (O‘qish)' },
+                              { key: 'listening', label: '🎧 Listening (Tinglash)' },
+                              { key: 'speaking', label: '🎙️ Speaking (Nutq)' },
+                              { key: 'grammar', label: '⚡ Grammar (Grammatika)' },
+                              { key: 'shadowing', label: '🏆 Shadowing (Soya)' }
+                            ].map(skill => (
+                              <button
+                                key={skill.key}
+                                type="button"
+                                onClick={() => setGuideEditSkill(skill.key as any)}
+                                style={{
+                                  padding: '8px 14px',
+                                  borderRadius: '9px',
+                                  border: guideEditSkill === skill.key ? '1px solid transparent' : '1px solid var(--border)',
+                                  background: guideEditSkill === skill.key ? 'var(--purple)' : 'var(--bg)',
+                                  color: guideEditSkill === skill.key ? '#fff' : 'var(--text)',
+                                  fontWeight: guideEditSkill === skill.key ? 800 : 600,
+                                  fontSize: '12px',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
+                                }}
+                              >
+                                {skill.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* SKILL EDITOR FORMS */}
+                      <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
+                        {/* 1. VOCAB CARD EDITOR */}
+                        {guideEditSkill === 'vocab' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>
+                                📖 Vocab Karta Sozlamalari ({activeLangObj.flag} {activeLangObj.langName})
+                              </h4>
+                            </div>
+
+                            {/* Image row */}
+                            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                              <img
+                                src={activeLangObj.vocab?.image}
+                                alt="Vocab"
+                                style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }}
+                                onError={(e) => { (e.currentTarget as any).src = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=400&q=80'; }}
+                              />
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: 700 }}>Rasm URL:</label>
+                                <input
+                                  value={activeLangObj.vocab?.image || ''}
+                                  onChange={e => updateSkillData('vocab', 'image', e.target.value)}
+                                  placeholder="https://..."
+                                  style={{ fontSize: '12px' }}
+                                />
+                              </div>
+                              <div>
+                                <label className="admin-upload-btn" style={{ padding: '8px 12px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <Upload size={13} />
+                                  <span>{uploadingGuideImage ? 'Yuklanmoqda...' : 'Qurilmadan Yuklash'}</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={e => handleGuideCardImageUpload(e, 'vocab')}
+                                    disabled={uploadingGuideImage}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+
+                            <div className="form-grid" style={{ gap: '14px' }}>
+                              <label>
+                                <b style={{ fontSize: '11px' }}>So‘z:</b>
+                                <input
+                                  value={activeLangObj.vocab?.word || ''}
+                                  onChange={e => updateSkillData('vocab', 'word', e.target.value)}
+                                  placeholder="Persevere"
+                                />
+                              </label>
+                              <label>
+                                <b style={{ fontSize: '11px' }}>O‘zbekcha Tarjimasi:</b>
+                                <input
+                                  value={activeLangObj.vocab?.translation || ''}
+                                  onChange={e => updateSkillData('vocab', 'translation', e.target.value)}
+                                  placeholder="Matonat bilan davom etmoq"
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>Izoh:</b>
+                                <textarea
+                                  value={activeLangObj.vocab?.explanation || ''}
+                                  onChange={e => updateSkillData('vocab', 'explanation', e.target.value)}
+                                  rows={2}
+                                  placeholder="So‘z haqida izoh..."
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>Misol Jumla (Example Phrase):</b>
+                                <textarea
+                                  value={activeLangObj.vocab?.examplePhrase || ''}
+                                  onChange={e => updateSkillData('vocab', 'examplePhrase', e.target.value)}
+                                  rows={2}
+                                  placeholder="Misol jumla..."
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 2. WRITING CARD EDITOR */}
+                        {guideEditSkill === 'writing' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>
+                              ✍️ Writing Karta Sozlamalari ({activeLangObj.flag} {activeLangObj.langName})
+                            </h4>
+
+                            {/* Image row */}
+                            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                              <img
+                                src={activeLangObj.writing?.image}
+                                alt="Writing"
+                                style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }}
+                                onError={(e) => { (e.currentTarget as any).src = 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=400&q=80'; }}
+                              />
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: 700 }}>Rasm URL:</label>
+                                <input
+                                  value={activeLangObj.writing?.image || ''}
+                                  onChange={e => updateSkillData('writing', 'image', e.target.value)}
+                                  placeholder="https://..."
+                                  style={{ fontSize: '12px' }}
+                                />
+                              </div>
+                              <div>
+                                <label className="admin-upload-btn" style={{ padding: '8px 12px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <Upload size={13} />
+                                  <span>{uploadingGuideImage ? 'Yuklanmoqda...' : 'Qurilmadan Yuklash'}</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={e => handleGuideCardImageUpload(e, 'writing')}
+                                    disabled={uploadingGuideImage}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+
+                            <div className="form-grid" style={{ gap: '14px' }}>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>Xat Sarlavhasi (Letter Title):</b>
+                                <input
+                                  value={activeLangObj.writing?.letterTitle || ''}
+                                  onChange={e => updateSkillData('writing', 'letterTitle', e.target.value)}
+                                  placeholder="Formal Academic Inquiry"
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>Xat Matni ({activeLangObj.langName}):</b>
+                                <textarea
+                                  value={activeLangObj.writing?.letterContent || ''}
+                                  onChange={e => updateSkillData('writing', 'letterContent', e.target.value)}
+                                  rows={5}
+                                  placeholder="Dear Admissions Committee..."
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>O‘zbekcha Tarjimasi (Tarjimani ko‘rish tugmasi bosilganda ochiladi):</b>
+                                <textarea
+                                  value={activeLangObj.writing?.letterTranslation || ''}
+                                  onChange={e => updateSkillData('writing', 'letterTranslation', e.target.value)}
+                                  rows={5}
+                                  placeholder="Hurmatli Qabul Komissiyasi..."
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 3. READING CARD EDITOR */}
+                        {guideEditSkill === 'reading' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>
+                              📑 Reading Karta Sozlamalari ({activeLangObj.flag} {activeLangObj.langName})
+                            </h4>
+
+                            {/* Image row */}
+                            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                              <img
+                                src={activeLangObj.reading?.image}
+                                alt="Reading"
+                                style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }}
+                                onError={(e) => { (e.currentTarget as any).src = 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80'; }}
+                              />
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: 700 }}>Rasm URL:</label>
+                                <input
+                                  value={activeLangObj.reading?.image || ''}
+                                  onChange={e => updateSkillData('reading', 'image', e.target.value)}
+                                  placeholder="https://..."
+                                  style={{ fontSize: '12px' }}
+                                />
+                              </div>
+                              <div>
+                                <label className="admin-upload-btn" style={{ padding: '8px 12px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <Upload size={13} />
+                                  <span>{uploadingGuideImage ? 'Yuklanmoqda...' : 'Qurilmadan Yuklash'}</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={e => handleGuideCardImageUpload(e, 'reading')}
+                                    disabled={uploadingGuideImage}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+
+                            <div className="form-grid" style={{ gap: '14px' }}>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>Matn Sarlavhasi:</b>
+                                <input
+                                  value={activeLangObj.reading?.title || ''}
+                                  onChange={e => updateSkillData('reading', 'title', e.target.value)}
+                                  placeholder="The Architecture of Language Learning"
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>
+                                  Reading Matni (Urg‘u beriladigan so‘zlarni &lt;b&gt;so‘z&lt;/b&gt; ko‘rinishida belgilang):
+                                </b>
+                                <textarea
+                                  value={activeLangObj.reading?.readingText || ''}
+                                  onChange={e => updateSkillData('reading', 'readingText', e.target.value)}
+                                  rows={4}
+                                  placeholder="The human brain possesses an extraordinary capacity called <b>neuroplasticity</b>..."
+                                />
+                              </label>
+                            </div>
+
+                            {/* Reading Questions */}
+                            <div style={{ marginTop: '10px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                <b style={{ fontSize: '12px' }}>Reading Bo‘yicha Savollar va Javoblar:</b>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const currQ = activeLangObj.reading?.questions || [];
+                                    updateSkillData('reading', 'questions', [
+                                      ...currQ,
+                                      { question: `${currQ.length + 1}. Yangi savol?`, answer: 'Javob' }
+                                    ]);
+                                  }}
+                                  className="secondary-btn"
+                                  style={{ padding: '5px 10px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                >
+                                  <Plus size={13} />
+                                  <span>Savol Qo‘shish</span>
+                                </button>
+                              </div>
+
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {(activeLangObj.reading?.questions || []).map((qItem: any, qIdx: number) => (
+                                  <div key={qIdx} style={{ display: 'flex', gap: '10px', alignItems: 'center', background: 'var(--bg)', padding: '10px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                      <input
+                                        value={qItem.question || ''}
+                                        onChange={e => {
+                                          const nextQ = [...(activeLangObj.reading?.questions || [])];
+                                          nextQ[qIdx] = { ...nextQ[qIdx], question: e.target.value };
+                                          updateSkillData('reading', 'questions', nextQ);
+                                        }}
+                                        placeholder="Savol matni..."
+                                        style={{ fontSize: '12px' }}
+                                      />
+                                      <input
+                                        value={qItem.answer || ''}
+                                        onChange={e => {
+                                          const nextQ = [...(activeLangObj.reading?.questions || [])];
+                                          nextQ[qIdx] = { ...nextQ[qIdx], answer: e.target.value };
+                                          updateSkillData('reading', 'questions', nextQ);
+                                        }}
+                                        placeholder="Javob (qavs ichida rangli chiqadi)..."
+                                        style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}
+                                      />
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const nextQ = (activeLangObj.reading?.questions || []).filter((_: any, i: number) => i !== qIdx);
+                                        updateSkillData('reading', 'questions', nextQ);
+                                      }}
+                                      style={{ color: '#ef4444', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px' }}
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 4. LISTENING CARD EDITOR */}
+                        {guideEditSkill === 'listening' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>
+                              🎧 Listening Karta Sozlamalari ({activeLangObj.flag} {activeLangObj.langName})
+                            </h4>
+
+                            {/* Image row */}
+                            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                              <img
+                                src={activeLangObj.listening?.image}
+                                alt="Listening"
+                                style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }}
+                                onError={(e) => { (e.currentTarget as any).src = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80'; }}
+                              />
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: 700 }}>Rasm URL:</label>
+                                <input
+                                  value={activeLangObj.listening?.image || ''}
+                                  onChange={e => updateSkillData('listening', 'image', e.target.value)}
+                                  placeholder="https://..."
+                                  style={{ fontSize: '12px' }}
+                                />
+                              </div>
+                              <div>
+                                <label className="admin-upload-btn" style={{ padding: '8px 12px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <Upload size={13} />
+                                  <span>{uploadingGuideImage ? 'Yuklanmoqda...' : 'Qurilmadan Yuklash'}</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={e => handleGuideCardImageUpload(e, 'listening')}
+                                    disabled={uploadingGuideImage}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+
+                            <div className="form-grid" style={{ gap: '14px' }}>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>Audio Darslik Sarlavhasi:</b>
+                                <input
+                                  value={activeLangObj.listening?.title || ''}
+                                  onChange={e => updateSkillData('listening', 'title', e.target.value)}
+                                  placeholder="The Secrets of Native Fluency"
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>
+                                  Matn (Bo‘sh joylarni [so‘z] qavslari ichiga olib yozing):
+                                </b>
+                                <textarea
+                                  value={activeLangObj.listening?.textWithGaps || ''}
+                                  onChange={e => updateSkillData('listening', 'textWithGaps', e.target.value)}
+                                  rows={3}
+                                  placeholder="True language fluency is achieved through [communication] and [connections]."
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>
+                                  To‘g‘ri Javoblar Ro‘yxati (Vergul bilan ajratib yozing):
+                                </b>
+                                <input
+                                  value={(activeLangObj.listening?.gapsAnswers || []).join(', ')}
+                                  onChange={e => {
+                                    const parsed = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                                    updateSkillData('listening', 'gapsAnswers', parsed);
+                                  }}
+                                  placeholder="communication, connections"
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>
+                                  YouTube Audio Havolasi (Video yashirinib faqat audio qilib ijro etiladi):
+                                </b>
+                                <input
+                                  value={activeLangObj.listening?.youtubeAudioUrl || ''}
+                                  onChange={e => updateSkillData('listening', 'youtubeAudioUrl', e.target.value)}
+                                  placeholder="https://www.youtube.com/watch?v=..."
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 5. SPEAKING CARD EDITOR */}
+                        {guideEditSkill === 'speaking' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>
+                              🎙️ Speaking Karta Sozlamalari ({activeLangObj.flag} {activeLangObj.langName})
+                            </h4>
+
+                            {/* Image row */}
+                            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                              <img
+                                src={activeLangObj.speaking?.image}
+                                alt="Speaking"
+                                style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }}
+                                onError={(e) => { (e.currentTarget as any).src = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80'; }}
+                              />
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: 700 }}>Rasm URL:</label>
+                                <input
+                                  value={activeLangObj.speaking?.image || ''}
+                                  onChange={e => updateSkillData('speaking', 'image', e.target.value)}
+                                  placeholder="https://..."
+                                  style={{ fontSize: '12px' }}
+                                />
+                              </div>
+                              <div>
+                                <label className="admin-upload-btn" style={{ padding: '8px 12px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <Upload size={13} />
+                                  <span>{uploadingGuideImage ? 'Yuklanmoqda...' : 'Qurilmadan Yuklash'}</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={e => handleGuideCardImageUpload(e, 'speaking')}
+                                    disabled={uploadingGuideImage}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+
+                            <label>
+                              <b style={{ fontSize: '11px' }}>Sarlavha:</b>
+                              <input
+                                value={activeLangObj.speaking?.title || ''}
+                                onChange={e => updateSkillData('speaking', 'title', e.target.value)}
+                                placeholder="Conversational Interview"
+                              />
+                            </label>
+
+                            {/* Speaking Questions List */}
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                <div>
+                                  <b style={{ fontSize: '12px' }}>Speaking Savollari:</b>
+                                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--muted)' }}>
+                                    Faqatgina hamma savollarga javob berilgandan so‘ng "Umumiy ballni ko‘rish" tugmasi chiqadi.
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const currQ = activeLangObj.speaking?.questions || [];
+                                    updateSkillData('speaking', 'questions', [
+                                      ...currQ,
+                                      {
+                                        id: Date.now(),
+                                        question: 'Yangi speaking savoli?',
+                                        hint: 'Maslahat',
+                                        expectedKeywords: ['speak', 'learn']
+                                      }
+                                    ]);
+                                  }}
+                                  className="secondary-btn"
+                                  style={{ padding: '5px 10px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                >
+                                  <Plus size={13} />
+                                  <span>Savol Qo‘shish</span>
+                                </button>
+                              </div>
+
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {(activeLangObj.speaking?.questions || []).map((qItem: any, qIdx: number) => (
+                                  <div key={qItem.id || qIdx} style={{ background: 'var(--bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                      <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)' }}>
+                                        {qIdx + 1}-SAVOL
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const nextQ = (activeLangObj.speaking?.questions || []).filter((_: any, i: number) => i !== qIdx);
+                                          updateSkillData('speaking', 'questions', nextQ);
+                                        }}
+                                        style={{ color: '#ef4444', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}
+                                      >
+                                        <Trash2 size={15} />
+                                      </button>
+                                    </div>
+                                    <input
+                                      value={qItem.question || ''}
+                                      onChange={e => {
+                                        const nextQ = [...(activeLangObj.speaking?.questions || [])];
+                                        nextQ[qIdx] = { ...nextQ[qIdx], question: e.target.value };
+                                        updateSkillData('speaking', 'questions', nextQ);
+                                      }}
+                                      placeholder="Savol matni..."
+                                      style={{ fontSize: '12px' }}
+                                    />
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                      <input
+                                        value={qItem.hint || ''}
+                                        onChange={e => {
+                                          const nextQ = [...(activeLangObj.speaking?.questions || [])];
+                                          nextQ[qIdx] = { ...nextQ[qIdx], hint: e.target.value };
+                                          updateSkillData('speaking', 'questions', nextQ);
+                                        }}
+                                        placeholder="Hint / Maslahat..."
+                                        style={{ fontSize: '12px' }}
+                                      />
+                                      <input
+                                        value={(qItem.expectedKeywords || []).join(', ')}
+                                        onChange={e => {
+                                          const nextQ = [...(activeLangObj.speaking?.questions || [])];
+                                          nextQ[qIdx] = {
+                                            ...nextQ[qIdx],
+                                            expectedKeywords: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                                          };
+                                          updateSkillData('speaking', 'questions', nextQ);
+                                        }}
+                                        placeholder="Kalit so‘zlar (vergul bilan)..."
+                                        style={{ fontSize: '12px' }}
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 6. GRAMMAR CARD EDITOR */}
+                        {guideEditSkill === 'grammar' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>
+                              ⚡ Grammar Karta Sozlamalari ({activeLangObj.flag} {activeLangObj.langName})
+                            </h4>
+
+                            {/* Image row */}
+                            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                              <img
+                                src={activeLangObj.grammar?.image}
+                                alt="Grammar"
+                                style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }}
+                                onError={(e) => { (e.currentTarget as any).src = 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80'; }}
+                              />
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: 700 }}>Rasm URL:</label>
+                                <input
+                                  value={activeLangObj.grammar?.image || ''}
+                                  onChange={e => updateSkillData('grammar', 'image', e.target.value)}
+                                  placeholder="https://..."
+                                  style={{ fontSize: '12px' }}
+                                />
+                              </div>
+                              <div>
+                                <label className="admin-upload-btn" style={{ padding: '8px 12px', fontSize: '11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <Upload size={13} />
+                                  <span>{uploadingGuideImage ? 'Yuklanmoqda...' : 'Qurilmadan Yuklash'}</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={e => handleGuideCardImageUpload(e, 'grammar')}
+                                    disabled={uploadingGuideImage}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+
+                            <div className="form-grid" style={{ gap: '14px' }}>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>Grammatik Mavzu Nomi:</b>
+                                <input
+                                  value={activeLangObj.grammar?.topicName || ''}
+                                  onChange={e => updateSkillData('grammar', 'topicName', e.target.value)}
+                                  placeholder="Present Perfect vs. Past Simple"
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>Mavzu Qoidasi / Izohi:</b>
+                                <textarea
+                                  value={activeLangObj.grammar?.topicExplanation || ''}
+                                  onChange={e => updateSkillData('grammar', 'topicExplanation', e.target.value)}
+                                  rows={3}
+                                  placeholder="Grammatika qoidasini batafsil tushuntirish..."
+                                />
+                              </label>
+                              <label>
+                                <b style={{ fontSize: '11px', color: '#ef4444' }}>Noto‘g‘ri Matn (Xatolik ko‘rsatilgan):</b>
+                                <input
+                                  value={activeLangObj.grammar?.incorrectText || ''}
+                                  onChange={e => updateSkillData('grammar', 'incorrectText', e.target.value)}
+                                  placeholder="I have seen that movie yesterday."
+                                />
+                              </label>
+                              <label>
+                                <b style={{ fontSize: '11px', color: '#10b981' }}>To‘g‘rilangan Matn (Corrected Text):</b>
+                                <input
+                                  value={activeLangObj.grammar?.correctedText || ''}
+                                  onChange={e => updateSkillData('grammar', 'correctedText', e.target.value)}
+                                  placeholder="I saw that movie yesterday."
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>Xatolikni Tuzatish Uchun O‘rganish Kerak Bo‘lgan Qoida (Rule Tip):</b>
+                                <input
+                                  value={activeLangObj.grammar?.ruleTip || ''}
+                                  onChange={e => updateSkillData('grammar', 'ruleTip', e.target.value)}
+                                  placeholder="Qoida maslahati..."
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 7. SHADOWING CARD EDITOR */}
+                        {guideEditSkill === 'shadowing' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>
+                              🏆 Shadowing Karta Sozlamalari ({activeLangObj.flag} {activeLangObj.langName})
+                            </h4>
+
+                            <div className="form-grid" style={{ gap: '14px' }}>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>YouTube Video Havolasi:</b>
+                                <input
+                                  value={activeLangObj.shadowing?.videoUrl || ''}
+                                  onChange={e => updateSkillData('shadowing', 'videoUrl', e.target.value)}
+                                  placeholder="https://www.youtube.com/watch?v=..."
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>Sarlavha:</b>
+                                <input
+                                  value={activeLangObj.shadowing?.title || ''}
+                                  onChange={e => updateSkillData('shadowing', 'title', e.target.value)}
+                                  placeholder="Winston Churchill — The Power of Courage"
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>
+                                  Shadowing Matni (O‘quvchi mikrofonga gapirganda har bir so‘z ketma-ket solishtiriladi):
+                                </b>
+                                <textarea
+                                  value={activeLangObj.shadowing?.shadowingText || ''}
+                                  onChange={e => updateSkillData('shadowing', 'shadowingText', e.target.value)}
+                                  rows={4}
+                                  placeholder="Success is not final, failure is not fatal..."
+                                />
+                              </label>
+                              <label className="span-two">
+                                <b style={{ fontSize: '11px' }}>Audio Qilib Eshitish Matni:</b>
+                                <textarea
+                                  value={activeLangObj.shadowing?.audioText || ''}
+                                  onChange={e => updateSkillData('shadowing', 'audioText', e.target.value)}
+                                  rows={3}
+                                  placeholder="Audioni eshitish tugmasi bosilganda ijro etiladigan matn..."
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Bottom Save button */}
+                      <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={async () => {
+                            try {
+                              localStorage.setItem('tilshunos_cms_data', JSON.stringify(cms));
+                              await api.saveCms(cms);
+                              notify('Amaliy qo‘llanma o‘zgarishlari Supabasega muvaffaqiyatli saqlandi! ✓');
+                            } catch {
+                              notify('Saqlashda xatolik yuz berdi', true);
                             }
-                          })}
-                          placeholder="The Power of Tiny Daily Habits"
-                        />
-                      </label>
-                      <label className="span-two">
-                        <b style={{ fontSize: '11px' }}>O‘qish Matni (Story / Article):</b>
-                        <textarea
-                          value={cms.previewSection?.sampleLesson?.article || ''}
-                          onChange={e => setCms({
-                            ...cms,
-                            previewSection: {
-                              ...cms.previewSection,
-                              sampleLesson: { ...cms.previewSection?.sampleLesson, article: e.target.value }
-                            }
-                          })}
-                          rows={4}
-                          placeholder="Reading matni..."
-                        />
-                      </label>
-                      <label className="span-two">
-                        <b style={{ fontSize: '11px' }}>Tushunishni tekshirish savoli:</b>
-                        <input
-                          value={cms.previewSection?.sampleLesson?.question || ''}
-                          onChange={e => setCms({
-                            ...cms,
-                            previewSection: {
-                              ...cms.previewSection,
-                              sampleLesson: { ...cms.previewSection?.sampleLesson, question: e.target.value }
-                            }
-                          })}
-                          placeholder="Matnga ko‘ra, til o‘rganishda eng muhim omil nima?"
-                        />
-                      </label>
-                      <label>
-                        <b style={{ fontSize: '11px', color: '#10b981' }}>Variant A (To‘g‘ri javob):</b>
-                        <input
-                          value={cms.previewSection?.sampleLesson?.choiceA || ''}
-                          onChange={e => setCms({
-                            ...cms,
-                            previewSection: {
-                              ...cms.previewSection,
-                              sampleLesson: { ...cms.previewSection?.sampleLesson, choiceA: e.target.value }
-                            }
-                          })}
-                          placeholder="Har kuni muntazam 15 daqiqa shug‘ullanish"
-                        />
-                      </label>
-                      <label>
-                        <b style={{ fontSize: '11px', color: '#e05656' }}>Variant B (Noto‘g‘ri javob):</b>
-                        <input
-                          value={cms.previewSection?.sampleLesson?.choiceB || ''}
-                          onChange={e => setCms({
-                            ...cms,
-                            previewSection: {
-                              ...cms.previewSection,
-                              sampleLesson: { ...cms.previewSection?.sampleLesson, choiceB: e.target.value }
-                            }
-                          })}
-                          placeholder="Faqat haftada bir marta 4 soat o‘rganish"
-                        />
-                      </label>
+                          }}
+                          className="primary-btn"
+                          style={{ padding: '10px 22px', fontSize: '13px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                        >
+                          <Save size={15} />
+                          <span>Amaliy Qo‘llanmani Saqlash</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* TAB 4: CEFR, KO‘NIKMALAR & QADAMLAR */}
               {cmsTab === 'curriculum' && (
