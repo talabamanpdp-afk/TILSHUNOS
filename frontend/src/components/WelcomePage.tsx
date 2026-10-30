@@ -18,6 +18,7 @@ import { LearningProcessSection } from './learning-process/LearningProcessSectio
 import { FeaturesSection } from './features/FeaturesSection';
 import { AboutSection } from './about/AboutSection';
 import { FaqSection } from './faq/FaqSection';
+import { FinalCtaSection } from './cta/FinalCtaSection';
 import { FooterSection } from './footer/FooterSection';
 
 export interface CmsConfig {
@@ -564,9 +565,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   const faqs = Array.isArray(cms?.faqs) ? cms.faqs : defaultFaqs;
 
   // Final CTA Data
-  const finalCtaKicker = cms?.finalCta?.kicker || 'HOZIROQ BOSHLANG';
+  const finalCtaKicker = cms?.finalCta?.kicker || 'BIZ BILAN O‘RGANING';
   const finalCtaTitle = cms?.finalCta?.title || 'Yangi tilni erkin gapirish vaqti keldi';
-  const finalCtaDesc = cms?.finalCta?.desc || 'Bir necha soniyada bepul ro‘yxatdan o‘ting va birinchi darsingizni bugunoq boshlang.';
+  const finalCtaDesc = cms?.finalCta?.desc || 'Til o‘rganish — yangi imkoniyatlar eshiklarini ochadi. Biz siz bilan birga bu yo‘lda!';
   const finalCtaBtnRegister = cms?.finalCta?.btnRegister || 'Bepul hisob yaratish';
   const finalCtaBtnLogin = cms?.finalCta?.btnLogin || 'Tizimga kirish';
 
@@ -1070,25 +1071,17 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         dark={dark}
       />
 
-      {/* 10. FINAL SIGNUP CALL-TO-ACTION */}
-      <section className="welcome-final-cta">
-        <div className="cta-container scroll-reveal-scale">
-          <div className="cta-content">
-            <span className="cta-kicker"><Sparkles size={14} /> {finalCtaKicker}</span>
-            <h2>{finalCtaTitle}</h2>
-            <p>{finalCtaDesc}</p>
-            <div className="cta-buttons-row">
-              <button className="cta-main-btn" onClick={() => onBegin('register')}>
-                <span>{finalCtaBtnRegister}</span>
-                <ArrowRight size={18} />
-              </button>
-              <button className="cta-secondary-btn" onClick={() => onBegin('login')}>
-                {finalCtaBtnLogin}
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* 10. FINAL SIGNUP CALL-TO-ACTION (Matching reference mockup image) */}
+      <FinalCtaSection
+        kicker={finalCtaKicker}
+        title={finalCtaTitle}
+        desc={finalCtaDesc}
+        btnRegister={finalCtaBtnRegister}
+        btnLogin={finalCtaBtnLogin}
+        onRegister={() => onBegin('register')}
+        onLogin={() => onBegin('login')}
+        dark={dark}
+      />
 
       {/* 11. DETAILED FOOTER (Matching user mockup with floating glass card & mobile accordion) */}
       <FooterSection

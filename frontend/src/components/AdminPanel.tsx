@@ -194,9 +194,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       ]
     },
     finalCta: {
-      kicker: 'HOZIROQ BOSHLANG',
+      kicker: 'BIZ BILAN O‘RGANING',
       title: 'Yangi tilni erkin gapirish vaqti keldi',
-      desc: 'Bir necha soniyada bepul ro‘yxatdan o‘ting va birinchi darsingizni bugunoq boshlang.',
+      desc: 'Til o‘rganish — yangi imkoniyatlar eshiklarini ochadi. Biz siz bilan birga bu yo‘lda!',
       btnRegister: 'Bepul hisob yaratish',
       btnLogin: 'Tizimga kirish'
     },
@@ -6052,7 +6052,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         <input
                           value={cms.finalCta?.kicker || ''}
                           onChange={e => setCms({ ...cms, finalCta: { ...cms.finalCta, kicker: e.target.value } })}
-                          placeholder="HOZIROQ BOSHLANG"
+                          placeholder="BIZ BILAN O‘RGANING"
                         />
                       </label>
                       <label>
@@ -6069,7 +6069,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           value={cms.finalCta?.desc || ''}
                           onChange={e => setCms({ ...cms, finalCta: { ...cms.finalCta, desc: e.target.value } })}
                           rows={2}
-                          placeholder="Bir necha soniyada bepul ro‘yxatdan o‘ting..."
+                          placeholder="Til o‘rganish — yangi imkoniyatlar eshiklarini ochadi. Biz siz bilan birga bu yo‘lda!"
                         />
                       </label>
                       <label>
