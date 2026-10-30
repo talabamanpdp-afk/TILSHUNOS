@@ -5,7 +5,7 @@ import {
   Search, Trash2, Edit3, Save, UserCog, Headphones, PenLine, BookMarked, ChartNoAxesCombined,
   Check, Sun, Moon, Sparkles, ArrowRight, Menu, X, RefreshCw, Database, CheckCircle2,
   AlertCircle, ExternalLink, ShieldAlert, Clock, Layers, MessageSquare, Zap,
-  Smartphone, Laptop, Image as ImageIcon, Upload, RotateCcw, Camera
+  Smartphone, Laptop, Image as ImageIcon, Upload, RotateCcw, Camera, ChevronDown
 } from 'lucide-react';
 import { api, authStorage } from '../api';
 
@@ -2762,39 +2762,99 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                 </div>
               </div>
 
-              {/* Sub-tabs for CMS */}
-              <div className="panel" style={{ padding: '10px 14px', marginBottom: '20px' }}>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {[
-                    { id: 'hero', label: '🚀 Hero & Tugmalar' },
-                    { id: 'stats', label: '📊 Statistika & Metrikalar' },
-                    { id: 'auth', label: '🔐 Kirish Vizuali (Auth)' },
-                    { id: 'preview', label: '💻 Interaktiv Preview' },
-                    { id: 'curriculum', label: '🗺️ CEFR, Ko‘nikma & Qadamlar' },
-                    { id: 'features', label: '⚡ Ilg‘or Imkoniyatlar' },
-                    { id: 'about', label: '👥 Biz Haqimizda & Jamoa' },
-                    { id: 'faq', label: '❓ FAQ Savol-Javoblar' },
-                    { id: 'footer', label: '🌐 Footer, Asoschi & Kontaktlar' }
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setCmsTab(tab.id as any)}
+              {/* CMS Section Selector (Dropdown Select) */}
+              <div className="panel" style={{
+                padding: '14px 18px',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+                flexWrap: 'wrap',
+                borderRadius: '14px',
+                border: '1px solid var(--border)',
+                background: 'var(--panel)',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '11px',
+                    background: 'linear-gradient(135deg, rgba(120, 105, 245, 0.16), rgba(99, 88, 232, 0.08))',
+                    color: 'var(--purple)',
+                    display: 'grid',
+                    placeItems: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Layers size={20} />
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '11px', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Sozlamalar Bo‘limi
+                    </span>
+                    <strong style={{ fontSize: '14px', color: 'var(--text)' }}>
+                      {[
+                        { id: 'hero', label: '🚀 Hero & Tugmalar' },
+                        { id: 'stats', label: '📊 Statistika & Metrikalar' },
+                        { id: 'auth', label: '🔐 Kirish Vizuali (Auth)' },
+                        { id: 'preview', label: '💻 Interaktiv Preview' },
+                        { id: 'curriculum', label: '🗺️ CEFR, Ko‘nikma & Qadamlar' },
+                        { id: 'features', label: '⚡ Ilg‘or Imkoniyatlar' },
+                        { id: 'about', label: '👥 Biz Haqimizda & Jamoa' },
+                        { id: 'faq', label: '❓ FAQ Savol-Javoblar' },
+                        { id: 'footer', label: '🌐 Footer, Asoschi & Kontaktlar' }
+                      ].find(t => t.id === cmsTab)?.label || '🚀 Hero & Tugmalar'}
+                    </strong>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1 1 320px', maxWidth: '420px', justifyContent: 'flex-end' }}>
+                  <div style={{ position: 'relative', width: '100%' }}>
+                    <select
+                      id="cms-section-select"
+                      value={cmsTab}
+                      onChange={e => setCmsTab(e.target.value as any)}
                       style={{
-                        padding: '9px 16px',
-                        borderRadius: '10px',
-                        border: cmsTab === tab.id ? '1px solid transparent' : '1px solid var(--border)',
-                        background: cmsTab === tab.id ? 'linear-gradient(135deg, #7869f5 0%, #6358e8 100%)' : 'var(--panel)',
-                        color: cmsTab === tab.id ? '#ffffff' : 'var(--text)',
-                        boxShadow: cmsTab === tab.id ? '0 4px 12px rgba(120, 105, 245, 0.32)' : 'none',
-                        fontSize: '12px',
-                        fontWeight: cmsTab === tab.id ? 800 : 600,
+                        width: '100%',
+                        padding: '11px 40px 11px 16px',
+                        borderRadius: '11px',
+                        border: '1.5px solid var(--purple)',
+                        background: 'var(--bg)',
+                        color: 'var(--text)',
+                        fontSize: '13px',
+                        fontWeight: 700,
                         cursor: 'pointer',
-                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                        outline: 'none',
+                        appearance: 'none',
+                        WebkitAppearance: 'none',
+                        boxShadow: '0 2px 8px rgba(120, 105, 245, 0.12)',
+                        transition: 'all 0.2s ease'
                       }}
                     >
-                      {tab.label}
-                    </button>
-                  ))}
+                      <option value="hero">🚀 Hero & Tugmalar</option>
+                      <option value="stats">📊 Statistika & Metrikalar</option>
+                      <option value="auth">🔐 Kirish Vizuali (Auth)</option>
+                      <option value="preview">💻 Interaktiv Preview</option>
+                      <option value="curriculum">🗺️ CEFR, Ko‘nikma & Qadamlar</option>
+                      <option value="features">⚡ Ilg‘or Imkoniyatlar</option>
+                      <option value="about">👥 Biz Haqimizda & Jamoa</option>
+                      <option value="faq">❓ FAQ Savol-Javoblar</option>
+                      <option value="footer">🌐 Footer, Asoschi & Kontaktlar</option>
+                    </select>
+                    <div style={{
+                      position: 'absolute',
+                      right: '14px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      pointerEvents: 'none',
+                      color: 'var(--purple)',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
+                      <ChevronDown size={18} strokeWidth={2.5} />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -3954,11 +4014,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         style={{
                           borderRadius: '24px',
                           padding: '36px 30px',
-                          background: cms.authBanner?.bgImage
+                          backgroundColor: '#292647',
+                          backgroundImage: cms.authBanner?.bgImage
                             ? `linear-gradient(145deg, rgba(25, 22, 45, 0.82), rgba(55, 45, 110, 0.78)), url("${cms.authBanner.bgImage}")`
                             : 'linear-gradient(145deg, #292647, #5d51a0 75%, #8472ed)',
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
+                          backgroundSize: 'cover, cover',
+                          backgroundPosition: 'center center, center center',
+                          backgroundRepeat: 'no-repeat, no-repeat',
+                          backgroundAttachment: 'scroll',
                           color: '#ffffff',
                           minHeight: '380px',
                           display: 'flex',

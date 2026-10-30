@@ -2047,12 +2047,14 @@ function App() {
           <div
             className="auth-visual"
             style={{
+              backgroundColor: '#292647',
               backgroundImage: cmsContent?.authBanner?.bgImage
                 ? `linear-gradient(145deg, rgba(25, 22, 45, 0.82), rgba(55, 45, 110, 0.78)), url("${cmsContent.authBanner.bgImage}")`
                 : undefined,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
+              backgroundSize: 'cover, cover',
+              backgroundPosition: 'center center, center center',
+              backgroundRepeat: 'no-repeat, no-repeat',
+              backgroundAttachment: 'scroll'
             }}
           >
             <span className="entry-kicker">
