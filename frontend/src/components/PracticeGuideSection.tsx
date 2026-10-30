@@ -22,6 +22,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   const config = guideConfig || DEFAULT_PRACTICE_GUIDE;
   const [selectedLang, setSelectedLang] = useState<string>('en');
 
+  // Detect dark mode from prop or document element
+  const isDarkMode = dark ?? (typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+
   // Active language guide data
   const currentLangData: LanguagePracticeGuide = (config.languages && config.languages[selectedLang])
     ? config.languages[selectedLang]
@@ -233,22 +236,24 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     ? Math.round(Object.values(speakingScores).reduce((acc, curr) => acc + curr.score, 0) / totalQuestionsCount)
     : 0;
 
-  // Youtube audio link parsing
-  const getYoutubeEmbedUrl = (url: string) => {
+  // Youtube embed helper: autoPlay is false by default so video never autoplays!
+  const getYoutubeEmbedUrl = (url: string, autoPlay: boolean = false) => {
     if (!url) return '';
     try {
       const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
       const match = url.match(regExp);
       if (match && match[2].length === 11) {
-        return `https://www.youtube.com/embed/${match[2]}?autoplay=1&enablejsapi=1`;
+        const videoId = match[2];
+        const ap = autoPlay ? 1 : 0;
+        return `https://www.youtube.com/embed/${videoId}?autoplay=${ap}&enablejsapi=1&rel=0&playsinline=1`;
       }
     } catch {}
     return url;
   };
 
   return (
-    <section id="preview" className="welcome-preview-section">
-      {/* Responsive Styles for Sequentially Stacked Cards */}
+    <section id="preview" className={`welcome-preview-section ${isDarkMode ? 'dark-preview-section' : ''}`}>
+      {/* Responsive & Theme Scoped Styles */}
       <style>{`
         .practice-cards-wrapper {
           max-width: 1040px;
@@ -257,19 +262,62 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           flex-direction: column;
           gap: 32px;
         }
+
+        /* LIGHT THEME (DEFAULT) */
         .practice-skill-card {
-          background: var(--panel, #ffffff);
-          border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+          --pg-card-bg: #ffffff;
+          --pg-card-border: rgba(0, 0, 0, 0.08);
+          --pg-card-shadow: 0 10px 32px rgba(0, 0, 0, 0.04);
+          --pg-box-bg: #f8fafc;
+          --pg-box-border: rgba(0, 0, 0, 0.08);
+          --pg-text-main: #0f172a;
+          --pg-text-heading: #0f172a;
+          --pg-text-muted: #64748b;
+          --pg-text-sub: #475569;
+          --pg-badge-bg: rgba(120, 105, 245, 0.12);
+          --pg-badge-color: #7869f5;
+          --pg-purple: #7869f5;
+          --pg-green-text: #059669;
+
+          background: var(--pg-card-bg);
+          border: 1px solid var(--pg-card-border);
           border-radius: 24px;
           padding: 30px;
-          box-shadow: 0 10px 32px rgba(0, 0, 0, 0.04);
+          box-shadow: var(--pg-card-shadow);
           transition: transform 0.2s ease, box-shadow 0.2s ease;
           position: relative;
           overflow: hidden;
+          color: var(--pg-text-main);
         }
+
         .practice-skill-card:hover {
-          box-shadow: 0 16px 42px rgba(0, 0, 0, 0.07);
+          box-shadow: 0 16px 42px rgba(0, 0, 0, 0.08);
         }
+
+        /* DARK THEME SCOPED OVERRIDES */
+        .welcome-root.dark .practice-skill-card,
+        html.dark .practice-skill-card,
+        .practice-skill-card.dark-card,
+        .practice-cards-wrapper.is-dark .practice-skill-card {
+          --pg-card-bg: #14243a !important;
+          --pg-card-border: rgba(255, 255, 255, 0.1) !important;
+          --pg-card-shadow: 0 14px 40px rgba(0, 0, 0, 0.45) !important;
+          --pg-box-bg: #0b132b !important;
+          --pg-box-border: rgba(255, 255, 255, 0.09) !important;
+          --pg-text-main: #f8fafc !important;
+          --pg-text-heading: #ffffff !important;
+          --pg-text-muted: #94a3b8 !important;
+          --pg-text-sub: #cbd5e1 !important;
+          --pg-badge-bg: rgba(147, 135, 255, 0.18) !important;
+          --pg-badge-color: #a5b4fc !important;
+          --pg-purple: #9387ff !important;
+          --pg-green-text: #34d399 !important;
+
+          background: var(--pg-card-bg) !important;
+          border-color: var(--pg-card-border) !important;
+          color: var(--pg-text-main) !important;
+        }
+
         .practice-card-head {
           display: flex;
           align-items: center;
@@ -278,13 +326,13 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           gap: 10px;
           margin-bottom: 22px;
           padding-bottom: 14px;
-          border-bottom: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+          border-bottom: 1px solid var(--pg-box-border);
         }
         .practice-card-badge {
           padding: 5px 12px;
           border-radius: 8px;
-          background: rgba(120, 105, 245, 0.12);
-          color: var(--purple, #7869f5);
+          background: var(--pg-badge-bg);
+          color: var(--pg-badge-color);
           font-size: 11.5px;
           font-weight: 850;
           letter-spacing: 0.5px;
@@ -296,27 +344,38 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         .practice-lang-tag {
           padding: 4px 10px;
           border-radius: 7px;
-          background: var(--bg, #f8fafc);
-          border: 1px solid var(--border, rgba(0,0,0,0.08));
+          background: var(--pg-box-bg);
+          border: 1px solid var(--pg-box-border);
           font-size: 11px;
           font-weight: 750;
-          color: var(--muted, #64748b);
+          color: var(--pg-text-muted);
           display: inline-flex;
           align-items: center;
           gap: 5px;
         }
+
+        /* Standard 2-column grid for Cards 1-6 */
         .practice-card-grid {
           display: grid;
           grid-template-columns: minmax(260px, 320px) 1fr;
           gap: 26px;
           align-items: start;
         }
+
+        /* Large Shadowing Grid for Card 7 (video is large and crisp) */
+        .practice-shadowing-grid {
+          display: grid;
+          grid-template-columns: minmax(360px, 460px) 1fr;
+          gap: 28px;
+          align-items: start;
+        }
+
         .practice-card-media {
           border-radius: 16px;
           overflow: hidden;
           height: 230px;
-          background: var(--bg, #f1f5f9);
-          border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+          background: var(--pg-box-bg);
+          border: 1px solid var(--pg-box-border);
           box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
         }
         .practice-card-media img {
@@ -325,6 +384,54 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           object-fit: cover;
           display: block;
         }
+
+        /* Enlarged Shadowing Video Container */
+        .practice-shadowing-media {
+          border-radius: 18px;
+          overflow: hidden;
+          height: 300px;
+          background: #000;
+          border: 1px solid var(--pg-box-border);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+          position: relative;
+        }
+
+        /* Robust Content Column that NEVER overflows or spills over */
+        .practice-content-col {
+          min-width: 0;
+          max-width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          word-break: break-word;
+          overflow-wrap: break-word;
+        }
+
+        /* Reading text bold highlight */
+        .reading-content-box b,
+        .reading-content-box strong {
+          color: #7869f5;
+          font-weight: 850;
+        }
+        .welcome-root.dark .reading-content-box b,
+        html.dark .reading-content-box b,
+        .is-dark .reading-content-box b {
+          color: #a5b4fc !important;
+          background: rgba(147, 135, 255, 0.14);
+          padding: 1px 4px;
+          border-radius: 4px;
+        }
+
+        @media (max-width: 900px) {
+          .practice-shadowing-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
+          .practice-shadowing-media {
+            height: 240px;
+          }
+        }
+
         @media (max-width: 820px) {
           .practice-skill-card {
             padding: 20px 16px;
@@ -343,11 +450,25 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       <div className="section-container">
         {/* Header with Title and Language Select Dropdown */}
         <div className="section-header scroll-reveal">
-          <span className="section-kicker">{config.kicker || "AMALIY QO‘LLANMA"}</span>
-          <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 850, letterSpacing: '-1px', margin: '10px 0 14px' }}>
+          <span className="section-kicker" style={{ color: isDarkMode ? '#a5b4fc' : '#7869f5' }}>
+            {config.kicker || "AMALIY QO‘LLANMA"}
+          </span>
+          <h2 style={{
+            fontSize: 'clamp(28px, 4vw, 42px)',
+            fontWeight: 850,
+            letterSpacing: '-1px',
+            margin: '10px 0 14px',
+            color: isDarkMode ? '#ffffff' : '#0f172a'
+          }}>
             {config.title || "Amaliy qo‘llanma"}
           </h2>
-          <p style={{ maxWidth: '640px', margin: '0 auto 24px', fontSize: '15px', color: 'var(--muted)', lineHeight: '1.7' }}>
+          <p style={{
+            maxWidth: '640px',
+            margin: '0 auto 24px',
+            fontSize: '15px',
+            color: isDarkMode ? '#94a3b8' : '#64748b',
+            lineHeight: '1.7'
+          }}>
             {config.subtitle || "O‘rganmoqchi bo‘lgan tilingizni tanlang va har bir ko‘nikma moduli bo‘yicha interaktiv mashqlarni bajaring."}
           </p>
 
@@ -370,16 +491,16 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   width: '100%',
                   padding: '12px 38px 12px 16px',
                   borderRadius: '12px',
-                  border: '1.5px solid var(--purple)',
-                  background: 'var(--panel)',
-                  color: 'var(--text)',
+                  border: isDarkMode ? '1.5px solid #9387ff' : '1.5px solid #7869f5',
+                  background: isDarkMode ? '#14243a' : '#ffffff',
+                  color: isDarkMode ? '#f8fafc' : '#0f172a',
                   fontSize: '14px',
                   fontWeight: 700,
                   cursor: 'pointer',
                   outline: 'none',
                   appearance: 'none',
                   WebkitAppearance: 'none',
-                  boxShadow: '0 4px 14px rgba(120, 105, 245, 0.15)'
+                  boxShadow: isDarkMode ? '0 4px 16px rgba(0,0,0,0.4)' : '0 4px 14px rgba(120, 105, 245, 0.15)'
                 }}
               >
                 <option value="en">🇬🇧 English (Ingliz tili)</option>
@@ -394,7 +515,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 top: '50%',
                 transform: 'translateY(-50%)',
                 pointerEvents: 'none',
-                color: 'var(--purple)',
+                color: isDarkMode ? '#9387ff' : '#7869f5',
                 display: 'flex',
                 alignItems: 'center'
               }}>
@@ -432,12 +553,12 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         {/* ======================================================== */}
         {/* ALL 7 SKILL CARDS SEQUENTIALLY                           */}
         {/* ======================================================== */}
-        <div className="practice-cards-wrapper">
+        <div className={`practice-cards-wrapper ${isDarkMode ? 'is-dark' : ''}`}>
 
           {/* ===================================================== */}
           {/* 1. VOCABULARY CARD                                    */}
           {/* ===================================================== */}
-          <div className="practice-skill-card">
+          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
             <div className="practice-card-head">
               <span className="practice-card-badge">
                 <BookOpen size={14} /> 1. VOCABULARY (LUG‘AT & SO‘Z BOYLIGI)
@@ -460,9 +581,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
               </div>
 
               {/* Vocab Details & Controls */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="practice-content-col">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                  <h3 style={{ margin: 0, fontSize: '26px', fontWeight: 850, color: 'var(--text)' }}>
+                  <h3 style={{ margin: 0, fontSize: '26px', fontWeight: 850, color: 'var(--pg-text-heading)' }}>
                     {currentLangData.vocab.word}
                   </h3>
 
@@ -475,9 +596,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         width: '38px',
                         height: '38px',
                         borderRadius: '10px',
-                        border: '1px solid var(--border)',
-                        background: activeSpeakingText === currentLangData.vocab.word ? 'var(--purple)' : 'var(--bg)',
-                        color: activeSpeakingText === currentLangData.vocab.word ? '#fff' : 'var(--purple)',
+                        border: '1px solid var(--pg-box-border)',
+                        background: activeSpeakingText === currentLangData.vocab.word ? 'var(--pg-purple)' : 'var(--pg-box-bg)',
+                        color: activeSpeakingText === currentLangData.vocab.word ? '#fff' : 'var(--pg-purple)',
                         display: 'grid',
                         placeItems: 'center',
                         cursor: 'pointer'
@@ -492,8 +613,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         width: '38px',
                         height: '38px',
                         borderRadius: '10px',
-                        border: '1px solid var(--border)',
-                        background: isListeningVocabWord ? '#ef4444' : 'var(--bg)',
+                        border: '1px solid var(--pg-box-border)',
+                        background: isListeningVocabWord ? '#ef4444' : 'var(--pg-box-bg)',
                         color: isListeningVocabWord ? '#fff' : '#10b981',
                         display: 'grid',
                         placeItems: 'center',
@@ -508,10 +629,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
                 {/* Translation & Definition */}
                 <div>
-                  <div style={{ fontSize: '15px', fontWeight: 700, color: '#10b981', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--pg-green-text)', marginBottom: '4px' }}>
                     {currentLangData.vocab.translation}
                   </div>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--muted)', lineHeight: '1.6' }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--pg-text-muted)', lineHeight: '1.6' }}>
                     {currentLangData.vocab.explanation}
                   </p>
                 </div>
@@ -519,15 +640,15 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 {/* Example Phrase Card */}
                 <div style={{
                   padding: '14px',
-                  background: 'var(--bg)',
+                  background: 'var(--pg-box-bg)',
                   borderRadius: '12px',
-                  border: '1px solid var(--border)',
+                  border: '1px solid var(--pg-box-border)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '8px'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--muted)', textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--pg-text-muted)', textTransform: 'uppercase' }}>
                       Namuna gap (Example Phrase):
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -537,9 +658,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         style={{
                           padding: '5px 9px',
                           borderRadius: '6px',
-                          border: '1px solid var(--border)',
-                          background: 'var(--panel)',
-                          color: 'var(--purple)',
+                          border: '1px solid var(--pg-box-border)',
+                          background: 'var(--pg-card-bg)',
+                          color: 'var(--pg-purple)',
                           fontSize: '11px',
                           fontWeight: 700,
                           cursor: 'pointer',
@@ -556,8 +677,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         style={{
                           padding: '5px 9px',
                           borderRadius: '6px',
-                          border: '1px solid var(--border)',
-                          background: isListeningVocabPhrase ? '#ef4444' : 'var(--panel)',
+                          border: '1px solid var(--pg-box-border)',
+                          background: isListeningVocabPhrase ? '#ef4444' : 'var(--pg-card-bg)',
                           color: isListeningVocabPhrase ? '#fff' : '#10b981',
                           fontSize: '11px',
                           fontWeight: 700,
@@ -571,7 +692,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       </button>
                     </div>
                   </div>
-                  <div style={{ fontSize: '13.5px', fontStyle: 'italic', color: 'var(--text)', lineHeight: '1.5' }}>
+                  <div style={{ fontSize: '13.5px', fontStyle: 'italic', color: 'var(--pg-text-main)', lineHeight: '1.5' }}>
                     "{currentLangData.vocab.examplePhrase}"
                   </div>
 
@@ -612,7 +733,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {/* 2. WRITING CARD                                       */}
           {/* ===================================================== */}
-          <div className="practice-skill-card">
+          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
             <div className="practice-card-head">
               <span className="practice-card-badge">
                 <PenLine size={14} /> 2. WRITING (AKADEMIK & RASMIY YOZISH)
@@ -635,9 +756,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
               </div>
 
               {/* Letter Content & Actions */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="practice-content-col">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>
+                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
                     {currentLangData.writing.letterTitle}
                   </h3>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -650,8 +771,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '6px',
-                        color: 'var(--purple)',
-                        borderColor: 'var(--purple)'
+                        color: 'var(--pg-purple)',
+                        borderColor: 'var(--pg-purple)',
+                        background: 'var(--pg-box-bg)'
                       }}
                     >
                       <Volume2 size={14} /> Xatni tinglash
@@ -664,7 +786,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         fontSize: '12px',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '6px'
+                        gap: '6px',
+                        color: 'var(--pg-text-main)',
+                        borderColor: 'var(--pg-box-border)',
+                        background: 'var(--pg-box-bg)'
                       }}
                     >
                       {showLetterTranslation ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -676,13 +801,13 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 {/* Letter Text Box */}
                 <div style={{
                   padding: '18px',
-                  background: 'var(--bg)',
+                  background: 'var(--pg-box-bg)',
                   borderRadius: '14px',
-                  border: '1px solid var(--border)',
+                  border: '1px solid var(--pg-box-border)',
                   fontSize: '13.5px',
                   lineHeight: '1.7',
                   whiteSpace: 'pre-line',
-                  color: 'var(--text)',
+                  color: 'var(--pg-text-main)',
                   maxHeight: '220px',
                   overflowY: 'auto'
                 }}>
@@ -693,15 +818,15 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 {showLetterTranslation && (
                   <div style={{
                     padding: '16px',
-                    background: 'rgba(120, 105, 245, 0.08)',
+                    background: isDarkMode ? 'rgba(120, 105, 245, 0.12)' : 'rgba(120, 105, 245, 0.08)',
                     borderRadius: '12px',
                     border: '1px solid rgba(120, 105, 245, 0.25)',
                     fontSize: '13px',
                     lineHeight: '1.65',
-                    color: 'var(--text)',
+                    color: 'var(--pg-text-main)',
                     whiteSpace: 'pre-line'
                   }}>
-                    <strong style={{ color: 'var(--purple)', display: 'block', marginBottom: '6px', fontSize: '11px', textTransform: 'uppercase' }}>
+                    <strong style={{ color: 'var(--pg-purple)', display: 'block', marginBottom: '6px', fontSize: '11px', textTransform: 'uppercase' }}>
                       🇺🇿 O‘zbekcha tarjimasi:
                     </strong>
                     {currentLangData.writing.letterTranslation}
@@ -714,7 +839,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {/* 3. READING CARD                                       */}
           {/* ===================================================== */}
-          <div className="practice-skill-card">
+          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
             <div className="practice-card-head">
               <span className="practice-card-badge">
                 <BookOpen size={14} /> 3. READING (MATN O‘QISH & TAHLIL)
@@ -737,26 +862,27 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
               </div>
 
               {/* Reading Content & Questions */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="practice-content-col">
                 <div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
                     {currentLangData.reading.title}
                   </h3>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--pg-text-muted)' }}>
                     Matnni diqqat bilan o‘qing. <b>Qalin (bold)</b> so‘zlar asosiy leksik tayanchlardir.
                   </p>
                 </div>
 
                 {/* Reading Text Container with HTML bold tags */}
                 <div
+                  className="reading-content-box"
                   style={{
                     padding: '18px',
-                    background: 'var(--bg)',
+                    background: 'var(--pg-box-bg)',
                     borderRadius: '14px',
-                    border: '1px solid var(--border)',
+                    border: '1px solid var(--pg-box-border)',
                     fontSize: '14px',
                     lineHeight: '1.8',
-                    color: 'var(--text)'
+                    color: 'var(--pg-text-main)'
                   }}
                   dangerouslySetInnerHTML={{ __html: currentLangData.reading.readingText }}
                 />
@@ -764,21 +890,30 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 {/* Comprehension Questions */}
                 <div style={{
                   padding: '16px',
-                  background: 'var(--bg)',
+                  background: 'var(--pg-box-bg)',
                   borderRadius: '12px',
-                  border: '1px solid var(--border)',
+                  border: '1px solid var(--pg-box-border)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '10px'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--purple)', textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 850, color: 'var(--pg-purple)', textTransform: 'uppercase' }}>
                       Savollar va to‘g‘ri javoblar:
                     </span>
                     <button
                       onClick={() => setShowReadingAnswers(!showReadingAnswers)}
                       className="outline-btn"
-                      style={{ padding: '4px 10px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                      style={{
+                        padding: '4px 10px',
+                        fontSize: '11px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        background: 'var(--pg-card-bg)',
+                        borderColor: 'var(--pg-box-border)',
+                        color: 'var(--pg-text-main)'
+                      }}
                     >
                       {showReadingAnswers ? <EyeOff size={12} /> : <Eye size={12} />}
                       {showReadingAnswers ? 'Javoblarni yashirish' : 'Javoblarni ko‘rish'}
@@ -786,10 +921,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   </div>
 
                   {currentLangData.reading.questions.map((q, idx) => (
-                    <div key={idx} style={{ fontSize: '13px', lineHeight: '1.6', color: 'var(--text)' }}>
+                    <div key={idx} style={{ fontSize: '13px', lineHeight: '1.6', color: 'var(--pg-text-main)' }}>
                       <div>{q.question}</div>
                       {showReadingAnswers && (
-                        <div style={{ marginTop: '2px', color: '#10b981', fontWeight: 700, fontSize: '12.5px' }}>
+                        <div style={{ marginTop: '2px', color: 'var(--pg-green-text)', fontWeight: 700, fontSize: '12.5px' }}>
                           (To‘g‘ri javob: {q.answer})
                         </div>
                       )}
@@ -803,7 +938,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {/* 4. LISTENING CARD                                     */}
           {/* ===================================================== */}
-          <div className="practice-skill-card">
+          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
             <div className="practice-card-head">
               <span className="practice-card-badge">
                 <Headphones size={14} /> 4. LISTENING (AUDIO TINGLASH & GAP-FILL)
@@ -814,7 +949,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             </div>
 
             <div className="practice-card-grid">
-              {/* Image & Dark YouTube Audio Box */}
+              {/* Image & Dark YouTube Audio Controller Box */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div className="practice-card-media" style={{ height: '170px' }}>
                   <img
@@ -826,13 +961,13 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   />
                 </div>
 
-                {/* Dedicated YouTube Audio Controller Box (Black background, video hidden) */}
+                {/* Dedicated YouTube Audio Controller Box (Black background, rectangular, audio player) */}
                 <div style={{
                   padding: '16px',
                   borderRadius: '16px',
-                  background: '#090d16',
+                  background: '#070b14',
                   color: '#fff',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  border: '1px solid rgba(255,255,255,0.14)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '12px',
@@ -843,60 +978,68 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     <span style={{ fontSize: '11px', fontWeight: 800, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       🎧 Audio Tinglash Pleyeri
                     </span>
-                    <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                    <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '2px 7px', borderRadius: '5px', fontWeight: 800 }}>
                       YouTube Audio
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <button
-                      onClick={() => setListeningAudioPlaying(!listeningAudioPlaying)}
-                      style={{
-                        width: '44px',
-                        height: '44px',
-                        borderRadius: '12px',
-                        background: '#7869f5',
-                        color: '#fff',
-                        border: 'none',
-                        display: 'grid',
-                        placeItems: 'center',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {listeningAudioPlaying ? <Pause size={18} /> : <Play size={18} style={{ marginLeft: '2px' }} />}
-                    </button>
-                    <div>
-                      <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#fff' }}>
-                        {listeningAudioPlaying ? 'Audio ijro etilmoqda...' : 'Audioni boshlash'}
-                      </div>
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                        Tinglang va bo‘sh joylarni to‘ldiring
-                      </span>
-                    </div>
+                  {/* Rectangular cropped YouTube Player with dark theme */}
+                  <div style={{
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    height: '140px',
+                    background: '#000',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    position: 'relative'
+                  }}>
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src={getYoutubeEmbedUrl(currentLangData.listening.youtubeAudioUrl, false)}
+                      title="Listening YouTube Audio Stream"
+                      style={{ border: 'none' }}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
                   </div>
 
-                  {/* Hidden YouTube Iframe that plays audio */}
-                  {listeningAudioPlaying && (
-                    <div style={{ width: '1px', height: '1px', opacity: 0.01, position: 'absolute', pointerEvents: 'none' }}>
-                      <iframe
-                        width="1"
-                        height="1"
-                        src={getYoutubeEmbedUrl(currentLangData.listening.youtubeAudioUrl)}
-                        title="YouTube Audio Stream"
-                        allow="autoplay"
-                      />
-                    </div>
-                  )}
+                  {/* Dual Audio Options: YouTube info + One-click Voice TTS */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => {
+                        const speechText = currentLangData.listening.textWithGaps.replace(/\[\s*[^\]]+\s*\]/g, ' ... ');
+                        handlePlayTTS(speechText);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        background: activeSpeakingText ? '#10b981' : 'rgba(255,255,255,0.1)',
+                        color: '#fff',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Volume2 size={13} />
+                      <span>{activeSpeakingText ? 'Ovoz yangramoqda...' : 'Ovozli o‘qish (TTS Audio)'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Gap-Fill Text and "Javoblarni tekshirish" button */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="practice-content-col">
                 <div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
                     {currentLangData.listening.title}
                   </h3>
-                  <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--muted)' }}>
+                  <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--pg-text-muted)' }}>
                     Audioni tinglang va bo‘sh joylarga tushishi kerak bo‘lgan so‘zlarni aniqlang.
                   </p>
                 </div>
@@ -904,12 +1047,12 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 {/* Gap fill text container */}
                 <div style={{
                   padding: '22px',
-                  background: 'var(--bg)',
+                  background: 'var(--pg-box-bg)',
                   borderRadius: '16px',
-                  border: '1px solid var(--border)',
+                  border: '1px solid var(--pg-box-border)',
                   fontSize: '15px',
                   lineHeight: '2.2',
-                  color: 'var(--text)'
+                  color: 'var(--pg-text-main)'
                 }}>
                   {currentLangData.listening.textWithGaps.split(/\[\s*______\s*\]|\[\s*[^\]]+\s*\]/).map((part, index, arr) => (
                     <React.Fragment key={index}>
@@ -920,9 +1063,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                           padding: showListeningAnswers ? '2px 10px' : '2px 18px',
                           margin: '0 6px',
                           borderRadius: '8px',
-                          border: showListeningAnswers ? '1.5px solid #10b981' : '1.5px dashed var(--purple)',
+                          border: showListeningAnswers ? '1.5px solid #10b981' : '1.5px dashed var(--pg-purple)',
                           background: showListeningAnswers ? 'rgba(16, 185, 129, 0.15)' : 'rgba(120, 105, 245, 0.08)',
-                          color: showListeningAnswers ? '#10b981' : 'var(--purple)',
+                          color: showListeningAnswers ? '#10b981' : 'var(--pg-purple)',
                           fontWeight: 800,
                           fontSize: '13px',
                           transition: 'all 0.3s ease'
@@ -945,7 +1088,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       padding: '10px 18px',
                       fontSize: '13px',
                       fontWeight: 800,
-                      background: showListeningAnswers ? '#10b981' : 'var(--purple)',
+                      background: showListeningAnswers ? '#10b981' : 'var(--pg-purple)',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '8px'
@@ -962,7 +1105,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {/* 5. SPEAKING CARD                                      */}
           {/* ===================================================== */}
-          <div className="practice-skill-card">
+          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
             <div className="practice-card-head">
               <span className="practice-card-badge">
                 <MessageSquare size={14} /> 5. SPEAKING (JONLI INTERVYU & NUTQ)
@@ -987,23 +1130,23 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
                 <div style={{
                   padding: '14px',
-                  background: 'var(--bg)',
+                  background: 'var(--pg-box-bg)',
                   borderRadius: '12px',
-                  border: '1px solid var(--border)'
+                  border: '1px solid var(--pg-box-border)'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--muted)', textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--pg-text-muted)', textTransform: 'uppercase' }}>
                       Javob berilgan savollar:
                     </span>
-                    <strong style={{ fontSize: '12px', color: 'var(--purple)' }}>
+                    <strong style={{ fontSize: '12px', color: 'var(--pg-purple)' }}>
                       {answeredQuestionsCount} / {totalQuestionsCount}
                     </strong>
                   </div>
-                  <div style={{ width: '100%', height: '6px', borderRadius: '4px', background: 'var(--border)', overflow: 'hidden' }}>
+                  <div style={{ width: '100%', height: '6px', borderRadius: '4px', background: 'var(--pg-box-border)', overflow: 'hidden' }}>
                     <div style={{
                       width: `${(answeredQuestionsCount / (totalQuestionsCount || 1)) * 100}%`,
                       height: '100%',
-                      background: 'var(--purple)',
+                      background: 'var(--pg-purple)',
                       transition: 'width 0.3s ease'
                     }} />
                   </div>
@@ -1011,12 +1154,12 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
               </div>
 
               {/* Questions List & Gated Final Score Button */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="practice-content-col">
                 <div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
                     {currentLangData.speaking.title}
                   </h3>
-                  <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--muted)' }}>
+                  <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--pg-text-muted)' }}>
                     Har bir savolni o‘qing va "Javob berish" mikrofon tugmasi orqali erkin javob bering.
                   </p>
                 </div>
@@ -1032,21 +1175,21 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         key={q.id}
                         style={{
                           padding: '16px',
-                          background: 'var(--bg)',
+                          background: 'var(--pg-box-bg)',
                           borderRadius: '14px',
-                          border: '1px solid var(--border)',
+                          border: '1px solid var(--pg-box-border)',
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '10px'
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: '14px', fontWeight: 750, color: 'var(--text)', lineHeight: '1.4' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '14px', fontWeight: 750, color: 'var(--pg-text-main)', lineHeight: '1.4' }}>
                               {q.id}. {q.question}
                             </div>
                             {q.hint && (
-                              <span style={{ fontSize: '11.5px', color: 'var(--muted)', display: 'block', marginTop: '4px' }}>
+                              <span style={{ fontSize: '11.5px', color: 'var(--pg-text-muted)', display: 'block', marginTop: '4px' }}>
                                 💡 Maslahat: {q.hint}
                               </span>
                             )}
@@ -1060,7 +1203,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                               padding: '8px 14px',
                               fontSize: '12px',
                               fontWeight: 700,
-                              background: isRecordingThis ? '#ef4444' : scoreObj ? '#10b981' : 'var(--purple)',
+                              background: isRecordingThis ? '#ef4444' : scoreObj ? '#10b981' : 'var(--pg-purple)',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '6px',
@@ -1135,10 +1278,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       <span style={{ fontSize: '11px', fontWeight: 800, color: '#10b981', textTransform: 'uppercase' }}>
                         🎉 SPEAKING MUVAFFAQIYATLI YAKUNLANDI!
                       </span>
-                      <h4 style={{ margin: '4px 0', fontSize: '18px', fontWeight: 850, color: 'var(--text)' }}>
+                      <h4 style={{ margin: '4px 0', fontSize: '18px', fontWeight: 850, color: 'var(--pg-text-heading)' }}>
                         O‘rtacha natijangiz: {averageSpeakingScore} / 100 ball
                       </h4>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
+                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--pg-text-muted)' }}>
                         Nutqiy ravonlik va intonatsiyangiz a’lo darajada baholandi.
                       </p>
                     </div>
@@ -1158,7 +1301,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {/* 6. GRAMMAR CARD                                       */}
           {/* ===================================================== */}
-          <div className="practice-skill-card">
+          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
             <div className="practice-card-head">
               <span className="practice-card-badge">
                 <Sparkles size={14} /> 6. GRAMMAR (GRAMMATIKA & XATOLAR TAHLILI)
@@ -1181,12 +1324,12 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
               </div>
 
               {/* Grammar Comparison Texts & Rules */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="practice-content-col">
                 <div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
                     {currentLangData.grammar.topicName}
                   </h3>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--muted)', lineHeight: '1.6' }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--pg-text-sub)', lineHeight: '1.6' }}>
                     {currentLangData.grammar.topicExplanation}
                   </p>
                 </div>
@@ -1204,7 +1347,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     <div style={{ fontSize: '11px', fontWeight: 800, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <AlertCircle size={14} /> XATO VARIANT:
                     </div>
-                    <div style={{ fontSize: '13.5px', textDecoration: 'line-through', color: 'var(--text)' }}>
+                    <div style={{ fontSize: '13.5px', textDecoration: 'line-through', color: 'var(--pg-text-main)' }}>
                       "{currentLangData.grammar.incorrectText}"
                     </div>
                   </div>
@@ -1220,7 +1363,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     <div style={{ fontSize: '11px', fontWeight: 800, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <CheckCircle2 size={14} /> TO‘G‘RI VARIANT:
                     </div>
-                    <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text)' }}>
+                    <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--pg-text-main)' }}>
                       "{currentLangData.grammar.correctedText}"
                     </div>
                   </div>
@@ -1230,10 +1373,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 <div style={{
                   padding: '12px 16px',
                   borderRadius: '10px',
-                  background: 'var(--bg)',
-                  border: '1px solid var(--border)',
+                  background: 'var(--pg-box-bg)',
+                  border: '1px solid var(--pg-box-border)',
                   fontSize: '12px',
-                  color: 'var(--muted)'
+                  color: 'var(--pg-text-muted)'
                 }}>
                   💡 <strong>Qoidani eslab qoling:</strong> {currentLangData.grammar.ruleTip}
                 </div>
@@ -1244,7 +1387,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* ===================================================== */}
           {/* 7. SHADOWING CARD                                     */}
           {/* ===================================================== */}
-          <div className="practice-skill-card">
+          <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
             <div className="practice-card-head">
               <span className="practice-card-badge">
                 <Award size={14} /> 7. SHADOWING (SOYA METODI & NUTQNI MOSLASHTIRISH)
@@ -1254,32 +1397,26 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
               </span>
             </div>
 
-            <div className="practice-card-grid">
-              {/* Video Player */}
-              <div style={{
-                borderRadius: '16px',
-                overflow: 'hidden',
-                height: '240px',
-                background: '#090d16',
-                border: '1px solid var(--border)',
-                position: 'relative'
-              }}>
+            {/* Enlarged Shadowing Grid: Video is wider and taller, right text has min-width: 0 */}
+            <div className="practice-shadowing-grid">
+              {/* Video Player: Large size (300px height), autoplay=0 (never auto-plays on load!) */}
+              <div className="practice-shadowing-media">
                 <iframe
                   width="100%"
                   height="100%"
-                  src={getYoutubeEmbedUrl(currentLangData.shadowing.videoUrl)}
+                  src={getYoutubeEmbedUrl(currentLangData.shadowing.videoUrl, false)}
                   title="Shadowing Video"
                   style={{ border: 'none' }}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
               </div>
 
               {/* Shadowing Text, Audio Listen & Live Word Compare Mic */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="practice-content-col">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
-                    <h3 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: 800, color: 'var(--text)' }}>
+                    <h3 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: 800, color: 'var(--pg-text-heading)' }}>
                       {currentLangData.shadowing.title}
                     </h3>
                   </div>
@@ -1289,7 +1426,16 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     <button
                       onClick={() => handlePlayTTS(currentLangData.shadowing.audioText)}
                       className="outline-btn"
-                      style={{ padding: '6px 12px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--purple)' }}
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        color: 'var(--pg-purple)',
+                        borderColor: 'var(--pg-purple)',
+                        background: 'var(--pg-box-bg)'
+                      }}
                     >
                       <Volume2 size={14} /> Audioni eshitish
                     </button>
@@ -1302,7 +1448,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '6px',
-                        background: isShadowingListening ? '#ef4444' : 'var(--purple)',
+                        background: isShadowingListening ? '#ef4444' : 'var(--pg-purple)',
                         animation: isShadowingListening ? 'pulse 1s infinite' : 'none'
                       }}
                     >
@@ -1311,15 +1457,22 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   </div>
                 </div>
 
-                {/* Target Text with Word-by-Word Color Matching */}
+                {/* Target Text with Word-by-Word Color Matching (never overflows) */}
                 <div style={{
                   padding: '20px',
-                  background: 'var(--bg)',
+                  background: 'var(--pg-box-bg)',
                   borderRadius: '14px',
-                  border: '1px solid var(--border)',
-                  fontSize: '16px',
+                  border: '1px solid var(--pg-box-border)',
+                  fontSize: '15px',
                   lineHeight: '1.8',
-                  color: 'var(--text)'
+                  color: 'var(--pg-text-main)',
+                  minWidth: 0,
+                  maxWidth: '100%',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '4px'
                 }}>
                   {currentLangData.shadowing.shadowingText.split(' ').map((targetWord, idx) => {
                     const cleanTarget = targetWord.replace(/[.,:;!?]/g, '').toLowerCase();
@@ -1330,13 +1483,13 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       <span
                         key={idx}
                         style={{
-                          marginRight: '6px',
-                          padding: '1px 3px',
+                          padding: '2px 5px',
                           borderRadius: '4px',
                           color: isMatched ? '#10b981' : 'inherit',
-                          fontWeight: isMatched ? 800 : 500,
-                          background: isMatched ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
-                          transition: 'all 0.2s ease'
+                          fontWeight: isMatched ? 850 : 500,
+                          background: isMatched ? 'rgba(16, 185, 129, 0.18)' : 'transparent',
+                          transition: 'all 0.2s ease',
+                          display: 'inline-block'
                         }}
                       >
                         {targetWord}
