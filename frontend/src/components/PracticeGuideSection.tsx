@@ -3295,47 +3295,6 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           )}
 
           {/* ===================================================== */}
-          {/* SLIDE NAVIGATION CONTROLS (IMAGE 2 MATCHING BAR)      */}
-          {/* ===================================================== */}
-          <div className="practice-slide-nav-bar">
-            <button
-              onClick={handlePrevSlide}
-              disabled={currentSlide === 0}
-              className="nav-bar-btn prev"
-            >
-              <ChevronLeft size={18} />
-              <span>Oldingi modul</span>
-            </button>
-
-            {/* Modern Capsule Progress Indicator */}
-            <div className="nav-bar-capsule-progress">
-              <div
-                className="capsule-active-bar"
-                style={{ width: `${((currentSlide + 1) / SKILL_MODULES.length) * 100}%` }}
-              />
-              <div className="capsule-dots">
-                {SKILL_MODULES.map((mod) => (
-                  <span
-                    key={mod.id}
-                    className={`capsule-mini-dot ${currentSlide >= mod.id ? 'active' : ''}`}
-                  />
-                ))}
-              </div>
-              <span className="capsule-counter-text">
-                {currentSlide + 1} / {SKILL_MODULES.length}
-              </span>
-            </div>
-
-            <button
-              onClick={handleNextSlide}
-              className="nav-bar-btn next"
-            >
-              <span>{currentSlide === SKILL_MODULES.length - 1 ? 'Ro‘yxatdan o‘tish' : 'Keyingi modul'}</span>
-              <ChevronRight size={18} />
-            </button>
-          </div>
-
-          {/* ===================================================== */}
           {/* FEATURED BANNER: AMALIY MODUL (MATCHING IMAGE 2)      */}
           {/* ===================================================== */}
           <div className={`practice-amaliy-card ${isDarkMode ? 'dark-card' : ''}`}>
