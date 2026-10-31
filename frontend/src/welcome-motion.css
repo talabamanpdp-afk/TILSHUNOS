@@ -156,14 +156,25 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.08) !important;
 }
 
-/* 8. INTERACTIVE CARD SPOTLIGHT HOVER TRANSITIONS */
+/* 8. INTERACTIVE CARD WRAPPER CLEANUP (NO SQUARE BOUNDING BOX OR SHADOW) */
 .tilt-card-wrapper {
-  transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+  border-radius: inherit;
   will-change: transform;
 }
 
 .tilt-card-wrapper:hover {
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(56, 189, 248, 0.25);
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+}
+
+.tilt-card-spotlight {
+  display: none !important;
 }
 
 /* 9. PREFERS-REDUCED-MOTION ACCESSIBILITY STRICT COMPLIANCE */

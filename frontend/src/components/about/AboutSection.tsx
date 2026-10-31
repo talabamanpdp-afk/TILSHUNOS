@@ -840,7 +840,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
                   transition={{ duration: 0.55, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
                   style={{ width: '100%', height: '100%', display: 'flex' }}
                 >
-                  <TiltCard maxTilt={6} glowColor="rgba(56, 189, 248, 0.2)">
+                  <TiltCard maxTilt={6} borderRadius="20px">
                     <div className="as-value-card">
                       {/* Atmospheric subtle background image */}
                       <div className="as-card-bg-wrap">

@@ -688,7 +688,7 @@ export function FeaturesSection({
                 viewport={{ once: true, margin: '-40px' }}
                 style={{ width: '100%', height: '100%', display: 'flex' }}
               >
-                <TiltCard maxTilt={8} glowColor={conf.shadowColor}>
+                <TiltCard maxTilt={8} borderRadius="22px">
                   <div
                     className="feat-card-item"
                     onClick={() => onExploreFeature && item.key && onExploreFeature(item.key)}
