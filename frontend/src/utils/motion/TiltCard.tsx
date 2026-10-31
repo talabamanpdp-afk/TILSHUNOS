@@ -20,6 +20,8 @@ export function TiltCard({
   onClick
 }: TiltCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const rectRef = useRef<DOMRect | null>(null);
+  const rafRef = useRef<number | null>(null);
   const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
@@ -27,29 +29,49 @@ export function TiltCard({
       window.matchMedia('(pointer: coarse)').matches ||
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
     );
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
   const rotateX = useSpring(0, { stiffness: 260, damping: 22 });
   const rotateY = useSpring(0, { stiffness: 260, damping: 22 });
 
+  const handleMouseEnter = () => {
+    if (isTouch || !cardRef.current) return;
+    rectRef.current = cardRef.current.getBoundingClientRect();
+  };
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isTouch || !cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const xPos = e.clientX - rect.left;
-    const yPos = e.clientY - rect.top;
+    if (!rectRef.current) {
+      rectRef.current = cardRef.current.getBoundingClientRect();
+    }
+    const clientX = e.clientX;
+    const clientY = e.clientY;
 
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      const rect = rectRef.current;
+      if (!rect) return;
+      const xPos = clientX - rect.left;
+      const yPos = clientY - rect.top;
 
-    const rotX = -((yPos - centerY) / centerY) * maxTilt;
-    const rotY = ((xPos - centerX) / centerX) * maxTilt;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
 
-    rotateX.set(rotX);
-    rotateY.set(rotY);
+      const rotX = -((yPos - centerY) / centerY) * maxTilt;
+      const rotY = ((xPos - centerX) / centerX) * maxTilt;
+
+      rotateX.set(rotX);
+      rotateY.set(rotY);
+    });
   };
 
   const handleMouseLeave = () => {
     if (isTouch) return;
+    rectRef.current = null;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rotateX.set(0);
     rotateY.set(0);
   };
@@ -87,6 +109,7 @@ export function TiltCard({
       <motion.div
         ref={cardRef}
         className={`tilt-card-wrapper ${className}`}
+        onMouseEnter={handleMouseEnter}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={onClick}

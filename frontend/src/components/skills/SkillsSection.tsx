@@ -467,35 +467,32 @@ export function SkillsSection({
         .skills-grid-cell {
           width: 100%;
           display: flex;
-          transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), z-index 0.35s ease;
+          will-change: transform, opacity;
+          position: relative;
         }
 
         /* 1. O'qish (Reading) - Row 1, Col 1 */
         .skills-grid-reading {
           grid-column: 1;
           grid-row: 1;
-          transform: rotate(-1.6deg);
         }
 
         /* 2. Yozish (Writing) - Row 1, Col 2 */
         .skills-grid-writing {
           grid-column: 2;
           grid-row: 1;
-          transform: rotate(1.2deg);
         }
 
         /* 3. Tinglash (Listening) - Row 2, Col 1 */
         .skills-grid-listening {
           grid-column: 1;
           grid-row: 2;
-          transform: rotate(0.8deg);
         }
 
         /* 4. Gapirish (Speaking) - Row 2, Col 2 */
         .skills-grid-speaking {
           grid-column: 2;
           grid-row: 2;
-          transform: rotate(-1.2deg);
         }
 
         /* 5. Lug'at (Vocabulary) - Col 3, centered vertically spanning both rows! */
@@ -503,19 +500,17 @@ export function SkillsSection({
           grid-column: 3;
           grid-row: 1 / span 2;
           align-self: center;
-          transform: rotate(-1.8deg);
         }
 
         .skills-grid-cell:hover {
-          transform: rotate(0deg) translateY(-8px) scale(1.025) !important;
           z-index: 20;
         }
 
         /* Individual Card Component */
         .skills-card {
           background: rgba(14, 25, 55, 0.78);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
           border: 1.5px solid var(--skill-border-glow);
           border-radius: 22px;
           padding: 26px 24px 22px;
@@ -525,7 +520,7 @@ export function SkillsSection({
           text-align: left;
           position: relative;
           overflow: hidden;
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: box-shadow 0.25s ease, border-color 0.25s ease;
           box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 20px var(--skill-shadow);
           cursor: pointer;
           min-height: 205px;
@@ -863,16 +858,24 @@ export function SkillsSection({
             const Icon = meta.icon;
             const skillKey = skill.key || (idx === 0 ? 'reading' : idx === 1 ? 'writing' : idx === 2 ? 'listening' : idx === 3 ? 'speaking' : 'vocab');
             const gridCellClass = `skills-grid-${skillKey}`;
+            const rotations = [-1.6, 1.2, 0.8, -1.2, -1.8];
+            const defaultRotate = rotations[idx % 5];
 
             return (
               <motion.div
                 key={skill.key || idx}
                 className={`skills-grid-cell ${gridCellClass}`}
-                initial={{ opacity: 0, y: 55, scale: 0.94 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                whileHover={{ y: -8, scale: 1.03 }}
-                viewport={{ once: false, amount: 0.2, margin: '0px 0px -100px 0px' }}
-                transition={{ duration: 0.7, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, y: 38, scale: 0.96, rotate: defaultRotate }}
+                whileInView={{ opacity: 1, y: 0, scale: 1, rotate: defaultRotate }}
+                whileHover={{ y: -8, scale: 1.025, rotate: 0 }}
+                viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+                transition={{
+                  opacity: { duration: 0.48, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] },
+                  y: { duration: 0.52, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] },
+                  scale: { duration: 0.52, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] },
+                  rotate: { duration: 0.3, ease: 'easeOut' }
+                }}
+                style={{ transform: 'translateZ(0)' }}
               >
                 <TiltCard maxTilt={5} borderRadius="24px">
                   <div
@@ -939,10 +942,10 @@ export function SkillsSection({
                 className="skills-mobile-pill-item"
                 onClick={() => onSelectSkill && skill.key && onSelectSkill(skill.key)}
                 whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, y: 30, scale: 0.96 }}
+                initial={{ opacity: 0, y: 24, scale: 0.97 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: false, amount: 0.15, margin: '0px 0px -60px 0px' }}
-                transition={{ duration: 0.5, delay: idx * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.44, delay: idx * 0.035, ease: [0.22, 1, 0.36, 1] }}
                 style={{
                   background: meta.pillBg,
                   ['--pill-accent' as any]: meta.accent,

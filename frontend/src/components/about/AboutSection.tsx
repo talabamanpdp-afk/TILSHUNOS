@@ -846,11 +846,11 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
               return (
                 <motion.div
                   key={idx}
-                  initial={{ opacity: 0, y: 50, scale: 0.94 }}
+                  initial={{ opacity: 0, y: 36, scale: 0.96 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: false, amount: 0.22, margin: '0px 0px -100px 0px' }}
-                  transition={{ duration: 0.65, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
-                  style={{ width: '100%', height: '100%', display: 'flex' }}
+                  viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+                  transition={{ duration: 0.52, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ width: '100%', height: '100%', display: 'flex', transform: 'translateZ(0)', willChange: 'transform, opacity' }}
                 >
                   <TiltCard maxTilt={6} borderRadius="20px">
                     <div className="as-value-card">

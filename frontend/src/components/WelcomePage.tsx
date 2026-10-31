@@ -24,6 +24,7 @@ import { FinalCtaSection } from './cta/FinalCtaSection';
 import { FooterSection } from './footer/FooterSection';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
 import '../welcome-motion.css';
 import { MagneticButton } from '../utils/motion/MagneticButton';
 import { TiltCard } from '../utils/motion/TiltCard';
@@ -203,11 +204,16 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
 
     try {
       lenis = new Lenis({
-        duration: 1.15,
+        duration: 0.95,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         orientation: 'vertical',
+        gestureOrientation: 'vertical',
         smoothWheel: true,
+        wheelMultiplier: 1.0,
+        touchMultiplier: 1.5,
       });
+
+      (window as any).__lenis = lenis;
 
       function raf(time: number) {
         lenis?.raf(time);
@@ -221,6 +227,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
       lenis?.destroy();
+      delete (window as any).__lenis;
     };
   }, []);
 
@@ -280,8 +287,8 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
           });
         },
         {
-          threshold: 0.16,
-          rootMargin: '0px 0px -110px 0px'
+          threshold: 0.15,
+          rootMargin: '0px 0px -80px 0px'
         }
       );
 

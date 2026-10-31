@@ -475,10 +475,11 @@ export function LearningProcessSection({ config, dark }: LearningProcessSectionP
             return (
               <motion.div
                 key={stepItem.step || idx}
-                initial={{ opacity: 0, x: isReverse ? 45 : -45, y: 30 }}
+                initial={{ opacity: 0, x: isReverse ? 36 : -36, y: 22 }}
                 whileInView={{ opacity: 1, x: 0, y: 0 }}
-                viewport={{ once: false, amount: 0.22, margin: '0px 0px -100px 0px' }}
-                transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+                transition={{ duration: 0.52, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
+                style={{ transform: 'translateZ(0)', willChange: 'transform, opacity' }}
                 className={`lp-step-row ${isReverse ? 'reverse' : ''}`}
               >
                 {/* 1. Text Column */}

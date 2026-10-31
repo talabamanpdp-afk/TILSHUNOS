@@ -73,34 +73,42 @@ export function FloatingParticles() {
             top: `${sym.y}%`,
             x: mouseX,
             y: mouseY,
-            width: sym.size,
-            height: sym.size,
-            borderRadius: '8px',
-            background: 'rgba(15, 23, 42, 0.65)',
-            border: `1px solid ${sym.color}50`,
-            boxShadow: `0 0 16px ${sym.glow}, inset 0 0 8px ${sym.glow}`,
-            color: sym.color,
-            fontSize: `${sym.size * 0.44}px`,
-            fontWeight: 900,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backdropFilter: 'blur(8px)',
-            userSelect: 'none'
-          }}
-          animate={{
-            y: [0, -18, 0],
-            rotate: [sym.rotate, sym.rotate + 6, sym.rotate],
-            opacity: [0.55, 0.85, 0.55]
-          }}
-          transition={{
-            duration: sym.duration,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: sym.delay
+            pointerEvents: 'none',
+            willChange: 'transform'
           }}
         >
-          {sym.label}
+          <motion.div
+            style={{
+              width: sym.size,
+              height: sym.size,
+              borderRadius: '8px',
+              background: 'rgba(15, 23, 42, 0.85)',
+              border: `1px solid ${sym.color}50`,
+              boxShadow: `0 0 14px ${sym.glow}, inset 0 0 6px ${sym.glow}`,
+              color: sym.color,
+              fontSize: `${sym.size * 0.44}px`,
+              fontWeight: 900,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              userSelect: 'none',
+              transform: 'translateZ(0)',
+              willChange: 'transform, opacity'
+            }}
+            animate={{
+              y: [0, -14, 0],
+              rotate: [sym.rotate, sym.rotate + 6, sym.rotate],
+              opacity: [0.65, 0.95, 0.65]
+            }}
+            transition={{
+              duration: sym.duration,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: sym.delay
+            }}
+          >
+            {sym.label}
+          </motion.div>
         </motion.div>
       ))}
     </div>

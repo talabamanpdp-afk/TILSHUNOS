@@ -25,16 +25,14 @@ const containerVariants: Variants = {
 const wordVariants: Variants = {
   hidden: {
     opacity: 0,
-    y: 20,
-    filter: 'blur(4px)'
+    y: 16
   },
   visible: {
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
     transition: {
-      duration: 0.65,
-      ease: [0.16, 1, 0.3, 1]
+      duration: 0.48,
+      ease: [0.22, 1, 0.36, 1]
     }
   }
 };
@@ -72,7 +70,7 @@ export function TextReveal({
             key={idx}
             variants={wordVariants}
             className={`word-item ${isHighlight ? highlightClassName : ''}`}
-            style={{ display: 'inline-block', willChange: 'transform, opacity, filter' }}
+            style={{ display: 'inline-block', willChange: 'transform, opacity' }}
           >
             {word}
           </motion.span>

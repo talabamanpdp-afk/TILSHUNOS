@@ -311,10 +311,11 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
           {/* Left Column: Illustrated Winding Landscape Roadmap (DESKTOP ONLY) */}
           <motion.div
             className="cefr-desktop-canvas"
-            initial={{ opacity: 0, x: -45, scale: 0.96 }}
+            initial={{ opacity: 0, x: -35, scale: 0.97 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
-            viewport={{ once: false, amount: 0.2, margin: '0px 0px -100px 0px' }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+            transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transform: 'translateZ(0)', willChange: 'transform, opacity' }}
           >
             <RoadmapLandscapeCanvas
               selectedLevel={selectedLevelCode}
@@ -326,11 +327,11 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
 
           {/* Right Column: Dynamic Level Information Panel + Motivational Card */}
           <motion.div
-            style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
-            initial={{ opacity: 0, x: 45, scale: 0.96 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '20px', transform: 'translateZ(0)', willChange: 'transform, opacity' }}
+            initial={{ opacity: 0, x: 35, scale: 0.97 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
-            viewport={{ once: false, amount: 0.2, margin: '0px 0px -100px 0px' }}
-            transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+            transition={{ duration: 0.52, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
           >
             <AnimatePresence mode="wait">
               <motion.div

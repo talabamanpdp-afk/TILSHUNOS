@@ -563,12 +563,14 @@ export function FaqSection({ faqs, dark }: FaqSectionProps) {
             return (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, y: 35, scale: 0.98 }}
+                initial={{ opacity: 0, y: 24, scale: 0.985 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
-                transition={{ duration: 0.6, delay: idx * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.46, delay: idx * 0.035, ease: [0.22, 1, 0.36, 1] }}
                 className={`faq-card-item ${isOpen ? 'open' : ''}`}
                 style={{
+                  transform: 'translateZ(0)',
+                  willChange: 'transform, opacity',
                   boxShadow: isOpen
                     ? '0 16px 36px rgba(37, 99, 235, 0.28), 0 0 25px rgba(59, 130, 246, 0.25)'
                     : undefined
