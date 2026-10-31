@@ -7,8 +7,8 @@
  * Loyiha nomi: TILŞUNOS / Tilşunos
  */
 
-export function convertUzbekText(str: string): string {
-  if (typeof str !== 'string' || !str) return str;
+export function convertUzbekText(str?: string | null): string {
+  if (typeof str !== 'string' || !str) return (str as any) || '';
 
   // Skip URLs, storage paths, base64, raw HTML/SVG paths, pure color hexes, and email identifiers
   if (

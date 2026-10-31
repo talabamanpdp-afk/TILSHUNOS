@@ -158,6 +158,16 @@ export interface CmsConfig {
     materialsCount?: number;
     teachersCount?: number;
   };
+  heroBgDesktop?: string;
+  headerBgDesktop?: string;
+  heroBgMobile?: string;
+  headerBgMobile?: string;
+  brandLogo?: string;
+  cefrRoadmap?: any;
+  founderPhoto?: string;
+  founderTitle?: string;
+  founderQuote?: string;
+  [key: string]: any;
 }
 
 interface WelcomePageProps {

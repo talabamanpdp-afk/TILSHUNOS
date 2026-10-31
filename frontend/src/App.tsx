@@ -4,7 +4,7 @@ import { DuelMatchModal } from './components/DuelMatchModal';
 import { WelcomePage } from './components/WelcomePage';
 import { AboutPage } from './components/AboutPage';
 import { TrialTestPage } from './components/trial/TrialTestPage';
-import { useEffect, useMemo, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useState } from 'react';
 import {
   Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Award, BookA, BookOpen, Bookmark, Brain,
   CalendarDays, Check, CheckCheck, ChevronDown, ChevronRight, CircleHelp, Clock3, Download, Flame, Gamepad2, GraduationCap, Image,
@@ -268,7 +268,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
             translation: x.nativeTranslation,
             example: x.exampleSentence || '',
             topic: x.topicCategory || 'Umumiy',
-            state: x.status === 2 ? 'O‘rganilgan' : x.status === 1 ? 'Jarayonda' : 'Rejalashtirilgan'
+            state: x.status === 2 ? 'Örganilgan' : x.status === 1 ? 'Jarayonda' : 'Rejalaştirilgan'
           }));
           setWords(mapped);
           localStorage.setItem(vocabKey, JSON.stringify(mapped));
@@ -372,8 +372,8 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
     () => words.filter(w => `${w.word} ${w.translation} ${w.topic}`.toLowerCase().includes(search.toLowerCase())),
     [words, search]
   );
-  const learned = words.filter(w => w.state === 'O‘rganilgan').length;
-  const currentQuestion = words.filter(w => w.state !== 'O‘rganilgan')[questionIndex % Math.max(1, words.filter(w => w.state !== 'O‘rganilgan').length)] || words[0];
+  const learned = words.filter(w => w.state === 'Örganilgan').length;
+  const currentQuestion = words.filter(w => w.state !== 'Örganilgan')[questionIndex % Math.max(1, words.filter(w => w.state !== 'Örganilgan').length)] || words[0];
   const notify = (s: string) => setToast(s);
 
   const addWord = async () => {
@@ -405,7 +405,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
         translation: newWord.translation.trim(),
         example: newWord.example.trim(),
         topic: newWord.topic,
-        state: 'Rejalashtirilgan'
+        state: 'Rejalaştirilgan'
       },
       ...words
     ]);
@@ -700,7 +700,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
 
               {(() => {
                 const goalPercent = Math.min(100, Math.round(((dashboardStats.todayMinutes || 0) / Math.max(1, dashboardStats.dailyGoalMinutes)) * 100));
-                const totalLearnedWords = dashboardStats.learnedWords || words.filter(w => w.state === 'O‘rganilgan').length;
+                const totalLearnedWords = dashboardStats.learnedWords || words.filter(w => w.state === 'Örganilgan').length;
                 const totalScore = (dashboardStats.totalXP || 0) + gameScore;
                 const myRank = leaderboard.findIndex(l => l.name?.toLowerCase().includes(currentUser?.firstName?.toLowerCase() || '')) + 1;
                 const rankNote = myRank > 0 ? `Haftalik o‘rin: #${myRank}` : (totalScore > 0 ? 'Haftalik reytingda' : 'Boshlang‘ich bosqich');
@@ -902,7 +902,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                             <strong>{w.word}</strong>
                             <span>{w.translation}</span>
                           </div>
-                          <span className={`status status-${w.state === 'Örganilgan' || w.state === 'O‘rganilgan' ? 'learned' : w.state === 'Jarayonda' ? 'progress' : 'planned'}`}>
+                          <span className={`status status-${w.state === 'Örganilgan' ? 'learned' : w.state === 'Jarayonda' ? 'progress' : 'planned'}`}>
                             {w.state}
                           </span>
                         </div>
@@ -995,7 +995,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                               className="mini-speak-btn"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                playSpeech(w.word, 'en');
+                                playSpeech(w.word, { lang: 'en' });
                               }}
                               title="Talaffuzni tinglash"
                               type="button"
@@ -1009,7 +1009,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                       <span className="translation-cell">{w.translation}</span>
                       <span className="topic-chip">{w.topic}</span>
                       <span>
-                        <span className={`status status-${w.state === 'O‘rganilgan' ? 'learned' : w.state === 'Jarayonda' ? 'progress' : 'planned'}`}>
+                        <span className={`status status-${w.state === 'Örganilgan' ? 'learned' : w.state === 'Jarayonda' ? 'progress' : 'planned'}`}>
                           {w.state}
                         </span>
                       </span>
@@ -1019,7 +1019,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                           setWords(
                             words.map(x =>
                               x.id === w.id
-                                ? ({ ...x, state: x.state === 'Rejalashtirilgan' ? 'Jarayonda' : x.state === 'Jarayonda' ? 'O‘rganilgan' : 'Rejalashtirilgan' } as Word)
+                                ? ({ ...x, state: x.state === 'Rejalaştirilgan' ? 'Jarayonda' : x.state === 'Jarayonda' ? 'Örganilgan' : 'Rejalaştirilgan' } as Word)
                                 : x
                             )
                           )
@@ -1625,7 +1625,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                   <h2>{currentQuestion.word}</h2>
                   <button
                     className="pronounce-btn"
-                    onClick={() => playSpeech(currentQuestion.word, 'en')}
+                    onClick={() => playSpeech(currentQuestion.word, { lang: 'en' })}
                     type="button"
                   >
                     <Volume2 size={17} /> Audio talaffuz
@@ -2159,7 +2159,7 @@ function App() {
               <span>
                 {cmsContent?.authBanner?.statLabel
                   ? cmsContent.authBanner.statLabel.includes('\n')
-                    ? cmsContent.authBanner.statLabel.split('\n').map((line: string, i: number) => <React.Fragment key={i}>{line}<br /></React.Fragment>)
+                    ? cmsContent.authBanner.statLabel.split('\n').map((line: string, i: number) => <Fragment key={i}>{line}<br /></Fragment>)
                     : cmsContent.authBanner.statLabel
                   : <>asosiy könikma<br />bitta platformada</>}
               </span>

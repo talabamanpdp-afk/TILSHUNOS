@@ -4,7 +4,7 @@ import {
   Gamepad2, Crown, BookOpen, Headphones, GraduationCap, Briefcase, Users, Target
 } from 'lucide-react';
 import {
-  LearningProcessConfig, LearningProcessStep, DEFAULT_LEARNING_PROCESS_CONFIG
+  LearningProcessConfig, LearningProcessStep, DEFAULT_LEARNING_PROCESS_CONFIG, DEFAULT_LEARNING_PROCESS_STEPS
 } from '../../data/learningProcessData';
 import { motion } from 'framer-motion';
 

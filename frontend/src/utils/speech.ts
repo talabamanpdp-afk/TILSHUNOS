@@ -173,24 +173,31 @@ export function calculateSimilarity(str1: string, str2: string): number {
 export interface PronunciationResult {
   transcript: string;
   score: number;
+  confidence: number;
   passed: boolean;
   feedback: string;
 }
 
 export interface StartListeningOptions {
   lang?: SupportedLang | string;
-  targetWord: string;
+  targetWord?: string;
+  expectedWord?: string;
   onInterim?: (text: string) => void;
+  onPartial?: (text: string) => void;
   onResult: (res: PronunciationResult) => void;
-  onError: (errMessage: string) => void;
+  onError?: (errMessage: any) => void;
+  onEnd?: () => void;
 }
 
 /**
  * Uses browser-native Speech Recognition (0 server storage) to assess user pronunciation.
  */
 export function startListening(options: StartListeningOptions): () => void {
+  const targetText = options.targetWord || options.expectedWord || '';
+
   if (!isSpeechRecognitionSupported()) {
-    options.onError('Ushbu brauzerda ovozni aniqlash (SpeechRecognition) qo‘llab-quvvatlanmaydi.');
+    options.onError?.('Uşbu brauzerda ovozni aniqlaş (SpeechRecognition) qöllab-quvvatlanmaydi.');
+    options.onEnd?.();
     return () => {};
   }
 
@@ -219,22 +226,23 @@ export function startListening(options: StartListeningOptions): () => void {
         }
       }
 
-      if (interim && options.onInterim) {
-        options.onInterim(interim);
+      if (interim) {
+        options.onInterim?.(interim);
+        options.onPartial?.(interim);
       }
 
       const textToScore = finalTranscript || interim;
       if (textToScore) {
-        const score = calculateSimilarity(textToScore, options.targetWord);
+        const score = calculateSimilarity(textToScore, targetText);
         let feedback = '';
         if (score >= 90) {
           feedback = 'A‘lo darajada! Mukammal talaffuz! 🎯';
         } else if (score >= 75) {
-          feedback = 'Yaxshi natija! Juda yaqin! 👍';
+          feedback = 'Yaxşi natija! Juda yaqin! 👍';
         } else if (score >= 50) {
-          feedback = 'Yomon emas, yana bir bor urinib ko‘ring! 🔄';
+          feedback = 'Yomon emas, yana bir bor urinib körong! 🔄';
         } else {
-          feedback = 'Qaytadan aniqroq aytib ko‘ring! 🎙️';
+          feedback = 'Qaytadan aniqroq aytib köring! 🎙️';
         }
 
         if (finalTranscript && !hasReturned) {
@@ -242,6 +250,7 @@ export function startListening(options: StartListeningOptions): () => void {
           options.onResult({
             transcript: finalTranscript,
             score,
+            confidence: Math.round(score) / 100,
             passed: score >= 75,
             feedback
           });
@@ -251,25 +260,27 @@ export function startListening(options: StartListeningOptions): () => void {
 
     recognition.onerror = (e: any) => {
       if (e.error === 'no-speech') {
-        options.onError('Ovoz eshitilmadi. Qaytadan urinib ko‘ring.');
+        options.onError?.('Ovoz eşitilmadi. Qaytadan urinib köring.');
       } else if (e.error === 'not-allowed') {
-        options.onError('Mikrofon ruxsati berilmadi.');
+        options.onError?.('Mikrofon ruxsati berilmadi.');
       } else {
-        options.onError(`Xatolik: ${e.error}`);
+        options.onError?.(`Xatolik: ${e.error}`);
       }
     };
 
     recognition.onend = () => {
       if (!hasReturned && finalTranscript) {
         hasReturned = true;
-        const score = calculateSimilarity(finalTranscript, options.targetWord);
+        const score = calculateSimilarity(finalTranscript, targetText);
         options.onResult({
           transcript: finalTranscript,
           score,
+          confidence: Math.round(score) / 100,
           passed: score >= 75,
-          feedback: score >= 75 ? 'Ajoyib natija! 🎯' : 'Qaytadan urinib ko‘ring! 🔄'
+          feedback: score >= 75 ? 'Ajoyib natija! 🎯' : 'Qaytadan urinib köring! 🔄'
         });
       }
+      options.onEnd?.();
     };
 
     recognition.start();
@@ -280,7 +291,8 @@ export function startListening(options: StartListeningOptions): () => void {
       } catch {}
     };
   } catch (err: any) {
-    options.onError(err?.message || 'Ovoz tanishni boshlashda xatolik yuz berdi');
+    options.onError?.(err?.message || 'Ovoz tanişni boşlaşda xatolik yuz berdi');
+    options.onEnd?.();
     return () => {};
   }
 }

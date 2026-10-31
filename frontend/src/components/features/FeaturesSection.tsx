@@ -673,10 +673,10 @@ export function FeaturesSection({
 
             // Varied entrance directions matching requirement 5
             const getEntranceProps = (index: number) => {
-              if (index === 0) return { initial: { opacity: 0, x: -35 }, whileInView: { opacity: 1, x: 0 }, transition: { duration: 0.65, delay: 0.1, ease: [0.16, 1, 0.3, 1] } };
-              if (index === 1) return { initial: { opacity: 0, y: 35 }, whileInView: { opacity: 1, y: 0 }, transition: { duration: 0.65, delay: 0.2, ease: [0.16, 1, 0.3, 1] } };
-              if (index === 2) return { initial: { opacity: 0, scale: 0.92 }, whileInView: { opacity: 1, scale: 1 }, transition: { duration: 0.65, delay: 0.3, ease: [0.16, 1, 0.3, 1] } };
-              return { initial: { opacity: 0, x: 35 }, whileInView: { opacity: 1, x: 0 }, transition: { duration: 0.65, delay: 0.4, ease: [0.16, 1, 0.3, 1] } };
+              if (index === 0) return { initial: { opacity: 0, x: -35 }, whileInView: { opacity: 1, x: 0 }, transition: { duration: 0.65, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const } };
+              if (index === 1) return { initial: { opacity: 0, y: 35 }, whileInView: { opacity: 1, y: 0 }, transition: { duration: 0.65, delay: 0.2, ease: [0.16, 1, 0.3, 1] as const } };
+              if (index === 2) return { initial: { opacity: 0, scale: 0.92 }, whileInView: { opacity: 1, scale: 1 }, transition: { duration: 0.65, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const } };
+              return { initial: { opacity: 0, x: 35 }, whileInView: { opacity: 1, x: 0 }, transition: { duration: 0.65, delay: 0.4, ease: [0.16, 1, 0.3, 1] as const } };
             };
 
             const entrance = getEntranceProps(idx);
