@@ -2355,7 +2355,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         {/* SLIDE WRAPPER (TOUCH SWIPEABLE FOR MOBILE, BIG FOR DESKTOP) */}
         {/* ======================================================== */}
         <div
-          className={`practice-slider-wrapper ${isDarkMode ? 'is-dark' : ''}`}
+          className={`practice-slider-wrapper scroll-reveal ${isDarkMode ? 'is-dark' : ''}`}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >

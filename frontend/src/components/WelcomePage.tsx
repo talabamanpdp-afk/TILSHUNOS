@@ -273,13 +273,15 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               entry.target.classList.add('revealed');
-              observer.unobserve(entry.target);
+            } else {
+              // Bidirectional scroll animation: retreat smoothly when scrolling away, emerge when scrolling back!
+              entry.target.classList.remove('revealed');
             }
           });
         },
         {
-          threshold: 0.08,
-          rootMargin: '0px 0px -30px 0px'
+          threshold: 0.16,
+          rootMargin: '0px 0px -110px 0px'
         }
       );
 

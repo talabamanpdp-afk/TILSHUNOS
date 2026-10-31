@@ -671,12 +671,12 @@ export function FeaturesSection({
             const conf = colorConfigs[colorKey] || colorConfigs.blue;
             const Icon = conf.icon;
 
-            // Varied entrance directions matching requirement 5
+            // Varied entrance directions matching requirement 5 with bidirectional reveal
             const getEntranceProps = (index: number) => {
-              if (index === 0) return { initial: { opacity: 0, x: -35 }, whileInView: { opacity: 1, x: 0 }, transition: { duration: 0.65, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const } };
-              if (index === 1) return { initial: { opacity: 0, y: 35 }, whileInView: { opacity: 1, y: 0 }, transition: { duration: 0.65, delay: 0.2, ease: [0.16, 1, 0.3, 1] as const } };
-              if (index === 2) return { initial: { opacity: 0, scale: 0.92 }, whileInView: { opacity: 1, scale: 1 }, transition: { duration: 0.65, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const } };
-              return { initial: { opacity: 0, x: 35 }, whileInView: { opacity: 1, x: 0 }, transition: { duration: 0.65, delay: 0.4, ease: [0.16, 1, 0.3, 1] as const } };
+              if (index === 0) return { initial: { opacity: 0, x: -50, scale: 0.94 }, whileInView: { opacity: 1, x: 0, scale: 1 }, transition: { duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] as const } };
+              if (index === 1) return { initial: { opacity: 0, y: 55, scale: 0.94 }, whileInView: { opacity: 1, y: 0, scale: 1 }, transition: { duration: 0.7, delay: 0.16, ease: [0.16, 1, 0.3, 1] as const } };
+              if (index === 2) return { initial: { opacity: 0, y: 55, scale: 0.94 }, whileInView: { opacity: 1, y: 0, scale: 1 }, transition: { duration: 0.7, delay: 0.24, ease: [0.16, 1, 0.3, 1] as const } };
+              return { initial: { opacity: 0, x: 50, scale: 0.94 }, whileInView: { opacity: 1, x: 0, scale: 1 }, transition: { duration: 0.7, delay: 0.32, ease: [0.16, 1, 0.3, 1] as const } };
             };
 
             const entrance = getEntranceProps(idx);
@@ -685,7 +685,7 @@ export function FeaturesSection({
               <motion.div
                 key={item.key || idx}
                 {...entrance}
-                viewport={{ once: true, margin: '-40px' }}
+                viewport={{ once: false, amount: 0.22, margin: '0px 0px -100px 0px' }}
                 style={{ width: '100%', height: '100%', display: 'flex' }}
               >
                 <TiltCard maxTilt={8} borderRadius="22px">

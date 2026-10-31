@@ -129,7 +129,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
         {/* ======================================================== */}
         {/* HERO / SECTION HEADER (O'zbek tilida)                    */}
         {/* ======================================================== */}
-        <div
+        <motion.div
           style={{
             textAlign: 'center',
             maxWidth: '780px',
@@ -138,6 +138,10 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
             flexDirection: 'column',
             alignItems: 'center'
           }}
+          initial={{ opacity: 0, y: 35 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.25, margin: '0px 0px -80px 0px' }}
+          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
         >
           {/* Eyebrow */}
           <div
@@ -223,7 +227,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
               <ArrowRight size={17} strokeWidth={2.5} />
             </button>
           </MagneticButton>
-        </div>
+        </motion.div>
 
         {/* ======================================================== */}
         {/* MOBILE ONLY: GORIZONTAL YO'LAKCHA (LEVEL SELECTION TRACK) */}
@@ -305,17 +309,29 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
           }}
         >
           {/* Left Column: Illustrated Winding Landscape Roadmap (DESKTOP ONLY) */}
-          <div className="cefr-desktop-canvas">
+          <motion.div
+            className="cefr-desktop-canvas"
+            initial={{ opacity: 0, x: -45, scale: 0.96 }}
+            whileInView={{ opacity: 1, x: 0, scale: 1 }}
+            viewport={{ once: false, amount: 0.2, margin: '0px 0px -100px 0px' }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
             <RoadmapLandscapeCanvas
               selectedLevel={selectedLevelCode}
               onSelectLevel={(code) => setSelectedLevelCode(code)}
               dark={dark}
               levels={mergedLevels}
             />
-          </div>
+          </motion.div>
 
           {/* Right Column: Dynamic Level Information Panel + Motivational Card */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <motion.div
+            style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
+            initial={{ opacity: 0, x: 45, scale: 0.96 }}
+            whileInView={{ opacity: 1, x: 0, scale: 1 }}
+            viewport={{ once: false, amount: 0.2, margin: '0px 0px -100px 0px' }}
+            transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedLevelCode}
@@ -333,15 +349,21 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
             </AnimatePresence>
 
             <MotivationalCard dark={dark} quoteHeading={quoteHeading} quoteDesc={quoteDesc} />
-          </div>
+          </motion.div>
         </div>
 
         {/* ======================================================== */}
         {/* BOTTOM SECTION: PROGRESS INDICATOR                       */}
         {/* ======================================================== */}
-        <div style={{ marginTop: '36px' }}>
+        <motion.div
+          style={{ marginTop: '36px' }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.25 }}
+          transition={{ duration: 0.6 }}
+        >
           <RoadmapProgress currentLevel={selectedLevelCode} dark={dark} levels={mergedLevels} />
-        </div>
+        </motion.div>
       </div>
 
       {/* Responsive Styles for Desktop vs Mobile Stepper Track */}

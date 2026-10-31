@@ -730,8 +730,14 @@ export function SkillsSection({
       <div className="skills-container">
         {/* Header Grid */}
         <div className="skills-header-grid">
-          {/* Left Column: Kicker, Title, Subtitle */}
-          <div className="skills-header-left">
+          {/* Left Column: Kicker, Title, Subtitle with Bidirectional Reveal */}
+          <motion.div
+            className="skills-header-left"
+            initial={{ opacity: 0, y: 35 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.25, margin: '0px 0px -80px 0px' }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className="skills-dot-matrix-left" aria-hidden="true">
               {Array.from({ length: 16 }).map((_, i) => (
                 <span key={i} />
@@ -751,10 +757,16 @@ export function SkillsSection({
             <p className="skills-subtitle">
               {currentSubtitle}
             </p>
-          </div>
+          </motion.div>
 
           {/* Right Column: 3D Books Stack with Headphones & Slogan */}
-          <div className="skills-header-right">
+          <motion.div
+            className="skills-header-right"
+            initial={{ opacity: 0, y: 35, scale: 0.92 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: false, amount: 0.25, margin: '0px 0px -80px 0px' }}
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          >
             <svg
               className="skills-3d-art-wrap"
               viewBox="0 0 220 165"
@@ -836,7 +848,7 @@ export function SkillsSection({
                 <path d="M 14 27 L 10 32 L 16 36" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* ========================================================
@@ -856,10 +868,11 @@ export function SkillsSection({
               <motion.div
                 key={skill.key || idx}
                 className={`skills-grid-cell ${gridCellClass}`}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.65, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, y: 55, scale: 0.94 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                whileHover={{ y: -8, scale: 1.03 }}
+                viewport={{ once: false, amount: 0.2, margin: '0px 0px -100px 0px' }}
+                transition={{ duration: 0.7, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
               >
                 <TiltCard maxTilt={5} borderRadius="24px">
                   <div
@@ -926,6 +939,10 @@ export function SkillsSection({
                 className="skills-mobile-pill-item"
                 onClick={() => onSelectSkill && skill.key && onSelectSkill(skill.key)}
                 whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 30, scale: 0.96 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: false, amount: 0.15, margin: '0px 0px -60px 0px' }}
+                transition={{ duration: 0.5, delay: idx * 0.07, ease: [0.16, 1, 0.3, 1] }}
                 style={{
                   background: meta.pillBg,
                   ['--pill-accent' as any]: meta.accent,

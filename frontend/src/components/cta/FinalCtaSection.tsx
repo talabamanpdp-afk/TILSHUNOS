@@ -327,7 +327,13 @@ export function FinalCtaSection({
         }
       `}</style>
 
-      <div className="final-cta-floating-card scroll-reveal-scale">
+      <motion.div
+        className="final-cta-floating-card"
+        initial={{ opacity: 0, y: 55, scale: 0.94 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: false, amount: 0.22, margin: '0px 0px -100px 0px' }}
+        transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+      >
         <div className="final-cta-ambient-glow-left" />
         <div className="final-cta-ambient-glow-right" />
 
@@ -604,7 +610,7 @@ export function FinalCtaSection({
             </defs>
           </svg>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

@@ -728,7 +728,13 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
         {/* Top 2-Column Hero Grid */}
         <div className="as-hero-grid">
           {/* Left Column: Heading, Paragraph, CTA */}
-          <div className="as-left-col">
+          <motion.div
+            className="as-left-col"
+            initial={{ opacity: 0, x: -45, y: 25 }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
+            viewport={{ once: false, amount: 0.25, margin: '0px 0px -100px 0px' }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
             <span className="as-kicker">
               <Users size={14} /> BIZ HAQIMIZDA
             </span>
@@ -747,10 +753,16 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
                 <ArrowRight size={16} />
               </button>
             </MagneticButton>
-          </div>
+          </motion.div>
 
           {/* Right Column: Desk Scene with Floating Card */}
-          <div className="as-visual-col">
+          <motion.div
+            className="as-visual-col"
+            initial={{ opacity: 0, x: 45, scale: 0.95 }}
+            whileInView={{ opacity: 1, x: 0, scale: 1 }}
+            viewport={{ once: false, amount: 0.25, margin: '0px 0px -100px 0px' }}
+            transition={{ duration: 0.75, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          >
             {/* Floating Card: Loyiha Faollari va Yetakchilari */}
             <div className="as-floating-team-card" onClick={onOpenAbout} title="Batafsil köriş">
               <div className="as-team-card-header">Loyiha Faollari va Yetakçilari</div>
@@ -823,7 +835,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Bottom Row: 5 Connected Value Cards with 3D Tilt */}
@@ -834,10 +846,10 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
               return (
                 <motion.div
                   key={idx}
-                  initial={{ opacity: 0, y: 25 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-30px' }}
-                  transition={{ duration: 0.55, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, y: 50, scale: 0.94 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: false, amount: 0.22, margin: '0px 0px -100px 0px' }}
+                  transition={{ duration: 0.65, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
                   style={{ width: '100%', height: '100%', display: 'flex' }}
                 >
                   <TiltCard maxTilt={6} borderRadius="20px">
