@@ -13,6 +13,7 @@ import {
   PracticeGuideConfig, LanguagePracticeGuide, DEFAULT_PRACTICE_GUIDE
 } from '../data/practiceGuideData';
 import confetti from 'canvas-confetti';
+import { motion } from 'framer-motion';
 
 interface PracticeGuideSectionProps {
   guideConfig?: PracticeGuideConfig;
@@ -776,11 +777,19 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           border-color: rgba(120, 105, 245, 0.4) !important;
           transform: translateY(-2px);
         }
-        .practice-tab-pill.active {
+        .practice-tab-active-indicator {
+          position: absolute;
+          inset: 0;
+          border-radius: 14px;
           background: linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%) !important;
+          box-shadow: 0 6px 20px rgba(120, 105, 245, 0.45);
+          z-index: 0;
+        }
+        .practice-tab-pill.active {
+          background: transparent !important;
           color: #ffffff !important;
           border-color: transparent !important;
-          box-shadow: 0 6px 20px rgba(120, 105, 245, 0.35);
+          box-shadow: none !important;
           transform: translateY(-2px);
         }
 
@@ -2361,9 +2370,17 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   onClick={() => goToSlide(tab.id)}
                   className={`practice-tab-pill ${isActive ? 'active' : ''}`}
                   title={tab.sub}
+                  style={{ position: 'relative' }}
                 >
-                  <Icon size={16} />
-                  <span>{tab.label}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="activePracticeTabPill"
+                      className="practice-tab-active-indicator"
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    />
+                  )}
+                  <Icon size={16} style={{ position: 'relative', zIndex: 1 }} />
+                  <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
                 </button>
               );
             })}

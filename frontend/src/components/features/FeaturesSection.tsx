@@ -408,7 +408,7 @@ export function FeaturesSection({
           background: var(--card-accent);
           border-color: transparent;
           box-shadow: 0 6px 18px var(--card-shadow);
-          transform: translateX(3px);
+          transform: translateX(5px);
         }
 
         /* Luminous Fluid Wave in Bottom Right Corner */

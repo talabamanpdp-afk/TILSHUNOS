@@ -59,7 +59,15 @@ export function MagneticButton({
   return (
     <motion.div
       ref={ref}
-      style={{ x, y, display: 'inline-block', position: 'relative', ...style }}
+      style={{
+        x,
+        y,
+        display: 'inline-flex',
+        borderRadius: '9999px',
+        position: 'relative',
+        background: 'transparent',
+        ...style
+      }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}

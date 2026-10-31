@@ -504,7 +504,7 @@ export function SkillsSection({
           background: var(--skill-accent);
           border-color: transparent;
           box-shadow: 0 4px 14px var(--skill-shadow);
-          transform: translateX(3px);
+          transform: translateX(5px);
         }
 
         /* Bottom Corner Watermark / Illustration Silhouette */
@@ -519,7 +519,8 @@ export function SkillsSection({
           transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .skills-card:hover .skills-card-watermark {
-          transform: scale(1.08);
+          transform: scale(1.1) rotate(2deg);
+          opacity: 0.28;
         }
         .skills-card-watermark-text {
           position: absolute;
@@ -829,19 +830,9 @@ export function SkillsSection({
                       )}
                     </div>
 
-                    {/* Title with Micro-Effects (Equalizer for listening, typing cursor for writing) */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    {/* Title */}
+                    <div style={{ marginBottom: '8px' }}>
                       <h3 className="skills-card-title" style={{ margin: 0 }}>{skill.title}</h3>
-                      {skill.key === 'writing' && <span className="typing-cursor-blink" />}
-                      {skill.key === 'listening' && (
-                        <div className="soundwave-visualizer">
-                          <span className="eq-bar" style={{ background: meta.accent }} />
-                          <span className="eq-bar" style={{ background: meta.accent }} />
-                          <span className="eq-bar" style={{ background: meta.accent }} />
-                          <span className="eq-bar" style={{ background: meta.accent }} />
-                          <span className="eq-bar" style={{ background: meta.accent }} />
-                        </div>
-                      )}
                     </div>
 
                     {/* Description */}

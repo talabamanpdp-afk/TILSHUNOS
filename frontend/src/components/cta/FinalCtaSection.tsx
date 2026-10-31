@@ -46,7 +46,7 @@ export function FinalCtaSection({
   };
 
   return (
-    <section className={`welcome-final-cta-section ${dark ? 'is-dark' : 'is-light'}`}>
+    <section id="final-cta" className={`welcome-final-cta-section ${dark ? 'is-dark' : 'is-light'}`}>
       <style>{`
         /* ========================================================
            FINAL CALL-TO-ACTION SECTION (MATCHING REFERENCE MOCKUP)
@@ -218,6 +218,12 @@ export function FinalCtaSection({
           transform: translateY(-3px) scale(1.02);
           box-shadow: 0 12px 32px rgba(99, 102, 241, 0.65), 0 0 28px rgba(124, 58, 237, 0.5);
         }
+        .final-cta-btn-primary svg:last-child {
+          transition: transform 0.22s ease;
+        }
+        .final-cta-btn-primary:hover svg:last-child {
+          transform: translateX(4px);
+        }
 
         .final-cta-btn-secondary {
           display: inline-flex;
@@ -238,6 +244,12 @@ export function FinalCtaSection({
           background: rgba(30, 41, 59, 0.85);
           border-color: rgba(99, 102, 241, 0.5);
           transform: translateY(-2px);
+        }
+        .final-cta-btn-secondary .btn-play-circle {
+          transition: transform 0.22s ease;
+        }
+        .final-cta-btn-secondary:hover .btn-play-circle {
+          transform: scale(1.12);
         }
 
         .btn-play-circle {

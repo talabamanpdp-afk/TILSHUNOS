@@ -37,18 +37,23 @@
 /* 2. BREATHING GLOW FOR HERO & CTA BUTTONS */
 @keyframes breathingGlow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(56, 189, 248, 0.35), 0 0 45px rgba(99, 102, 241, 0.2);
-    border-color: rgba(56, 189, 248, 0.6);
+    filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.45));
   }
   50% {
-    box-shadow: 0 0 35px rgba(56, 189, 248, 0.65), 0 0 65px rgba(99, 102, 241, 0.45);
-    border-color: rgba(168, 85, 247, 0.85);
+    filter: drop-shadow(0 0 22px rgba(168, 85, 247, 0.65));
   }
 }
 
+.magnetic-btn-wrapper {
+  display: inline-flex;
+  border-radius: 9999px;
+  position: relative;
+  background: transparent !important;
+}
+
 .has-magnetic-glow {
+  border-radius: 9999px !important;
   animation: breathingGlow 3.5s ease-in-out infinite;
-  border-radius: inherit;
 }
 
 /* 3. AUDIO EQUALIZER BARS (For Listening Skill) */
