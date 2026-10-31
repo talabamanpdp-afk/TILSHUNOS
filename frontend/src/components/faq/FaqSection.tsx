@@ -3,6 +3,7 @@ import {
   HelpCircle, ChevronUp, ChevronDown, GraduationCap,
   CreditCard, Smartphone, BookOpen, Sparkles, Target, Award, Zap
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface FaqItem {
   q: string;
@@ -552,7 +553,7 @@ export function FaqSection({ faqs, dark }: FaqSectionProps) {
           </div>
         </div>
 
-        {/* FAQ Accordion List Cards */}
+        {/* FAQ Accordion List Cards with Staggered Entrance & Smooth Height Springs */}
         <div className="faq-accordion-container">
           {currentFaqs.map((faq, idx) => {
             const isOpen = openIndex === idx;
@@ -560,9 +561,18 @@ export function FaqSection({ faqs, dark }: FaqSectionProps) {
             const Icon = badge.icon;
 
             return (
-              <div
+              <motion.div
                 key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-30px' }}
+                transition={{ duration: 0.5, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
                 className={`faq-card-item ${isOpen ? 'open' : ''}`}
+                style={{
+                  boxShadow: isOpen
+                    ? '0 16px 36px rgba(37, 99, 235, 0.28), 0 0 25px rgba(59, 130, 246, 0.25)'
+                    : undefined
+                }}
               >
                 <button
                   type="button"
@@ -571,33 +581,56 @@ export function FaqSection({ faqs, dark }: FaqSectionProps) {
                   aria-expanded={isOpen}
                 >
                   <div className="faq-btn-left">
-                    <div
+                    <motion.div
                       className="faq-icon-badge"
                       style={{
                         background: badge.bg,
                         color: badge.color,
                         border: `1.5px solid ${badge.border}`
                       }}
+                      whileHover={{ scale: 1.12, rotate: 6 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                     >
                       <Icon size={20} />
-                    </div>
+                    </motion.div>
 
                     <h3 className="faq-question-title">
                       {faq.q}
                     </h3>
                   </div>
 
-                  <div className="faq-chevron-icon">
-                    {isOpen ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
-                  </div>
+                  <motion.div
+                    className="faq-chevron-icon"
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  >
+                    <ChevronDown size={22} />
+                  </motion.div>
                 </button>
 
-                {isOpen && (
-                  <div className="faq-answer-panel">
-                    <p>{faq.a}</p>
-                  </div>
-                )}
-              </div>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      key="answer"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      style={{ overflow: 'hidden' }}
+                    >
+                      <div className="faq-answer-panel">
+                        <motion.p
+                          initial={{ y: 8, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          transition={{ duration: 0.3, delay: 0.05 }}
+                        >
+                          {faq.a}
+                        </motion.p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             );
           })}
         </div>

@@ -3,6 +3,7 @@ import {
   BookOpen, Send, Instagram, Youtube, Layers, FileText,
   Mail, Phone, Heart, ChevronDown, ChevronUp, ArrowRight
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface FooterSectionProps {
   cms?: any;
@@ -729,47 +730,55 @@ export function FooterSection({
                 Til örganiş — yangi imkoniyatlar eşiklarini oçadi. Biz siz bilan birga bu yölda!
               </p>
 
-              {/* Social Media Circular Buttons */}
+              {/* Social Media Circular Buttons with Spring Motion */}
               <div className="footer-social-row">
-                <a
+                <motion.a
                   href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="footer-social-btn"
                   title="Telegram"
+                  whileHover={{ scale: 1.15, y: -3 }}
+                  whileTap={{ scale: 0.94 }}
                 >
                   <Send size={16} />
-                </a>
-                <a
+                </motion.a>
+                <motion.a
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="footer-social-btn"
                   title="Instagram"
+                  whileHover={{ scale: 1.15, y: -3 }}
+                  whileTap={{ scale: 0.94 }}
                 >
                   <Instagram size={16} />
-                </a>
-                <a
+                </motion.a>
+                <motion.a
                   href={youtubeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="footer-social-btn"
                   title="YouTube"
+                  whileHover={{ scale: 1.15, y: -3 }}
+                  whileTap={{ scale: 0.94 }}
                 >
                   <Youtube size={16} />
-                </a>
-                <a
+                </motion.a>
+                <motion.a
                   href={twitterUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="footer-social-btn"
                   title="X (Twitter)"
+                  whileHover={{ scale: 1.15, y: -3 }}
+                  whileTap={{ scale: 0.94 }}
                 >
                   {/* Modern X logo SVG */}
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                   </svg>
-                </a>
+                </motion.a>
               </div>
             </div>
 

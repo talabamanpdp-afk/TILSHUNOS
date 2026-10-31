@@ -12,6 +12,7 @@ import {
 import {
   PracticeGuideConfig, LanguagePracticeGuide, DEFAULT_PRACTICE_GUIDE
 } from '../data/practiceGuideData';
+import confetti from 'canvas-confetti';
 
 interface PracticeGuideSectionProps {
   guideConfig?: PracticeGuideConfig;
@@ -86,6 +87,17 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       setCopiedPhrase(true);
       setTimeout(() => setCopiedPhrase(false), 2000);
     }
+  };
+
+  const triggerConfetti = () => {
+    try {
+      confetti({
+        particleCount: 50,
+        spread: 65,
+        origin: { y: 0.72 },
+        colors: ['#38bdf8', '#818cf8', '#c084fc', '#10b981', '#f59e0b']
+      });
+    } catch {}
   };
 
   // Render corner wave background SVG inside cards (Image 1 style)
@@ -374,6 +386,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         setIsListeningVocabWord(false);
         const score = Math.max(65, Math.min(100, Math.round(res.confidence * 100)));
         setVocabWordScore(score);
+        if (score >= 80) triggerConfetti();
       },
       onError: () => setIsListeningVocabWord(false),
       onEnd: () => setIsListeningVocabWord(false)
@@ -400,6 +413,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         setIsListeningVocabPhrase(false);
         const score = Math.max(70, Math.min(100, Math.round(res.confidence * 100)));
         setVocabPhraseScore(score);
+        if (score >= 80) triggerConfetti();
       },
       onError: () => setIsListeningVocabPhrase(false),
       onEnd: () => setIsListeningVocabPhrase(false)
@@ -462,6 +476,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         setShadowingRecognizedText(res.transcript || '');
         const score = Math.max(75, Math.min(100, Math.round(res.confidence * 100)));
         setShadowingScore(score);
+        if (score >= 80) triggerConfetti();
       },
       onError: () => setIsShadowingListening(false),
       onEnd: () => setIsShadowingListening(false)

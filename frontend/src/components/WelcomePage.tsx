@@ -22,6 +22,14 @@ import { AboutSection } from './about/AboutSection';
 import { FaqSection } from './faq/FaqSection';
 import { FinalCtaSection } from './cta/FinalCtaSection';
 import { FooterSection } from './footer/FooterSection';
+import { motion, AnimatePresence } from 'framer-motion';
+import Lenis from 'lenis';
+import '../welcome-motion.css';
+import { MagneticButton } from '../utils/motion/MagneticButton';
+import { TiltCard } from '../utils/motion/TiltCard';
+import { AnimatedCounter } from '../utils/motion/AnimatedCounter';
+import { TextReveal } from '../utils/motion/TextReveal';
+import { FloatingParticles } from '../utils/motion/FloatingParticles';
 
 export interface CmsConfig {
   hero?: string;
@@ -172,6 +180,39 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   // Smart auto-hiding navbar on scroll down, reappearing on scroll up
   const [navVisible, setNavVisible] = useState(true);
   const [navScrolled, setNavScrolled] = useState(false);
+
+  // Lenis smooth scroll initialization (desktop with fine pointer only)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isTouch || prefersReduced) return;
+
+    let lenis: Lenis | null = null;
+    let rafId: number;
+
+    try {
+      lenis = new Lenis({
+        duration: 1.15,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: 'vertical',
+        smoothWheel: true,
+      });
+
+      function raf(time: number) {
+        lenis?.raf(time);
+        rafId = requestAnimationFrame(raf);
+      }
+      rafId = requestAnimationFrame(raf);
+    } catch (e) {
+      console.warn('Lenis scroll error:', e);
+    }
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      lenis?.destroy();
+    };
+  }, []);
 
   useEffect(() => {
     let lastScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
@@ -619,6 +660,29 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
           <div className="holo-bg-right">
             <div className="holo-radial-mesh" />
           </div>
+          {/* Ambient Cosmic Floating Orbs & Interactive Language Particles */}
+          <div
+            className="cosmic-mesh-bg"
+            style={{
+              top: '-12%',
+              left: '12%',
+              width: '420px',
+              height: '420px',
+              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, transparent 70%)'
+            }}
+          />
+          <div
+            className="cosmic-mesh-bg"
+            style={{
+              top: '25%',
+              right: '6%',
+              width: '460px',
+              height: '460px',
+              background: 'radial-gradient(circle, rgba(168, 85, 247, 0.16) 0%, transparent 70%)',
+              animationDelay: '-6s'
+            }}
+          />
+          <FloatingParticles />
         </div>
 
         {/* Global Split Nav Header */}
@@ -812,69 +876,84 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               <h1 className="holo-headline">
                 {heroTitle.includes('erkin gapiring') ? (
                   <>
-                    {heroTitle.replace('erkin gapiring', '').trim()}{' '}
+                    <TextReveal
+                      text={heroTitle.replace('erkin gapiring', '').trim()}
+                      as="span"
+                      delay={0.12}
+                    />{' '}
                     <span className="holo-pill-badge">{heroBadge}</span>
                     <br />
-                    erkin gapiring
+                    <span className="text-gradient-flow">erkin gapiring</span>
                   </>
                 ) : (
                   <>
-                    {heroTitle}{' '}
+                    <TextReveal text={heroTitle} as="span" delay={0.12} />{' '}
                     {heroBadge && <span className="holo-pill-badge">{heroBadge}</span>}
                   </>
                 )}
               </h1>
 
-              <p className="holo-description">
+              <motion.p
+                className="holo-description"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              >
                 {heroDesc || 'Har kuni bor-yöği 20–30 daqiqa vaqt ajrating, real kerakli sözlarni örganing va söz boyligingizni oşiring.'}
-              </p>
+              </motion.p>
 
               {/* Action row with Primary CTA, Secondary CTA and Flags */}
               <div className="holo-cta-row">
                 <div className="holo-cta-buttons">
-                  <button className="holo-start-btn" onClick={() => onBegin('register')}>
-                    <span>{primaryCta || 'Start Learning'}</span>
-                    <ChevronRight size={18} />
-                  </button>
+                  <MagneticButton activeGlow>
+                    <button className="holo-start-btn" onClick={() => onBegin('register')}>
+                      <span>{primaryCta || 'Start Learning'}</span>
+                      <ChevronRight size={18} />
+                    </button>
+                  </MagneticButton>
 
-                  <button
-                    className="holo-trial-btn"
-                    onClick={() => onBegin('trial')}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '7px',
-                      padding: '12px 20px',
-                      borderRadius: '14px',
-                      background: 'rgba(120, 105, 245, 0.15)',
-                      border: '1.5px solid rgba(120, 105, 245, 0.4)',
-                      color: 'var(--hero-text, #ffffff)',
-                      fontWeight: 800,
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 4px 16px rgba(120, 105, 245, 0.2)'
-                    }}
-                  >
-                    <Sparkles size={16} style={{ color: '#7869f5' }} />
-                    <span>Özingizni sinab köring</span>
-                  </button>
-
-                  {secondaryCta && (
-                    <a
-                      href="#preview"
-                      className="holo-secondary-btn"
-                      onClick={(e) => {
-                        const el = document.getElementById('preview');
-                        if (el) {
-                          e.preventDefault();
-                          el.scrollIntoView({ behavior: 'smooth' });
-                        }
+                  <MagneticButton>
+                    <button
+                      className="holo-trial-btn"
+                      onClick={() => onBegin('trial')}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '7px',
+                        padding: '12px 20px',
+                        borderRadius: '14px',
+                        background: 'rgba(120, 105, 245, 0.15)',
+                        border: '1.5px solid rgba(120, 105, 245, 0.4)',
+                        color: 'var(--hero-text, #ffffff)',
+                        fontWeight: 800,
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 4px 16px rgba(120, 105, 245, 0.2)'
                       }}
                     >
-                      <Play size={13} style={{ fill: 'currentColor', marginRight: '2px' }} />
-                      <span>{secondaryCta}</span>
-                    </a>
+                      <Sparkles size={16} style={{ color: '#7869f5' }} />
+                      <span>Özingizni sinab köring</span>
+                    </button>
+                  </MagneticButton>
+
+                  {secondaryCta && (
+                    <MagneticButton>
+                      <a
+                        href="#preview"
+                        className="holo-secondary-btn"
+                        onClick={(e) => {
+                          const el = document.getElementById('preview');
+                          if (el) {
+                            e.preventDefault();
+                            el.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                      >
+                        <Play size={13} style={{ fill: 'currentColor', marginRight: '2px' }} />
+                        <span>{secondaryCta}</span>
+                      </a>
+                    </MagneticButton>
                   )}
                 </div>
 
@@ -894,17 +973,23 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               {/* Bottom Metrics Bar */}
               <div className="holo-metrics-bar">
                 <div className="holo-metric-item">
-                  <span className="metric-val">{metric1Val}</span>
+                  <span className="metric-val">
+                    <AnimatedCounter value={metric1Val} />
+                  </span>
                   <span className="metric-lbl">{metric1Lbl}</span>
                 </div>
                 <div className="holo-metric-divider" />
                 <div className="holo-metric-item">
-                  <span className="metric-val">{metric2Val}</span>
+                  <span className="metric-val">
+                    <AnimatedCounter value={metric2Val} />
+                  </span>
                   <span className="metric-lbl">{metric2Lbl}</span>
                 </div>
                 <div className="holo-metric-divider" />
                 <div className="holo-metric-item">
-                  <span className="metric-val">{metric3Val}</span>
+                  <span className="metric-val">
+                    <AnimatedCounter value={metric3Val} />
+                  </span>
                   <span className="metric-lbl">{metric3Lbl}</span>
                 </div>
               </div>
@@ -915,7 +1000,11 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               {/* DESKTOP VIEW: MAC LAPTOP & FLOATING CARDS */}
               <div className="holo-laptop-scene desktop-only-scene">
                 {/* Floating Card 1: Popular Course Card */}
-                <div className="holo-floating-card card-course animate-float-slow">
+                <motion.div
+                  className="holo-floating-card card-course"
+                  animate={{ y: [0, -14, 0], rotate: [-1, 1, -1] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+                >
                   <div className="card-popular-badge">POPULAR</div>
                   <div className="card-course-top">
                     <span className="course-label">COURSE</span>
@@ -928,10 +1017,14 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                       <small>{flBadge1.subtitle || 'Conversation Practice'}</small>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Floating Card 2: Teaches & Speaking Tally Bars */}
-                <div className="holo-floating-card card-skills animate-float-medium">
+                <motion.div
+                  className="holo-floating-card card-skills"
+                  animate={{ y: [0, -18, 0], rotate: [1, -1, 1] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.7 }}
+                >
                   <div className="skills-row">
                     <span className="skills-lbl">Teaches</span>
                     <div className="tally-bars green">
@@ -947,10 +1040,14 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                   <div className="verified-badge-circle" title="Tasdiqlangan mutaxassis">
                     <Check size={13} strokeWidth={3} />
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Floating Card 3: Donut Progress Chart */}
-                <div className="holo-floating-card card-progress animate-float-fast">
+                <motion.div
+                  className="holo-floating-card card-progress"
+                  animate={{ y: [0, -15, 0], rotate: [-1.5, 1.5, -1.5] }}
+                  transition={{ duration: 5.6, repeat: Infinity, ease: 'easeInOut', delay: 1.4 }}
+                >
                   <div className="donut-chart-box">
                     <svg viewBox="0 0 42 42" className="donut-svg">
                       <circle className="donut-ring-outer" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#50D890" strokeWidth="3" strokeDasharray="75 25" strokeDashoffset="25" />
@@ -962,22 +1059,24 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                     <strong>{flBadge2.title || '9 / 12 Quiz'}</strong>
                     <span>{flBadge2.subtitle || 'Speaking ✓'}</span>
                   </div>
-                </div>
+                </motion.div>
 
-                {/* Laptop Hardware Frame */}
-                <div className="holo-laptop-device">
-                  <div className="laptop-screen">
-                    <img
-                      src={desktopTutorImg}
-                      alt="Tilşunos professional öqituvçi"
-                      className="laptop-tutor-img"
-                    />
+                {/* Laptop Hardware Frame with 3D Tilt */}
+                <TiltCard maxTilt={5}>
+                  <div className="holo-laptop-device">
+                    <div className="laptop-screen">
+                      <img
+                        src={desktopTutorImg}
+                        alt="Tilşunos professional öqituvçi"
+                        className="laptop-tutor-img"
+                      />
+                    </div>
+                    <div className="laptop-base">
+                      <div className="laptop-notch" />
+                    </div>
+                    <div className="laptop-reflection" />
                   </div>
-                  <div className="laptop-base">
-                    <div className="laptop-notch" />
-                  </div>
-                  <div className="laptop-reflection" />
-                </div>
+                </TiltCard>
               </div>
 
               {/* MOBILE VIEW: SMARTPHONE DEVICE */}

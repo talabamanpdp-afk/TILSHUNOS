@@ -2,6 +2,9 @@ import React from 'react';
 import {
   Users, ArrowRight, Target, Cpu, Globe, BookOpen, Star, ChevronRight, Sparkles
 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { TiltCard } from '../../utils/motion/TiltCard';
+import { MagneticButton } from '../../utils/motion/MagneticButton';
 
 interface AboutSectionProps {
   cms: any;
@@ -11,7 +14,7 @@ interface AboutSectionProps {
 
 export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
   const founderPhoto = cms?.founderPhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
-  const founderName = cms?.founderName || 'Soxibjon G‘aybullayev';
+  const founderName = cms?.founderName || 'Soxibjon Gaybullayev';
   const founderRole = cms?.founderRole || '.NET Developer';
 
   const aboutShort = cms?.about || 'TILŞUNOS til örganişni tartibli, qiziqarli va şaxsiy maqsadlaringizga mos qiliş uçun yaratilayotgan ilğor platforma.';
@@ -738,10 +741,12 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
               {aboutDesc}
             </p>
 
-            <button className="as-cta-btn" onClick={onOpenAbout}>
-              <span>{aboutBtn}</span>
-              <ArrowRight size={16} />
-            </button>
+            <MagneticButton>
+              <button className="as-cta-btn" onClick={onOpenAbout}>
+                <span>{aboutBtn}</span>
+                <ArrowRight size={16} />
+              </button>
+            </MagneticButton>
           </div>
 
           {/* Right Column: Desk Scene with Floating Card */}
@@ -821,38 +826,49 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
           </div>
         </div>
 
-        {/* Bottom Row: 5 Connected Value Cards */}
+        {/* Bottom Row: 5 Connected Value Cards with 3D Tilt */}
         <div className="as-bottom-row-wrap">
           <div className="as-cards-grid">
             {valuesList.map((val, idx) => {
               const Icon = val.icon;
               return (
-                <div key={idx} className="as-value-card">
-                  {/* Atmospheric subtle background image */}
-                  <div className="as-card-bg-wrap">
-                    <img src={val.bgImage} alt="" className="as-card-bg-layer" loading="lazy" />
-                    <div className="as-card-bg-overlay" />
-                  </div>
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 25 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-30px' }}
+                  transition={{ duration: 0.55, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ width: '100%', height: '100%', display: 'flex' }}
+                >
+                  <TiltCard maxTilt={6} glowColor="rgba(56, 189, 248, 0.2)">
+                    <div className="as-value-card">
+                      {/* Atmospheric subtle background image */}
+                      <div className="as-card-bg-wrap">
+                        <img src={val.bgImage} alt="" className="as-card-bg-layer" loading="lazy" />
+                        <div className="as-card-bg-overlay" />
+                      </div>
 
-                  {/* Top Row: Icon on left, Miniature Photo Thumbnail on right */}
-                  <div className="as-card-top-row">
-                    <div className="as-value-icon" style={{ background: val.iconBg, color: val.iconColor }}>
-                      <Icon size={20} />
+                      {/* Top Row: Icon on left, Miniature Photo Thumbnail on right */}
+                      <div className="as-card-top-row">
+                        <div className="as-value-icon" style={{ background: val.iconBg, color: val.iconColor }}>
+                          <Icon size={20} />
+                        </div>
+
+                        <div className="as-card-mini-thumb" title={val.title}>
+                          <img src={val.bgImage} alt={val.title} loading="lazy" />
+                        </div>
+                      </div>
+
+                      {/* Tag Pill */}
+                      <span className="as-card-tag" style={{ color: val.iconColor, background: val.iconBg }}>
+                        {val.tag}
+                      </span>
+
+                      <h4 className="as-value-title">{val.title}</h4>
+                      <p className="as-value-desc">{val.desc}</p>
                     </div>
-
-                    <div className="as-card-mini-thumb" title={val.title}>
-                      <img src={val.bgImage} alt={val.title} loading="lazy" />
-                    </div>
-                  </div>
-
-                  {/* Tag Pill */}
-                  <span className="as-card-tag" style={{ color: val.iconColor, background: val.iconBg }}>
-                    {val.tag}
-                  </span>
-
-                  <h4 className="as-value-title">{val.title}</h4>
-                  <p className="as-value-desc">{val.desc}</p>
-                </div>
+                  </TiltCard>
+                </motion.div>
               );
             })}
           </div>

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import {
   Sparkles, BookOpen, PenLine, Headphones, Mic, Layers, ArrowRight, ChevronDown, ChevronUp
 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { TiltCard } from '../../utils/motion/TiltCard';
 
 interface SkillItem {
   key?: string;
@@ -785,7 +787,7 @@ export function SkillsSection({
           </div>
         </div>
 
-        {/* 1. Desktop Staggered Floating Cards Grid (3 on top, 2 on bottom) */}
+        {/* 1. Desktop Staggered Floating Cards Grid with 3D Tilt & Unique Micro-Animations */}
         <div className="skills-desktop-grid">
           {currentSkills.map((skill, idx) => {
             const meta = getMeta(skill, idx);
@@ -793,40 +795,73 @@ export function SkillsSection({
             const cardKeyClass = skill.key ? `skills-card-${skill.key}` : `skills-grid-item-${idx % 5}`;
 
             return (
-              <div
+              <motion.div
                 key={skill.key || idx}
-                className={`skills-card ${cardKeyClass}`}
-                onClick={() => onSelectSkill && skill.key && onSelectSkill(skill.key)}
-                style={{
-                  ['--skill-accent' as any]: meta.accent,
-                  ['--skill-border-glow' as any]: meta.borderGlow,
-                  ['--skill-shadow' as any]: meta.shadowColor
-                }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.65, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                style={{ width: '100%', height: '100%', display: 'flex' }}
               >
-                {/* Glowing Colored Icon Badge */}
-                <div
-                  className="skills-card-icon"
-                  style={{ background: meta.iconGrad }}
-                >
-                  <Icon size={22} />
-                </div>
+                <TiltCard maxTilt={7} glowColor={meta.shadowColor}>
+                  <div
+                    className={`skills-card ${cardKeyClass}`}
+                    onClick={() => onSelectSkill && skill.key && onSelectSkill(skill.key)}
+                    style={{
+                      ['--skill-accent' as any]: meta.accent,
+                      ['--skill-border-glow' as any]: meta.borderGlow,
+                      ['--skill-shadow' as any]: meta.shadowColor
+                    }}
+                  >
+                    {/* Glowing Colored Icon Badge with Skill-Specific Micro-Animation */}
+                    <div style={{ position: 'relative', display: 'inline-block', marginBottom: '14px' }}>
+                      <motion.div
+                        className="skills-card-icon"
+                        style={{ background: meta.iconGrad, margin: 0 }}
+                        whileHover={{ scale: 1.15, rotate: 5 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                      >
+                        <Icon size={22} />
+                      </motion.div>
+                      {/* Speaking radar ring */}
+                      {skill.key === 'speaking' && (
+                        <span className="radar-pulse-ring" style={{ borderColor: meta.accent }} />
+                      )}
+                    </div>
 
-                {/* Title */}
-                <h3 className="skills-card-title">{skill.title}</h3>
+                    {/* Title with Micro-Effects (Equalizer for listening, typing cursor for writing) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <h3 className="skills-card-title" style={{ margin: 0 }}>{skill.title}</h3>
+                      {skill.key === 'writing' && <span className="typing-cursor-blink" />}
+                      {skill.key === 'listening' && (
+                        <div className="soundwave-visualizer">
+                          <span className="eq-bar" style={{ background: meta.accent }} />
+                          <span className="eq-bar" style={{ background: meta.accent }} />
+                          <span className="eq-bar" style={{ background: meta.accent }} />
+                          <span className="eq-bar" style={{ background: meta.accent }} />
+                          <span className="eq-bar" style={{ background: meta.accent }} />
+                        </div>
+                      )}
+                    </div>
 
-                {/* Description */}
-                <p className="skills-card-desc">{skill.desc}</p>
+                    {/* Description */}
+                    <p className="skills-card-desc">{skill.desc}</p>
 
-                {/* Bottom Row with Arrow Button */}
-                <div className="skills-card-bottom">
-                  <div className="skills-arrow-btn">
-                    <ArrowRight size={15} strokeWidth={2.4} />
+                    {/* Bottom Row with Arrow Button */}
+                    <div className="skills-card-bottom">
+                      <motion.div
+                        className="skills-arrow-btn"
+                        whileHover={{ x: 4, scale: 1.08 }}
+                      >
+                        <ArrowRight size={15} strokeWidth={2.4} />
+                      </motion.div>
+                    </div>
+
+                    {/* Corner Watermark Graphic */}
+                    {renderWatermark(meta.watermarkType, meta.accent)}
                   </div>
-                </div>
-
-                {/* Corner Watermark Graphic */}
-                {renderWatermark(meta.watermarkType, meta.accent)}
-              </div>
+                </TiltCard>
+              </motion.div>
             );
           })}
         </div>

@@ -2,6 +2,8 @@ import React from 'react';
 import {
   Sparkles, Gamepad2, ShieldCheck, Users, ArrowRight
 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { TiltCard } from '../../utils/motion/TiltCard';
 
 interface FeatureItem {
   key?: string;
@@ -662,62 +664,86 @@ export function FeaturesSection({
           </div>
         </div>
 
-        {/* The 4 Feature Cards */}
+        {/* The 4 Feature Cards with Staggered Multi-Directional Entrance & 3D Tilt */}
         <div className="feat-cards-grid">
           {currentList.map((item, idx) => {
             const colorKey = item.color || (idx === 0 ? 'purple' : idx === 1 ? 'orange' : idx === 2 ? 'green' : 'blue');
             const conf = colorConfigs[colorKey] || colorConfigs.blue;
             const Icon = conf.icon;
 
+            // Varied entrance directions matching requirement 5
+            const getEntranceProps = (index: number) => {
+              if (index === 0) return { initial: { opacity: 0, x: -35 }, whileInView: { opacity: 1, x: 0 }, transition: { duration: 0.65, delay: 0.1, ease: [0.16, 1, 0.3, 1] } };
+              if (index === 1) return { initial: { opacity: 0, y: 35 }, whileInView: { opacity: 1, y: 0 }, transition: { duration: 0.65, delay: 0.2, ease: [0.16, 1, 0.3, 1] } };
+              if (index === 2) return { initial: { opacity: 0, scale: 0.92 }, whileInView: { opacity: 1, scale: 1 }, transition: { duration: 0.65, delay: 0.3, ease: [0.16, 1, 0.3, 1] } };
+              return { initial: { opacity: 0, x: 35 }, whileInView: { opacity: 1, x: 0 }, transition: { duration: 0.65, delay: 0.4, ease: [0.16, 1, 0.3, 1] } };
+            };
+
+            const entrance = getEntranceProps(idx);
+
             return (
-              <div
+              <motion.div
                 key={item.key || idx}
-                className="feat-card-item"
-                onClick={() => onExploreFeature && item.key && onExploreFeature(item.key)}
-                style={{
-                  ['--card-accent' as any]: conf.accent,
-                  ['--card-border-glow' as any]: conf.borderGlow,
-                  ['--card-shadow' as any]: conf.shadowColor,
-                  ['--card-wave' as any]: conf.waveGrad
-                }}
+                {...entrance}
+                viewport={{ once: true, margin: '-40px' }}
+                style={{ width: '100%', height: '100%', display: 'flex' }}
               >
-                {/* Glowing Icon Badge */}
-                <div
-                  className="feat-icon-box"
-                  style={{ background: conf.iconGrad }}
-                >
-                  <Icon size={24} />
-                </div>
+                <TiltCard maxTilt={8} glowColor={conf.shadowColor}>
+                  <div
+                    className="feat-card-item"
+                    onClick={() => onExploreFeature && item.key && onExploreFeature(item.key)}
+                    style={{
+                      ['--card-accent' as any]: conf.accent,
+                      ['--card-border-glow' as any]: conf.borderGlow,
+                      ['--card-shadow' as any]: conf.shadowColor,
+                      ['--card-wave' as any]: conf.waveGrad
+                    }}
+                  >
+                    {/* Glowing Icon Badge with Spring Micro-Animation */}
+                    <motion.div
+                      className="feat-icon-box"
+                      style={{ background: conf.iconGrad }}
+                      whileHover={{ scale: 1.15, rotate: 6 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                    >
+                      <Icon size={24} />
+                    </motion.div>
 
-                {/* Title */}
-                <h3 className="feat-card-title">{item.title}</h3>
+                    {/* Title */}
+                    <h3 className="feat-card-title">{item.title}</h3>
 
-                {/* Description */}
-                <p className="feat-card-desc">{item.desc}</p>
+                    {/* Description */}
+                    <p className="feat-card-desc">{item.desc}</p>
 
-                {/* Bottom Row with Action Arrow Button */}
-                <div className="feat-card-bottom">
-                  <div className="feat-arrow-circle-btn" title="Batafsil">
-                    <ArrowRight size={16} strokeWidth={2.4} />
+                    {/* Bottom Row with Action Arrow Button */}
+                    <div className="feat-card-bottom">
+                      <motion.div
+                        className="feat-arrow-circle-btn"
+                        title="Batafsil"
+                        whileHover={{ x: 4, scale: 1.08 }}
+                      >
+                        <ArrowRight size={16} strokeWidth={2.4} />
+                      </motion.div>
+                    </div>
+
+                    {/* Corner Fluid Wave Glow */}
+                    <div className="feat-corner-wave" />
+
+                    {/* Corner SVG Wave Arc */}
+                    <svg
+                      className="feat-corner-svg-arc"
+                      viewBox="0 0 100 80"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M 15 80 Q 55 45 100 25 L 100 80 Z"
+                        fill={conf.accent}
+                      />
+                    </svg>
                   </div>
-                </div>
-
-                {/* Corner Fluid Wave Glow */}
-                <div className="feat-corner-wave" />
-
-                {/* Corner SVG Wave Arc */}
-                <svg
-                  className="feat-corner-svg-arc"
-                  viewBox="0 0 100 80"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M 15 80 Q 55 45 100 25 L 100 80 Z"
-                    fill={conf.accent}
-                  />
-                </svg>
-              </div>
+                </TiltCard>
+              </motion.div>
             );
           })}
         </div>

@@ -6,6 +6,7 @@ import {
 import {
   LearningProcessConfig, LearningProcessStep, DEFAULT_LEARNING_PROCESS_CONFIG
 } from '../../data/learningProcessData';
+import { motion } from 'framer-motion';
 
 interface LearningProcessSectionProps {
   config?: LearningProcessConfig;
@@ -472,8 +473,12 @@ export function LearningProcessSection({ config, dark }: LearningProcessSectionP
             const hasCustomImage = Boolean(dImg || mImg);
 
             return (
-              <div
+              <motion.div
                 key={stepItem.step || idx}
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.65, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                 className={`lp-step-row ${isReverse ? 'reverse' : ''}`}
               >
                 {/* 1. Text Column */}
@@ -531,7 +536,7 @@ export function LearningProcessSection({ config, dark }: LearningProcessSectionP
                     <RenderStepMockup stepIndex={idx} />
                   )}
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>

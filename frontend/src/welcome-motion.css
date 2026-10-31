@@ -1,0 +1,178 @@
+/* =====================================================================
+   TILSHUNOS — PREMIUM WELCOME PAGE MOTION & ANIMATION SYSTEM
+   60 FPS GPU-accelerated effects, glowing gradients, magnetic physics
+===================================================================== */
+
+/* 1. FLOWING GRADIENT TEXT ANIMATION */
+@keyframes flowGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.text-gradient-flow {
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 35%, #c084fc 70%, #38bdf8 100%);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: flowGradient 6s ease-in-out infinite;
+  display: inline-block;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: flowGradient 5s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* 2. BREATHING GLOW FOR HERO & CTA BUTTONS */
+@keyframes breathingGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.35), 0 0 45px rgba(99, 102, 241, 0.2);
+    border-color: rgba(56, 189, 248, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(56, 189, 248, 0.65), 0 0 65px rgba(99, 102, 241, 0.45);
+    border-color: rgba(168, 85, 247, 0.85);
+  }
+}
+
+.has-magnetic-glow {
+  animation: breathingGlow 3.5s ease-in-out infinite;
+  border-radius: inherit;
+}
+
+/* 3. AUDIO EQUALIZER BARS (For Listening Skill) */
+@keyframes eqBarPulse {
+  0%, 100% {
+    height: 4px;
+    opacity: 0.6;
+  }
+  50% {
+    height: 18px;
+    opacity: 1;
+  }
+}
+
+.soundwave-visualizer {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+}
+
+.soundwave-visualizer .eq-bar {
+  width: 3px;
+  border-radius: 2px;
+  background: #38bdf8;
+  animation: eqBarPulse 1.2s ease-in-out infinite;
+}
+
+.soundwave-visualizer .eq-bar:nth-child(1) { animation-delay: 0.0s; height: 6px; }
+.soundwave-visualizer .eq-bar:nth-child(2) { animation-delay: 0.2s; height: 14px; }
+.soundwave-visualizer .eq-bar:nth-child(3) { animation-delay: 0.4s; height: 18px; }
+.soundwave-visualizer .eq-bar:nth-child(4) { animation-delay: 0.1s; height: 10px; }
+.soundwave-visualizer .eq-bar:nth-child(5) { animation-delay: 0.3s; height: 15px; }
+
+/* 4. TYPING CURSOR (For Writing Skill) */
+@keyframes blinkCursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typing-cursor-blink {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background-color: #38bdf8;
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blinkCursor 0.9s infinite;
+}
+
+/* 5. RADAR PULSE RINGS (For Speaking Skill & Voice Recording) */
+@keyframes radarRing {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.radar-pulse-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid #a855f7;
+  animation: radarRing 1.8s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+  pointer-events: none;
+}
+
+/* 6. COSMIC DRIFT BACKGROUND PARTICLES */
+@keyframes cosmicDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-30px, 20px, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(20px, -25px, 0) scale(0.96);
+  }
+}
+
+.cosmic-mesh-bg {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: cosmicDrift 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* 7. GLASSMORPHISM NAVBAR ENHANCEMENTS */
+.holo-nav-scrolled {
+  background: rgba(8, 14, 28, 0.82) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.22) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.08) !important;
+}
+
+/* 8. INTERACTIVE CARD SPOTLIGHT HOVER TRANSITIONS */
+.tilt-card-wrapper {
+  transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.tilt-card-wrapper:hover {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(56, 189, 248, 0.25);
+}
+
+/* 9. PREFERS-REDUCED-MOTION ACCESSIBILITY STRICT COMPLIANCE */
+@media (prefers-reduced-motion: reduce) {
+  .text-gradient-flow,
+  .text-gradient-gold,
+  .has-magnetic-glow,
+  .soundwave-visualizer .eq-bar,
+  .typing-cursor-blink,
+  .radar-pulse-ring,
+  .cosmic-mesh-bg,
+  .floating-particles-canvas {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}

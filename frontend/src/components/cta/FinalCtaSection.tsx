@@ -1,5 +1,7 @@
 import React from 'react';
 import { Sparkles, Rocket, Play, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { MagneticButton } from '../../utils/motion/MagneticButton';
 
 interface FinalCtaSectionProps {
   kicker?: string;
@@ -455,18 +457,22 @@ export function FinalCtaSection({
           </p>
 
           <div className="final-cta-actions-row">
-            <button className="final-cta-btn-primary" onClick={onRegister}>
-              <Rocket size={17} />
-              <span>{btnRegister}</span>
-              <ArrowRight size={17} />
-            </button>
+            <MagneticButton activeGlow>
+              <button className="final-cta-btn-primary" onClick={onRegister}>
+                <Rocket size={17} />
+                <span>{btnRegister}</span>
+                <ArrowRight size={17} />
+              </button>
+            </MagneticButton>
 
-            <button className="final-cta-btn-secondary" onClick={onLogin}>
-              <span className="btn-play-circle">
-                <Play size={12} fill="#ffffff" color="#ffffff" style={{ marginLeft: '2px' }} />
-              </span>
-              <span>{btnLogin}</span>
-            </button>
+            <MagneticButton>
+              <button className="final-cta-btn-secondary" onClick={onLogin}>
+                <span className="btn-play-circle">
+                  <Play size={12} fill="#ffffff" color="#ffffff" style={{ marginLeft: '2px' }} />
+                </span>
+                <span>{btnLogin}</span>
+              </button>
+            </MagneticButton>
           </div>
         </div>
 

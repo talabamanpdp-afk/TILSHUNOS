@@ -9,6 +9,8 @@ import { LevelInformationPanel } from './LevelInformationPanel';
 import { RoadmapProgress } from './RoadmapProgress';
 import { MotivationalCard } from './MotivationalCard';
 import { convertUzbekText } from '../../utils/textTransform';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MagneticButton } from '../../utils/motion/MagneticButton';
 
 export interface CEFRRoadmapConfig {
   kicker?: string;
@@ -197,36 +199,30 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
           </p>
 
           {/* Primary Hero Button */}
-          <button
-            type="button"
-            onClick={() => handleExploreLevel(selectedLevelCode)}
-            className="primary-btn"
-            style={{
-              padding: '13px 28px',
-              borderRadius: '14px',
-              fontSize: '15px',
-              fontWeight: 800,
-              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-              color: '#ffffff',
-              boxShadow: '0 8px 25px rgba(59, 130, 246, 0.35)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              cursor: 'pointer',
-              transition: 'all 0.25s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 12px 30px rgba(59, 130, 246, 0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.35)';
-            }}
-          >
-            <span>{btnText}</span>
-            <ArrowRight size={17} strokeWidth={2.5} />
-          </button>
+          <MagneticButton activeGlow>
+            <button
+              type="button"
+              onClick={() => handleExploreLevel(selectedLevelCode)}
+              className="primary-btn"
+              style={{
+                padding: '13px 28px',
+                borderRadius: '14px',
+                fontSize: '15px',
+                fontWeight: 800,
+                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                color: '#ffffff',
+                boxShadow: '0 8px 25px rgba(59, 130, 246, 0.35)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.25s ease'
+              }}
+            >
+              <span>{btnText}</span>
+              <ArrowRight size={17} strokeWidth={2.5} />
+            </button>
+          </MagneticButton>
         </div>
 
         {/* ======================================================== */}
@@ -320,11 +316,21 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
 
           {/* Right Column: Dynamic Level Information Panel + Motivational Card */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <LevelInformationPanel
-              level={selectedLevelDetail}
-              onExplore={handleExploreLevel}
-              dark={dark}
-            />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedLevelCode}
+                initial={{ opacity: 0, y: 12, scale: 0.985 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -12, scale: 0.985 }}
+                transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <LevelInformationPanel
+                  level={selectedLevelDetail}
+                  onExplore={handleExploreLevel}
+                  dark={dark}
+                />
+              </motion.div>
+            </AnimatePresence>
 
             <MotivationalCard dark={dark} quoteHeading={quoteHeading} quoteDesc={quoteDesc} />
           </div>
