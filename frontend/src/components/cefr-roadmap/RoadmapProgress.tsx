@@ -1,15 +1,16 @@
 import React from 'react';
 import { CheckCircle2, Flame, Sparkles } from 'lucide-react';
-import { CEFR_ROADMAP_LEVELS, CEFRLevelCode } from './cefrRoadmapData';
+import { CEFR_ROADMAP_LEVELS, CEFRLevelCode, CEFRLevelDetail } from './cefrRoadmapData';
 
 interface RoadmapProgressProps {
   currentLevel: CEFRLevelCode;
   dark?: boolean;
+  levels?: CEFRLevelDetail[];
 }
 
-export const RoadmapProgress: React.FC<RoadmapProgressProps> = ({ currentLevel, dark }) => {
-  const completedCount = CEFR_ROADMAP_LEVELS.filter(l => l.status === 'completed').length;
-  const totalLevels = CEFR_ROADMAP_LEVELS.length;
+export const RoadmapProgress: React.FC<RoadmapProgressProps> = ({ currentLevel, dark, levels = CEFR_ROADMAP_LEVELS }) => {
+  const completedCount = levels.filter(l => l.status === 'completed').length;
+  const totalLevels = levels.length;
   const progressPercent = Math.round((completedCount / totalLevels) * 100);
 
   return (
@@ -67,7 +68,7 @@ export const RoadmapProgress: React.FC<RoadmapProgressProps> = ({ currentLevel, 
           width: '100%'
         }}
       >
-        {CEFR_ROADMAP_LEVELS.map((lvl) => {
+        {levels.map((lvl) => {
           let segmentBg = dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
           let segmentBorder = 'transparent';
           let segmentGlow = 'none';

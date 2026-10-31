@@ -15,6 +15,7 @@ import {
 } from '../data/practiceGuideData';
 import { DEFAULT_LEARNING_PROCESS_STEPS, DEFAULT_LEARNING_PROCESS_CONFIG } from '../data/learningProcessData';
 import { AdminTrialTestsTab } from './admin/AdminTrialTestsTab';
+import { CEFR_ROADMAP_LEVELS, CEFRLevelCode } from './cefr-roadmap/cefrRoadmapData';
 
 const adminNav = [
   ['Dashboard & Statistika', 'dashboard', LayoutDashboard],
@@ -156,17 +157,23 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     },
     practiceGuide: DEFAULT_PRACTICE_GUIDE,
     cefrSection: {
-      kicker: 'XALQARO METODIKA',
-      title: 'CEFR bo‘yicha aniq yo‘l xaritasi (A1–C2)',
-      subtitle: 'O‘zingizga mos boshlang‘ich nuqtani tanlang va bosqichma-bosqich yuksaling.',
-      levels: [
-        { code: 'A1', name: 'Boshlang‘ich', desc: 'Oddiy so‘zlar, tanishuv va kundalik eng muhim iboralar.', color: '#3b82f6' },
-        { code: 'A2', name: 'Elementar', desc: 'Xarid, transport va oddiy kundalik vaziyatlarda muloqot.', color: '#0ea5e9' },
-        { code: 'B1', name: 'O‘rta daraja', desc: 'Sayohat, fikr bildirish va o‘z tajribasini erkin tushuntirish.', color: '#10b981' },
-        { code: 'B2', name: 'Mustaqil', desc: 'Murakkab matnlar, insholar va mavzular bo‘yicha erkin bahslashish.', color: '#8b5cf6' },
-        { code: 'C1', name: 'Ilg‘or', desc: 'Akademik va kasbiy darajada chuqur fikrlash hamda tahlil.', color: '#f59e0b' },
-        { code: 'C2', name: 'Mukammal', desc: 'Ona tili darajasidagi ravonlik va nozik ma’nolarni anglash.', color: '#ec4899' }
-      ]
+      kicker: 'CEFR DARAJALARI BÖYIÇA REJA',
+      titlePrefix: 'Ingliz tili sayohatingiz',
+      titleHighlight: 'şu yerdan boşlanadi',
+      title: 'Ingliz tili sayohatingiz şu yerdan boşlanadi',
+      subtitle: '6 ta xalqaro CEFR darajasi. Aniq tizimli yöl. Har bir darajani bosqiçma-bosqiç örganing.',
+      btnText: 'Sayohatingizni boşlang',
+      levels: CEFR_ROADMAP_LEVELS.map(lvl => ({
+        code: lvl.code,
+        name: lvl.name,
+        color: lvl.color,
+        description: lvl.description,
+        desc: lvl.description,
+        estimatedDuration: lvl.estimatedDuration,
+        proficiencyLevel: lvl.proficiencyLevel,
+        learningObjectives: [...lvl.learningObjectives],
+        whatYouLearn: lvl.whatYouLearn.map(w => ({ ...w }))
+      }))
     },
     skillsSection: {
       kicker: 'MUVOZANATLI RIVOJLANISH',
@@ -231,6 +238,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   };
 });
   const [cmsTab, setCmsTab] = useState<'hero' | 'stats' | 'auth' | 'preview' | 'curriculum' | 'features' | 'about' | 'faq' | 'footer'>('hero');
+  const [adminCefrLevel, setAdminCefrLevel] = useState<CEFRLevelCode>('A1');
   const [authPreviewMode, setAuthPreviewMode] = useState<'login' | 'register' | 'verify'>('login');
   const [newTeamMember, setNewTeamMember] = useState({ name: '', role: '', bio: '', avatar: '' });
   const [editingTeamMemberIdx, setEditingTeamMemberIdx] = useState<number | null>(null);
@@ -373,10 +381,54 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               ...(cmsRes.value?.practiceGuide?.languages || {})
             }
           },
-          cefrSection: {
-            ...(prev?.cefrSection || {}),
-            ...(cmsRes.value?.cefrSection || {})
-          },
+          cefrSection: (() => {
+            const raw = cmsRes.value?.cefrSection || prev?.cefrSection || {};
+            const rawLevels = Array.isArray(raw.levels) ? raw.levels : [];
+            const mergedLevels = CEFR_ROADMAP_LEVELS.map(def => {
+              const found = rawLevels.find((l: any) => l.code === def.code);
+              if (!found) {
+                return {
+                  code: def.code,
+                  name: def.name,
+                  color: def.color,
+                  description: def.description,
+                  desc: def.description,
+                  estimatedDuration: def.estimatedDuration,
+                  proficiencyLevel: def.proficiencyLevel,
+                  learningObjectives: [...def.learningObjectives],
+                  whatYouLearn: def.whatYouLearn.map(w => ({ ...w }))
+                };
+              }
+              return {
+                code: def.code,
+                name: found.name || def.name,
+                color: found.color || def.color,
+                description: found.description || found.desc || def.description,
+                desc: found.desc || found.description || def.description,
+                estimatedDuration: found.estimatedDuration || def.estimatedDuration,
+                proficiencyLevel: found.proficiencyLevel || def.proficiencyLevel,
+                learningObjectives: (Array.isArray(found.learningObjectives) && found.learningObjectives.length > 0)
+                  ? found.learningObjectives
+                  : [...def.learningObjectives],
+                whatYouLearn: (Array.isArray(found.whatYouLearn) && found.whatYouLearn.length > 0)
+                  ? found.whatYouLearn.map((w: any, idx: number) => ({
+                      category: w.category || def.whatYouLearn[idx]?.category || 'Grammar',
+                      title: w.title || def.whatYouLearn[idx]?.title || '',
+                      iconName: w.iconName || def.whatYouLearn[idx]?.iconName || 'sparkles'
+                    }))
+                  : def.whatYouLearn.map(w => ({ ...w }))
+              };
+            });
+            return {
+              kicker: raw.kicker || 'CEFR DARAJALARI BÖYIÇA REJA',
+              titlePrefix: raw.titlePrefix || 'Ingliz tili sayohatingiz',
+              titleHighlight: raw.titleHighlight || 'şu yerdan boşlanadi',
+              title: raw.title || `${raw.titlePrefix || 'Ingliz tili sayohatingiz'} ${raw.titleHighlight || 'şu yerdan boşlanadi'}`,
+              subtitle: raw.subtitle || '6 ta xalqaro CEFR darajasi. Aniq tizimli yöl. Har bir darajani bosqiçma-bosqiç örganing.',
+              btnText: raw.btnText || 'Sayohatingizni boşlang',
+              levels: mergedLevels
+            };
+          })(),
           skillsSection: {
             ...(prev?.skillsSection || {}),
             ...(cmsRes.value?.skillsSection || {})
@@ -5770,70 +5822,392 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               {/* TAB 4: CEFR, KO‘NIKMALAR & QADAMLAR */}
               {cmsTab === 'curriculum' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  {/* CEFR Levels */}
-                  <div className="panel" style={{ padding: '24px' }}>
-                    <h3 style={{ marginBottom: '14px' }}>1. CEFR Xalqaro Yo‘l Xaritasi (A1–C2)</h3>
-                    <div className="form-grid" style={{ gap: '12px', marginBottom: '16px' }}>
-                      <label>
-                        <b style={{ fontSize: '11px' }}>Kicker:</b>
-                        <input
-                          value={cms.cefrSection?.kicker || ''}
-                          onChange={e => setCms({ ...cms, cefrSection: { ...cms.cefrSection, kicker: e.target.value } })}
-                          placeholder="XALQARO METODIKA"
-                        />
-                      </label>
-                      <label>
-                        <b style={{ fontSize: '11px' }}>Sarlavha:</b>
-                        <input
-                          value={cms.cefrSection?.title || ''}
-                          onChange={e => setCms({ ...cms, cefrSection: { ...cms.cefrSection, title: e.target.value } })}
-                          placeholder="CEFR bo‘yicha aniq yo‘l xaritasi (A1–C2)"
+                  {/* CEFR Levels & Interactive Roadmap Editor */}
+                  <div className="panel" style={{ padding: '24px', position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ padding: '3px 8px', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.15)', color: '#38bdf8', fontSize: '11px', fontWeight: 800 }}>
+                            NEON CMS · A1–C2
+                          </span>
+                          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text)' }}>
+                            1. CEFR Xalqaro Yöl Xaritasi (A1–C2)
+                          </h3>
+                        </div>
+                        <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
+                          Welcome sahifasidagi interaktiv CEFR yöl xaritasi sarlavhasi, tugmasi va 6 ta daraja tafsilotlarini boşqariş.
+                        </p>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          type="button"
+                          className="secondary-btn"
+                          onClick={() => {
+                            if (window.confirm('CEFR sozlamalarini standart holatga qaytarmoqçimisiz?')) {
+                              const resetCefr = {
+                                kicker: 'CEFR DARAJALARI BÖYIÇA REJA',
+                                titlePrefix: 'Ingliz tili sayohatingiz',
+                                titleHighlight: 'şu yerdan boşlanadi',
+                                title: 'Ingliz tili sayohatingiz şu yerdan boşlanadi',
+                                subtitle: '6 ta xalqaro CEFR darajasi. Aniq tizimli yöl. Har bir darajani bosqiçma-bosqiç örganing.',
+                                btnText: 'Sayohatingizni boşlang',
+                                levels: CEFR_ROADMAP_LEVELS.map(lvl => ({
+                                  code: lvl.code,
+                                  name: lvl.name,
+                                  color: lvl.color,
+                                  description: lvl.description,
+                                  desc: lvl.description,
+                                  estimatedDuration: lvl.estimatedDuration,
+                                  proficiencyLevel: lvl.proficiencyLevel,
+                                  learningObjectives: [...lvl.learningObjectives],
+                                  whatYouLearn: lvl.whatYouLearn.map(w => ({ ...w }))
+                                }))
+                              };
+                              setCms({ ...cms, cefrSection: resetCefr });
+                              notify('CEFR sozlamalari standart holatga tiklandi! ✨');
+                            }
+                          }}
+                          style={{ padding: '7px 12px', fontSize: '11px', borderRadius: '8px' }}
+                          title="Standart holatga qaytariş"
+                        >
+                          <RotateCcw size={13} /> Standart
+                        </button>
+                        <button
+                          type="button"
+                          className="primary-btn"
+                          onClick={saveCmsChanges}
+                          style={{ padding: '7px 16px', fontSize: '12px', fontWeight: 700, borderRadius: '8px' }}
+                        >
+                          <Save size={14} /> Saqlaş
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Section Header Controls */}
+                    <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '20px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#38bdf8', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Sparkles size={14} /> Bölim Sarlavhalari va Asosiy Tugma
+                      </div>
+                      <div className="form-grid" style={{ gap: '14px', marginBottom: '14px' }}>
+                        <label>
+                          <b style={{ fontSize: '11px', color: 'var(--muted)' }}>Yuqori Nişon (Kicker / Badge):</b>
+                          <input
+                            value={cms.cefrSection?.kicker || ''}
+                            onChange={e => setCms({ ...cms, cefrSection: { ...cms.cefrSection, kicker: e.target.value } })}
+                            placeholder="CEFR DARAJALARI BÖYIÇA REJA"
+                          />
+                        </label>
+                        <label>
+                          <b style={{ fontSize: '11px', color: 'var(--muted)' }}>Harakat Tugmasi Matni (CTA Button):</b>
+                          <input
+                            value={cms.cefrSection?.btnText || ''}
+                            onChange={e => setCms({ ...cms, cefrSection: { ...cms.cefrSection, btnText: e.target.value } })}
+                            placeholder="Sayohatingizni boşlang"
+                          />
+                        </label>
+                      </div>
+
+                      <div className="form-grid" style={{ gap: '14px', marginBottom: '14px' }}>
+                        <label>
+                          <b style={{ fontSize: '11px', color: 'var(--muted)' }}>Asosiy Sarlavha boşlanişi (Oq matn):</b>
+                          <input
+                            value={cms.cefrSection?.titlePrefix || ''}
+                            onChange={e => setCms({ ...cms, cefrSection: { ...cms.cefrSection, titlePrefix: e.target.value } })}
+                            placeholder="Ingliz tili sayohatingiz"
+                          />
+                        </label>
+                        <label>
+                          <b style={{ fontSize: '11px', color: 'var(--muted)' }}>Ajratilgan / Rangli sarlavha qismi:</b>
+                          <input
+                            value={cms.cefrSection?.titleHighlight || ''}
+                            onChange={e => setCms({ ...cms, cefrSection: { ...cms.cefrSection, titleHighlight: e.target.value } })}
+                            placeholder="şu yerdan boşlanadi"
+                          />
+                        </label>
+                      </div>
+
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <b style={{ fontSize: '11px', color: 'var(--muted)' }}>Quyi izoh / Tavsif (Subtitle):</b>
+                        <textarea
+                          value={cms.cefrSection?.subtitle || ''}
+                          onChange={e => setCms({ ...cms, cefrSection: { ...cms.cefrSection, subtitle: e.target.value } })}
+                          rows={2}
+                          placeholder="6 ta xalqaro CEFR darajasi. Aniq tizimli yöl. Har bir darajani bosqiçma-bosqiç örganing."
                         />
                       </label>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
-                      {(cms.cefrSection?.levels || []).map((lvl: any, idx: number) => (
-                        <div key={lvl.code || idx} style={{ background: 'var(--bg)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                            <span style={{ padding: '2px 8px', borderRadius: '6px', background: `${lvl.color || '#3b82f6'}20`, color: lvl.color || '#3b82f6', fontWeight: 800, fontSize: '12px' }}>
-                              {lvl.code}
-                            </span>
-                            <input
-                              value={lvl.name || ''}
-                              onChange={e => {
-                                const updated = [...(cms.cefrSection?.levels || [])];
-                                updated[idx] = { ...updated[idx], name: e.target.value };
-                                setCms({ ...cms, cefrSection: { ...cms.cefrSection, levels: updated } });
+                    {/* Level Tabs (A1 - C2) */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span>CEFR Darajasini Tanlang (Tahrirlash uçun):</span>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                          Hozir tahrirlanmoqda: <b style={{ color: '#38bdf8' }}>{adminCefrLevel}</b>
+                        </span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                        {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CEFRLevelCode[]).map((code) => {
+                          const currentLevel = (cms.cefrSection?.levels || []).find((l: any) => l.code === code) ||
+                            CEFR_ROADMAP_LEVELS.find(l => l.code === code);
+                          const isActive = adminCefrLevel === code;
+                          const lvlColor = currentLevel?.color || '#3b82f6';
+                          return (
+                            <button
+                              key={code}
+                              type="button"
+                              onClick={() => setAdminCefrLevel(code)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '10px 12px',
+                                borderRadius: '10px',
+                                border: isActive ? `2px solid ${lvlColor}` : '1px solid var(--border)',
+                                background: isActive ? `${lvlColor}20` : 'var(--bg)',
+                                boxShadow: isActive ? `0 0 16px ${lvlColor}40` : 'none',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                textAlign: 'left'
                               }}
-                              style={{ fontWeight: 700, fontSize: '12px' }}
-                              placeholder="Daraja nomi"
-                            />
-                          </div>
-                          <textarea
-                            value={lvl.desc || ''}
-                            onChange={e => {
-                              const updated = [...(cms.cefrSection?.levels || [])];
-                              updated[idx] = { ...updated[idx], desc: e.target.value };
-                              setCms({ ...cms, cefrSection: { ...cms.cefrSection, levels: updated } });
-                            }}
-                            rows={2}
-                            style={{ fontSize: '11px' }}
-                            placeholder="Daraja tavsifi..."
-                          />
-                        </div>
-                      ))}
+                            >
+                              <span style={{
+                                width: '28px',
+                                height: '28px',
+                                borderRadius: '8px',
+                                background: lvlColor,
+                                color: '#ffffff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: 900,
+                                fontSize: '12px',
+                                flexShrink: 0
+                              }}>
+                                {code}
+                              </span>
+                              <div style={{ overflow: 'hidden' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 800, color: isActive ? lvlColor : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {currentLevel?.name?.split(' ')[0] || code}
+                                </div>
+                                <div style={{ fontSize: '10px', color: 'var(--muted)' }}>
+                                  {currentLevel?.estimatedDuration || '2–3 oy'}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
+
+                    {/* Active Selected Level Editor */}
+                    {(() => {
+                      const levels = [...(cms.cefrSection?.levels || [])];
+                      let activeIdx = levels.findIndex((l: any) => l.code === adminCefrLevel);
+                      if (activeIdx === -1) {
+                        const fallbackDef = CEFR_ROADMAP_LEVELS.find(l => l.code === adminCefrLevel) || CEFR_ROADMAP_LEVELS[0];
+                        levels.push({
+                          code: fallbackDef.code,
+                          name: fallbackDef.name,
+                          color: fallbackDef.color,
+                          description: fallbackDef.description,
+                          desc: fallbackDef.description,
+                          estimatedDuration: fallbackDef.estimatedDuration,
+                          proficiencyLevel: fallbackDef.proficiencyLevel,
+                          learningObjectives: [...fallbackDef.learningObjectives],
+                          whatYouLearn: fallbackDef.whatYouLearn.map(w => ({ ...w }))
+                        });
+                        activeIdx = levels.length - 1;
+                      }
+                      const activeLvl = levels[activeIdx];
+                      const activeColor = activeLvl.color || '#3b82f6';
+
+                      const updateActive = (patch: Partial<typeof activeLvl>) => {
+                        const next = [...levels];
+                        next[activeIdx] = { ...activeLvl, ...patch };
+                        setCms({
+                          ...cms,
+                          cefrSection: {
+                            ...cms.cefrSection,
+                            levels: next
+                          }
+                        });
+                      };
+
+                      return (
+                        <div style={{
+                          background: 'linear-gradient(180deg, rgba(17, 24, 39, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%)',
+                          border: `1px solid ${activeColor}50`,
+                          boxShadow: `0 8px 30px ${activeColor}15`,
+                          borderRadius: '14px',
+                          padding: '20px'
+                        }}>
+                          {/* Active Level Header Bar */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <span style={{
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '10px',
+                                background: activeColor,
+                                color: '#ffffff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: 900,
+                                fontSize: '15px',
+                                boxShadow: `0 0 14px ${activeColor}60`
+                              }}>
+                                {activeLvl.code}
+                              </span>
+                              <div>
+                                <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>
+                                  {activeLvl.code} — {activeLvl.name || 'Daraja tafsilotlari'}
+                                </h4>
+                                <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                                  Uşbu daraja foydalanuvçilar yöl xaritasida va batafsil info kartasida aks etadi.
+                                </span>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Rang:</span>
+                              <input
+                                type="color"
+                                value={activeColor.length === 7 ? activeColor : '#3b82f6'}
+                                onChange={e => updateActive({ color: e.target.value })}
+                                style={{ width: '28px', height: '28px', borderRadius: '6px', cursor: 'pointer', border: 'none', background: 'transparent' }}
+                                title="Daraja rangini tanlaş"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Level Base Details: Name, Duration, Proficiency Level */}
+                          <div className="form-grid" style={{ gap: '12px', marginBottom: '14px' }}>
+                            <label>
+                              <b style={{ fontSize: '11px', color: 'var(--muted)' }}>Daraja Nomi:</b>
+                              <input
+                                value={activeLvl.name || ''}
+                                onChange={e => updateActive({ name: e.target.value })}
+                                placeholder="Masalan: Elementary (Elementar)"
+                              />
+                            </label>
+                            <label>
+                              <b style={{ fontSize: '11px', color: 'var(--muted)' }}>Taxminiy Vaqt (Davomiylik):</b>
+                              <input
+                                value={activeLvl.estimatedDuration || ''}
+                                onChange={e => updateActive({ estimatedDuration: e.target.value })}
+                                placeholder="Masalan: 2–3 oy"
+                              />
+                            </label>
+                            <label>
+                              <b style={{ fontSize: '11px', color: 'var(--muted)' }}>Bilim Darajasi / Standart nomi:</b>
+                              <input
+                                value={activeLvl.proficiencyLevel || ''}
+                                onChange={e => updateActive({ proficiencyLevel: e.target.value })}
+                                placeholder="Masalan: Elementar daraja (A2)"
+                              />
+                            </label>
+                          </div>
+
+                          {/* Level Description */}
+                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '18px' }}>
+                            <b style={{ fontSize: '11px', color: 'var(--muted)' }}>Daraja Batafsil Tavsifi (Description):</b>
+                            <textarea
+                              value={activeLvl.description || activeLvl.desc || ''}
+                              onChange={e => updateActive({ description: e.target.value, desc: e.target.value })}
+                              rows={2}
+                              placeholder="Kundalik taniş vaziyatlarda yuqoriroq işonç bilan erkin muloqot qiliş qobiliyatingizni rivojlantiring."
+                            />
+                          </label>
+
+                          {/* Learning Objectives (4 items) */}
+                          <div style={{ marginBottom: '18px', background: 'var(--bg)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: '#38bdf8', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <CheckCircle2 size={14} style={{ color: '#10b981' }} /> Örganiş Maqsadlari (4 ta Asosiy Punkt)
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '10px' }}>
+                              {[0, 1, 2, 3].map((objIdx) => {
+                                const currentObjectives = Array.isArray(activeLvl.learningObjectives) ? [...activeLvl.learningObjectives] : [];
+                                while (currentObjectives.length < 4) currentObjectives.push('');
+                                return (
+                                  <label key={objIdx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <b style={{ fontSize: '10px', color: 'var(--muted)' }}>{objIdx + 1}-Maqsad:</b>
+                                    <input
+                                      value={currentObjectives[objIdx] || ''}
+                                      onChange={e => {
+                                        const nextObj = [...currentObjectives];
+                                        nextObj[objIdx] = e.target.value;
+                                        updateActive({ learningObjectives: nextObj });
+                                      }}
+                                      placeholder={`${objIdx + 1}-maqsad tavsifi...`}
+                                      style={{ fontSize: '12px' }}
+                                    />
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* What You Learn (4 Categories) */}
+                          <div style={{ background: 'var(--bg)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: '#a78bfa', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <BookOpen size={14} /> Nimalarni Örganasiz (4 ta Yönaliş)
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' }}>
+                              {[
+                                { cat: 'Grammar', label: '1. Grammatika', defaultTitle: 'Boşlanğiç grammatika' },
+                                { cat: 'Vocabulary', label: '2. Söz boyligi', defaultTitle: 'Eng muhim sözlar' },
+                                { cat: 'Listening & Speaking', label: '3. Tinglaş & Gapiriş', defaultTitle: 'Oddiy suhbatlar' },
+                                { cat: 'Reading & Writing', label: '4. Öqiş & Yoziş', defaultTitle: 'Sodda matnlar' }
+                              ].map((catDef, catIdx) => {
+                                const items = Array.isArray(activeLvl.whatYouLearn) ? [...activeLvl.whatYouLearn] : [];
+                                const item = items[catIdx] || { category: catDef.cat, title: catDef.defaultTitle, iconName: 'sparkles' };
+                                return (
+                                  <div key={catDef.cat} style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                                    <b style={{ fontSize: '11px', color: 'var(--purple)', display: 'block', marginBottom: '4px' }}>
+                                      {catDef.label}
+                                    </b>
+                                    <input
+                                      value={item.title || ''}
+                                      onChange={e => {
+                                        const nextItems = [...items];
+                                        while (nextItems.length < 4) {
+                                          nextItems.push({ category: 'Grammar', title: '', iconName: 'sparkles' });
+                                        }
+                                        nextItems[catIdx] = { ...item, category: catDef.cat as any, title: e.target.value };
+                                        updateActive({ whatYouLearn: nextItems });
+                                      }}
+                                      placeholder={catDef.defaultTitle}
+                                      style={{ fontSize: '12px' }}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* 5 Learning Skills */}
                   <div className="panel" style={{ padding: '24px' }}>
-                    <h3 style={{ marginBottom: '14px' }}>2. 5 Ta Asosiy Til Ko‘nikmasi</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                      <h3 style={{ margin: 0 }}>2. 5 Ta Asosiy Til Könikmasi</h3>
+                      <button
+                        type="button"
+                        className="primary-btn"
+                        onClick={saveCmsChanges}
+                        style={{ padding: '6px 14px', fontSize: '11px', fontWeight: 700, borderRadius: '8px' }}
+                      >
+                        <Save size={13} /> Saqlaş
+                      </button>
+                    </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
                       {(cms.skillsSection?.skills || []).map((skill: any, idx: number) => (
                         <div key={skill.key || idx} style={{ background: 'var(--bg)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border)' }}>
                           <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
-                            <b style={{ fontSize: '11px', color: 'var(--purple)' }}>{idx + 1}-Ko‘nikma Sarlavhasi:</b>
+                            <b style={{ fontSize: '11px', color: 'var(--purple)' }}>{idx + 1}-Könikma Sarlavhasi:</b>
                             <input
                               value={skill.title || ''}
                               onChange={e => {
@@ -5841,7 +6215,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                 updated[idx] = { ...updated[idx], title: e.target.value };
                                 setCms({ ...cms, skillsSection: { ...cms.skillsSection, skills: updated } });
                               }}
-                              placeholder="Ko‘nikma nomi"
+                              placeholder="Könikma nomi"
                             />
                           </label>
                           <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -5854,7 +6228,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                 setCms({ ...cms, skillsSection: { ...cms.skillsSection, skills: updated } });
                               }}
                               rows={3}
-                              placeholder="Ko‘nikma tavsifi..."
+                              placeholder="Könikma tavsifi..."
                             />
                           </label>
                         </div>

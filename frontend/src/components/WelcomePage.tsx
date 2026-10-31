@@ -1041,6 +1041,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         onBegin={onBegin}
         onSelectLevel={onSelectLevel}
         dark={dark}
+        config={cms?.cefrRoadmap || cms?.cefrSection}
       />
 
       {/* 5. LEARNING SKILLS SECTION (MATCHING REFERENCE IMAGE 2) */}

@@ -58,11 +58,11 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
       case 'Grammar':
         return 'Grammatika';
       case 'Vocabulary':
-        return 'So‘z boyligi';
+        return 'Söz boyligi';
       case 'Listening & Speaking':
-        return 'Tinglash & Gapirish';
+        return 'Tinglaş & Gapiriş';
       case 'Reading & Writing':
-        return 'O‘qish & Yozish';
+        return 'Öqiş & Yoziş';
       default:
         return category;
     }
@@ -218,7 +218,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
               }}
             >
               <CheckCircle2 size={14} strokeWidth={2.5} />
-              <span>O‘zlashtirilgan ✓</span>
+              <span>Özlaştirilgan ✓</span>
             </span>
           )}
 
@@ -355,7 +355,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
             marginBottom: '10px'
           }}
         >
-          O‘rganish maqsadlari
+          Örganiş maqsadlari
         </span>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -407,7 +407,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
             marginBottom: '10px'
           }}
         >
-          Nimalarni o‘rganasiz
+          Nimalarni örganasiz
         </span>
 
         <div className="cefr-wyl-grid">
@@ -492,7 +492,7 @@ export const LevelInformationPanel: React.FC<LevelInformationPanelProps> = ({
           e.currentTarget.style.boxShadow = `0 8px 25px ${level.color}45`;
         }}
       >
-        <span>{level.code} darajasini o‘rganish</span>
+        <span>{level.code} darajasini örganiş</span>
         <ArrowRight size={17} strokeWidth={2.5} />
       </button>
     </div>

@@ -3,29 +3,88 @@ import {
   ArrowRight, Sparkles, Compass, Check, Lock,
   Sprout, BookOpen, MessageCircle, GraduationCap, Target, Trophy
 } from 'lucide-react';
-import { CEFR_ROADMAP_LEVELS, CEFRLevelCode } from './cefrRoadmapData';
+import { CEFR_ROADMAP_LEVELS, CEFRLevelCode, CEFRLevelDetail } from './cefrRoadmapData';
 import { RoadmapLandscapeCanvas } from './RoadmapLandscapeCanvas';
 import { LevelInformationPanel } from './LevelInformationPanel';
 import { RoadmapProgress } from './RoadmapProgress';
 import { MotivationalCard } from './MotivationalCard';
+import { convertUzbekText } from '../../utils/textTransform';
+
+export interface CEFRRoadmapConfig {
+  kicker?: string;
+  title?: string;
+  titlePrefix?: string;
+  titleHighlight?: string;
+  subtitle?: string;
+  btnText?: string;
+  quoteHeading?: string;
+  quoteDesc?: string;
+  levels?: Array<{
+    code: CEFRLevelCode;
+    name?: string;
+    description?: string;
+    desc?: string;
+    estimatedDuration?: string;
+    proficiencyLevel?: string;
+    learningObjectives?: string[];
+    whatYouLearn?: Array<{
+      category: 'Grammar' | 'Vocabulary' | 'Listening & Speaking' | 'Reading & Writing';
+      title: string;
+      iconName?: 'sparkles' | 'book' | 'mic' | 'pen';
+    }>;
+  }>;
+}
 
 interface CEFRRoadmapSectionProps {
   onBegin: (intent: 'login' | 'register' | 'trial') => void;
   onSelectLevel?: (level: string) => void;
   dark?: boolean;
+  config?: CEFRRoadmapConfig;
 }
 
 export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
   onBegin,
   onSelectLevel,
-  dark
+  dark,
+  config
 }) => {
   // Default selected level is A2 (active level in initial demo)
   const [selectedLevelCode, setSelectedLevelCode] = useState<CEFRLevelCode>('A2');
 
+  const kicker = convertUzbekText(config?.kicker) || 'CEFR DARAJALARI BÖYIÇA REJA';
+  const rawTitle = convertUzbekText(config?.title);
+  const titlePrefix = convertUzbekText(config?.titlePrefix) || (rawTitle ? rawTitle.replace(/shu yerdan boşlanadi|shu yerdan boshlanadi/i, '').trim() : 'Ingliz tili sayohatingiz');
+  const titleHighlight = convertUzbekText(config?.titleHighlight) || 'şu yerdan boşlanadi';
+  const subtitle = convertUzbekText(config?.subtitle) || '6 ta xalqaro CEFR darajasi. Aniq tizimli yöl. Har bir darajani bosqiçma-bosqiç örganing.';
+  const btnText = convertUzbekText(config?.btnText) || 'Sayohatingizni boşlang';
+  const quoteHeading = convertUzbekText(config?.quoteHeading);
+  const quoteDesc = convertUzbekText(config?.quoteDesc);
+
+  const mergedLevels: CEFRLevelDetail[] = CEFR_ROADMAP_LEVELS.map((def) => {
+    const override = config?.levels?.find((l: any) => l.code === def.code);
+    if (!override) return def;
+    return {
+      ...def,
+      name: convertUzbekText(override.name) || def.name,
+      description: convertUzbekText(override.description || override.desc) || def.description,
+      estimatedDuration: convertUzbekText(override.estimatedDuration) || def.estimatedDuration,
+      proficiencyLevel: convertUzbekText(override.proficiencyLevel) || def.proficiencyLevel,
+      learningObjectives: override.learningObjectives && override.learningObjectives.length > 0
+        ? override.learningObjectives.map((o: string) => convertUzbekText(o))
+        : def.learningObjectives,
+      whatYouLearn: override.whatYouLearn && override.whatYouLearn.length > 0
+        ? override.whatYouLearn.map((w: any, idx: number) => ({
+            ...def.whatYouLearn[idx],
+            ...w,
+            title: convertUzbekText(w.title) || def.whatYouLearn[idx]?.title || ''
+          }))
+        : def.whatYouLearn
+    };
+  });
+
   const selectedLevelDetail =
-    CEFR_ROADMAP_LEVELS.find((lvl) => lvl.code === selectedLevelCode) ||
-    CEFR_ROADMAP_LEVELS[1];
+    mergedLevels.find((lvl) => lvl.code === selectedLevelCode) ||
+    mergedLevels[1];
 
   const handleExploreLevel = (levelCode: string) => {
     if (onSelectLevel) {
@@ -97,7 +156,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
             }}
           >
             <Compass size={14} />
-            <span>CEFR DARAJALARI BÖYIÇA REJA</span>
+            <span>{kicker}</span>
           </div>
 
           {/* Main Heading */}
@@ -111,7 +170,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
               color: dark ? '#ffffff' : '#0f172a'
             }}
           >
-            Ingliz tili sayohatingiz{' '}
+            {titlePrefix}{' '}
             <span
               style={{
                 background: 'linear-gradient(135deg, #3b82f6 0%, #10b981 100%)',
@@ -120,7 +179,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
                 display: 'inline-block'
               }}
             >
-              shu yerdan boşlanadi
+              {titleHighlight}
             </span>
           </h2>
 
@@ -134,7 +193,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
               maxWidth: '580px'
             }}
           >
-            6 ta xalqaro CEFR darajasi. Aniq tizimli yöl. Har bir darajani bosqiçma-bosqiç örganing.
+            {subtitle}
           </p>
 
           {/* Primary Hero Button */}
@@ -165,7 +224,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
               e.currentTarget.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.35)';
             }}
           >
-            <span>Sayohatingizni boşlang</span>
+            <span>{btnText}</span>
             <ArrowRight size={17} strokeWidth={2.5} />
           </button>
         </div>
@@ -197,7 +256,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
             <div className="cefr-road-line" />
 
             <div className="cefr-road-scroll">
-              {CEFR_ROADMAP_LEVELS.map((lvl) => {
+              {mergedLevels.map((lvl) => {
                 const isSelected = selectedLevelCode === lvl.code;
                 return (
                   <button
@@ -255,6 +314,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
               selectedLevel={selectedLevelCode}
               onSelectLevel={(code) => setSelectedLevelCode(code)}
               dark={dark}
+              levels={mergedLevels}
             />
           </div>
 
@@ -266,7 +326,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
               dark={dark}
             />
 
-            <MotivationalCard dark={dark} />
+            <MotivationalCard dark={dark} quoteHeading={quoteHeading} quoteDesc={quoteDesc} />
           </div>
         </div>
 
@@ -274,7 +334,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
         {/* BOTTOM SECTION: PROGRESS INDICATOR                       */}
         {/* ======================================================== */}
         <div style={{ marginTop: '36px' }}>
-          <RoadmapProgress currentLevel={selectedLevelCode} dark={dark} />
+          <RoadmapProgress currentLevel={selectedLevelCode} dark={dark} levels={mergedLevels} />
         </div>
       </div>
 

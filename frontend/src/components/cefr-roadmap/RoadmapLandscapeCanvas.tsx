@@ -9,12 +9,14 @@ interface RoadmapLandscapeCanvasProps {
   selectedLevel: CEFRLevelCode;
   onSelectLevel: (levelCode: CEFRLevelCode) => void;
   dark?: boolean;
+  levels?: CEFRLevelDetail[];
 }
 
 export const RoadmapLandscapeCanvas: React.FC<RoadmapLandscapeCanvasProps> = ({
   selectedLevel,
   onSelectLevel,
-  dark
+  dark,
+  levels = CEFR_ROADMAP_LEVELS
 }) => {
   const [hoveredLevel, setHoveredLevel] = useState<CEFRLevelCode | null>(null);
 
@@ -251,7 +253,7 @@ export const RoadmapLandscapeCanvas: React.FC<RoadmapLandscapeCanvasProps> = ({
       {/* ======================================================== */}
       {/* 5. INTERACTIVE MILESTONES (HTML Elements over Canvas)     */}
       {/* ======================================================== */}
-      {CEFR_ROADMAP_LEVELS.map((lvl) => {
+      {levels.map((lvl) => {
         const isSelected = selectedLevel === lvl.code;
         const isHovered = hoveredLevel === lvl.code;
         const isCurrent = lvl.status === 'current';

@@ -4,9 +4,15 @@ import { MOTIVATIONAL_HEADING, MOTIVATIONAL_DESC } from './cefrRoadmapData';
 
 interface MotivationalCardProps {
   dark?: boolean;
+  quoteHeading?: string;
+  quoteDesc?: string;
 }
 
-export const MotivationalCard: React.FC<MotivationalCardProps> = ({ dark }) => {
+export const MotivationalCard: React.FC<MotivationalCardProps> = ({
+  dark,
+  quoteHeading = MOTIVATIONAL_HEADING,
+  quoteDesc = MOTIVATIONAL_DESC
+}) => {
   return (
     <div
       style={{
@@ -71,7 +77,7 @@ export const MotivationalCard: React.FC<MotivationalCardProps> = ({ dark }) => {
             color: 'var(--text)'
           }}
         >
-          {MOTIVATIONAL_HEADING}
+          {quoteHeading}
         </h4>
         <p
           style={{
@@ -81,7 +87,7 @@ export const MotivationalCard: React.FC<MotivationalCardProps> = ({ dark }) => {
             color: 'var(--muted)'
           }}
         >
-          {MOTIVATIONAL_DESC}
+          {quoteDesc}
         </p>
       </div>
     </div>
