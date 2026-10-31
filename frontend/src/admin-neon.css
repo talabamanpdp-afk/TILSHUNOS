@@ -1,0 +1,598 @@
+/* ==========================================================================
+   TILSHUNOS - CYBER NEON DARK GLASSMORPHISM ADMIN PANEL THEME
+   Replicated exactly from reference UI mockup
+   ========================================================================== */
+
+/* Root App Neon Theme - Sets global CSS variables so all 7000+ lines in AdminPanel harmonize */
+.app.admin-neon-theme,
+.app.admin-neon-theme.dark {
+  --bg: #090e24 !important;
+  --panel: rgba(13, 22, 53, 0.85) !important;
+  --text: #f8fafc !important;
+  --muted: #94a3b8 !important;
+  --border: rgba(59, 130, 246, 0.22) !important;
+  --soft: rgba(59, 130, 246, 0.15) !important;
+  --purple: #8b5cf6 !important;
+  --purple-dark: #7c3aed !important;
+
+  --neon-bg: #060914;
+  --neon-panel-bg: rgba(11, 19, 43, 0.78);
+  --neon-panel-border: rgba(59, 130, 246, 0.22);
+  --neon-panel-hover-border: rgba(99, 102, 241, 0.42);
+  --neon-card-bg: linear-gradient(135deg, rgba(16, 26, 62, 0.85) 0%, rgba(10, 16, 38, 0.95) 100%);
+  --neon-accent-blue: #3b82f6;
+  --neon-accent-cyan: #06b6d4;
+  --neon-accent-purple: #8b5cf6;
+  --neon-accent-pink: #ec4899;
+  --neon-accent-emerald: #10b981;
+  --neon-accent-amber: #f59e0b;
+  --neon-text-primary: #f8fafc;
+  --neon-text-secondary: #94a3b8;
+  --neon-text-muted: #64748b;
+
+  background-color: #060914 !important;
+  background-image: 
+    radial-gradient(circle at 10% 12%, rgba(59, 130, 246, 0.14) 0%, transparent 45%),
+    radial-gradient(circle at 90% 15%, rgba(139, 92, 246, 0.16) 0%, transparent 48%),
+    radial-gradient(circle at 50% 80%, rgba(6, 182, 212, 0.10) 0%, transparent 52%),
+    radial-gradient(circle at 82% 88%, rgba(236, 72, 153, 0.08) 0%, transparent 42%) !important;
+  background-attachment: fixed !important;
+  color: #f8fafc !important;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Light mode support for admin panel (clean bright glassmorphism) */
+.app.admin-neon-theme:not(.dark) {
+  --bg: #f8fafc !important;
+  --panel: rgba(255, 255, 255, 0.9) !important;
+  --text: #0f172a !important;
+  --muted: #64748b !important;
+  --border: rgba(99, 102, 241, 0.16) !important;
+  --soft: rgba(99, 102, 241, 0.08) !important;
+  --purple: #6366f1 !important;
+  --purple-dark: #4f46e5 !important;
+
+  --neon-bg: #f8fafc;
+  --neon-panel-bg: rgba(255, 255, 255, 0.85);
+  --neon-panel-border: rgba(99, 102, 241, 0.18);
+  --neon-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(241, 245, 249, 0.9) 100%);
+  --neon-text-primary: #0f172a;
+  --neon-text-secondary: #475569;
+  --neon-text-muted: #64748b;
+
+  background-color: #f1f5f9 !important;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 85% 20%, rgba(147, 51, 234, 0.06) 0%, transparent 45%) !important;
+  color: #0f172a !important;
+}
+
+/* --------------------------------------------------------------------------
+   SIDEBAR
+   -------------------------------------------------------------------------- */
+.admin-neon-theme .sidebar {
+  background: rgba(10, 16, 38, 0.92) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-right: 1.5px solid rgba(59, 130, 246, 0.22) !important;
+  box-shadow: 10px 0 35px rgba(0, 0, 0, 0.45) !important;
+  padding: 24px 18px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 40 !important;
+}
+
+.admin-neon-theme:not(.dark) .sidebar {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-right: 1.5px solid rgba(99, 102, 241, 0.15) !important;
+  box-shadow: 6px 0 25px rgba(0, 0, 0, 0.05) !important;
+}
+
+.admin-neon-theme .brand-name {
+  font-family: inherit !important;
+  font-weight: 900 !important;
+  font-size: 19px !important;
+  color: #ffffff !important;
+  letter-spacing: 0.8px !important;
+}
+
+.admin-neon-theme:not(.dark) .brand-name {
+  color: #0f172a !important;
+}
+
+.admin-neon-theme .neon-profile-pill {
+  transition: all 0.2s ease;
+}
+.admin-neon-theme .neon-profile-pill:hover {
+  border-color: rgba(99, 102, 241, 0.45) !important;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.25) !important;
+}
+
+.admin-neon-theme .neon-nav-item:hover:not(.active) {
+  background: rgba(59, 130, 246, 0.12) !important;
+  color: #ffffff !important;
+  transform: translateX(4px);
+}
+
+.admin-neon-theme .neon-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.18) !important;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   TOPBAR
+   -------------------------------------------------------------------------- */
+.admin-neon-theme .topbar {
+  background: rgba(10, 16, 38, 0.85) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1.5px solid rgba(59, 130, 246, 0.2) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35) !important;
+  height: 72px !important;
+  padding: 0 32px !important;
+}
+
+.admin-neon-theme:not(.dark) .topbar {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-bottom: 1.5px solid rgba(99, 102, 241, 0.14) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+}
+
+.admin-neon-theme .topbar-neon-btn {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+  color: #cbd5e1 !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.admin-neon-theme:not(.dark) .topbar-neon-btn {
+  background: #f1f5f9 !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  color: #334155 !important;
+}
+
+.admin-neon-theme .topbar-neon-btn:hover {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   DASHBOARD CARDS & GRIDS
+   -------------------------------------------------------------------------- */
+.admin-neon-theme .neon-card {
+  background: linear-gradient(135deg, rgba(16, 26, 62, 0.85) 0%, rgba(10, 16, 38, 0.95) 100%) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1.5px solid rgba(59, 130, 246, 0.25) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-neon-theme:not(.dark) .neon-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 1.5px solid rgba(99, 102, 241, 0.16) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06) !important;
+}
+
+.admin-neon-theme .neon-card:hover {
+  border-color: rgba(99, 102, 241, 0.45) !important;
+  box-shadow: 0 14px 45px rgba(0, 0, 0, 0.5), 0 0 25px rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Hero Row (Row 1) */
+.admin-neon-theme .neon-hero-card {
+  padding: 30px 34px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  min-height: 200px !important;
+}
+
+.admin-neon-theme .neon-kicker-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #60a5fa;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  margin-bottom: 12px;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+.admin-neon-theme .neon-circle-arrow-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: grid;
+  place-items: center;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  outline: none;
+}
+
+.admin-neon-theme .neon-circle-arrow-btn:hover {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  border-color: #a78bfa;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(124, 58, 237, 0.6);
+  transform: scale(1.08) translateX(2px);
+}
+
+/* 4 Metric Cards (Row 2) */
+.admin-neon-theme .metric-card-neon {
+  padding: 22px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  min-height: 175px !important;
+}
+
+.admin-neon-theme .metric-icon-badge {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+}
+
+.admin-neon-theme .metric-trend-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 999px;
+  line-height: 1;
+}
+
+.admin-neon-theme .neon-sparkline-wrap {
+  width: 100%;
+  height: 32px;
+  margin: 10px 0 6px;
+  overflow: visible;
+}
+
+/* CEFR Donut Gauges (Row 3) */
+.admin-neon-theme .cefr-gauge-card {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  border-radius: 18px;
+  padding: 18px 12px 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.admin-neon-theme:not(.dark) .cefr-gauge-card {
+  background: #f8fafc;
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+.admin-neon-theme .cefr-gauge-card:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.admin-neon-theme .cefr-donut-container {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  margin: 10px 0 12px;
+  display: grid;
+  place-items: center;
+}
+
+.admin-neon-theme .cefr-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  padding-top: 26px;
+  gap: 2px;
+}
+
+.admin-neon-theme .cefr-donut-center strong {
+  font-size: 24px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.admin-neon-theme:not(.dark) .cefr-donut-center strong {
+  color: #0f172a;
+}
+
+.admin-neon-theme .cefr-donut-center span {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+/* --------------------------------------------------------------------------
+   GLOBAL OVERRIDES FOR ALL SECTIONS (CMS, USERS, VOCAB, GAMES, ETC.)
+   -------------------------------------------------------------------------- */
+.admin-neon-theme .panel,
+.admin-neon-theme .settings-card,
+.admin-neon-theme .task-card,
+.admin-neon-theme .word-stat,
+.admin-neon-theme .practice-config,
+.admin-neon-theme .practice-side {
+  background: rgba(11, 19, 43, 0.78) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1.5px solid rgba(59, 130, 246, 0.22) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+.admin-neon-theme:not(.dark) .panel,
+.admin-neon-theme:not(.dark) .settings-card,
+.admin-neon-theme:not(.dark) .task-card,
+.admin-neon-theme:not(.dark) .word-stat,
+.admin-neon-theme:not(.dark) .practice-config,
+.admin-neon-theme:not(.dark) .practice-side {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(99, 102, 241, 0.16) !important;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.05) !important;
+  color: #0f172a !important;
+}
+
+.admin-neon-theme .panel-heading h3 {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+.admin-neon-theme:not(.dark) .panel-heading h3 {
+  color: #0f172a !important;
+}
+.admin-neon-theme .panel-heading p {
+  color: #94a3b8 !important;
+}
+
+/* Form Controls */
+.admin-neon-theme input[type="text"],
+.admin-neon-theme input[type="email"],
+.admin-neon-theme input[type="password"],
+.admin-neon-theme input[type="number"],
+.admin-neon-theme input[type="search"],
+.admin-neon-theme textarea,
+.admin-neon-theme select {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1.5px solid rgba(59, 130, 246, 0.25) !important;
+  border-radius: 12px !important;
+  color: #f8fafc !important;
+  padding: 10px 14px !important;
+  font-size: 13px !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-neon-theme:not(.dark) input[type="text"],
+.admin-neon-theme:not(.dark) input[type="email"],
+.admin-neon-theme:not(.dark) input[type="password"],
+.admin-neon-theme:not(.dark) input[type="number"],
+.admin-neon-theme:not(.dark) input[type="search"],
+.admin-neon-theme:not(.dark) textarea,
+.admin-neon-theme:not(.dark) select {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.admin-neon-theme input:focus,
+.admin-neon-theme textarea:focus,
+.admin-neon-theme select:focus {
+  border-color: #60a5fa !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25), 0 0 16px rgba(59, 130, 246, 0.35) !important;
+  outline: none !important;
+}
+
+.admin-neon-theme input::placeholder,
+.admin-neon-theme textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Primary Button */
+.admin-neon-theme .primary-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+  border: 1px solid rgba(167, 139, 250, 0.4) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.45) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+}
+
+.admin-neon-theme .primary-btn:hover {
+  box-shadow: 0 6px 26px rgba(124, 58, 237, 0.65), 0 0 15px rgba(99, 102, 241, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+.admin-neon-theme .secondary-btn,
+.admin-neon-theme .outline-btn {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  color: #93c5fd !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-neon-theme .secondary-btn:hover,
+.admin-neon-theme .outline-btn:hover {
+  background: rgba(59, 130, 246, 0.18) !important;
+  border-color: #60a5fa !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Tables */
+.admin-neon-theme .vocab-table,
+.admin-neon-theme .table-toolbar {
+  background: rgba(13, 22, 53, 0.78) !important;
+  border: 1.5px solid rgba(59, 130, 246, 0.22) !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+}
+
+.admin-neon-theme .table-head {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-bottom: 1.5px solid rgba(59, 130, 246, 0.22) !important;
+  color: #94a3b8 !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+}
+
+.admin-neon-theme .table-row {
+  border-bottom: 1px solid rgba(59, 130, 246, 0.14) !important;
+  color: #f1f5f9 !important;
+  transition: background 0.15s ease !important;
+}
+
+.admin-neon-theme .table-row:hover {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Modals */
+.admin-neon-theme .modal {
+  background: rgba(10, 16, 40, 0.96) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1.5px solid rgba(59, 130, 246, 0.35) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 50px rgba(59, 130, 246, 0.25) !important;
+  border-radius: 24px !important;
+  color: #f8fafc !important;
+}
+
+.admin-neon-theme .scrim {
+  background: rgba(4, 7, 20, 0.8) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+/* Subtabs (CMS & Users) */
+.admin-neon-theme .subtabs {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1.5px solid rgba(59, 130, 246, 0.22) !important;
+  border-radius: 16px !important;
+  padding: 5px !important;
+  display: flex !important;
+  gap: 6px !important;
+}
+
+.admin-neon-theme .subtab {
+  color: #94a3b8 !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid transparent !important;
+  padding: 8px 16px !important;
+}
+
+.admin-neon-theme .subtab:hover {
+  color: #ffffff !important;
+  background: rgba(59, 130, 246, 0.12) !important;
+}
+
+.admin-neon-theme .subtab.active {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 18px rgba(124, 58, 237, 0.5) !important;
+  border-color: rgba(167, 139, 250, 0.4) !important;
+}
+
+/* Badges */
+.admin-neon-theme .badge-role-admin {
+  background: rgba(139, 92, 246, 0.2) !important;
+  color: #c4b5fd !important;
+  border: 1px solid rgba(139, 92, 246, 0.4) !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  padding: 3px 10px !important;
+}
+
+.admin-neon-theme .badge-role-teacher {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #fcd34d !important;
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  padding: 3px 10px !important;
+}
+
+.admin-neon-theme .badge-role-learner {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  border-radius: 9999px !important;
+  font-weight: 700 !important;
+  padding: 3px 10px !important;
+}
+
+.admin-neon-theme .badge-verified {
+  color: #34d399 !important;
+  filter: drop-shadow(0 0 4px rgba(52, 211, 153, 0.5));
+}
+
+/* Breadcrumb */
+.admin-neon-theme .breadcrumb {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+/* Responsiveness */
+@media (max-width: 1200px) {
+  .admin-neon-theme .neon-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-neon-theme .neon-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .admin-neon-theme .neon-hero-card {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+  .admin-neon-theme .neon-hero-illustration {
+    width: 100% !important;
+    max-width: 200px !important;
+  }
+}
