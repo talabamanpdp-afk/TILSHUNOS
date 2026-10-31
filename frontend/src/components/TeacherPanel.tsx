@@ -95,9 +95,9 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
       const res = await (api as any).getTeacherMyProfile();
       if (res) {
         setProfile({
-          fullName: res.fullName || `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || "O'qituvchi",
+          fullName: res.fullName || `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || "Öqituvçi",
           email: res.email || currentUser?.email || '',
-          bio: res.bio || "O'quvchilarga ingliz tili grammatikasi va so'z boyligini oshirish bo'yicha amaliy darslar beraman.",
+          bio: res.bio || "Öquvçilarga ingliz tili grammatikasi va söz boyligini oshirish bo'yicha amaliy darslar beraman.",
           specialty: res.specialty || "IELTS, Speaking & Academic Writing",
           telegram: res.telegram || 'https://t.me/tilshunos_ustoz',
           instagram: res.instagram || 'https://instagram.com/tilshunos_teacher',
@@ -106,9 +106,9 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
       }
     } catch {
       setProfile({
-        fullName: `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || "O'qituvchi",
+        fullName: `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || "Öqituvçi",
         email: currentUser?.email || 'teacher@tilshunos.uz',
-        bio: "O'quvchilarga ingliz tili grammatikasi va so'z boyligini oshirish bo'yicha amaliy darslar beraman.",
+        bio: "Öquvçilarga ingliz tili grammatikasi va söz boyligini oshirish bo'yicha amaliy darslar beraman.",
         specialty: "IELTS, Speaking & Academic Writing",
         telegram: 'https://t.me/tilshunos_ustoz',
         instagram: 'https://instagram.com/tilshunos_teacher',
@@ -318,7 +318,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
               whiteSpace: 'nowrap'
             }}
           >
-            Mening O'quvchilarim ({students.length})
+            Mening Öquvçilarim ({students.length})
           </button>
           <button
             onClick={() => setActiveTab('tasks')}
@@ -366,7 +366,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
               whiteSpace: 'nowrap'
             }}
           >
-            Shaxsiy Dashboard (Lug'at va O'rganish)
+            Shaxsiy Dashboard (Luğat va Örganiş)
           </button>
         </div>
 
@@ -376,10 +376,10 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
               <div>
                 <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px 0', color: dark ? '#f1f0fc' : '#0f172a' }}>
-                  Biriktirilgan o'quvchilar
+                  Biriktirilgan öquvçilar
                 </h2>
                 <p style={{ margin: 0, fontSize: '13px', color: dark ? '#94a3b8' : '#64748b' }}>
-                  Har bir o'quvchining darajasini kuzatib boring va ularga yangi vazifalar bering.
+                  Har bir öquvçining darajasini kuzatib boring va ularga yangi vazifalar bering.
                 </p>
               </div>
               <button
@@ -400,7 +400,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
             </div>
 
             {loading ? (
-              <div style={{ padding: '40px', textAlign: 'center', color: dark ? '#94a3b8' : '#64748b' }}>O'quvchilar yuklanmoqda...</div>
+              <div style={{ padding: '40px', textAlign: 'center', color: dark ? '#94a3b8' : '#64748b' }}>Öquvçilar yuklanmoqda...</div>
             ) : students.length === 0 ? (
               <div style={{
                 padding: '48px 24px',
@@ -410,9 +410,9 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                 borderRadius: '16px'
               }}>
                 <GraduationCap size={44} style={{ color: dark ? '#6366f1' : '#4f46e5', margin: '0 auto 12px' }} />
-                <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '0 0 6px', color: dark ? '#f1f0fc' : '#0f172a' }}>Hozircha biriktirilgan o‘quvchilar yo‘q</h3>
+                <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '0 0 6px', color: dark ? '#f1f0fc' : '#0f172a' }}>Hozircha biriktirilgan öquvçilar yöq</h3>
                 <p style={{ fontSize: '13px', color: dark ? '#94a3b8' : '#64748b', maxWidth: '420px', margin: '0 auto' }}>
-                  Yangi o‘quvchilar platformaga a’zo bo‘lib sizga biriktirilganda bu yerda aks etadi va ularning barcha natijalari 0 dan boshlanadi.
+                  Yangi öquvçilar platformaga a’zo bölib sizga biriktirilganda bu yerda aks etadi va ularning barcha natijalari 0 dan boshlanadi.
                 </p>
               </div>
             ) : (
@@ -481,8 +481,8 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                         border: dark ? '1px solid #2a2a40' : 'none'
                       }}>
                         <div>
-                          <span style={{ color: dark ? '#94a3b8' : '#64748b' }}>Lug'at hajmi:</span>
-                          <strong style={{ display: 'block', color: dark ? '#f1f0fc' : '#0f172a', fontSize: '14px' }}>{student.vocabularyCount} ta so'z</strong>
+                          <span style={{ color: dark ? '#94a3b8' : '#64748b' }}>Luğat hajmi:</span>
+                          <strong style={{ display: 'block', color: dark ? '#f1f0fc' : '#0f172a', fontSize: '14px' }}>{student.vocabularyCount} ta söz</strong>
                         </div>
                         <div>
                           <span style={{ color: dark ? '#94a3b8' : '#64748b' }}>Topshiriqlar:</span>
@@ -535,7 +535,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <div>
                 <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px 0', color: '#0f172a' }}>
-                  O'quvchilarga berilgan vazifalar
+                  Öquvçilarga berilgan vazifalar
                 </h2>
                 <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
                   Barcha yuborilgan topshiriqlar va ularning topshirilish holati
@@ -570,7 +570,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                   Hali topshiriqlar berilmagan
                 </div>
                 <p style={{ color: '#64748b', fontSize: '13px', margin: '0 0 16px 0' }}>
-                  "Mening O'quvchilarim" bo'limiga o'tib, istalgan o'quvchiga yangi yozma yoki og'zaki vazifa yuboring.
+                  "Mening Öquvçilarim" bölimiga o'tib, istalgan öquvçiga yangi yozma yoki og'zaki vazifa yuboring.
                 </p>
                 <button
                   onClick={() => setActiveTab('students')}
@@ -584,7 +584,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                     cursor: 'pointer'
                   }}
                 >
-                  O'quvchilarga o'tish
+                  Öquvçilarga ötiş
                 </button>
               </div>
             ) : (
@@ -593,7 +593,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                   <thead>
                     <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                       <th style={{ padding: '12px 16px', fontWeight: 700, color: '#475569' }}>Mavzu</th>
-                      <th style={{ padding: '12px 16px', fontWeight: 700, color: '#475569' }}>O'quvchi</th>
+                      <th style={{ padding: '12px 16px', fontWeight: 700, color: '#475569' }}>Öquvçi</th>
                       <th style={{ padding: '12px 16px', fontWeight: 700, color: '#475569' }}>Turi</th>
                       <th style={{ padding: '12px 16px', fontWeight: 700, color: '#475569' }}>Muddati</th>
                       <th style={{ padding: '12px 16px', fontWeight: 700, color: '#475569' }}>Holat</th>
@@ -604,7 +604,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                     {assignedTasks.map((t, i) => (
                       <tr key={t.id || i} style={{ borderBottom: '1px solid #f1f5f9' }}>
                         <td style={{ padding: '12px 16px', fontWeight: 600, color: '#0f172a' }}>{t.title}</td>
-                        <td style={{ padding: '12px 16px', color: '#64748b' }}>{t.studentName || "O'quvchi"}</td>
+                        <td style={{ padding: '12px 16px', color: '#64748b' }}>{t.studentName || "Öquvçi"}</td>
                         <td style={{ padding: '12px 16px' }}>
                           <span style={{
                             background: '#e0e7ff',
@@ -649,10 +649,10 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
           <div style={{ maxWidth: '680px', margin: '0 auto' }}>
             <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '28px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 6px 0', color: '#0f172a' }}>
-                O'qituvchi shaxsiy profili
+                Öqituvçi shaxsiy profili
               </h2>
               <p style={{ margin: '0 0 20px 0', fontSize: '13px', color: '#64748b' }}>
-                Profil ma'lumotlaringiz va o'quvchilar bilan muloqot uchun ijtimoiy tarmoq havolalarini saqlang.
+                Profil ma'lumotlaringiz va öquvçilar bilan muloqot uchun ijtimoiy tarmoq havolalarini saqlang.
               </p>
 
               {profileSuccess && (
@@ -672,7 +672,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
               <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
-                    F.I.Sh (O'qituvchi nomi)
+                    F.I.Sh (Öqituvçi nomi)
                   </label>
                   <input
                     type="text"
@@ -720,7 +720,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                     rows={4}
                     value={profile.bio}
                     onChange={(e) => setProfile(p => ({ ...p, bio: e.target.value }))}
-                    placeholder="O'quvchilarga o'zingiz haqingizda qisqacha ma'lumot bering..."
+                    placeholder="Öquvçilarga o'zingiz haqingizda qisqacha ma'lumot bering..."
                     style={{
                       width: '100%',
                       padding: '10px 14px',
@@ -735,7 +735,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
 
                 <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 12px 0', color: '#0f172a' }}>
-                    Ijtimoiy tarmoqlar (O'quvchilar bilan aloqa)
+                    Ijtimoiy tarmoqlar (Öquvçilar bilan aloqa)
                   </h3>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -823,15 +823,15 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
           </div>
         )}
 
-        {/* TAB 4: Personal Dashboard (Lug'at va O'rganish) */}
+        {/* TAB 4: Personal Dashboard (Luğat va Örganiş) */}
         {activeTab === 'personal' && (
           <div>
             <div style={{ marginBottom: '20px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px 0', color: '#0f172a' }}>
-                O'qituvchining shaxsiy lug'at va o'rganish maydoni
+                Öqituvçining shaxsiy luğat va örganiş maydoni
               </h2>
               <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
-                Siz ham oddiy foydalanuvchilar kabi o'z lug'at daftaringizni yuritishingiz va materiallar bilan ishlashingiz mumkin.
+                Siz ham oddiy foydalanuvchilar kabi o'z luğat daftaringizni yuritishingiz va materiallar bilan ishlashingiz mumkin.
               </p>
             </div>
 
@@ -839,12 +839,12 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
               {/* Add Word Form */}
               <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 14px 0', color: '#0f172a' }}>
-                  Yangi so'z qo'shish
+                  Yangi söz qöşiş
                 </h3>
                 <form onSubmit={handleAddPersonalWord} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
-                      Inglizcha so'z
+                      Inglizcha söz
                     </label>
                     <input
                       type="text"
@@ -893,7 +893,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                       marginTop: '6px'
                     }}
                   >
-                    Lug'atga qo'shish
+                    Luğatga qöşiş
                   </button>
                 </form>
               </div>
@@ -902,7 +902,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
               <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                   <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: '#0f172a' }}>
-                    Shaxsiy lug'at daftari ({personalVocab.length} ta so'z)
+                    Shaxsiy luğat daftari ({personalVocab.length} ta söz)
                   </h3>
                   <button
                     onClick={loadPersonalVocab}
@@ -914,7 +914,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
 
                 {personalVocab.length === 0 ? (
                   <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8' }}>
-                    Lug'atingizda hozircha so'zlar yo'q. Chap tarafdan yangi so'z kiriting!
+                    Luğatingizda hozircha sözlar yöq. Chap tarafdan yangi söz kiriting!
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '420px', overflowY: 'auto' }}>
@@ -1000,7 +1000,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
               {selectedStudent.name} uchun yangi vazifa
             </h3>
             <p style={{ margin: '0 0 18px 0', fontSize: '13px', color: '#64748b' }}>
-              Ushbu topshiriq o'quvchining shaxsiy kabinetida ko'rinadi va bajarilgach tekshirish uchun sizga keladi.
+              Ushbu topshiriq öquvçining shaxsiy kabinetida körinadi va bajarilgach tekshirish uchun sizga keladi.
             </p>
 
             {taskSuccess && (
@@ -1093,7 +1093,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                   value={taskForm.instructions}
                   onChange={(e) => setTaskForm(t => ({ ...t, instructions: e.target.value }))}
                   required
-                  placeholder="O'quvchi nima qilishi kerakligi haqida batafsil ma'lumot kiriting (kamida 150 ta so'z, yangi lug'at so'zlaridan foydalanish va h.k.)..."
+                  placeholder="Öquvçi nima qilishi kerakligi haqida batafsil ma'lumot kiriting (kamida 150 ta söz, yangi luğat sözlaridan foydalanish va h.k.)..."
                   style={{
                     width: '100%',
                     padding: '10px 12px',

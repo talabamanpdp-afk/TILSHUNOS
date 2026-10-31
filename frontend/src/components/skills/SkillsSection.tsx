@@ -688,7 +688,7 @@ export function SkillsSection({
             </span>
 
             <h2 className="skills-main-title">
-              5 ta asosiy til ko‘nikmasini <br />
+              5 ta asosiy til könikmasini <br />
               <span className="skills-gradient-text">mustahkamlang</span>
             </h2>
 
@@ -775,7 +775,7 @@ export function SkillsSection({
 
             <div className="skills-calligraphy-wrap">
               <span className="skills-calligraphy-note">
-                Til o‘rganish — yangi imkoniyatlar dunyosi! ✨
+                Til örganiş — yangi imkoniyatlar dunyosi! ✨
               </span>
               <svg className="skills-curved-arrow" width="34" height="34" viewBox="0 0 40 40" fill="none">
                 <path d="M 32 6 C 34 20 20 30 10 32" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="3 3" />

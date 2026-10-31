@@ -53,7 +53,7 @@ export const SKILL_CARDS: {
     key: 'reading',
     title: 'Reading (O‘qish)',
     badge: 'Matn & Gap-fill',
-    desc: 'Ilmiy-ommabop matn tahlili va bo‘sh joylarni to‘g‘ri so‘zlar bilan to‘ldirish.',
+    desc: 'Ilmiy-ommabop matn tahlili va bo‘sh joylarni to‘g‘ri sözlar bilan to‘ldirish.',
     duration: '6-8 daqiqa',
     icon: BookOpen,
     color: '#3b82f6'
@@ -70,7 +70,7 @@ export const SKILL_CARDS: {
   {
     key: 'writing',
     title: 'Writing (Yozish)',
-    badge: 'Kamida 150 so‘z',
+    badge: 'Kamida 150 söz',
     desc: 'Berilgan mavzuda insho yozish va bir zumda AI repetitordan chuqur tahlil olish.',
     duration: '10-15 daqiqa',
     icon: PenLine,
@@ -80,14 +80,14 @@ export const SKILL_CARDS: {
     key: 'grammar',
     title: 'Grammar (Grammatika)',
     badge: 'Xatolikni aniqlash',
-    desc: 'Matndagi grammatik xatoliklarni topish va qoidalarni o‘rganish testi.',
+    desc: 'Matndagi grammatik xatoliklarni topish va qoidalarni örganiş testi.',
     duration: '4-6 daqiqa',
     icon: Sparkles,
     color: '#f59e0b'
   },
   {
     key: 'word',
-    title: 'Word Quiz (Rasmli so‘zlar)',
+    title: 'Word Quiz (Rasmli sözlar)',
     badge: '100 tadan 10 ta random',
     desc: '100 ta rasm ichidan tasodifiy 10 ta quiz savoli. Oxirida xatolar tahlili.',
     duration: '2-3 daqiqa',
@@ -519,7 +519,7 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms }
                         <Clock size={13} /> {skill.duration}
                       </span>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        Boshlash <ArrowRight size={14} />
+                        Boşlaş <ArrowRight size={14} />
                       </span>
                     </div>
                   </button>
@@ -741,7 +741,7 @@ function SpeakingTrialModule({
       expectedWord: describeImage.title,
       onPartial: (p) => setRecognizedText(p),
       onResult: (res) => {
-        const text = res.transcript || 'Rasm tasviri to‘liq yozib olindi';
+        const text = res.transcript || 'Rasm tasviri töliq yozib olindi';
         setRecognizedText(text);
         finishPart2(text, res.confidence);
       },
@@ -910,7 +910,7 @@ function SpeakingTrialModule({
               </p>
               <div>
                 <span style={{ fontSize: '12px', fontWeight: 800, color: '#7869f5', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-                  Foydali so‘zlar:
+                  Foydali sözlar:
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {describeImage.keyVocabulary.map((kw, i) => (
@@ -944,7 +944,7 @@ function SpeakingTrialModule({
                 }}
               >
                 {isRecording ? <MicOff size={22} /> : <Mic size={22} />}
-                {isRecording ? 'Tasvirni yakunlash' : 'Rasmni tasvirlashni boshlash (60 soniya)'}
+                {isRecording ? 'Tasvirni yakunlash' : 'Rasmni tasvirlashni boşlaş (60 soniya)'}
               </button>
             ) : (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '100px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontWeight: 750, fontSize: '14px' }}>
@@ -975,7 +975,7 @@ function SpeakingTrialModule({
                   cursor: 'pointer'
                 }}
               >
-                Umumiy Speaking Natijasini ko‘rish <Trophy size={18} />
+                Umumiy Speaking Natijasini köriş <Trophy size={18} />
               </button>
             </div>
           )}
@@ -993,7 +993,7 @@ function SpeakingTrialModule({
             SPEAKING DIAGNOSTIKASI YAKUNLANDI
           </span>
           <h2 style={{ fontSize: '28px', fontWeight: 900, margin: '8px 0 16px' }}>
-            Sizning taxminiy darajangiz: {overallSpeakingScore >= 85 ? 'B2 (Mustaqil so‘zlashuvchi)' : 'B1 (O‘rta daraja)'}
+            Sizning taxminiy darajangiz: {overallSpeakingScore >= 85 ? 'B2 (Mustaqil sözlashuvchi)' : 'B1 (O‘rta daraja)'}
           </h2>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', maxWidth: '650px', margin: '24px auto' }}>
@@ -1033,7 +1033,7 @@ function SpeakingTrialModule({
               cursor: 'pointer'
             }}
           >
-            To‘liq shaxsiy o‘quv rejasini boshlash <ArrowRight size={17} />
+            Töliq shaxsiy o‘quv rejasini boşlaş <ArrowRight size={17} />
           </button>
         </div>
       )}
@@ -1215,7 +1215,7 @@ function ReadingTrialModule({
       {currentTest.type === 'gap_fill' && currentTest.blanks && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
-            Matndagi bo‘sh joylarga to‘g‘ri so‘zlarni tanlang:
+            Matndagi bo‘sh joylarga to‘g‘ri sözlarni tanlang:
           </h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
@@ -1242,7 +1242,7 @@ function ReadingTrialModule({
                       color: 'inherit'
                     }}
                   >
-                    <option value="">-- So‘zni tanlang --</option>
+                    <option value="">-- Sözni tanlang --</option>
                     {blank.options.map((opt, i) => (
                       <option key={i} value={opt}>{opt}</option>
                     ))}
@@ -1270,7 +1270,7 @@ function ReadingTrialModule({
               cursor: 'pointer'
             }}
           >
-            Javoblarni tekshirish va natijani ko‘rish
+            Javoblarni tekshirish va natijani köriş
           </button>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
@@ -1486,7 +1486,7 @@ function ListeningTrialModule({
                     color: 'inherit'
                   }}
                 >
-                  <option value="">-- So‘zni tanlang --</option>
+                  <option value="">-- Sözni tanlang --</option>
                   {blank.options.map((opt, i) => (
                     <option key={i} value={opt}>{opt}</option>
                   ))}
@@ -1577,7 +1577,7 @@ function WritingTrialModule({
 
   const handleSubmitToAI = () => {
     if (!isRequirementMet) {
-      alert(`Inshoda kamida ${minRequired} ta so‘z bo‘lishi lozim. Hozirda: ${wordCount} ta so‘z.`);
+      alert(`Inshoda kamida ${minRequired} ta söz bo‘lishi lozim. Hozirda: ${wordCount} ta söz.`);
       return;
     }
 
@@ -1619,7 +1619,7 @@ function WritingTrialModule({
             {item.genre} · KAMIDA {minRequired} TA SO‘Z
           </span>
           <span style={{ fontSize: '12px', fontWeight: 700, color: isRequirementMet ? '#10b981' : '#f59e0b' }}>
-            {isRequirementMet ? '✅ Talab bajarildi' : `Yana ${minRequired - wordCount} ta so‘z kerak`}
+            {isRequirementMet ? '✅ Talab bajarildi' : `Yana ${minRequired - wordCount} ta söz kerak`}
           </span>
         </div>
 
@@ -1660,7 +1660,7 @@ function WritingTrialModule({
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', fontSize: '13px' }}>
           <span style={{ fontWeight: 800, color: isRequirementMet ? '#10b981' : '#f59e0b' }}>
-            {wordCount} / {minRequired} ta so‘z
+            {wordCount} / {minRequired} ta söz
           </span>
           <button
             onClick={() => setEssayText(item.sampleBand8Text || '')}
@@ -2041,7 +2041,7 @@ function WordQuizTrialModule({
               <Trophy size={32} />
             </div>
             <h2 style={{ fontSize: '26px', fontWeight: 900, margin: '0 0 6px' }}>
-              Rasmli so‘zlar testi yakunlandi!
+              Rasmli sözlar testi yakunlandi!
             </h2>
             <div style={{ fontSize: '18px', fontWeight: 800, color: '#10b981' }}>
               Natija: {correctCount} / 10 to‘g‘ri ({correctCount * 10}%)
@@ -2052,7 +2052,7 @@ function WordQuizTrialModule({
           {missedItems.length > 0 ? (
             <div>
               <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#ef4444', marginBottom: '14px' }}>
-                Xato qilingan so‘zlar va ularning to‘g‘ri javoblari:
+                Xato qilingan sözlar va ularning to‘g‘ri javoblari:
               </h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px', marginBottom: '28px' }}>
@@ -2124,7 +2124,7 @@ function WordQuizTrialModule({
                 cursor: 'pointer'
               }}
             >
-              Shaxsiy lug‘at daftariga o‘tish →
+              Shaxsiy luğat daftariga o‘tish →
             </button>
           </div>
         </div>

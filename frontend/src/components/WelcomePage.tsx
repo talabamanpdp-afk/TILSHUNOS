@@ -10,6 +10,7 @@ import {
   playSpeech, stopSpeech, startListening,
   SupportedLang, LANG_LABELS, isSpeechRecognitionSupported
 } from '../utils/speech';
+import { convertUzbekText } from '../utils/textTransform';
 import { PracticeGuideSection } from './PracticeGuideSection';
 import { PracticeGuideConfig } from '../data/practiceGuideData';
 import { CEFRRoadmapSection } from './cefr-roadmap/CEFRRoadmapSection';
@@ -318,9 +319,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   // Safe defaults & Hero texts
   const heroTitle = cms?.hero || 'Yangi tilni erkin gapiring';
   const heroBadge = cms?.heroBadge || '99 PERCENT';
-  const heroDesc = cms?.description || 'TILŞUNOS bilan har kuni tizimli örganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga çiqing.';
-  const primaryCta = cms?.cta || 'Hoziroq Boşlaş';
-  const secondaryCta = cms?.secondaryCta || 'Platformani örganiş';
+  const heroDesc = convertUzbekText(cms?.description) || 'TILŞUNOS bilan har kuni tizimli örganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga çiqing.';
+  const primaryCta = convertUzbekText(cms?.cta) || 'Hoziroq Boşlaş';
+  const secondaryCta = convertUzbekText(cms?.secondaryCta) || 'Platformani örganiş';
   const heroBgDesktop = cms?.heroBgDesktop || cms?.headerBgDesktop || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254439976_c6auer.webp';
   const heroBgMobile = cms?.heroBgMobile || cms?.headerBgMobile || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254446169_xxtbf7.webp';
   const heroFlags = (cms?.heroFlags && cms.heroFlags.length > 0)
@@ -391,61 +392,71 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   const metric1Val = useLive
     ? `${(liveStats?.materialsCount ?? 0) > 0 ? liveStats?.materialsCount : 3}+`
     : (cms?.metrics?.metric1Value && cms.metrics.metric1Value !== '6 M' ? cms.metrics.metric1Value : `${liveStats?.materialsCount ?? 3}+`);
-  const metric1Lbl = cms?.metrics?.metric1Label && cms.metrics.metric1Label !== 'App Downloads'
-    ? cms.metrics.metric1Label
-    : 'O‘quv Materiallari';
+  const metric1Lbl = convertUzbekText(
+    cms?.metrics?.metric1Label && cms.metrics.metric1Label !== 'App Downloads'
+      ? cms.metrics.metric1Label
+      : 'Öquv Materiallari'
+  );
 
   const metric2Val = useLive
     ? `${liveStats?.wordsCount ?? 0}+`
     : (cms?.metrics?.metric2Value && cms.metrics.metric2Value !== '8.24 M' ? cms.metrics.metric2Value : `${liveStats?.wordsCount ?? 0}+`);
-  const metric2Lbl = cms?.metrics?.metric2Label && cms.metrics.metric2Label !== 'Learned monthly'
-    ? cms.metrics.metric2Label
-    : 'Lug‘at So‘zlari';
+  const metric2Lbl = convertUzbekText(
+    cms?.metrics?.metric2Label && cms.metrics.metric2Label !== 'Learned monthly'
+      ? cms.metrics.metric2Label
+      : 'Luğat Sözlari'
+  );
 
   const metric3Val = useLive
     ? `${liveStats?.usersCount ?? 0}+`
     : (cms?.metrics?.metric3Value && cms.metrics.metric3Value !== '4.8 ★' && cms.metrics.metric3Value !== '4.8' && cms.metrics.metric3Value !== '120+'
         ? cms.metrics.metric3Value
         : `${liveStats?.usersCount ?? 0}+`);
-  const metric3Lbl = cms?.metrics?.metric3Label && cms.metrics.metric3Label !== '177k Rating' && cms.metrics.metric3Label !== 'Mashq Bajarildi'
-    ? cms.metrics.metric3Label
-    : 'Jami Foydalanuvchilar';
+  const metric3Lbl = convertUzbekText(
+    cms?.metrics?.metric3Label && cms.metrics.metric3Label !== '177k Rating' && cms.metrics.metric3Label !== 'Mashq Bajarildi'
+      ? cms.metrics.metric3Label
+      : 'Foydalanuvçilar'
+  );
 
   const flBadge1 = cms?.floatingBadge1 || { flag: '🇬🇧', title: 'Basic English', subtitle: '103 Lesson' };
   const flBadge2 = cms?.floatingBadge2 || { title: '9 / 12 Quiz', subtitle: 'Speaking ✓' };
 
   // Preview Section Data
-  const previewKicker = cms?.previewSection?.kicker || 'AMALIY TAJRIBA';
-  const previewTitle = cms?.previewSection?.title || 'Platformaning haqiqiy imkoniyatlarini sinab ko‘ring';
-  const previewSubtitle = cms?.previewSection?.subtitle || 'Ro‘yxatdan o‘tishdan avval asosiy 3 ta modulimiz qanday ishlashini amalda ko‘ring.';
+  const previewKicker = convertUzbekText(cms?.previewSection?.kicker) || 'AMALIY TAJRIBA';
+  const previewTitle = convertUzbekText(cms?.previewSection?.title) || 'Platformaning haqiqiy imkoniyatlarini sinab köring';
+  const previewSubtitle = convertUzbekText(cms?.previewSection?.subtitle) || 'Röyxatdan ötişdan avval asosiy 3 ta modulimiz qanday işlaşini amalda köring.';
 
   const multilingualVocab: Record<SupportedLang, Array<{ word: string; tr: string; lvl: string; ex: string; topic: string }>> = {
     en: (cms?.previewSection?.vocabItems && cms.previewSection.vocabItems.length > 0)
-      ? cms.previewSection.vocabItems
+      ? cms.previewSection.vocabItems.map((item: any) => ({
+          ...item,
+          tr: convertUzbekText(item.tr),
+          topic: convertUzbekText(item.topic)
+        }))
       : [
-          { word: 'Achieve', tr: 'Erishmoq, zabt etmoq', lvl: 'B1', ex: 'You can achieve any language goal with daily practice.', topic: 'Motivatsiya' },
-          { word: 'Curious', tr: 'Qiziquvchan, yangilikka intiluvchan', lvl: 'A2', ex: 'Children are naturally curious about the world.', topic: 'Xarakter' },
-          { word: 'Resilience', tr: 'Sabr-bardosh, chidamlilik', lvl: 'B2', ex: 'She showed great resilience in learning pronunciation.', topic: 'Psixologiya' }
+          { word: 'Achieve', tr: 'Erişmoq, zabt etmoq', lvl: 'B1', ex: 'You can achieve any language goal with daily practice.', topic: 'Motivatsiya' },
+          { word: 'Curious', tr: 'Qiziquvçan, yangilikka intiluvçan', lvl: 'A2', ex: 'Children are naturally curious about the world.', topic: 'Xarakter' },
+          { word: 'Resilience', tr: 'Sabr-bardoş, çidamlilik', lvl: 'B2', ex: 'She showed great resilience in learning pronunciation.', topic: 'Psixologiya' }
         ],
     de: [
-      { word: 'Entdecken', tr: 'Kashf qilmoq, o‘rganmoq', lvl: 'A2', ex: 'Wir entdecken jeden Tag neue deutsche Wörter.', topic: 'Bilim' },
-      { word: 'Zuverlässig', tr: 'Ishonchli, qat’iyatli', lvl: 'B1', ex: 'Ein zuverlässiger Wortschatz ist der Schlüssel zum Erfolg.', topic: 'Ko‘nikma' },
-      { word: 'Begeisterung', tr: 'Ishtiyoq, katta qiziqish', lvl: 'B2', ex: 'Mit Begeisterung lernt man Sprachen viel schneller.', topic: 'Ruhlanish' }
+      { word: 'Entdecken', tr: 'Kaşf qilmoq, örganmoq', lvl: 'A2', ex: 'Wir entdecken jeden Tag neue deutsche Wörter.', topic: 'Bilim' },
+      { word: 'Zuverlässig', tr: 'Işonçli, qat’iyatli', lvl: 'B1', ex: 'Ein zuverlässiger Wortschatz ist der Schlüssel zum Erfolg.', topic: 'Könikma' },
+      { word: 'Begeisterung', tr: 'Iştiyoq, katta qiziqiş', lvl: 'B2', ex: 'Mit Begeisterung lernt man Sprachen viel schneller.', topic: 'Ruhlaniş' }
     ],
     tr: [
       { word: 'Başarmak', tr: 'Muvaffaqiyat qozonmoq, uddalamoq', lvl: 'A2', ex: 'Her gün pratik yaparak Türkçe konuşmayı başaracaksınız.', topic: 'Muvaffaqiyat' },
-      { word: 'Meraklı', tr: 'Qiziquvchan, o‘rganishga intiluvchan', lvl: 'A2', ex: 'Yeni bir dil öğrenirken meraklı olmak çok önemlidir.', topic: 'Xarakter' },
+      { word: 'Meraklı', tr: 'Qiziquvçan, örganişga intiluvçan', lvl: 'A2', ex: 'Yeni bir dil öğrenirken meraklı olmak çok önemlidir.', topic: 'Xarakter' },
       { word: 'Kararlılık', tr: 'Qat’iyat, sobitqadamlik', lvl: 'B2', ex: 'Büyük hedeflere kararlılık ve düzenli çalışma ile ulaşılır.', topic: 'Iroda' }
     ],
     ru: [
-      { word: 'Вдохновение', tr: 'Ilhom, jo‘shqinlik', lvl: 'B1', ex: 'Вдохновение приходит во время ежедневных практических занятий.', topic: 'Ijod' },
-      { word: 'Достижение', tr: 'Yutuq, muhim marra', lvl: 'B1', ex: 'Каждое новое выученное слово — это ваше личное достижение.', topic: 'Rivojlanish' },
-      { word: 'Любознательный', tr: 'Bilimga chanqoq, qiziquvchan', lvl: 'A2', ex: 'Любознательные студенты осваивают язык значительно быстрее.', topic: 'Xususiyat' }
+      { word: 'Вдохновение', tr: 'Ilhom, jöşqinlik', lvl: 'B1', ex: 'Вдохновение приходит во время ежедневных практических занятий.', topic: 'Ijod' },
+      { word: 'Достижение', tr: 'Yutuq, muhim marra', lvl: 'B1', ex: 'Каждое новое выученное слово — это ваше личное достижение.', topic: 'Rivojlaniş' },
+      { word: 'Любознательный', tr: 'Bilimga çanqoq, qiziquvçan', lvl: 'A2', ex: 'Любознательные студенты осваивают язык значительно быстрее.', topic: 'Xususiyat' }
     ],
     uz: [
-      { word: 'Barkamol', tr: 'Har tomonlama yetuk, mukammal', lvl: 'B2', ex: 'Barkamol avlod o‘z ona tilidan tashqari jahon tillarini puxta egallaydi.', topic: 'Ma’naviyat' },
-      { word: 'Izlanish', tr: 'Doimiy intilish, yangi bilim izlash', lvl: 'A2', ex: 'Muntazam izlanish va mashqlar tilni ravon gapirishga olib keladi.', topic: 'Ta’lim' },
-      { word: 'Zukko', tr: 'Topqir, zehnli, tez anglovchi', lvl: 'B1', ex: 'Zukko o‘quvchilar yangi qoidalarni jonli misollarda oson eslab qoladilar.', topic: 'Zehn' }
+      { word: 'Barkamol', tr: 'Har tomonlama yetuk, mukammal', lvl: 'B2', ex: 'Barkamol avlod öz ona tilidan taşqari jahon tillarini puxta egallaydi.', topic: 'Ma’naviyat' },
+      { word: 'Izlanish', tr: 'Doimiy intiliş, yangi bilim izlaş', lvl: 'A2', ex: 'Muntazam izlaniş va maşqlar tilni ravon gapirişga olib keladi.', topic: 'Ta’lim' },
+      { word: 'Zukko', tr: 'Topqir, zehnli, tez anglovçi', lvl: 'B1', ex: 'Zukko öquvçilar yangi qoidalarni jonli misollarda oson eslab qoladilar.', topic: 'Zehn' }
     ]
   };
 
@@ -456,9 +467,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
     time: '5 daqiqa',
     title: 'The Power of Tiny Daily Habits',
     article: 'Consistency is far more powerful than intensity. When learning a new language, practicing for just 15 minutes every single day wires the brain more effectively than studying for 4 hours once a week. The secret lies in frequent retrieval: each time you actively recall a word, the neural pathway strengthens.',
-    question: 'Matnga ko‘ra, til o‘rganishda eng muhim omil nima?',
-    choiceA: 'Har kuni muntazam 15 daqiqa shug‘ullanish (To‘g‘ri ✓)',
-    choiceB: 'Faqat haftada bir marta 4 soat o‘rganish'
+    question: 'Matnga köra, til örganişda eng muhim omil nima?',
+    choiceA: 'Har kuni muntazam 15 daqiqa şuğullaniş (Töğri ✓)',
+    choiceB: 'Faqat haftada bir marta 4 soat örganiş'
   };
   const sampleLesson = {
     ...defaultSampleLesson,
@@ -466,63 +477,79 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   };
 
   // CEFR Section Data
-  const cefrKicker = cms?.cefrSection?.kicker || 'XALQARO METODIKA';
-  const cefrTitle = cms?.cefrSection?.title || 'CEFR bo‘yicha aniq yo‘l xaritasi (A1–C2)';
-  const cefrSubtitle = cms?.cefrSection?.subtitle || 'O‘zingizga mos boshlang‘ich nuqtani tanlang va bosqichma-bosqich yuksaling.';
+  const cefrKicker = convertUzbekText(cms?.cefrSection?.kicker) || 'XALQARO METODIKA';
+  const cefrTitle = convertUzbekText(cms?.cefrSection?.title) || 'CEFR böyiça aniq yöl xaritasi (A1–C2)';
+  const cefrSubtitle = convertUzbekText(cms?.cefrSection?.subtitle) || 'Özingizga mos boşlang‘iç nuqtani tanlang va bosqiçma-bosqiç yuksaling.';
   const defaultCefrLevels = [
-    { code: 'A1', name: 'Boshlang‘ich', desc: 'Oddiy so‘zlar, tanishuv va kundalik eng muhim iboralar.', color: '#3b82f6' },
+    { code: 'A1', name: 'Boşlang‘iç', desc: 'Oddiy sözlar, tanişuv va kundalik eng muhim iboralar.', color: '#3b82f6' },
     { code: 'A2', name: 'Elementar', desc: 'Xarid, transport va oddiy kundalik vaziyatlarda muloqot.', color: '#0ea5e9' },
-    { code: 'B1', name: 'O‘rta daraja', desc: 'Sayohat, fikr bildirish va o‘z tajribasini erkin tushuntirish.', color: '#10b981' },
-    { code: 'B2', name: 'Mustaqil', desc: 'Murakkab matnlar, insholar va mavzular bo‘yicha erkin bahslashish.', color: '#8b5cf6' },
-    { code: 'C1', name: 'Ilg‘or', desc: 'Akademik va kasbiy darajada chuqur fikrlash hamda tahlil.', color: '#f59e0b' },
-    { code: 'C2', name: 'Mukammal', desc: 'Ona tili darajasidagi ravonlik va nozik ma’nolarni anglash.', color: '#ec4899' }
+    { code: 'B1', name: 'Örta daraja', desc: 'Sayohat, fikr bildiriş va öz tajribasini erkin tuşuntiriş.', color: '#10b981' },
+    { code: 'B2', name: 'Mustaqil', desc: 'Murakkab matnlar, inşolar va mavzular böyiça erkin bahslaşiş.', color: '#8b5cf6' },
+    { code: 'C1', name: 'Ilğor', desc: 'Akademik va kasbiy darajada çuqur fikrlaş hamda tahlil.', color: '#f59e0b' },
+    { code: 'C2', name: 'Mukammal', desc: 'Ona tili darajasidagi ravonlik va nozik ma’nolarni anglaş.', color: '#ec4899' }
   ];
   const cefrLevelsList = (cms?.cefrSection?.levels && cms.cefrSection.levels.length > 0)
-    ? cms.cefrSection.levels
+    ? cms.cefrSection.levels.map((lvl: any) => ({
+        ...lvl,
+        name: convertUzbekText(lvl.name),
+        desc: convertUzbekText(lvl.desc)
+      }))
     : defaultCefrLevels;
 
   // 5 Skills Data
-  const skillsKicker = cms?.skillsSection?.kicker || 'MUVOZANATLI RIVOJLANISH';
-  const skillsTitle = cms?.skillsSection?.title || '5 ta asosiy til ko‘nikmasini mustahkamlang';
-  const skillsSubtitle = cms?.skillsSection?.subtitle || 'Faqat qoidalar yodlash emas — har tomonlama tabiiy o‘rganish uslubi.';
+  const skillsKicker = convertUzbekText(cms?.skillsSection?.kicker) || 'MUVOZANATLI RIVOJLANIŞ';
+  const skillsTitle = convertUzbekText(cms?.skillsSection?.title) || '5 ta asosiy til könikmasini mustahkamlang';
+  const skillsSubtitle = convertUzbekText(cms?.skillsSection?.subtitle) || 'Faqat qoidalar yodlaş emas — har tomonlama tabiiy örganiş uslubi.';
   const defaultSkills = [
-    { key: 'reading', title: 'O‘qish (Reading)', desc: 'Darajangizga moslangan qiziqarli hikoyalar, badiiy parchalar va zamonaviy maqolalar.', color: '#356cf6' },
-    { key: 'writing', title: 'Yozish (Writing)', desc: 'Insho va xatlar yozish, grammatik xatolarni sun’iy intellekt orqali darhol tekshirish.', color: '#8b5cf6' },
-    { key: 'listening', title: 'Tinglash (Listening)', desc: 'Tabiiy tezlikdagi audio podkastlar, kundalik muloqot dialoglari va transkriptlar.', color: '#0ea5e9' },
-    { key: 'speaking', title: 'Gapirish (Speaking)', desc: 'To‘g‘ri talaffuz va intonatsiya mashqlari bilan muloqotdagi to‘siqlarni yengish.', color: '#10b981' },
-    { key: 'vocab', title: 'Lug‘at (Vocabulary)', desc: 'Shaxsiy so‘z daftari, kontekstual misollar va intervalli takrorlash metodikasi.', color: '#f59e0b' }
+    { key: 'reading', title: 'Öqiş (Reading)', desc: 'Darajangizga moslangan qiziqarli hikoyalar, badiiy parçalar va zamonaviy maqolalar.', color: '#356cf6' },
+    { key: 'writing', title: 'Yoziş (Writing)', desc: 'Inşo va xatlar yoziş, grammatik xatolarni sun’iy intellekt orqali darhol tekşiriş.', color: '#8b5cf6' },
+    { key: 'listening', title: 'Tinglaş (Listening)', desc: 'Tabiiy tezlikdagi audio podkastlar, kundalik muloqot dialoglari va transkriptlar.', color: '#0ea5e9' },
+    { key: 'speaking', title: 'Gapiriş (Speaking)', desc: 'Töğri talaffuz va intonatsiya maşqlari bilan muloqotdagi tösiqlarni yengiş.', color: '#10b981' },
+    { key: 'vocab', title: 'Luğat (Vocabulary)', desc: 'Şaxsiy söz daftari, kontekstual misollar va intervalli takrorlaş metodikasi.', color: '#f59e0b' }
   ];
   const skillsList = (cms?.skillsSection?.skills && cms.skillsSection.skills.length > 0)
-    ? cms.skillsSection.skills
+    ? cms.skillsSection.skills.map((s: any) => ({
+        ...s,
+        title: convertUzbekText(s.title),
+        desc: convertUzbekText(s.desc)
+      }))
     : defaultSkills;
 
   // 5 Steps Data
-  const stepsKicker = cms?.stepsSection?.kicker || 'ODDIY VA TUSHUNARLI';
-  const stepsTitle = cms?.stepsSection?.title || 'O‘rganish jarayoni qanday kechadi?';
-  const stepsSubtitle = cms?.stepsSection?.subtitle || '5 ta oson qadam orqali maqsadingiz sari ishonch bilan yo‘l oling.';
+  const stepsKicker = convertUzbekText(cms?.stepsSection?.kicker) || 'ODDIY VA TUŞUNARLI';
+  const stepsTitle = convertUzbekText(cms?.stepsSection?.title) || 'Örganiş jarayoni qanday keçadi?';
+  const stepsSubtitle = convertUzbekText(cms?.stepsSection?.subtitle) || '5 ta oson qadam orqali maqsadingiz sari işonç bilan yöl oling.';
   const defaultSteps = [
-    { step: '01', title: 'Til va maqsadni tanlaysiz', desc: 'Ingliz, rus, nemis yoki boshqa tillar hamda kunlik shug‘ullanish vaqti.' },
-    { step: '02', title: 'Boshlang‘ich daraja aniqlanadi', desc: 'CEFR A1 dan C2 gacha bo‘lgan aniq darajangiz belgilanadi.' },
-    { step: '03', title: 'Shaxsiy reja tuziladi', desc: 'Dashboardda har kungi yangi so‘zlar va mashqlar tartibli aks etadi.' },
-    { step: '04', title: 'Amaliyot va so‘z o‘yinlari', desc: 'Typing, so‘z zanjiri va 1v1 bellashuvlar orqali bilim mustahkamlanadi.' },
-    { step: '05', title: 'Natijalar va o‘sish', desc: 'O‘zlashtirilgan so‘zlar va yuqori CEFR darajalariga o‘tish.' }
+    { step: '01', title: 'Til va maqsadni tanlaysiz', desc: 'Ingliz, rus, nemis yoki boşqa tillar hamda kunlik şuğullaniş vaqti.' },
+    { step: '02', title: 'Boşlang‘iç daraja aniqlanadi', desc: 'CEFR A1 dan C2 gaça bölgan aniq darajangiz belgilanadi.' },
+    { step: '03', title: 'Şaxsiy reja tuziladi', desc: 'Dashboardda har kungi yangi sözlar va maşqlar tartibli aks etadi.' },
+    { step: '04', title: 'Amaliyot va söz öyinlari', desc: 'Typing, söz zanjiri va 1v1 bellaşuvlar orqali bilim mustahkamlanadi.' },
+    { step: '05', title: 'Natijalar va ösiş', desc: 'Özlaştirilgan sözlar va yuqori CEFR darajalariga ötiş.' }
   ];
   const stepsList = (cms?.stepsSection?.steps && cms.stepsSection.steps.length > 0)
-    ? cms.stepsSection.steps
+    ? cms.stepsSection.steps.map((st: any) => ({
+        ...st,
+        title: convertUzbekText(st.title),
+        desc: convertUzbekText(st.desc)
+      }))
     : defaultSteps;
 
   // Features Data
-  const featuresKicker = cms?.featuresSection?.kicker || 'ILG‘OR IMKONIYATLAR';
-  const featuresTitle = cms?.featuresSection?.title || 'Zamonaviy texnologiyalar xizmatingizda';
-  const featuresSubtitle = cms?.featuresSection?.subtitle || 'Biz til o‘rganishni nafaqat samarali, balki maroqli jarayonga aylantiramiz.';
+  const featuresKicker = convertUzbekText(cms?.featuresSection?.kicker) || 'ILĞOR IMKONIYATLAR';
+  const featuresTitle = convertUzbekText(cms?.featuresSection?.title) || 'Zamonaviy texnologiyalar xizmatingizda';
+  const featuresSubtitle = convertUzbekText(cms?.featuresSection?.subtitle) || 'Biz til örganişni nafaqat samarali, balki maroqli jarayonga aylantiramiz.';
   const defaultFeatures = [
-    { key: 'ai', color: 'purple', title: '24/7 AI Til Repetitori', desc: 'Istalgan savolingizni bering, grammatik xatolaringizni aniqlang va muloyim tushuntirishlar oling.' },
-    { key: 'pvp', color: 'orange', title: '1v1 So‘z Bellashuvi', desc: 'Boshqa o‘quvchilar bilan real vaqtda so‘z boyligingizni sinang, XP to‘plang va yetakchilar safiga kiring.' },
-    { key: 'anticheat', color: 'green', title: 'Anti-Cheat & Spaced Repetition', desc: 'So‘zlar tasodifiy takrorlanmaydi — ilmiy tasdiqlangan intervallar bilan uzoq muddatli xotiraga ko‘chadi.' },
-    { key: 'teachers', color: 'blue', title: 'Malakali Ustozlar Nazorati', desc: 'Maxsus o‘qituvchilar tizimda sizning yozma insho va vazifalaringizni tekshirib, shaxsiy baho beradi.' }
+    { key: 'ai', color: 'purple', title: '24/7 AI Til Repetitori', desc: 'Istalgan savolingizni bering, grammatik xatolaringizni aniqlang va muloyim tuşuntirişlar oling.' },
+    { key: 'pvp', color: 'orange', title: '1v1 Söz Bellaşuvi', desc: 'Boşqa öquvçilar bilan real vaqtda söz boyligingizni sinang, XP töplang va yetakçilar safiga kiring.' },
+    { key: 'anticheat', color: 'green', title: 'Anti-Cheat & Spaced Repetition', desc: 'Sözlar tasodifiy takrorlanmaydi — ilmiy tasdiqlangan intervallar bilan uzoq muddatli xotiraga köçadi.' },
+    { key: 'teachers', color: 'blue', title: 'Malakali Ustozlar Nazorati', desc: 'Maxsus öqituvçilar tizimda sizning yozma inşo va vazifalaringizni tekşirib, şaxsiy baho beradi.' }
   ];
   const featuresList = (cms?.featuresSection?.features && cms.featuresSection.features.length > 0)
-    ? cms.featuresSection.features
+    ? cms.featuresSection.features.map((f: any) => ({
+        ...f,
+        title: convertUzbekText(f.title),
+        desc: convertUzbekText(f.desc)
+      }))
     : defaultFeatures;
 
   // About, Founder, Contacts
@@ -799,7 +826,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               </h1>
 
               <p className="holo-description">
-                {heroDesc || 'Har kuni bor-yo‘g‘i 20–30 daqiqa vaqt ajrating, real kerakli so‘zlarni o‘rganing va so‘z boyligingizni oshiring.'}
+                {heroDesc || 'Har kuni bor-yöği 20–30 daqiqa vaqt ajrating, real kerakli sözlarni örganing va söz boyligingizni oşiring.'}
               </p>
 
               {/* Action row with Primary CTA, Secondary CTA and Flags */}
@@ -830,7 +857,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                     }}
                   >
                     <Sparkles size={16} style={{ color: '#7869f5' }} />
-                    <span>O‘zingizni sinab ko‘ring</span>
+                    <span>Özingizni sinab köring</span>
                   </button>
 
                   {secondaryCta && (

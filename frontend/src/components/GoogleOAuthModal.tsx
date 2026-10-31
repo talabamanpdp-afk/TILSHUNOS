@@ -145,7 +145,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
       const lastName = payload.family_name || payload.name?.split(' ').slice(1).join(' ') || 'Google';
 
       if (email === 'soxibgaybullayev439@gmail.com') {
-        setErrorMessage('Super Admin tizimiga xavfsizlik yuzasidan faqat admin email va paroli orqali kirish ruxsat etiladi.');
+        setErrorMessage('Super Admin tizimiga xavfsizlik yuzasidan faqat admin email va paroli orqali kiriş ruxsat etiladi.');
         return;
       }
 
@@ -156,7 +156,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
 
       onSuccess({ email, firstName, lastName });
     } catch (err: any) {
-      setErrorMessage(err.message || 'Google hisobini tahlil qilishda xatolik yuz berdi.');
+      setErrorMessage(err.message || 'Google hisobini tahlil qilişda xatolik yuz berdi.');
     }
   };
 
@@ -170,18 +170,18 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
     const nameToUse = (targetName || googleName).trim();
 
     if (!emailToUse) {
-      setErrorMessage('Iltimos, Google (Gmail) pochtangizni kiriting.');
+      setErrorMessage('Iltimos, Google (Gmail) poçtangizni kiriting.');
       return;
     }
 
     if (!emailToUse.includes('@') || !emailToUse.includes('.')) {
-      setErrorMessage('Iltimos, to‘g‘ri Google email manzilini kiriting (masalan: siz@gmail.com).');
+      setErrorMessage('Iltimos, töğri Google email manzilini kiriting (masalan: siz@gmail.com).');
       return;
     }
 
     // Security Check: SuperAdmin cannot use Google bypass
     if (emailToUse === 'soxibgaybullayev439@gmail.com') {
-      setErrorMessage('Super Admin tizimiga xavfsizlik yuzasidan faqat admin email va paroli orqali kirish ruxsat etiladi.');
+      setErrorMessage('Super Admin tizimiga xavfsizlik yuzasidan faqat admin email va paroli orqali kiriş ruxsat etiladi.');
       return;
     }
 
@@ -213,12 +213,12 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
 
     const cleanEmail = userEmail.trim().toLowerCase();
     if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) {
-      setErrorMessage('Iltimos, to‘g‘ri email manzilingizni kiriting.');
+      setErrorMessage('Iltimos, töğri email manzilingizni kiriting.');
       return;
     }
 
     if (cleanEmail === 'soxibgaybullayev439@gmail.com') {
-      setErrorMessage('Super Admin hisobiga kirish uchun admin parol kerak. Boshqa shaxsiy emailingizni kiriting.');
+      setErrorMessage('Super Admin hisobiga kiriş uçun admin parol kerak. Boşqa şaxsiy emailingizni kiriting.');
       return;
     }
 
@@ -227,22 +227,22 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
       await api.resendCode(cleanEmail);
       setOtpSent(true);
       setOtpCountdown(60);
-      setInfoMessage(`6 xonali tasdiqlash kodi ${cleanEmail} manziliga yuborildi. Pochtani tekshiring!`);
+      setInfoMessage(`6 xonali tasdiqlaş kodi ${cleanEmail} manziliga yuborildi. Poçtani tekşiring!`);
     } catch {
       try {
         await api.register({
           email: cleanEmail,
           password: 'google_user_' + Math.random().toString(36).slice(-8),
           firstName: userName.trim() || cleanEmail.split('@')[0],
-          lastName: 'Foydalanuvchi'
+          lastName: 'Foydalanuvçi'
         });
         setOtpSent(true);
         setOtpCountdown(60);
-        setInfoMessage(`6 xonali tasdiqlash kodi ${cleanEmail} manziliga yuborildi. Pochtani tekshiring!`);
+        setInfoMessage(`6 xonali tasdiqlaş kodi ${cleanEmail} manziliga yuborildi. Poçtani tekşiring!`);
       } catch {
         setOtpSent(true);
         setOtpCountdown(60);
-        setInfoMessage(`Tasdiqlash kodi yuborildi! (Sinov kodi: 123456)`);
+        setInfoMessage(`Tasdiqlaş kodi yuborildi! (Sinov kodi: 123456)`);
       }
     } finally {
       setSendingOtp(false);
@@ -257,7 +257,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
 
     const cleanCode = otpCode.trim();
     if (cleanCode.length < 6) {
-      setErrorMessage('Iltimos, 6 xonali kodni to‘liq kiriting.');
+      setErrorMessage('Iltimos, 6 xonali kodni töliq kiriting.');
       return;
     }
 
@@ -268,7 +268,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
       onSuccess({
         email: userEmail.trim().toLowerCase(),
         firstName: parts[0] || userEmail.split('@')[0],
-        lastName: parts.slice(1).join(' ') || 'Foydalanuvchi'
+        lastName: parts.slice(1).join(' ') || 'Foydalanuvçi'
       });
     } catch (err: any) {
       if (cleanCode === '123456') {
@@ -276,10 +276,10 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
         onSuccess({
           email: userEmail.trim().toLowerCase(),
           firstName: parts[0] || userEmail.split('@')[0],
-          lastName: parts.slice(1).join(' ') || 'Foydalanuvchi'
+          lastName: parts.slice(1).join(' ') || 'Foydalanuvçi'
         });
       } else {
-        setErrorMessage(err.message || 'Tasdiqlash kodi noto‘g‘ri yoki muddati o‘tgan.');
+        setErrorMessage(err.message || 'Tasdiqlaş kodi notöğri yoki muddati ötgan.');
       }
     } finally {
       setVerifyingOtp(false);
@@ -393,7 +393,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
             </svg>
-            Google Kirish
+            Google Kiriş
           </button>
           <button
             type="button"
@@ -528,7 +528,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
                     borderRadius: '20px',
                     flexShrink: 0
                   }}>
-                    1-bosishda kirish →
+                    1-bosişda kiriş →
                   </span>
                 </div>
               )}
@@ -650,7 +650,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
                       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                     </svg>
                   )}
-                  {submittingGoogle ? 'Google hisobi tekshirilmoqda...' : 'Google orqali kiring'}
+                  {submittingGoogle ? 'Google hisobi tekşirilmoqda...' : 'Google orqali kiring'}
                 </button>
               </form>
 
@@ -708,7 +708,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
                       }}
                     />
                     <small style={{ display: 'block', marginTop: '6px', fontSize: '11px', color: '#64748b' }}>
-                      Ushbu emailga 6 xonali tasdiqlash kodi yuboriladi.
+                      Uşbu emailga 6 xonali tasdiqlaş kodi yuboriladi.
                     </small>
                   </div>
 
@@ -734,7 +734,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
                     }}
                   >
                     {sendingOtp ? <RefreshCw className="spin" size={16} /> : <Send size={16} />}
-                    {sendingOtp ? 'Kod yuborilmoqda...' : 'Tasdiqlash kodini yuborish'}
+                    {sendingOtp ? 'Kod yuborilmoqda...' : 'Tasdiqlaş kodini yuboriş'}
                   </button>
                 </form>
               ) : (
@@ -763,7 +763,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
                         padding: 0
                       }}
                     >
-                      O‘zgartirish
+                      Özgartiriş
                     </button>
                   </div>
 
@@ -816,7 +816,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
                     }}
                   >
                     {verifyingOtp ? <RefreshCw className="spin" size={16} /> : <Check size={16} />}
-                    {verifyingOtp ? 'Tekshirilmoqda...' : 'Tasdiqlash va Kirish'}
+                    {verifyingOtp ? 'Tekşirilmoqda...' : 'Tasdiqlaş va Kiriş'}
                   </button>
 
                   <div style={{ textAlign: 'center', marginTop: '14px' }}>
@@ -833,7 +833,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
                         cursor: otpCountdown > 0 ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      {otpCountdown > 0 ? `Kodni qayta yuborish (${otpCountdown}s)` : 'Kodni qayta yuborish'}
+                      {otpCountdown > 0 ? `Kodni qayta yuboriş (${otpCountdown}s)` : 'Kodni qayta yuboriş'}
                     </button>
                   </div>
                 </form>
@@ -854,7 +854,7 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
           gap: '8px'
         }}>
           <ShieldCheck size={15} style={{ color: '#22c55e', flexShrink: 0 }} />
-          <span>Har bir foydalanuvchi faqat o‘z shaxsiy hisobi bilan ro‘yxatdan o‘tadi.</span>
+          <span>Har bir foydalanuvçi faqat öz şaxsiy hisobi bilan röyxatdan ötadi.</span>
         </div>
       </div>
     </div>

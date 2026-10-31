@@ -51,7 +51,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
     },
     {
       title: 'Qulay va moslashuvchan',
-      desc: 'Har qanday qurilmada, har qanday vaqtda o‘rganish imkoniyati.',
+      desc: 'Har qanday qurilmada, har qanday vaqtda örganiş imkoniyati.',
       icon: BookOpen,
       iconColor: '#f59e0b',
       iconBg: 'rgba(245, 158, 11, 0.12)',
@@ -60,7 +60,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
     },
     {
       title: 'Natijaga yo‘naltirilgan',
-      desc: 'Muntazam tahlil va progress kuzatuvi orqali real natijalarga erishasiz.',
+      desc: 'Muntazam tahlil va progress kuzatuvi orqali real natijalarga erişasiz.',
       icon: Star,
       iconColor: '#ec4899',
       iconBg: 'rgba(236, 72, 153, 0.12)',
@@ -275,7 +275,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
         .as-book-tr { background: #991b1b; width: 120px; }
         .as-book-uz { background: #065f46; width: 115px; }
 
-        /* Laptop with TILSHUNOS Logo (Center Right) */
+        /* Laptop with TILŞUNOS Logo (Center Right) */
         .as-desk-laptop-mock {
           position: absolute;
           bottom: 22px;
@@ -800,7 +800,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
                 </div>
               </div>
 
-              {/* Laptop with TILSHUNOS Logo */}
+              {/* Laptop with TILŞUNOS Logo */}
               <div className="as-desk-laptop-mock">
                 <img
                   src="/brand_logo.png"

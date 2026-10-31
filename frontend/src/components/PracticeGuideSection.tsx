@@ -361,7 +361,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       return;
     }
     if (!isSpeechRecognitionSupported()) {
-      alert('Brauzeringizda mikrofondan ovoz yozib olish (Speech Recognition) qo‘llab-quvvatlanmaydi.');
+      alert('Brauzeringizda mikrofondan ovoz yozib oliş (Speech Recognition) qöllab-quvvatlanmaydi.');
       return;
     }
     setIsListeningVocabWord(true);
@@ -387,7 +387,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       return;
     }
     if (!isSpeechRecognitionSupported()) {
-      alert('Brauzeringizda mikrofondan ovoz yozib olish qo‘llab-quvvatlanmaydi.');
+      alert('Brauzeringizda mikrofondan ovoz yozib oliş qöllab-quvvatlanmaydi.');
       return;
     }
     setIsListeningVocabPhrase(true);
@@ -413,7 +413,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       return;
     }
     if (!isSpeechRecognitionSupported()) {
-      alert('Brauzeringizda mikrofondan ovoz yozib olish qo‘llab-quvvatlanmaydi.');
+      alert('Brauzeringizda mikrofondan ovoz yozib oliş qöllab-quvvatlanmaydi.');
       return;
     }
     setActiveListeningQuestionId(questionId);
@@ -444,7 +444,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       return;
     }
     if (!isSpeechRecognitionSupported()) {
-      alert('Brauzeringizda nutqni solishtirish qo‘llab-quvvatlanmaydi.');
+      alert('Brauzeringizda nutqni soliştiriş qöllab-quvvatlanmaydi.');
       return;
     }
     setIsShadowingListening(true);
@@ -3048,10 +3048,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         <button
                           onClick={() => setShowTotalSpeakingScore(!showTotalSpeakingScore)}
                           className="practice-action-btn-green"
-                          title="Umumiy ballni ko‘rish"
+                          title="Umumiy ballni köriş"
                         >
                           <Trophy size={15} />
-                          <span>{showTotalSpeakingScore ? 'Yashirish' : 'Natija'}</span>
+                          <span>{showTotalSpeakingScore ? 'Yaşiriş' : 'Natija'}</span>
                         </button>
                       </div>
                     )}
@@ -3063,7 +3063,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       Intervyu savollariga mikrofonda erkin javob bering
                     </div>
                     <p className="practice-explanation-text">
-                      Har bir savolni eshiting va mikrofonga aniq talaffuz bilan javob bering.
+                      Har bir savolni eşiting va mikrofonga aniq talaffuz bilan javob bering.
                     </p>
                   </div>
 
@@ -3091,11 +3091,11 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                             <button
                               onClick={() => handleTestSpeakingQuestion(q.id, q.question)}
                               className={`practice-action-btn-test ${isRecordingThis ? 'is-active' : ''}`}
-                              title="Mikrofon orqali javob berish"
+                              title="Mikrofon orqali javob beriş"
                               style={{ flexShrink: 0 }}
                             >
                               <Mic size={14} />
-                              <span>{isRecordingThis ? 'Eshityapman...' : scoreObj ? 'Qayta sinash' : 'Javob berish'}</span>
+                              <span>{isRecordingThis ? 'Eşityapman...' : scoreObj ? 'Qayta sinaş' : 'Javob beriş'}</span>
                             </button>
                           </div>
 
@@ -3135,7 +3135,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                             🎉 SPEAKING MUVAFFAQIYATLI YAKUNLANDI!
                           </span>
                           <h4 style={{ margin: '6px 0', fontSize: '20px', fontWeight: 850, color: '#ffffff' }}>
-                            O‘rtacha natijangiz: {averageSpeakingScore} / 100 ball
+                            Örtaça natijangiz: {averageSpeakingScore} / 100 ball
                           </h4>
                           <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>
                             Nutqiy ravonlik va intonatsiyangiz a’lo darajada baholandi.
@@ -3146,7 +3146,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                           className="practice-action-btn-green"
                           style={{ padding: '10px 20px', fontSize: '13.5px' }}
                         >
-                          To‘liq kursni boshlash
+                          Töliq kursni boşlaş
                         </button>
                       </div>
                     </div>
@@ -3211,7 +3211,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   {/* Subtitle */}
                   <div>
                     <div className="practice-trans-green">
-                      Eng ko‘p uchraydigan nozik farqlar va xatolar
+                      Eng köp uçraydigan nozik farqlar va xatolar
                     </div>
                     <p className="practice-explanation-text">
                       {currentLangData.grammar.topicExplanation}
@@ -3247,7 +3247,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       color: '#34d399'
                     }}>
                       <div style={{ fontSize: '11.5px', fontWeight: 850, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-                        <CheckCircle2 size={15} /> TO‘G‘RI VARIANT:
+                        <CheckCircle2 size={15} /> TÖĞRI VARIANT:
                       </div>
                       <div style={{ fontSize: '15px', fontWeight: 800, color: '#ecfdf5' }}>
                         "{currentLangData.grammar.correctedText}"
@@ -3281,7 +3281,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
               <div className="practice-card-head">
                 <span className="practice-card-badge">
-                  <Award size={15} /> 7. SHADOWING (SOYA METODI & NUTQNI MOSLASHTIRISH)
+                  <Award size={15} /> 7. SHADOWING (SOYA METODI & NUTQNI MOSLAŞTIRIŞ)
                 </span>
                 <span className="practice-lang-tag">
                   <Globe size={13} /> {currentLangData.flag} {currentLangData.langName}
@@ -3328,18 +3328,18 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       <button
                         onClick={() => handlePlayTTS(currentLangData.shadowing.audioText)}
                         className="practice-action-btn-listen"
-                        title="Audioni eshitish"
+                        title="Audioni eşitiş"
                       >
                         {activeSpeakingText === currentLangData.shadowing.audioText ? <VolumeX size={15} /> : <Volume2 size={15} />}
-                        <span>{activeSpeakingText === currentLangData.shadowing.audioText ? "To'xtatish" : "Tinglash"}</span>
+                        <span>{activeSpeakingText === currentLangData.shadowing.audioText ? "Töxtatiş" : "Tinglaş"}</span>
                       </button>
                       <button
                         onClick={handleTestShadowing}
                         className={`practice-action-btn-test ${isShadowingListening ? 'is-active' : ''}`}
-                        title="Nutqni mikrofonda solishtirish"
+                        title="Nutqni mikrofonda soliştiriş"
                       >
                         <Mic size={15} />
-                        <span>{isShadowingListening ? 'Eshitilmoqda...' : 'Solishtirish'}</span>
+                        <span>{isShadowingListening ? 'Eşitilmoqda...' : 'Soliştiriş'}</span>
                       </button>
                     </div>
                   </div>
@@ -3347,10 +3347,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   {/* Subtitle */}
                   <div>
                     <div className="practice-trans-green">
-                      So‘zlovchining intonatsiyasi va urg‘usiga taqlid qiling
+                      Sözlovçining intonatsiyasi va urğusiga taqlid qiling
                     </div>
                     <p className="practice-explanation-text">
-                      Audioni eshiting va bir vaqtning o‘zida uning ortidan takrorlang.
+                      Audioni eşiting va bir vaqtning özida uning ortidan takrorlang.
                     </p>
                   </div>
 
@@ -3358,7 +3358,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   <div className="practice-example-box">
                     <div className="practice-example-head">
                       <span className="practice-example-label">
-                        SOYA METODI UCHUN MATN (TARGET SPEECH):
+                        SOYA METODI UÇUN MATN (TARGET SPEECH):
                       </span>
                     </div>
 
@@ -3405,7 +3405,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                         <span style={{ color: '#34d399', fontWeight: 800, fontSize: '14px' }}>
-                          ✓ Aytilgan nutq bilan solishtirildi
+                          ✓ Aytilgan nutq bilan soliştirildi
                         </span>
                         <strong style={{ fontSize: '15px', color: '#10b981', filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))' }}>
                           ⭐ Moslik darajasi: {shadowingScore}%
@@ -3428,7 +3428,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             {/* Left Column: Calligraphy Note & Student Learning Photo */}
             <div className="practice-amaliy-left">
               <div className="amaliy-calligraphy-wrap">
-                <span className="amaliy-calligraphy-text">Birgalikda o‘rganish — osonroq!</span>
+                <span className="amaliy-calligraphy-text">Birgalikda örganiş — osonroq!</span>
                 <svg className="amaliy-calligraphy-arrow" width="34" height="26" viewBox="0 0 34 26" fill="none">
                   <path d="M4 4C14 2 26 8 28 20M28 20L22 17M28 20L31 13" stroke="#818cf8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -3444,7 +3444,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 />
                 <div className="amaliy-group-badge">
                   <Users size={14} />
-                  <span>4-8 kishilik guruh</span>
+                  <span>4-8 kişilik guruh</span>
                 </div>
               </div>
             </div>
@@ -3457,11 +3457,11 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
               </div>
 
               <h3 className="practice-amaliy-title">
-                O‘zingizni amalda <span className="practice-gradient-text-alt">sinab ko‘ring</span>
+                Özingizni amalda <span className="practice-gradient-text-alt">sinab köring</span>
               </h3>
 
               <p className="practice-amaliy-desc">
-                {config.bottomBannerDesc || "7 ta ko‘nikma moduli bo‘yicha to‘liq interaktiv mashqlar, AI repetitor va shaxsiy testlarni boshlang."}
+                {config.bottomBannerDesc || "7 ta könikma moduli böyiça töliq interaktiv maşqlar, AI repetitor va şaxsiy testlarni boşlang."}
               </p>
 
               <div>
@@ -3473,7 +3473,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   <span className="cta-play-circle">
                     <Play size={13} fill="#ffffff" color="#ffffff" style={{ marginLeft: '2px' }} />
                   </span>
-                  <span>{config.bottomBannerBtnText || "Boshlash"}</span>
+                  <span>{config.bottomBannerBtnText || "Boşlaş"}</span>
                   <ChevronRight size={17} />
                 </button>
               </div>
@@ -3575,7 +3575,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   <User size={18} />
                 </div>
                 <div className="practice-feat-text">
-                  <h4 className="practice-feat-title">Interaktiv mashqlar</h4>
+                  <h4 className="practice-feat-title">Interaktiv maşqlar</h4>
                   <p className="practice-feat-sub">Nazariya + amaliyot</p>
                 </div>
               </div>
@@ -3597,8 +3597,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   <Shield size={18} />
                 </div>
                 <div className="practice-feat-text">
-                  <h4 className="practice-feat-title">Shaxsiy testlar</h4>
-                  <p className="practice-feat-sub">Bilimingizni tekshiring</p>
+                  <h4 className="practice-feat-title">Şaxsiy testlar</h4>
+                  <p className="practice-feat-sub">Bilimingizni tekşiring</p>
                 </div>
               </div>
 
@@ -3609,7 +3609,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 </div>
                 <div className="practice-feat-text">
                   <h4 className="practice-feat-title">Progress kuzatuvi</h4>
-                  <p className="practice-feat-sub">Natijangizni ko‘ring</p>
+                  <p className="practice-feat-sub">Natijangizni köring</p>
                 </div>
               </div>
             </div>

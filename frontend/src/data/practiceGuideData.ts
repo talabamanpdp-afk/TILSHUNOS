@@ -350,7 +350,7 @@ export const DEFAULT_PRACTICE_GUIDE: PracticeGuideConfig = {
       writing: {
         image: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
         letterTitle: "Деловое Письмо (Rasmiy Xat)",
-        letterContent: "Уважаемые коллеги,\n\nОбращаюсь к вам с целью предложить сотрудничество в сфере онлайн-образования. Наша платформа Tilshunos успешно внедряет современные методики интерактивного изучения языков.\n\nБудем рады обсудить детали при личной встрече.\n\nС уважением,\nАкмаль Рахимов",
+        letterContent: "Уважаемые коллеги,\n\nОбращаюсь к вам с целью предложить сотрудничество в сфере онлайн-образования. Наша платформа Tilşunos успешно внедряет современные методики интерактивного изучения языков.\n\nБудем рады обсудить детали при личной встрече.\n\nС уважением,\nАкмаль Рахимов",
         letterTranslation: "Hurmatli hamkasblar,\n\nOnlayn ta’lim sohasida hamkorlik taklif qiliş maqsadida sizlarga murojaat qilmoqdaman. Bizning Tilşunos platformamiz tillarni interaktiv örganişning zamonaviy usullarini muvaffaqiyatli joriy etmoqda.\n\nTafsilotlarni uçraşuvda muhokama qilişdan mamnun bölamiz.\n\nHurmat bilan,\nAkmal Rahimov"
       },
       reading: {
@@ -481,8 +481,8 @@ export const DEFAULT_PRACTICE_GUIDE: PracticeGuideConfig = {
         image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80",
         topicName: "Egalik va Kelişik qöşimçalarining töğri qöllanilişi",
         topicExplanation: "Egalik qöşimçalari (-im, -ing, -i) şaxs va buyum örtasidagi boğlanişni, tuşum kelişigi esa harakat ötgan vositasiz toldiruvçini ifodalaydi.",
-        incorrectText: "Men o‘z kitob oldim.",
-        correctedText: "Men o‘z kitobimni oldim.",
+        incorrectText: "Men öz kitob oldim.",
+        correctedText: "Men öz kitobimni oldim.",
         ruleTip: "'Öz' sözidan keyin kelgan otga egalik (-im) va tuşum kelişigi (-ni) qöşilişi şart!"
       },
       shadowing: {

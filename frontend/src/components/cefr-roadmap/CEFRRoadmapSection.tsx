@@ -97,7 +97,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
             }}
           >
             <Compass size={14} />
-            <span>CEFR DARAJALARI BO‘YICHA REJA</span>
+            <span>CEFR DARAJALARI BÖYIÇA REJA</span>
           </div>
 
           {/* Main Heading */}
@@ -120,7 +120,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
                 display: 'inline-block'
               }}
             >
-              shu yerdan boshlanadi
+              shu yerdan boşlanadi
             </span>
           </h2>
 
@@ -134,7 +134,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
               maxWidth: '580px'
             }}
           >
-            6 ta xalqaro CEFR darajasi. Aniq tizimli yo‘l. Har bir darajani bosqichma-bosqich o‘rganing.
+            6 ta xalqaro CEFR darajasi. Aniq tizimli yöl. Har bir darajani bosqiçma-bosqiç örganing.
           </p>
 
           {/* Primary Hero Button */}
@@ -165,7 +165,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
               e.currentTarget.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.35)';
             }}
           >
-            <span>Sayohatingizni boshlang</span>
+            <span>Sayohatingizni boşlang</span>
             <ArrowRight size={17} strokeWidth={2.5} />
           </button>
         </div>
@@ -177,7 +177,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', padding: '0 4px' }}>
             <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Compass size={13} style={{ color: selectedLevelDetail.color }} />
-              <span>Bosqichni tanlang:</span>
+              <span>Bosqiçni tanlang:</span>
             </span>
             <span style={{
               fontSize: '11.5px',
@@ -214,7 +214,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
                     <div className="step-node-circle">
                       {renderMilestoneIcon(lvl.iconType, 16)}
                       {lvl.status === 'completed' && (
-                        <span className="step-status-badge completed" title="O‘zlashtirilgan">
+                        <span className="step-status-badge completed" title="Özlaştirilgan">
                           <Check size={8} strokeWidth={3.5} />
                         </span>
                       )}

@@ -556,7 +556,7 @@ function RenderStepMockup({ stepIndex }: { stepIndex: number }) {
       return (
         <div className="lp-mock-card" style={{ maxWidth: '380px' }}>
           <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#334155', marginBottom: '14px' }}>
-            Qaysi tilda o‘qishni xohlaysiz?
+            Qaysi tilda öqişni xohlaysiz?
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {[
@@ -618,7 +618,7 @@ function RenderStepMockup({ stepIndex }: { stepIndex: number }) {
             </div>
 
             <div>
-              <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Amaliy bo‘lim:</div>
+              <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Amaliy bölim:</div>
               <div style={{ height: '6px', background: 'rgba(255,255,255,0.15)', borderRadius: '6px', marginBottom: '8px', overflow: 'hidden' }}>
                 <div style={{ width: '75%', height: '100%', background: '#38bdf8' }} />
               </div>

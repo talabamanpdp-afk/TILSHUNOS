@@ -138,7 +138,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     previewSection: {
       kicker: 'AMALIY TAJRIBA',
       title: 'Platformaning haqiqiy imkoniyatlarini sinab ko‘ring',
-      subtitle: 'Ro‘yxatdan o‘tishdan avval asosiy 3 ta modulimiz qanday ishlashini amalda ko‘ring.',
+      subtitle: 'Röyxatdan ötişdan avval asosiy 3 ta modulimiz qanday ishlashini amalda ko‘ring.',
       vocabItems: [
         { word: 'Achieve', tr: 'Erishmoq, zabt etmoq', lvl: 'B1', ex: 'You can achieve any language goal with daily practice.', topic: 'Motivatsiya' },
         { word: 'Curious', tr: 'Qiziquvchan, yangilikka intiluvchan', lvl: 'A2', ex: 'Children are naturally curious about the world.', topic: 'Xarakter' },
@@ -149,9 +149,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
         time: '5 daqiqa',
         title: 'The Power of Tiny Daily Habits',
         article: 'Consistency is far more powerful than intensity. When learning a new language, practicing for just 15 minutes every single day wires the brain more effectively than studying for 4 hours once a week. The secret lies in frequent retrieval: each time you actively recall a word, the neural pathway strengthens.',
-        question: 'Matnga ko‘ra, til o‘rganishda eng muhim omil nima?',
+        question: 'Matnga ko‘ra, til örganişda eng muhim omil nima?',
         choiceA: 'Har kuni muntazam 15 daqiqa shug‘ullanish (To‘g‘ri ✓)',
-        choiceB: 'Faqat haftada bir marta 4 soat o‘rganish'
+        choiceB: 'Faqat haftada bir marta 4 soat örganiş'
       }
     },
     practiceGuide: DEFAULT_PRACTICE_GUIDE,
@@ -170,14 +170,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     },
     skillsSection: {
       kicker: 'MUVOZANATLI RIVOJLANISH',
-      title: '5 ta asosiy til ko‘nikmasini mustahkamlang',
-      subtitle: 'Faqat qoidalar yodlash emas — har tomonlama tabiiy o‘rganish uslubi.',
+      title: '5 ta asosiy til könikmasini mustahkamlang',
+      subtitle: 'Faqat qoidalar yodlash emas — har tomonlama tabiiy örganiş uslubi.',
       skills: [
         { key: 'reading', title: 'O‘qish (Reading)', desc: 'Darajangizga moslangan qiziqarli hikoyalar, badiiy parchalar va zamonaviy maqolalar.', color: '#356cf6' },
         { key: 'writing', title: 'Yozish (Writing)', desc: 'Insho va xatlar yozish, grammatik xatolarni sun’iy intellekt orqali darhol tekshirish.', color: '#8b5cf6' },
         { key: 'listening', title: 'Tinglash (Listening)', desc: 'Tabiiy tezlikdagi audio podkastlar, kundalik muloqot dialoglari va transkriptlar.', color: '#0ea5e9' },
         { key: 'speaking', title: 'Gapirish (Speaking)', desc: 'To‘g‘ri talaffuz va intonatsiya mashqlari bilan muloqotdagi to‘siqlarni yengish.', color: '#10b981' },
-        { key: 'vocab', title: 'Lug‘at (Vocabulary)', desc: 'Shaxsiy so‘z daftari, kontekstual misollar va intervalli takrorlash metodikasi.', color: '#f59e0b' }
+        { key: 'vocab', title: 'Luğat (Vocabulary)', desc: 'Shaxsiy so‘z daftari, kontekstual misollar va intervalli takrorlash metodikasi.', color: '#f59e0b' }
       ]
     },
     stepsSection: {
@@ -186,12 +186,12 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     featuresSection: {
       kicker: 'ILG‘OR IMKONIYATLAR',
       title: 'Zamonaviy texnologiyalar xizmatingizda',
-      subtitle: 'Biz til o‘rganishni nafaqat samarali, balki maroqli jarayonga aylantiramiz.',
+      subtitle: 'Biz til örganişni nafaqat samarali, balki maroqli jarayonga aylantiramiz.',
       features: [
         { key: 'ai', color: 'purple', title: '24/7 AI Til Repetitori', desc: 'Istalgan savolingizni bering, grammatik xatolaringizni aniqlang va muloyim tushuntirishlar oling.' },
-        { key: 'pvp', color: 'orange', title: '1v1 So‘z Bellashuvi', desc: 'Boshqa o‘quvchilar bilan real vaqtda so‘z boyligingizni sinang, XP to‘plang va yetakchilar safiga kiring.' },
+        { key: 'pvp', color: 'orange', title: '1v1 So‘z Bellashuvi', desc: 'Boshqa öquvçilar bilan real vaqtda so‘z boyligingizni sinang, XP to‘plang va yetakchilar safiga kiring.' },
         { key: 'anticheat', color: 'green', title: 'Anti-Cheat & Spaced Repetition', desc: 'So‘zlar tasodifiy takrorlanmaydi — ilmiy tasdiqlangan intervallar bilan uzoq muddatli xotiraga ko‘chadi.' },
-        { key: 'teachers', color: 'blue', title: 'Malakali Ustozlar Nazorati', desc: 'Maxsus o‘qituvchilar tizimda sizning yozma insho va vazifalaringizni tekshirib, shaxsiy baho beradi.' }
+        { key: 'teachers', color: 'blue', title: 'Malakali Ustozlar Nazorati', desc: 'Maxsus öqituvçilar tizimda sizning yozma insho va vazifalaringizni tekshirib, shaxsiy baho beradi.' }
       ]
     },
     finalCta: {
@@ -330,18 +330,18 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
             metric3Value: '4+',
             ...(prev?.metrics || {}),
             ...(cmsRes.value?.metrics || {}),
-            metric1Label: (cmsRes.value?.metrics?.metric1Label && cmsRes.value.metrics.metric1Label !== 'App Downloads') ? cmsRes.value.metrics.metric1Label : 'O‘quv Materiallari',
-            metric2Label: (cmsRes.value?.metrics?.metric2Label && cmsRes.value.metrics.metric2Label !== 'Learned monthly') ? cmsRes.value.metrics.metric2Label : 'Lug‘at So‘zlari',
-            metric3Label: (cmsRes.value?.metrics?.metric3Label && cmsRes.value.metrics.metric3Label !== '177k Rating' && cmsRes.value.metrics.metric3Label !== 'Mashq Bajarildi') ? cmsRes.value.metrics.metric3Label : 'Jami Foydalanuvchilar'
+            metric1Label: (cmsRes.value?.metrics?.metric1Label && cmsRes.value.metrics.metric1Label !== 'App Downloads') ? cmsRes.value.metrics.metric1Label : 'Öquv Materiallari',
+            metric2Label: (cmsRes.value?.metrics?.metric2Label && cmsRes.value.metrics.metric2Label !== 'Learned monthly') ? cmsRes.value.metrics.metric2Label : 'Luğat So‘zlari',
+            metric3Label: (cmsRes.value?.metrics?.metric3Label && cmsRes.value.metrics.metric3Label !== '177k Rating' && cmsRes.value.metrics.metric3Label !== 'Mashq Bajarildi') ? cmsRes.value.metrics.metric3Label : 'Jami Foydalanuvçilar'
           },
           authBanner: {
-            kicker: 'TILSHUNOS PLATFORMASI',
+            kicker: 'TILŞUNOS PLATFORMASI',
             loginTitle: 'Qaytganingizdan xursandmiz!',
-            registerTitle: 'O‘rganish yo‘lingiz shu yerdan boshlanadi.',
+            registerTitle: 'Örganiş yo‘lingiz shu yerdan boshlanadi.',
             verifyTitle: 'Emailingizni tasdiqlang',
             subtitle: 'O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing.',
             statNumber: '4+',
-            statLabel: 'asosiy ko‘nikma bitta platformada',
+            statLabel: 'asosiy könikma bitta platformada',
             bgImage: '',
             ...(prev?.authBanner || {}),
             ...(cmsRes.value?.authBanner || {})
@@ -928,11 +928,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     }
     try {
       await api.createTeacher(teacherForm);
-      notify('Yangi o‘qituvchi Supabasega muvaffaqiyatli saqlandi!');
+      notify('Yangi öqituvçi Supabasega muvaffaqiyatli saqlandi!');
       setTeacherForm({ firstName: '', lastName: '', email: '', password: '', specialty: 'English · B1–C1', bio: '' });
       loadSupabaseData(true);
     } catch (err: any) {
-      notify(err.message || 'O‘qituvchi qo‘shishda xatolik', true);
+      notify(err.message || 'Öqituvçi qo‘shishda xatolik', true);
     }
   };
 
@@ -960,7 +960,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     if (!teacherId) return;
 
     if (!editTeacherForm.firstName.trim() || !editTeacherForm.email.includes('@')) {
-      notify('O‘qituvchi ismi va to‘g‘ri email manzilini kiriting.', true);
+      notify('Öqituvçi ismi va to‘g‘ri email manzilini kiriting.', true);
       return;
     }
 
@@ -975,25 +975,25 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
         isActive: editTeacherForm.isActive,
         isApproved: editTeacherForm.isApproved
       });
-      notify('O‘qituvchi ma’lumotlari muvaffaqiyatli yangilandi! ✓');
+      notify('Öqituvçi ma’lumotlari muvaffaqiyatli yangilandi! ✓');
       setEditingTeacher(null);
       loadSupabaseData(true);
     } catch (err: any) {
-      notify(err.message || 'O‘qituvchini yangilashda xatolik', true);
+      notify(err.message || 'Öqituvçini yangilashda xatolik', true);
     }
   };
 
   const handleDeleteTeacher = async (teacherId: string, nameOrEmail: string) => {
-    if (!window.confirm(`${nameOrEmail} o‘qituvchisini tizimdan va Supabase bazasidan butunlay o‘chirib tashlashni tasdiqlaysizmi?`)) {
+    if (!window.confirm(`${nameOrEmail} öqituvçisini tizimdan va Supabase bazasidan butunlay o‘chirib tashlashni tasdiqlaysizmi?`)) {
       return;
     }
     try {
       await api.deleteTeacher(teacherId);
-      notify('O‘qituvchi muvaffaqiyatli o‘chirildi! ✓');
+      notify('Öqituvçi muvaffaqiyatli o‘chirildi! ✓');
       setTeachers(prev => prev.filter(t => (t.id || t.userId) !== teacherId));
       loadSupabaseData(true);
     } catch (err: any) {
-      notify(err.message || 'O‘qituvchini o‘chirishda xatolik', true);
+      notify(err.message || 'Öqituvçini o‘chirishda xatolik', true);
     }
   };
 
@@ -1132,7 +1132,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
         exampleSentence: vocabForm.example.trim(),
         topic: vocabForm.topic
       });
-      notify('So‘z Supabase lug‘atiga saqlandi! ✓');
+      notify('So‘z Supabase luğatiga saqlandi! ✓');
       setVocabForm({ word: '', translation: '', topic: 'Daily Life', level: 'B1', example: '' });
       loadSupabaseData();
     } catch (err: any) {
@@ -1196,7 +1196,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     }
   };
 
-  // FAQAT O‘quvchilar (Learners) — Adminlar va O‘qituvchilar bu yerda bo‘lmaydi!
+  // FAQAT Öquvçilar (Learners) — Adminlar va Öqituvçilar bu yerda bo‘lmaydi!
   const learners = useMemo(() => {
     return users.filter(u => {
       if (isSuperAdmin(u)) return false;
@@ -1214,7 +1214,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     });
   }, [users]);
 
-  // O‘quvchilar filtri (holat bo‘yicha)
+  // Öquvçilar filtri (holat bo‘yicha)
   const [studentStatusFilter, setStudentStatusFilter] = useState<'all' | 'verified' | 'unverified' | 'active'>('all');
 
   const filteredLearners = useMemo(() => {
@@ -1246,7 +1246,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   const [selectedUserToAppointTeacher, setSelectedUserToAppointTeacher] = useState('');
   const [appointTeacherSearch, setAppointTeacherSearch] = useState('');
   const [appointTeacherSpecialty, setAppointTeacherSpecialty] = useState('English · B1–C1');
-  const [appointTeacherBio, setAppointTeacherBio] = useState('Ingliz tili va xalqaro imtihonlar (IELTS / CEFR) bo‘yicha tajribali o‘qituvchi.');
+  const [appointTeacherBio, setAppointTeacherBio] = useState('Ingliz tili va xalqaro imtihonlar (IELTS / CEFR) bo‘yicha tajribali öqituvçi.');
 
   // Appoint Admin search state
   const [appointAdminSearch, setAppointAdminSearch] = useState('');
@@ -1265,9 +1265,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       return <span className="badge-role-admin">🛡️ Moderator Admin</span>;
     }
     if (roleStr === 'teacher' || u.role === 2) {
-      return <span className="badge-role-teacher">👨‍🏫 O‘qituvchi</span>;
+      return <span className="badge-role-teacher">👨‍🏫 Öqituvçi</span>;
     }
-    return <span className="badge-role-learner">🎓 O‘quvchi</span>;
+    return <span className="badge-role-learner">🎓 Öquvçi</span>;
   };
 
   // Tab 1: All Users filter
@@ -1330,7 +1330,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   // Appoint Teacher Handler
   const handleAppointTeacher = async () => {
     if (!selectedUserToAppointTeacher) {
-      notify('Iltimos, o‘qituvchilikka tayinlash uchun ro‘yxatdan foydalanuvchini tanlang');
+      notify('Iltimos, öqituvçilikka tayinlash uchun ro‘yxatdan foydalanuvchini tanlang');
       return;
     }
     const targetUser = users.find(u => u.id === selectedUserToAppointTeacher);
@@ -1346,28 +1346,28 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       await api.updateUserRole(selectedUserToAppointTeacher, { role: 2, isActive: true });
       await api.updateTeacher(selectedUserToAppointTeacher, {
         specialty: appointTeacherSpecialty.trim() || 'English · B1–C1',
-        bio: appointTeacherBio.trim() || 'Ingliz tili va xalqaro imtihonlar bo‘yicha tajribali o‘qituvchi.',
+        bio: appointTeacherBio.trim() || 'Ingliz tili va xalqaro imtihonlar bo‘yicha tajribali öqituvçi.',
         isActive: true,
         isApproved: true
       });
-      notify(`${targetUser.firstName || targetUser.email} muvaffaqiyatli O‘qituvchi qilib tayinlandi! ✓`);
+      notify(`${targetUser.firstName || targetUser.email} muvaffaqiyatli Öqituvçi qilib tayinlandi! ✓`);
       setAppointTeacherModalOpen(false);
       setSelectedUserToAppointTeacher('');
       setAppointTeacherSearch('');
       loadSupabaseData(true);
     } catch (err: any) {
-      notify(err.message || 'O‘qituvchi tayinlashda xatolik yuz berdi', true);
+      notify(err.message || 'Öqituvçi tayinlashda xatolik yuz berdi', true);
     }
   };
 
   // Demote Teacher back to Learner Handler
   const handleDemoteTeacher = async (teacherId: string, nameOrEmail: string) => {
-    if (!window.confirm(`${nameOrEmail} o‘qituvchisini ustozlik maqomidan chiqarib, oddiy O‘quvchi roliga qaytarishni tasdiqlaysizmi?`)) {
+    if (!window.confirm(`${nameOrEmail} öqituvçisini ustozlik maqomidan chiqarib, oddiy Öquvçi roliga qaytarishni tasdiqlaysizmi?`)) {
       return;
     }
     try {
       await api.updateUserRole(teacherId, { role: 1, isActive: true });
-      notify('O‘qituvchi muvaffaqiyatli oddiy O‘quvchi roliga o‘tkazildi! ✓');
+      notify('Öqituvçi muvaffaqiyatli oddiy Öquvçi roliga o‘tkazildi! ✓');
       loadSupabaseData(true);
     } catch (err: any) {
       notify(err.message || 'Xatolik yuz berdi', true);
@@ -1433,10 +1433,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
   };
 
   const handleDemoteAdmin = async (userId: string, email: string) => {
-    if (!window.confirm(`${email} adminini administratorlik huquqidan mahrum qilib, oddiy O‘quvchi roliga qaytarishni tasdiqlaysizmi?`)) return;
+    if (!window.confirm(`${email} adminini administratorlik huquqidan mahrum qilib, oddiy Öquvçi roliga qaytarishni tasdiqlaysizmi?`)) return;
     try {
       await api.updateUserRole(userId, { role: 1, isActive: true });
-      notify('Admin muvaffaqiyatli oddiy O‘quvchi roliga o‘tkazildi! ✓');
+      notify('Admin muvaffaqiyatli oddiy Öquvçi roliga o‘tkazildi! ✓');
       loadSupabaseData(true);
     } catch (err: any) {
       notify(err.message || 'Xatolik yuz berdi');
@@ -1826,7 +1826,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
 
               {/* ROW 2: 4 Metric Cards */}
               <div className="neon-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px', marginBottom: '22px' }}>
-                {/* Metric 1: Faol O'quvchilar */}
+                {/* Metric 1: Faol Öquvçilar */}
                 <div
                   className="neon-card metric-card-neon"
                   style={{ cursor: 'pointer' }}
@@ -1863,7 +1863,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   </div>
                 </div>
 
-                {/* Metric 2: O'qituvchilar */}
+                {/* Metric 2: Öqituvçilar */}
                 <div
                   className="neon-card metric-card-neon"
                   style={{ cursor: 'pointer' }}
@@ -1935,7 +1935,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   </div>
                 </div>
 
-                {/* Metric 4: Shaxsiy Lug'at So'zlari */}
+                {/* Metric 4: Shaxsiy Luğat So'zlari */}
                 <div
                   className="neon-card metric-card-neon"
                   style={{ cursor: 'pointer' }}
@@ -2343,9 +2343,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               <div className="welcome-row">
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="eyebrow"><Users size={14} /> FOYDALANUVCHILAR VA XAVFSIZLIK MARKAZI</div>
-                  <h1 style={{ wordBreak: 'break-word' }}>Foydalanuvchilar <span>Boshqaruvi</span></h1>
+                  <h1 style={{ wordBreak: 'break-word' }}>Foydalanuvçilar <span>Boşqaruvi</span></h1>
                   <p className="subheading">
-                    Supabase PostgreSQL bazasidagi barcha foydalanuvchilar, o‘quvchilar, o‘qituvchilar va moderator adminlar yagona boshqaruvi.
+                    Supabase PostgreSQL bazasidagi barcha foydalanuvchilar, öquvçilar, öqituvçilar va moderator adminlar yagona boşqaruvi.
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
@@ -2369,9 +2369,9 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                 scrollbarWidth: 'none'
               }}>
                 {[
-                  ['all', 'Umumiy Foydalanuvchilar', Users, users.length],
-                  ['learners', 'O‘quvchilar', Boxes, learners.length],
-                  ['teachers', 'O‘qituvchilar', GraduationCap, teachers.length],
+                  ['all', 'Umumiy Foydalanuvçilar', Users, users.length],
+                  ['learners', 'Öquvçilar', Boxes, learners.length],
+                  ['teachers', 'Öqituvçilar', GraduationCap, teachers.length],
                   ['admins', 'Adminlar & Ruxsatlar', UserCog, subAdmins.length]
                 ].map(([tabKey, label, TabIcon, count]: any) => (
                   <button
@@ -2432,7 +2432,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   <div className="panel" style={{ padding: '20px' }}>
                     {filteredAllUsers.length === 0 ? (
                       <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--muted)' }}>
-                        Foydalanuvchilar topilmadi.
+                        Foydalanuvçilar topilmadi.
                       </div>
                     ) : (
                       <>
@@ -2581,7 +2581,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         <input
                           value={query}
                           onChange={e => setQuery(e.target.value)}
-                          placeholder="O‘quvchi ismi, familiyasi yoki email bo‘yicha qidirish..."
+                          placeholder="Öquvçi ismi, familiyasi yoki email bo‘yicha qidirish..."
                           style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '12px', color: 'var(--text)' }}
                         />
                         {query && (
@@ -2593,10 +2593,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
 
                       <div className="admin-filters-scroll">
                         {[
-                          ['all', `Barcha O‘quvchilar (${learners.length})`],
+                          ['all', `Barcha Öquvçilar (${learners.length})`],
                           ['verified', 'Tasdiqlanganlar'],
                           ['unverified', 'Tasdiqlanmaganlar'],
-                          ['active', 'Faol O‘quvchilar']
+                          ['active', 'Faol Öquvçilar']
                         ].map(([f, label]) => (
                           <button
                             key={f}
@@ -2624,7 +2624,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   <div className="panel" style={{ padding: '20px' }}>
                     {filteredLearners.length === 0 ? (
                       <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--muted)' }}>
-                        O‘quvchilar topilmadi.
+                        Öquvçilar topilmadi.
                       </div>
                     ) : (
                       <>
@@ -2632,7 +2632,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           <table className="admin-table">
                             <thead>
                               <tr>
-                                <th>O‘quvchi</th>
+                                <th>Öquvçi</th>
                                 <th>Email Manzili</th>
                                 <th>Roli</th>
                                 <th>Email Holati</th>
@@ -2649,14 +2649,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                         {(u.firstName?.[0] || u.email?.[0] || 'O').toUpperCase()}
                                       </div>
                                       <div>
-                                        {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : 'O‘quvchi'}
+                                        {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : 'Öquvçi'}
                                       </div>
                                     </div>
                                   </td>
                                   <td style={{ color: 'var(--muted)' }}>{u.email}</td>
                                   <td>
                                     <span className="badge-role-learner">
-                                      Learner (O‘quvchi)
+                                      Learner (Öquvçi)
                                     </span>
                                   </td>
                                   <td>
@@ -2699,7 +2699,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                 </div>
                                 <div style={{ minWidth: 0, flex: 1 }}>
                                   <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : 'O‘quvchi'}
+                                    {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : 'Öquvçi'}
                                   </strong>
                                   <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {u.email}
@@ -2708,7 +2708,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               </div>
 
                               <div className="learner-card-body">
-                                <span className="badge-role-learner">O‘quvchi</span>
+                                <span className="badge-role-learner">Öquvçi</span>
                                 {u.emailConfirmed ? (
                                   <span className="badge-verified"><CheckCircle2 size={11} /> Tasdiqlangan</span>
                                 ) : (
@@ -2743,7 +2743,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   {/* Teachers Search & Table */}
                   <div className="panel" style={{ padding: '20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                      <h3 style={{ margin: 0 }}>Mavjud O‘qituvchilar Ro‘yxati ({teachers.length} ta)</h3>
+                      <h3 style={{ margin: 0 }}>Mavjud Öqituvçilar Ro‘yxati ({teachers.length} ta)</h3>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', minWidth: '220px' }}>
                         <Search size={16} style={{ color: 'var(--muted)' }} />
                         <input
@@ -2771,7 +2771,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           {filteredTeachers.length === 0 ? (
                             <tr>
                               <td colSpan={6} style={{ textAlign: 'center', padding: '28px', color: 'var(--muted)' }}>
-                                O‘qituvchilar topilmadi.
+                                Öqituvçilar topilmadi.
                               </td>
                             </tr>
                           ) : (
@@ -2782,7 +2782,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                     <div className="avatar" style={{ width: '32px', height: '32px', fontSize: '12px', background: 'var(--soft)', color: 'var(--purple)', flexShrink: 0 }}>
                                       {(t.name?.[0] || t.fullName?.[0] || t.email?.[0] || 'U').toUpperCase()}
                                     </div>
-                                    <div>{t.name || t.fullName || 'O‘qituvchi'}</div>
+                                    <div>{t.name || t.fullName || 'Öqituvçi'}</div>
                                   </div>
                                 </td>
                                 <td style={{ color: 'var(--muted)' }}>{t.email || '-'}</td>
@@ -2805,11 +2805,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                     </button>
                                     <button
                                       className="outline-btn"
-                                      title="O‘quvchilikka qaytarish"
+                                      title="Öquvçilikka qaytarish"
                                       onClick={() => handleDemoteTeacher(t.id || t.userId, t.name || t.fullName || t.email)}
                                       style={{ padding: '6px 10px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                                     >
-                                      <RotateCcw size={13} /> O‘quvchi qilish
+                                      <RotateCcw size={13} /> Öquvçi qilish
                                     </button>
                                     <button
                                       onClick={() => handleDeleteTeacher(t.id || t.userId, t.name || t.fullName || t.email)}
@@ -2892,7 +2892,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             <span className="badge-verified">Daxlsiz</span>
                           </div>
                           <p style={{ margin: '4px 0 8px', fontSize: '12px', color: 'var(--muted)' }}>
-                            Platforma asoschisi va yagona to‘liq boshqaruvchisi. Uni hech kim tizimdan chiqara yoki o‘chira olmaydi.
+                            Platforma asoschisi va yagona to‘liq boşqaruvchisi. Uni hech kim tizimdan chiqara yoki o‘chira olmaydi.
                           </p>
                           <label className="outline-btn" style={{ fontSize: '11px', padding: '5px 10px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                             <Camera size={13} />
@@ -2909,7 +2909,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         padding: '8px 14px',
                         borderRadius: '20px'
                       }}>
-                        To‘liq cheksiz boshqaruv huquqi ✓
+                        To‘liq cheksiz boşqaruv huquqi ✓
                       </div>
                     </div>
                   </div>
@@ -2938,7 +2938,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           Hozircha qo‘shimcha admin tayinlanmagan
                         </strong>
                         <p style={{ margin: 0, fontSize: '11px', color: 'var(--muted)' }}>
-                          Super Admin sifatida <strong>"Umumiy Foydalanuvchilar"</strong> ro‘yxatidan istalgan foydalanuvchini moderator admin qilib tayinlashingiz mumkin.
+                          Super Admin sifatida <strong>"Umumiy Foydalanuvçilar"</strong> ro‘yxatidan istalgan foydalanuvchini moderator admin qilib tayinlashingiz mumkin.
                         </p>
                       </div>
                     ) : (
@@ -2946,11 +2946,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         {subAdmins.map((admin: any) => {
                           const perms = adminPerms[admin.id] || { canVocab: true, canTeachers: false, canCMS: true, canMaterials: true, canStudents: true };
                           const permItems = [
-                            { key: 'canVocab', label: 'Umumiy Lug‘at', icon: '📚' },
+                            { key: 'canVocab', label: 'Umumiy Luğat', icon: '📚' },
                             { key: 'canCMS', label: 'Welcome (CMS)', icon: '🌐' },
-                            { key: 'canTeachers', label: 'O‘qituvchilar', icon: '🎓' },
+                            { key: 'canTeachers', label: 'Öqituvçilar', icon: '🎓' },
                             { key: 'canMaterials', label: 'Materiallar', icon: '✍️' },
-                            { key: 'canStudents', label: 'Reestr / O‘quvchilar', icon: '📊' }
+                            { key: 'canStudents', label: 'Reestr / Öquvçilar', icon: '📊' }
                           ];
                           const activePerms = permItems.filter(p => Boolean((perms as any)[p.key]));
 
@@ -3070,8 +3070,8 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               <div className="welcome-row">
                 <div>
                   <div className="eyebrow"><BookOpen size={14} /> LUG‘AT BAZASI</div>
-                  <h1>Umumiy <span>Lug‘at Boshqaruvi</span></h1>
-                  <p className="subheading">Supabase bazasida saqlanuvchi barcha lug‘at so‘zlari ({generalVocab.length} ta so‘z).</p>
+                  <h1>Umumiy <span>Luğat Boşqaruvi</span></h1>
+                  <p className="subheading">Supabase bazasida saqlanuvchi barcha luğat so‘zlari ({generalVocab.length} ta so‘z).</p>
                 </div>
               </div>
 
@@ -3213,7 +3213,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   <div>
                     <span className="eyebrow"><BookMarked size={14} /> READING STUDIO</span>
                     <h2>Reading Materiali Qo‘shish</h2>
-                    <p>O‘quvchilar darajasiga mos hikoya, maqola yoki matnlarni Supabasega kiriting.</p>
+                    <p>Öquvçilar darajasiga mos hikoya, maqola yoki matnlarni Supabasega kiriting.</p>
                   </div>
                 </div>
                 <div className="form-grid" style={{ gap: '16px' }}>
@@ -3285,7 +3285,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     </select>
                   </label>
                   <label>So‘zlar miqdori (me’yori)<input type="number" value={writingForm.words} onChange={e => setWritingForm({ ...writingForm, words: Number(e.target.value) })} /></label>
-                  <label className="span-two">Yo‘riqnoma va talablar<textarea rows={5} value={writingForm.instructions} onChange={e => setWritingForm({ ...writingForm, instructions: e.target.value })} placeholder="O‘quvchi nimalar haqida yozishi kerakligini tushuntiring..." /></label>
+                  <label className="span-two">Yo‘riqnoma va talablar<textarea rows={5} value={writingForm.instructions} onChange={e => setWritingForm({ ...writingForm, instructions: e.target.value })} placeholder="Öquvçi nimalar haqida yozishi kerakligini tushuntiring..." /></label>
                 </div>
                 <button className="primary-btn" onClick={handleAddWriting} style={{ marginTop: '20px' }}>
                   <Save size={16} /> Writing Topshirig‘ini Saqlash
@@ -3427,7 +3427,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               <div className="welcome-row">
                 <div>
                   <div className="eyebrow"><Globe size={14} /> SAYT KONTENTI VA DASTUR SOZLAMALARI</div>
-                  <h1>Welcome Sahifa <span>Boshqaruvi (CMS)</span></h1>
+                  <h1>Welcome Sahifa <span>Boşqaruvi (CMS)</span></h1>
                   <p className="subheading">
                     Welcome sahifasining har bir bo‘limi, tugmalari, "Biz haqimizda" maqolasi, jamoa a’zolari, asoschi ma’lumotlari va kontaktlarini to‘liq tahrirlang. Barcha o‘zgarishlar Supabase PostgreSQL bazasida saqlanadi.
                   </p>
@@ -3556,7 +3556,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         }}>
                           <img
                             src={cms.brandLogo || '/brand_logo.png'}
-                            alt="TILSHUNOS Logo"
+                            alt="TILŞUNOS Logo"
                             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                             onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }}
                           />
@@ -3622,11 +3622,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       <Zap size={18} style={{ color: 'var(--purple)' }} /> Tugmalar & Menyu Matnlari
                     </h3>
                     <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
-                      <b style={{ fontSize: '12px' }}>Asosiy Boshlash Tugmasi Matni (Primary CTA):</b>
+                      <b style={{ fontSize: '12px' }}>Asosiy Boşlaş Tugmasi Matni (Primary CTA):</b>
                       <input
                         value={cms.cta || ''}
                         onChange={e => setCms({ ...cms, cta: e.target.value })}
-                        placeholder="Bepul boshlash"
+                        placeholder="Bepul boşlaş"
                       />
                     </label>
                     <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
@@ -3634,7 +3634,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       <input
                         value={cms.secondaryCta || ''}
                         onChange={e => setCms({ ...cms, secondaryCta: e.target.value })}
-                        placeholder="Platformani o‘rganish"
+                        placeholder="Platformani örganiş"
                       />
                     </label>
                     <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
@@ -3650,7 +3650,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     </label>
 
                     <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
-                      <b style={{ fontSize: '12px' }}>Bosh Sahifa Bayroqlari (Emoji yoki kodlar, vergul bilan):</b>
+                      <b style={{ fontSize: '12px' }}>Boş Sahifa Bayroqlari (Emoji yoki kodlar, vergul bilan):</b>
                       <input
                         value={Array.isArray(cms.heroFlags) ? cms.heroFlags.join(', ') : (cms.heroFlags || '🇬🇧, 🇷🇺, 🇩🇪, 🇺🇿')}
                         onChange={e => {
@@ -3684,7 +3684,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       </label>
                     </div>
                     <div style={{ marginTop: '20px', padding: '12px', background: 'var(--soft)', borderRadius: '10px', fontSize: '11px', color: 'var(--muted)' }}>
-                      💡 <em>Barcha tugmalar real harakatlarga ulangan: Asosiy tugma ro‘yxatdan o‘tishga, ikkinchi tugma interaktiv demonstratsiyaga yo‘naltiradi.</em>
+                      💡 <em>Barcha tugmalar real harakatlarga ulangan: Asosiy tugma röyxatdan ötişga, ikkinchi tugma interaktiv demonstratsiyaga yo‘naltiradi.</em>
                     </div>
                   </div>
 
@@ -3696,7 +3696,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           <ImageIcon size={19} style={{ color: 'var(--purple)' }} /> Header & Hero Orqa Fon Rasmlari (Desktop & Mobile)
                         </h3>
                         <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
-                          Header va bosh sahifa kirish qismi uchun orqa fon rasmini o‘rnating. Desktop va smartfonlar uchun alohida rasm yuklashingiz mumkin.
+                          Header va boş sahifa kirish qismi uchun orqa fon rasmini o‘rnating. Desktop va smartfonlar uchun alohida rasm yuklashingiz mumkin.
                         </p>
                       </div>
                     </div>
@@ -3885,7 +3885,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           )}
                         </div>
                         <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
-                          Smartfonlar uchun vertikal (masalan: 1080x1920) rasm yuklang. Bo‘sh qolsa, desktop foni ishlatiladi.
+                          Smartfonlar uchun vertikal (masalan: 1080x1920) rasm yuklang. Böş qolsa, desktop foni ishlatiladi.
                         </span>
                         {/* Preview */}
                         {cms.heroBgMobile ? (
@@ -4103,7 +4103,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           <input
                             value={cms.heroMobileImage || ''}
                             onChange={e => setCms({ ...cms, heroMobileImage: e.target.value })}
-                            placeholder="Bo‘sh qolsa Desktop rasmi ishlatiladi..."
+                            placeholder="Böş qolsa Desktop rasmi ishlatiladi..."
                           />
                           {cms.heroMobileImage && (
                             <button
@@ -4191,7 +4191,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           <Database size={19} style={{ color: 'var(--purple)' }} /> Supabase Jonli Hisoblagichlari (Hozirgi paytdagi holat)
                         </h3>
                         <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
-                          Ushbu ko‘rsatkichlar Supabase PostgreSQL bazasidan real vaqt rejimida avtomatik hisoblab chiqilgan.
+                          Ushbu körsatkiçlar Supabase PostgreSQL bazasidan real vaqt rejimida avtomatik hisoblab chiqilgan.
                         </p>
                       </div>
                       <span className="badge-role-learner" style={{ padding: '6px 12px', fontSize: '11px' }}>
@@ -4213,7 +4213,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         <h2 style={{ fontSize: '26px', margin: '8px 0 2px', fontWeight: 800, color: '#10b981' }}>
                           {cms.liveStats?.wordsCount ?? stats.totalVocabularyEntries ?? 0}
                         </h2>
-                        <small style={{ fontSize: '11px', color: 'var(--muted)' }}>ta lug‘at boyligi</small>
+                        <small style={{ fontSize: '11px', color: 'var(--muted)' }}>ta luğat boyligi</small>
                       </div>
 
                       <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
@@ -4225,7 +4225,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       </div>
 
                       <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                        <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700 }}>O‘QUV MATERIALLARI</span>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700 }}>ÖQUV MATERIALLARI</span>
                         <h2 style={{ fontSize: '26px', margin: '8px 0 2px', fontWeight: 800, color: '#f59e0b' }}>
                           {cms.liveStats?.materialsCount ?? stats.totalMaterials ?? 0}
                         </h2>
@@ -4274,7 +4274,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '24px' }}>
                       {/* Metric 1 */}
                       <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '8px' }}>1-METRIKA (Chap) · O‘QUV MATERIALLARI</span>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--purple)', display: 'block', marginBottom: '8px' }}>1-METRIKA (Chap) · ÖQUV MATERIALLARI</span>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
                           <b style={{ fontSize: '11px' }}>Qiymat (agar qo‘lda bo‘lsa):</b>
                           <input
@@ -4294,14 +4294,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               ...cms,
                               metrics: { ...cms.metrics, metric1Label: e.target.value }
                             })}
-                            placeholder="O‘quv Materiallari"
+                            placeholder="Öquv Materiallari"
                           />
                         </label>
                       </div>
 
                       {/* Metric 2 */}
                       <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#10b981', display: 'block', marginBottom: '8px' }}>2-METRIKA (O‘rta) · LUG‘AT SO‘ZLARI</span>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#10b981', display: 'block', marginBottom: '8px' }}>2-METRIKA (O‘rta) · LUĞAT SÖZLARI</span>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
                           <b style={{ fontSize: '11px' }}>Qiymat (agar qo‘lda bo‘lsa):</b>
                           <input
@@ -4321,7 +4321,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               ...cms,
                               metrics: { ...cms.metrics, metric2Label: e.target.value }
                             })}
-                            placeholder="Lug‘at So‘zlari"
+                            placeholder="Luğat So‘zlari"
                           />
                         </label>
                       </div>
@@ -4351,7 +4351,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               ...cms,
                               metrics: { ...cms.metrics, metric3Label: e.target.value }
                             })}
-                            placeholder="Jami Foydalanuvchilar"
+                            placeholder="Jami Foydalanuvçilar"
                           />
                         </label>
                       </div>
@@ -4426,21 +4426,21 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                 </div>
               )}
 
-              {/* TAB: KIRISH / RO‘YXATDAN O‘TISH VIZUALI (AUTH BANNER) */}
+              {/* TAB: KIRIŞ / RÖYXATDAN ÖTIŞ VIZUALI (AUTH BANNER) */}
               {cmsTab === 'auth' && (
                 <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
                   {/* Left Column: Form Controls */}
                   <div className="panel" style={{ padding: '24px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
                       <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Sparkles size={18} style={{ color: 'var(--purple)' }} /> Kirish / Ro‘yxatdan O‘tish Vizual Kartasi
+                        <Sparkles size={18} style={{ color: 'var(--purple)' }} /> Kiriş / Röyxatdan Ötiş Vizual Kartasi
                       </h3>
                       <button className="primary-btn" onClick={saveCmsChanges} style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 700 }}>
                         <Save size={14} /> Saqlash
                       </button>
                     </div>
                     <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--muted)', lineHeight: '1.6' }}>
-                      Foydalanuvchi tizimga kirish, ro‘yxatdan o‘tish va pochtani tasdiqlash sahifalarini ochganda chap tomonda chiqadigan vizual banner va uning orqa fon rasmini shu yerdan to‘liq boshqarasiz.
+                      Foydalanuvchi tizimga kirish, röyxatdan ötiş va poçtani tasdiqlaş sahifalarini ochganda chap tomonda chiqadigan vizual banner va uning orqa fon rasmini shu yerdan to‘liq boshqarasiz.
                     </p>
 
                     {/* Background image section */}
@@ -4545,7 +4545,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             ...cms,
                             authBanner: { ...cms.authBanner, kicker: e.target.value }
                           })}
-                          placeholder="TILSHUNOS PLATFORMASI"
+                          placeholder="TILŞUNOS PLATFORMASI"
                         />
                       </label>
 
@@ -4569,7 +4569,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             ...cms,
                             authBanner: { ...cms.authBanner, registerTitle: e.target.value }
                           })}
-                          placeholder="O‘rganish yo‘lingiz shu yerdan boshlanadi."
+                          placeholder="Örganiş yo‘lingiz shu yerdan boshlanadi."
                         />
                       </label>
 
@@ -4600,7 +4600,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <b style={{ fontSize: '12px' }}>Ko‘rsatkich Raqami:</b>
+                          <b style={{ fontSize: '12px' }}>Körsatkiç Raqami:</b>
                           <input
                             value={cms.authBanner?.statNumber || ''}
                             onChange={e => setCms({
@@ -4611,14 +4611,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           />
                         </label>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <b style={{ fontSize: '12px' }}>Ko‘rsatkich Matni:</b>
+                          <b style={{ fontSize: '12px' }}>Körsatkiç Matni:</b>
                           <input
                             value={cms.authBanner?.statLabel || ''}
                             onChange={e => setCms({
                               ...cms,
                               authBanner: { ...cms.authBanner, statLabel: e.target.value }
                             })}
-                            placeholder="asosiy ko‘nikma bitta platformada"
+                            placeholder="asosiy könikma bitta platformada"
                           />
                         </label>
                       </div>
@@ -4665,7 +4665,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               cursor: 'pointer'
                             }}
                           >
-                            Ro‘yxatdan o‘tish
+                            Röyxatdan ötiş
                           </button>
                           <button
                             type="button"
@@ -4735,7 +4735,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           marginBottom: '16px',
                           textTransform: 'uppercase'
                         }}>
-                          {cms.authBanner?.kicker || 'TILSHUNOS PLATFORMASI'}
+                          {cms.authBanner?.kicker || 'TILŞUNOS PLATFORMASI'}
                         </span>
 
                         <h2 style={{
@@ -4750,7 +4750,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             ? (cms.authBanner?.verifyTitle || 'Emailingizni tasdiqlang')
                             : authPreviewMode === 'login'
                             ? (cms.authBanner?.loginTitle || 'Qaytganingizdan xursandmiz!')
-                            : (cms.authBanner?.registerTitle || 'O‘rganish yo‘lingiz shu yerdan boshlanadi.')}
+                            : (cms.authBanner?.registerTitle || 'Örganiş yo‘lingiz shu yerdan boshlanadi.')}
                         </h2>
 
                         <p style={{
@@ -4775,7 +4775,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             {cms.authBanner?.statNumber || '4+'}
                           </strong>
                           <span style={{ fontSize: '11px', lineHeight: '1.6', color: '#e1ddff', whiteSpace: 'pre-line' }}>
-                            {cms.authBanner?.statLabel || 'asosiy ko‘nikma\nbitta platformada'}
+                            {cms.authBanner?.statLabel || 'asosiy könikma\nbitta platformada'}
                           </span>
                         </div>
                       </div>
@@ -4783,7 +4783,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
 
                     <div style={{ marginTop: '16px', padding: '12px 14px', background: 'var(--bg)', borderRadius: '10px', border: '1px solid var(--border)' }}>
                       <p style={{ margin: 0, fontSize: '11px', color: 'var(--muted)', lineHeight: '1.6' }}>
-                        💡 <strong>Maslahat:</strong> Rasm yuklaganingizda yoki havola kiritganingizda, matnlar o‘qilishi uchun avtomatik yarim shaffof qorong‘i qatlam (overlay) qo‘llaniladi. Foydalanuvchilar kirish sahifasini ochishi bilanoq ushbu dizaynni ko‘rishadi.
+                        💡 <strong>Maslahat:</strong> Rasm yuklaganingizda yoki havola kiritganingizda, matnlar o‘qilishi uchun avtomatik yarim shaffof qorong‘i qatlam (overlay) qo‘llaniladi. Foydalanuvçilar kirish sahifasini ochishi bilanoq ushbu dizaynni ko‘rishadi.
                       </p>
                     </div>
                   </div>
@@ -4876,7 +4876,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           <input
                             value={pg.subtitle || ''}
                             onChange={e => updatePgField('subtitle', e.target.value)}
-                            placeholder="O‘rganmoqchi bo‘lgan tilingizni tanlang va har bir ko‘nikma moduli bo‘yicha interaktiv mashqlarni bajaring."
+                            placeholder="O‘rganmoqchi bölgan tilingizni tanlang va har bir könikma moduli bo‘yicha interaktiv maşqlarni bajaring."
                           />
                         </label>
                         <label className="span-two">
@@ -4940,7 +4940,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             rows={2}
                             value={pg.bottomBannerDesc || ''}
                             onChange={e => updatePgField('bottomBannerDesc', e.target.value)}
-                            placeholder="7 ta ko‘nikma moduli bo‘yicha to‘liq interaktiv mashqlar, AI repetitor va shaxsiy testlarni boshlang."
+                            placeholder="7 ta könikma moduli bo‘yicha to‘liq interaktiv maşqlar, AI repetitor va şaxsiy testlarni boshlang."
                             style={{ resize: 'vertical' }}
                           />
                         </label>
@@ -5077,7 +5077,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           </span>
                           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             {[
-                              { key: 'vocab', label: '📖 Vocab (Lug‘at)' },
+                              { key: 'vocab', label: '📖 Vocab (Luğat)' },
                               { key: 'writing', label: '✍️ Writing (Yozish)' },
                               { key: 'reading', label: '📑 Reading (O‘qish)' },
                               { key: 'listening', label: '🎧 Listening (Tinglash)' },
@@ -5434,7 +5434,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               </label>
                               <label className="span-two">
                                 <b style={{ fontSize: '11px' }}>
-                                  Matn (Bo‘sh joylarni [so‘z] qavslari ichiga olib yozing):
+                                  Matn (Böş joylarni [so‘z] qavslari ichiga olib yozing):
                                 </b>
                                 <textarea
                                   value={activeLangObj.listening?.textWithGaps || ''}
@@ -5683,7 +5683,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                 />
                               </label>
                               <label className="span-two">
-                                <b style={{ fontSize: '11px' }}>Xatolikni Tuzatish Uchun O‘rganish Kerak Bo‘lgan Qoida (Rule Tip):</b>
+                                <b style={{ fontSize: '11px' }}>Xatolikni Tuzatish Uchun Örganiş Kerak Bo‘lgan Qoida (Rule Tip):</b>
                                 <input
                                   value={activeLangObj.grammar?.ruleTip || ''}
                                   onChange={e => updateSkillData('grammar', 'ruleTip', e.target.value)}
@@ -5720,7 +5720,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                               </label>
                               <label className="span-two">
                                 <b style={{ fontSize: '11px' }}>
-                                  Shadowing Matni (O‘quvchi mikrofonga gapirganda har bir so‘z ketma-ket solishtiriladi):
+                                  Shadowing Matni (Öquvçi mikrofonga gapirganda har bir so‘z ketma-ket solishtiriladi):
                                 </b>
                                 <textarea
                                   value={activeLangObj.shadowing?.shadowingText || ''}
@@ -5862,7 +5862,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     </div>
                   </div>
 
-                  {/* 3. O‘rganish Jarayoni: Ketma-Ket Qadamlar & Tushuntirishlar */}
+                  {/* 3. Örganiş Jarayoni: Ketma-Ket Qadamlar & Tushuntirishlar */}
                   {(() => {
                     const currentSteps = (cms.stepsSection?.steps && cms.stepsSection.steps.length > 0)
                       ? cms.stepsSection.steps
@@ -5874,7 +5874,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       const newStep = {
                         step: nextStepStr,
                         title: `${nextNum}-bosqich: Yangi o‘quv jarayoni`,
-                        desc: 'Ushbu bosqichda o‘quvchilar yangi bilim va ko‘nikmalarni chuqur o‘rganishadi hamda amaliy mashg‘ulotlar bajarishadi.',
+                        desc: 'Ushbu bosqichda öquvçilar yangi bilim va könikmalarni chuqur örganişadi hamda amaliy mashg‘ulotlar bajarishadi.',
                         badge: `BOSQICH ${nextStepStr}`,
                         imageDesktop: '',
                         imageMobile: ''
@@ -5922,7 +5922,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     };
 
                     const handleResetDefaults = () => {
-                      if (confirm('O‘rganish jarayoni barcha standart sozlamalar va 7 ta qadamga qaytarilsinmi?')) {
+                      if (confirm('Örganiş jarayoni barcha standart sozlamalar va 7 ta qadamga qaytarilsinmi?')) {
                         const updatedCms = {
                           ...cms,
                           stepsSection: {
@@ -5943,7 +5943,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         localStorage.setItem('tilshunos_cms_data', JSON.stringify(cms));
                         window.dispatchEvent(new CustomEvent('tilshunos_cms_saved', { detail: cms }));
                         await api.saveCms(cms);
-                        notify('O‘rganish jarayoni ma’lumotlari saqlandi! 🎉');
+                        notify('Örganiş jarayoni ma’lumotlari saqlandi! 🎉');
                       } catch {
                         notify('Saqlashda xatolik yuz berdi', true);
                       }
@@ -5956,7 +5956,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
-                                3. O‘rganish Jarayoni: Qadamlar & Tushuntirishlar
+                                3. Örganiş Jarayoni: Qadamlar & Tushuntirishlar
                               </h3>
                               <span style={{ fontSize: '11px', fontWeight: 800, background: 'rgba(59, 130, 246, 0.15)', color: '#38bdf8', padding: '3px 9px', borderRadius: '20px' }}>
                                 Jami: {currentSteps.length} ta bosqich
@@ -6029,12 +6029,12 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               <b style={{ fontSize: '11px' }}>Bo‘lim Asosiy Sarlavhasi:</b>
                               <input
-                                value={cms.stepsSection?.title ?? 'O‘rganish jarayoni qanday kechadi?'}
+                                value={cms.stepsSection?.title ?? 'Örganiş jarayoni qanday kechadi?'}
                                 onChange={e => setCms({
                                   ...cms,
                                   stepsSection: { ...cms.stepsSection, title: e.target.value }
                                 })}
-                                placeholder="O‘rganish jarayoni qanday kechadi?"
+                                placeholder="Örganiş jarayoni qanday kechadi?"
                               />
                             </label>
 
@@ -6089,7 +6089,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                                     ...cms,
                                     stepsSection: { ...cms.stepsSection, studentImage: e.target.value }
                                   })}
-                                  placeholder="Talaba rasmi URL (bo‘sh bo‘lsa standart rasm chiqadi)"
+                                  placeholder="Talaba rasmi URL (böş bo‘lsa standart rasm chiqadi)"
                                   style={{ flex: 1, fontSize: '12px' }}
                                 />
                                 <input
@@ -6523,7 +6523,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             onClick={handleSaveSteps}
                             style={{ padding: '8px 20px', fontSize: '13px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                           >
-                            <Save size={16} /> O‘rganish Jarayonini Saqlash
+                            <Save size={16} /> Örganiş Jarayonini Saqlash
                           </button>
                         </div>
                       </div>
@@ -6559,7 +6559,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         <input
                           value={cms.featuresSection?.subtitle || ''}
                           onChange={e => setCms({ ...cms, featuresSection: { ...cms.featuresSection, subtitle: e.target.value } })}
-                          placeholder="Biz til o‘rganishni nafaqat samarali, balki maroqli jarayonga aylantiramiz."
+                          placeholder="Biz til örganişni nafaqat samarali, balki maroqli jarayonga aylantiramiz."
                         />
                       </label>
                     </div>
@@ -6627,15 +6627,15 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           value={cms.finalCta?.desc || ''}
                           onChange={e => setCms({ ...cms, finalCta: { ...cms.finalCta, desc: e.target.value } })}
                           rows={2}
-                          placeholder="Til o‘rganish — yangi imkoniyatlar eshiklarini ochadi. Biz siz bilan birga bu yo‘lda!"
+                          placeholder="Til örganiş — yangi imkoniyatlar eshiklarini ochadi. Biz siz bilan birga bu yo‘lda!"
                         />
                       </label>
                       <label>
-                        <b style={{ fontSize: '11px' }}>Asosiy Tugma (Ro‘yxatdan o‘tish):</b>
+                        <b style={{ fontSize: '11px' }}>Asosiy Tugma (Röyxatdan ötiş):</b>
                         <input
                           value={cms.finalCta?.btnRegister || ''}
                           onChange={e => setCms({ ...cms, finalCta: { ...cms.finalCta, btnRegister: e.target.value } })}
-                          placeholder="Bepul hisob yaratish"
+                          placeholder="Bepul hisob yaratiş"
                         />
                       </label>
                       <label>
@@ -6658,12 +6658,12 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     <h3 style={{ marginBottom: '14px' }}>Biz Haqimizda — Maqola va Tugmalar</h3>
                     <div className="form-grid" style={{ gap: '16px' }}>
                       <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <b style={{ fontSize: '12px' }}>Bosh Sahifadagi Qisqa Tavsif:</b>
+                        <b style={{ fontSize: '12px' }}>Boş Sahifadagi Qisqa Tavsif:</b>
                         <textarea
                           value={cms.about || ''}
                           onChange={e => setCms({ ...cms, about: e.target.value })}
                           rows={3}
-                          placeholder="TILSHUNOS til o‘rganishni tartibli, qiziqarli va shaxsiy maqsadlaringizga mos qilish uchun yaratilayotgan platforma."
+                          placeholder="TILŞUNOS til örganişni tartibli, qiziqarli va shaxsiy maqsadlaringizga mos qilish uchun yaratilayotgan platforma."
                         />
                       </label>
                       <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -6680,7 +6680,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           value={cms.aboutDetailed || ''}
                           onChange={e => setCms({ ...cms, aboutDetailed: e.target.value })}
                           rows={6}
-                          placeholder="TILSHUNOS platformasi tarixi, missiyasi, metodikasi va kelajakdagi maqsadlari haqida to‘liq maqola yozing..."
+                          placeholder="TILŞUNOS platformasi tarixi, missiyasi, metodikasi va kelajakdagi maqsadlari haqida to‘liq maqola yozing..."
                         />
                       </label>
                     </div>
@@ -6953,7 +6953,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   <div className="panel" style={{ padding: '24px' }}>
                     <h3 style={{ marginBottom: '8px' }}>Tez-tez Beriladigan Savollar (FAQ)</h3>
                     <p style={{ margin: '0 0 18px', fontSize: '12px', color: 'var(--muted)' }}>
-                      Foydalanuvchilar eng ko‘p qiziqqan savollar va ularning batafsil javoblarini tahrirlang.
+                      Foydalanuvçilar eng ko‘p qiziqqan savollar va ularning batafsil javoblarini tahrirlang.
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
@@ -7014,7 +7014,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           <input
                             value={newFaq.q}
                             onChange={e => setNewFaq({ ...newFaq, q: e.target.value })}
-                            placeholder="Masalan, TILSHUNOS platformasida sertifikat beriladimi?"
+                            placeholder="Masalan, TILŞUNOS platformasida sertifikat beriladimi?"
                           />
                         </label>
                         <label className="span-two">
@@ -7159,7 +7159,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       <input
                         value={cms.footer || ''}
                         onChange={e => setCms({ ...cms, footer: e.target.value })}
-                        placeholder="© 2026 TILSHUNOS · Barcha huquqlar himoyalangan"
+                        placeholder="© 2026 TILŞUNOS · Barcha huquqlar himoyalangan"
                       />
                     </label>
                   </div>
@@ -7169,7 +7169,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       <MessageSquare size={18} style={{ color: 'var(--purple)' }} /> Ijtimoiy Tarmoqlar & Aloqa (Contacts)
                     </h3>
                     <div style={{ padding: '10px 12px', background: 'var(--soft)', borderRadius: '8px', fontSize: '11px', color: 'var(--muted)', marginBottom: '14px' }}>
-                      📌 <em>Faqat kiritilgan aloqa turlari footerda ko‘rinadi. Masalan, Telegram kiritilsa faqat Telegram chiqadi; Instagram qo‘shilsa u ham darhol ko‘rinadi. Bo‘sh qoldirilganlari yashiriladi.</em>
+                      📌 <em>Faqat kiritilgan aloqa turlari footerda ko‘rinadi. Masalan, Telegram kiritilsa faqat Telegram chiqadi; Instagram qo‘shilsa u ham darhol ko‘rinadi. Böş qoldirilganlari yashiriladi.</em>
                     </div>
                     <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
                       <b style={{ fontSize: '12px' }}>Telegram (Username yoki Havola):</b>
@@ -7298,7 +7298,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         <span className="badge-verified">Daxlsiz & Himoyalangan</span>
                       </div>
                       <p style={{ margin: '5px 0 8px', fontSize: '12px', color: 'var(--muted)', lineHeight: '1.5' }}>
-                        Ushbu hisob platformaning yagona egasi hisoblanadi. U umumiy o‘quvchilar ro‘yxatida ko‘rinmaydi va hech kim uni tizimdan chiqara olmaydi. Boshqa adminlarni saylash va ularning huquqlarini taqsimlash faqat Super Admin ixtiyorida.
+                        Ushbu hisob platformaning yagona egasi hisoblanadi. U umumiy öquvçilar ro‘yxatida ko‘rinmaydi va hech kim uni tizimdan chiqara olmaydi. Boshqa adminlarni saylash va ularning huquqlarini taqsimlash faqat Super Admin ixtiyorida.
                       </p>
                       <label className="outline-btn" style={{ fontSize: '11px', padding: '5px 10px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                         <Camera size={13} />
@@ -7391,19 +7391,19 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     },
                     {
                       title: '1v1 Bellashuvda CEFR Daraja Moslashuvi',
-                      desc: 'Foydalanuvchilarga teng raqobatchi va o‘z bilim darajasiga (A1-C2) mos so‘zlar tanlanishini nazorat qiladi.',
+                      desc: 'Foydalanuvçilarga teng raqobatchi va o‘z bilim darajasiga (A1-C2) mos so‘zlar tanlanishini nazorat qiladi.',
                       badge: 'Avtomatik',
                       color: '#3b82f6'
                     },
                     {
                       title: 'Yangi Materiallar Holati (IsPublished)',
-                      desc: 'O‘qituvchilar qo‘shgan reading, writing va lug‘at materiallari o‘quvchilarga ko‘rinishi uchun nashr statusi nazorati.',
-                      badge: 'Boshqaruvda',
+                      desc: 'Öqituvçilar qo‘shgan reading, writing va luğat materiallari öquvçilarga ko‘rinishi uchun nashr statusi nazorati.',
+                      badge: 'Boşqaruvda',
                       color: '#3b82f6'
                     },
                     {
                       title: 'Anti-Cheat & Anti-Fraud Nazorati',
-                      desc: 'Test mashqlari va lug‘at viktorinalarida sunʼiy tezkor bot javoblarini va natijalarni soxtalashtirishni cheklaydi.',
+                      desc: 'Test mashqlari va luğat viktorinalarida sunʼiy tezkor bot javoblarini va natijalarni soxtalashtirishni cheklaydi.',
                       badge: 'Faol Nazorat',
                       color: '#22c55e'
                     }
@@ -7534,8 +7534,8 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
             <div className="modal-heading">
               <div>
-                <h2>Foydalanuvchilar Orasidan O‘qituvchi Tayinlash</h2>
-                <p>Mavjud ro‘yxatdan o‘tgan foydalanuvchini tanlang va unga o‘qituvchi maqomini bering.</p>
+                <h2>Foydalanuvçilar Orasidan Öqituvçi Tayinlash</h2>
+                <p>Mavjud ro‘yxatdan o‘tgan foydalanuvchini tanlang va unga öqituvçi maqomini bering.</p>
               </div>
               <button className="icon-btn" onClick={() => setAppointTeacherModalOpen(false)}><X size={18} /></button>
             </div>
@@ -7590,7 +7590,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '12px' }}
                 />
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
-                  {['English · B1–C1', 'IELTS & CEFR', 'Grammatika & Lug‘at', 'Bolalar uchun ingliz tili'].map(preset => (
+                  {['English · B1–C1', 'IELTS & CEFR', 'Grammatika & Luğat', 'Bolalar uchun ingliz tili'].map(preset => (
                     <button
                       key={preset}
                       type="button"
@@ -7628,7 +7628,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
             <div className="modal-footer">
               <button className="outline-btn" onClick={() => setAppointTeacherModalOpen(false)}>Bekor qilish</button>
               <button className="primary-btn" onClick={handleAppointTeacher}>
-                <GraduationCap size={15} /> O‘qituvchi qilib tayinlash
+                <GraduationCap size={15} /> Öqituvçi qilib tayinlash
               </button>
             </div>
           </div>
@@ -7655,8 +7655,8 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   defaultValue={selectedUserForEdit.role === 'Admin' || selectedUserForEdit.role === 3 ? '3' : selectedUserForEdit.role === 'Teacher' || selectedUserForEdit.role === 2 ? '2' : '1'}
                   style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
                 >
-                  <option value="1">Learner (O‘quvchi)</option>
-                  <option value="2">Teacher (O‘qituvchi)</option>
+                  <option value="1">Learner (Öquvçi)</option>
+                  <option value="2">Teacher (Öqituvçi)</option>
                   <option value="3">Admin (Moderator / Administrator)</option>
                 </select>
               </label>
@@ -7695,7 +7695,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px', width: '95%' }}>
             <div className="modal-heading">
               <div>
-                <h2>O‘qituvchi Ma’lumotlarini Tahrirlash</h2>
+                <h2>Öqituvçi Ma’lumotlarini Tahrirlash</h2>
                 <p>{editingTeacher.email}</p>
               </div>
               <button className="icon-btn" onClick={() => setEditingTeacher(null)}><X size={18} /></button>
@@ -7735,7 +7735,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               </label>
 
               <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', fontWeight: 700 }}>
-                Yangi Parol (ixtiyoriy, agar o‘zgartirilmasa bo‘sh qoldiring):
+                Yangi Parol (ixtiyoriy, agar o‘zgartirilmasa böş qoldiring):
                 <input
                   type="password"
                   value={editTeacherForm.password}
@@ -7828,11 +7828,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
 
             <div style={{ margin: '18px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {[
-                { key: 'canVocab', title: 'Umumiy Lug‘atni boshqarish', desc: 'Yangi so‘zlar qo‘shish, tahrirlash va o‘chirish ruxsati', icon: '📚' },
-                { key: 'canCMS', title: 'Welcome Sahifa (CMS)', desc: 'Bosh sahifa matnlari, bannerlar, fon rasmlarini sozlash', icon: '🌐' },
-                { key: 'canTeachers', title: 'O‘qituvchilarni boshqarish', desc: 'O‘qituvchilar ma’lumotlarini ko‘rish va tahrirlash', icon: '🎓' },
-                { key: 'canMaterials', title: 'O‘quv Materiallari', desc: 'Reading, Writing, Listening va Video darslarni boshqarish', icon: '✍️' },
-                { key: 'canStudents', title: 'Foydalanuvchilar reestrini ko‘rish', desc: 'O‘quvchilar ro‘yxati, hisoblar va statistikalarni kuzatish', icon: '📊' }
+                { key: 'canVocab', title: 'Umumiy Luğatni boshqarish', desc: 'Yangi so‘zlar qo‘shish, tahrirlash va o‘chirish ruxsati', icon: '📚' },
+                { key: 'canCMS', title: 'Welcome Sahifa (CMS)', desc: 'Boş sahifa matnlari, bannerlar, fon rasmlarini sozlash', icon: '🌐' },
+                { key: 'canTeachers', title: 'Öqituvçilarni boshqarish', desc: 'Öqituvçilar ma’lumotlarini ko‘rish va tahrirlash', icon: '🎓' },
+                { key: 'canMaterials', title: 'Öquv Materiallari', desc: 'Reading, Writing, Listening va Video darslarni boshqarish', icon: '✍️' },
+                { key: 'canStudents', title: 'Foydalanuvçilar reestrini ko‘rish', desc: 'Öquvçilar ro‘yxati, hisoblar va statistikalarni kuzatish', icon: '📊' }
               ].map(opt => {
                 const currentPerms = adminPerms[permsModalAdmin.id] || { canVocab: true, canTeachers: false, canCMS: true, canMaterials: true, canStudents: true };
                 const isChecked = Boolean((currentPerms as any)[opt.key]);

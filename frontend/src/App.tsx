@@ -439,7 +439,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
         ...m,
         {
           role: 'assistant',
-          text: `“${q}” — juda foydali savol! Til o‘rganishda har kuni kichik qadamlar bilan so‘z boyligingizni va talaffuzingizni mustahkamlash eng samarali usul hisoblanadi. Yana qanday mavzuni ko‘rib chiqamiz?`
+          text: `“${q}” — juda foydali savol! Til örganişda har kuni kiçik qadamlar bilan söz boyligingizni va talaffuzingizni mustahkamlash eng samarali usul hisoblanadi. Yana qanday mavzuni körib çiqamiz?`
         }
       ]);
     } finally {
@@ -453,7 +453,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
   };
 
   const userInitial = currentUser?.firstName ? currentUser.firstName.substring(0, 1).toUpperCase() : 'U';
-  const userName = currentUser?.firstName ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim() : 'O‘quvchi';
+  const userName = currentUser?.firstName ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim() : 'Öquvçi';
 
   return (
     <div className={dark ? 'app dark' : 'app'}>
@@ -604,25 +604,25 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
       <main className="main-area">
         <header className="topbar">
           <div className="topbar-left">
-            <button className="icon-btn hamburger" onClick={() => setMobileNav(true)} aria-label="Menyuni ochish">
+            <button className="icon-btn hamburger" onClick={() => setMobileNav(true)} aria-label="Menyuni oçiş">
               <Menu size={21} />
             </button>
             <div className="breadcrumb">
-              O‘rganish <ChevronRight size={14} /> <strong>{active}</strong>
+              Örganiş <ChevronRight size={14} /> <strong>{active}</strong>
             </div>
           </div>
           <div className="topbar-right">
             {/* Topbar PWA Install button - Only show on desktop and if NOT installed */}
             {!installed && (
               <button className="primary-btn topbar-install-btn" onClick={triggerInstall} style={{ padding: '8px 12px', fontSize: '10px' }}>
-                <Download size={14} /> <span className="install-text">Appni yuklash</span>
+                <Download size={14} /> <span className="install-text">Appni yuklab oliş</span>
               </button>
             )}
             <div className="search-global">
               <Search size={17} />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Qidirish..." />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Qidiriş..." />
             </div>
-            <button className="icon-btn theme-btn" onClick={() => setDark(!dark)} title="Mavzuni almashtirish">
+            <button className="icon-btn theme-btn" onClick={() => setDark(!dark)} title="Mavzuni almaştiriş">
               {dark ? <Sun size={19} /> : <Moon size={19} />}
             </button>
             <div className="top-avatar">{userInitial}</div>
@@ -673,7 +673,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 <div className="hero-content">
                   <div className="hero-label"><span className="hero-spark"><Zap size={13} fill="currentColor" /></span> BUGUNGI MAQSAD</div>
                   <h2>Har kuni {dashboardStats.dailyGoalMinutes} daqiqa,<br />kelajakda <em>erkin muloqot.</em></h2>
-                  <p>Bugungi maqsadingizga yetish uchun mashq qilishni davom eting.</p>
+                  <p>Bugungi maqsadingizga yetiş uçun maşq qilişni davom eting.</p>
                   <div className="hero-progress-line">
                     <div className="progress-track">
                       <span style={{ width: `${Math.min(100, Math.round(((dashboardStats.todayMinutes || 0) / Math.max(1, dashboardStats.dailyGoalMinutes)) * 100))}%` }} />
@@ -681,7 +681,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                     <strong>{dashboardStats.todayMinutes} <small>/ {dashboardStats.dailyGoalMinutes} daq.</small></strong>
                   </div>
                   <button className="hero-button" onClick={() => setPracticeOpen(true)}>
-                    O‘rganishni davom ettirish <ArrowRight size={16} />
+                    Örganişni davom ettiriş <ArrowRight size={16} />
                   </button>
                 </div>
                 <div className="hero-illustration">
@@ -745,10 +745,10 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 <section className="panel weekly-panel">
                   <div className="panel-heading">
                     <div>
-                      <h3>O‘rganish faolligi</h3>
+                      <h3>Örganiş faolligi</h3>
                       <p>Hafta davomida qilgan harakatlaringiz</p>
                     </div>
-                    <button className="select-chip">Shu hafta</button>
+                    <button className="select-chip">Şu hafta</button>
                   </div>
                   <div className="chart-summary">
                     <div>
@@ -762,13 +762,13 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                         })()}
                       </strong>
                       <span>
-                        <ArrowUpRight size={14} /> {dashboardStats.weeklyMinutes > 0 ? 'Faol o‘rganish' : '0 daqiqa'}
+                        <ArrowUpRight size={14} /> {dashboardStats.weeklyMinutes > 0 ? 'Faol örganiş' : '0 daqiqa'}
                         <small> haftalik dars vaqti</small>
                       </span>
                     </div>
                     <div className="chart-legend">
                       <span><i className="legend-dot main-dot" /> Bu hafta</span>
-                      <span><i className="legend-dot pale-dot" /> O‘tgan hafta</span>
+                      <span><i className="legend-dot pale-dot" /> Ötgan hafta</span>
                     </div>
                   </div>
                   <div className="chart-wrap">
@@ -832,12 +832,12 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                     })()}
                   </div>
                   <div className="goal-details">
-                    <div><span className="goal-color purple" />O‘rganish vaqti <strong>{dashboardStats.todayMinutes}/{dashboardStats.dailyGoalMinutes} daq.</strong></div>
-                    <div><span className="goal-color green" />Yangi so‘zlar <strong>{dashboardStats.newWordsToday || 0}/10 ta</strong></div>
-                    <div><span className="goal-color orange" />Mashqlar <strong>{dashboardStats.practiceCountToday || 0}/5 ta</strong></div>
+                    <div><span className="goal-color purple" />Örganiş vaqti <strong>{dashboardStats.todayMinutes}/{dashboardStats.dailyGoalMinutes} daq.</strong></div>
+                    <div><span className="goal-color green" />Yangi sözlar <strong>{dashboardStats.newWordsToday || 0}/10 ta</strong></div>
+                    <div><span className="goal-color orange" />Maşqlar <strong>{dashboardStats.practiceCountToday || 0}/5 ta</strong></div>
                   </div>
                   <button className="text-action" onClick={() => setPracticeOpen(true)}>
-                    Maqsadni yakunlash <ArrowRight size={15} />
+                    Maqsadni yakunlaş <ArrowRight size={15} />
                   </button>
                 </section>
               </div>
@@ -845,11 +845,11 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
               <section className="panel continue-panel">
                 <div className="panel-heading">
                   <div>
-                    <h3>Davom ettirish</h3>
-                    <p>Siz uchun tanlangan foydali materiallar</p>
+                    <h3>Davom ettiriş</h3>
+                    <p>Siz uçun tanlangan foydali materiallar</p>
                   </div>
                   <button className="view-all" onClick={() => chooseNav('Materiallar')}>
-                    Barchasini ko‘rish <ArrowRight size={15} />
+                    Barçasini köriş <ArrowRight size={15} />
                   </button>
                 </div>
                 <div className="lesson-grid">
@@ -858,8 +858,8 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                       className="lesson-card"
                       key={lesson.title}
                       onClick={() => {
-                        setActive(lesson.type === 'O‘qish' ? 'O‘qish' : lesson.type === 'Tinglash' ? 'Tinglash' : 'Gapirish');
-                        notify(`${lesson.title} ochilmoqda`);
+                        setActive(lesson.type === 'Öqiş' ? 'Öqiş' : lesson.type === 'Tinglaş' ? 'Tinglaş' : 'Gapiriş');
+                        notify(`${lesson.title} oçilmoqda`);
                       }}
                     >
                       <div className={`lesson-art ${lesson.color}`}>
@@ -886,11 +886,11 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 <section className="panel vocab-panel">
                   <div className="panel-heading">
                     <div>
-                      <h3>So‘nggi so‘zlar</h3>
-                      <p>Daftaringizga qo‘shilgan so‘zlar</p>
+                      <h3>Söz daftari</h3>
+                      <p>Daftaringizga qöşilgan sözlar</p>
                     </div>
-                    <button className="view-all" onClick={() => chooseNav('So‘z daftarim')}>
-                      Daftarga o‘tish <ArrowRight size={15} />
+                    <button className="view-all" onClick={() => chooseNav('Söz daftarim')}>
+                      Daftarga ötiş <ArrowRight size={15} />
                     </button>
                   </div>
                   <div className="mini-word-list">
@@ -902,14 +902,14 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                             <strong>{w.word}</strong>
                             <span>{w.translation}</span>
                           </div>
-                          <span className={`status status-${w.state === 'O‘rganilgan' ? 'learned' : w.state === 'Jarayonda' ? 'progress' : 'planned'}`}>
+                          <span className={`status status-${w.state === 'Örganilgan' || w.state === 'O‘rganilgan' ? 'learned' : w.state === 'Jarayonda' ? 'progress' : 'planned'}`}>
                             {w.state}
                           </span>
                         </div>
                       ))
                     ) : (
                       <div style={{ textAlign: 'center', padding: '24px 12px', color: 'var(--muted)', fontSize: '13px' }}>
-                        Lug‘atingizda hozircha so‘zlar yo‘q. Yangi so‘z qo‘shib o‘rganishni boshlang!
+                        Luğatingizda hozirça sözlar yöq. Yangi söz qöşib örganişni boşlang!
                       </div>
                     )}
                   </div>
@@ -919,12 +919,12 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                   <div className="panel-heading">
                     <div>
                       <h3>Yutuqlar</h3>
-                      <p>Mehnatingiz samarasini ko‘ring</p>
+                      <p>Mehnatingiz samarasini köring</p>
                     </div>
                   </div>
                   <div className={`achievement-row ${dashboardStats.dailyStreak >= 5 ? '' : 'locked'}`}>
                     <div className="achievement-medal medal-gold"><Flame size={23} fill="currentColor" /></div>
-                    <div><strong>5 kunlik seriya</strong><span>5 kun uzluksiz o‘rganish</span></div>
+                    <div><strong>5 kunlik seriya</strong><span>5 kun uzluksiz örganiş</span></div>
                     {dashboardStats.dailyStreak >= 5 ? (
                       <span className="achievement-check"><Check size={14} /></span>
                     ) : (
@@ -1403,14 +1403,14 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 <div>
                   <div className="eyebrow"><ListTodo size={14} /> REJALAR VA TOPSHIRIQLAR</div>
                   <h1>Mening <span>vazifalarim</span></h1>
-                  <p className="subheading">O‘qituvchi topshiriqlari va shaxsiy amaliyotlaringiz.</p>
+                  <p className="subheading">Öqituvçi topşiriqlari va şaxsiy amaliyotlaringiz.</p>
                 </div>
               </div>
               <div className="task-list">
                 {[
-                  { title: 'Unit 4 — New Vocabulary Mastery', desc: '15 ta yangi so‘zni mashq qilish va ketma-ket 3 marta to‘g‘ri topish', due: 'Bugun · 18:00', tag: 'Lug‘at', status: 'Jarayonda' },
-                  { title: 'My Favorite Place in Uzbekistan', desc: 'Sevimli shahringiz yoki joyingiz haqida 120–150 so‘zli insho yozing', due: 'Ertaga · 23:59', tag: 'Yozish', status: 'Yangi' },
-                  { title: 'Listening Comprehension #3', desc: 'Audio suhbatni tinglang va berilgan savollarga to‘liq javob bering', due: '30-oktabr', tag: 'Tinglash', status: 'Boshlanmagan' }
+                  { title: 'Unit 4 — New Vocabulary Mastery', desc: '15 ta yangi sözni maşq qiliş va ketma-ket 3 marta töğri topiş', due: 'Bugun · 18:00', tag: 'Luğat', status: 'Jarayonda' },
+                  { title: 'My Favorite Place in Uzbekistan', desc: 'Sevimli şahringiz yoki joyingiz haqida 120–150 sözli inşo yozing', due: 'Ertaga · 23:59', tag: 'Yoziş', status: 'Yangi' },
+                  { title: 'Listening Comprehension #3', desc: 'Audio suhbatni tinglang va berilgan savollarga töliq javob bering', due: '30-oktabr', tag: 'Tinglaş', status: 'Boşlanmagan' }
                 ].map((t, i) => (
                   <div className="panel task-card" key={t.title}>
                     <div className={`task-symbol task-${i}`}><ListTodo size={21} /></div>
@@ -1554,19 +1554,19 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-heading">
               <div>
-                <span className="eyebrow">SHAXSIY LUG‘AT</span>
-                <h2>Yangi so‘z qo‘shish</h2>
-                <p>O‘rganmoqchi bo‘lgan so‘zingizni kiriting.</p>
+                <span className="eyebrow">ŞAXSIY LUĞAT</span>
+                <h2>Yangi söz qöşiş</h2>
+                <p>Örganmoqçi bölgan sözingizni kiriting.</p>
               </div>
               <button className="icon-btn" onClick={() => setAddOpen(false)}><X size={20} /></button>
             </div>
             <div className="form-grid">
               <label>
-                Inglizcha so‘z <b>*</b>
+                Inglizça söz <b>*</b>
                 <input autoFocus value={newWord.word} onChange={e => setNewWord({ ...newWord, word: e.target.value })} placeholder="Masalan: persistent" />
               </label>
               <label>
-                O‘zbekcha tarjimasi <b>*</b>
+                Özbekça tarjimasi <b>*</b>
                 <input value={newWord.translation} onChange={e => setNewWord({ ...newWord, translation: e.target.value })} placeholder="Masalan: qat’iyatli" />
               </label>
               <label className="span-two">
@@ -1576,15 +1576,15 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
               <label className="span-two">
                 Mavzu
                 <select value={newWord.topic} onChange={e => setNewWord({ ...newWord, topic: e.target.value })}>
-                  <option>Umumiy</option><option>Ta’lim</option><option>Ish va biznes</option><option>Sayohat</option><option>Xarakter</option><option>Motivatsiya</option>
+                  <option>Umumiy</option><option>Ta’lim</option><option>Iş va biznes</option><option>Sayohat</option><option>Xarakter</option><option>Motivatsiya</option>
                 </select>
               </label>
             </div>
             <div className="modal-footer">
               <span><span className="required-star">*</span> Majburiy maydonlar</span>
               <div>
-                <button className="outline-btn" onClick={() => setAddOpen(false)}>Bekor qilish</button>
-                <button className="primary-btn" onClick={addWord}><Plus size={16} /> So‘zni saqlash</button>
+                <button className="outline-btn" onClick={() => setAddOpen(false)}>Bekor qiliş</button>
+                <button className="primary-btn" onClick={addWord}><Plus size={16} /> Sözni saqlaş</button>
               </div>
             </div>
           </div>
@@ -1596,7 +1596,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
         <div className="modal-backdrop" onClick={() => setPracticeOpen(false)}>
           <div className="modal practice-modal" onClick={e => e.stopPropagation()}>
             <div className="practice-modal-top">
-              <span>SO‘Z MASHQI <span>·</span> {questionIndex + 1}-savol</span>
+              <span>SÖZ MAŞQI <span>·</span> {questionIndex + 1}-savol</span>
               <button className="icon-btn" onClick={() => setPracticeOpen(false)}><X size={20} /></button>
             </div>
             <div className="practice-progress"><i style={{ width: `${Math.min(100, (questionIndex + 1) * 20)}%` }} /></div>
@@ -1604,9 +1604,9 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
               {!currentQuestion ? (
                 <div style={{ textAlign: 'center', padding: '24px 8px' }}>
                   <BookA size={36} style={{ color: 'var(--purple)', marginBottom: '12px' }} />
-                  <h3>Lug‘at hozircha bo‘sh</h3>
+                  <h3>Luğat hozirça böş</h3>
                   <p style={{ color: 'var(--muted)', marginTop: '6px', fontSize: '13px' }}>
-                    Mashq qilish uchun avval “So‘z daftarim” bo‘limidan yangi so‘zlar qo‘shing.
+                    Maşq qiliş uçun avval “Söz daftarim” bölimidan yangi sözlar qöşing.
                   </p>
                   <button
                     className="primary-btn"
@@ -1881,9 +1881,9 @@ function App() {
 
       setPage('verify');
       setResendCooldown(60);
-      setMessage(`Tasdiqlash kodi ${email} manziliga yuborildi! Pochtani (Inbox yoki Spam) tekshiring.`);
+      setMessage(`Tasdiqlaş kodi ${email} manziliga yuborildi! Pochtani (Inbox yoki Spam) tekşiring.`);
     } catch (err: any) {
-      setMessage(err.message || 'Ro‘yxatdan o‘tishda xatolik yuz berdi.');
+      setMessage(err.message || 'Röyxatdan ötişda xatolik yuz berdi.');
     } finally {
       setLoading(false);
     }
@@ -1891,7 +1891,7 @@ function App() {
 
   const handleLoginSubmit = async () => {
     if (!email.includes('@') || !password) {
-      setMessage('Email va parolingizni to‘liq kiriting.');
+      setMessage('Email va parolingizni töliq kiriting.');
       return;
     }
     setLoading(true);
@@ -1920,7 +1920,7 @@ function App() {
         setPage('verify');
         setResendCooldown(30);
       }
-      setMessage(err.message || 'Email yoki parol noto‘g‘ri.');
+      setMessage(err.message || 'Email yoki parol notöğri.');
     } finally {
       setLoading(false);
     }
@@ -1928,7 +1928,7 @@ function App() {
 
   const handleVerifyCode = async () => {
     if (!code || code.length < 6) {
-      setMessage('6 xonali tasdiqlash kodini to‘liq kiriting.');
+      setMessage('6 xonali tasdiqlaş kodini töliq kiriting.');
       return;
     }
     setLoading(true);
@@ -2161,26 +2161,26 @@ function App() {
                   ? cmsContent.authBanner.statLabel.includes('\n')
                     ? cmsContent.authBanner.statLabel.split('\n').map((line: string, i: number) => <React.Fragment key={i}>{line}<br /></React.Fragment>)
                     : cmsContent.authBanner.statLabel
-                  : <>asosiy ko‘nikma<br />bitta platformada</>}
+                  : <>asosiy könikma<br />bitta platformada</>}
               </span>
             </div>
           </div>
 
           <div className="auth-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <button className="auth-back" onClick={() => setPage('welcome')} style={{ margin: 0 }}>← Bosh sahifaga</button>
-              <button className="entry-theme-toggle" onClick={() => setDark(!dark)} title="Mavzuni almashtirish" style={{ width: '34px', height: '34px' }}>
+              <button className="auth-back" onClick={() => setPage('welcome')} style={{ margin: 0 }}>← Boş sahifaga</button>
+              <button className="entry-theme-toggle" onClick={() => setDark(!dark)} title="Mavzuni almaştiriş" style={{ width: '34px', height: '34px' }}>
                 {dark ? <Sun size={16} /> : <Moon size={16} />}
               </button>
             </div>
-            <span className="entry-kicker">{page === 'verify' ? 'XAVFSIZLIK' : 'XUSH KELIBSIZ'}</span>
-            <h2>{page === 'verify' ? 'Tasdiqlash kodi' : page === 'login' ? 'Hisobga kirish' : 'Hisob yaratish'}</h2>
+            <span className="entry-kicker">{page === 'verify' ? 'XAVFSIZLIK' : 'XUŞ KELIBSIZ'}</span>
+            <h2>{page === 'verify' ? 'Tasdiqlaş kodi' : page === 'login' ? 'Hisobga kiriş' : 'Hisob yaratiş'}</h2>
             <p className="auth-desc">
               {page === 'verify'
-                ? `${email} manziliga 6 xonali tasdiqlash kodi yuborildi.`
+                ? `${email} manziliga 6 xonali tasdiqlaş kodi yuborildi.`
                 : page === 'login'
-                ? 'Davom etish uchun emailingiz va parolingizni kiriting.'
-                : 'Shaxsiy o‘rganish profilingizni yarating.'}
+                ? 'Davom etiş uçun emailingiz va parolingizni kiriting.'
+                : 'Şaxsiy örganiş profilingizni yarating.'}
             </p>
 
             {page !== 'verify' ? (
@@ -2203,20 +2203,20 @@ function App() {
                 <div style={{ height: '8px' }} />
 
                 <button id="auth-submit-btn" type="submit" className="entry-primary auth-submit" disabled={loading}>
-                  {loading ? 'Bajarilmoqda...' : page === 'login' ? 'Kirish' : 'Tasdiqlash kodini yuborish'} <ArrowRight size={17} />
+                  {loading ? 'Bajarilmoqda...' : page === 'login' ? 'Kiriş' : 'Tasdiqlaş kodini yuboriş'} <ArrowRight size={17} />
                 </button>
 
                 <p className="auth-switch">
-                  {page === 'login' ? 'Hisobingiz yo‘qmi?' : 'Hisobingiz bormi?'}
+                  {page === 'login' ? 'Hisobingiz yöqmi?' : 'Hisobingiz bormi?'}
                   <button type="button" onClick={() => begin(page === 'login' ? 'register' : 'login')}>
-                    {page === 'login' ? 'Ro‘yxatdan o‘tish' : 'Kirish'}
+                    {page === 'login' ? 'Röyxatdan ötiş' : 'Kiriş'}
                   </button>
                 </p>
               </form>
             ) : (
               <>
                 <label>
-                  6 xonali tasdiqlash kodi
+                  6 xonali tasdiqlaş kodi
                   <input
                     inputMode="numeric"
                     maxLength={6}
@@ -2228,7 +2228,7 @@ function App() {
                 </label>
 
                 <button className="entry-primary auth-submit" onClick={handleVerifyCode} disabled={loading}>
-                  {loading ? 'Tekshirilmoqda...' : 'Tasdiqlash va davom etish'} <ArrowRight size={17} />
+                  {loading ? 'Tekşirilmoqda...' : 'Tasdiqlaş va davom etiş'} <ArrowRight size={17} />
                 </button>
 
                 <div style={{ marginTop: '14px', textAlign: 'center' }}>
@@ -2238,11 +2238,11 @@ function App() {
                     disabled={resendCooldown > 0 || loading}
                     style={{ fontSize: '11px' }}
                   >
-                    {resendCooldown > 0 ? `Kodni qayta yuborish (${resendCooldown}s)` : 'Kodni qayta yuborish 🔄'}
+                    {resendCooldown > 0 ? `Kodni qayta yuboriş (${resendCooldown}s)` : 'Kodni qayta yuboriş 🔄'}
                   </button>
                 </div>
 
-                <p className="auth-note">Emailingizga kelgan 6 xonali xavfsizlik kodini kiriting (kerak bo‘lsa Spam papkasini ham tekshiring).</p>
+                <p className="auth-note">Emailingizga kelgan 6 xonali xavfsizlik kodini kiriting (kerak bölsa Spam papkasini ham tekşiring).</p>
               </>
             )}
 
@@ -2265,7 +2265,7 @@ function App() {
                       marginTop: '4px'
                     }}
                   >
-                    Hisobga kirishga o‘tish →
+                    Hisobga kirişga ötiş →
                   </button>
                 )}
               </div>

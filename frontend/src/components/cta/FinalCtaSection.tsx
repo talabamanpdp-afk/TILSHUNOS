@@ -22,12 +22,12 @@ export function FinalCtaSection({
   onLogin,
   dark
 }: FinalCtaSectionProps) {
-  // Render title with gradient highlight on "erkin gapiriş" (or legacy "erkin gapirish")
+  // Render title with gradient highlight on "erkin gapiriş" (or legacy "erkin gapiriş")
   const renderTitle = (rawTitle: string) => {
     const targetWord = rawTitle.includes('erkin gapiriş')
       ? 'erkin gapiriş'
-      : rawTitle.includes('erkin gapirish')
-      ? 'erkin gapirish'
+      : rawTitle.includes('erkin gapiriş')
+      ? 'erkin gapiriş'
       : null;
 
     if (targetWord) {

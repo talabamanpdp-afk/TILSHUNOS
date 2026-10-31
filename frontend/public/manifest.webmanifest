@@ -1,7 +1,7 @@
 {
-  "name": "TILSHUNOS — Til o‘rganish platformasi",
-  "short_name": "TILSHUNOS",
-  "description": "Tillarni o‘z tempingizda o‘rganing.",
+  "name": "TILŞUNOS — Til örganiş platformasi",
+  "short_name": "TILŞUNOS",
+  "description": "Tillarni öz tempingizda örganing.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
