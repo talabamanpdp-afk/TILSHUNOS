@@ -418,7 +418,7 @@ export function LearningProcessSection({ config, dark }: LearningProcessSectionP
             <div className="lp-student-img-wrap">
               <img
                 src={currentConfig.studentImage || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=700&q=80'}
-                alt="Til o‘rganuvchi talaba"
+                alt="Til örganuvçi talaba"
                 className="lp-student-img"
               />
               {/* Floating Flags */}
@@ -439,10 +439,10 @@ export function LearningProcessSection({ config, dark }: LearningProcessSectionP
 
           {/* Right: Section Header */}
           <div className="lp-hero-text">
-            <span className="lp-hero-kicker">{currentConfig.kicker || 'ODDIY VA TUSHUNARLI'}</span>
+            <span className="lp-hero-kicker">{currentConfig.kicker || 'ODDIY VA TUŞUNARLI'}</span>
             <h2 className="lp-hero-title">
               {(() => {
-                const title = currentConfig.title || 'O‘rganish jarayoni qanday kechadi?';
+                const title = currentConfig.title || 'Örganiş jarayoni qanday keçadi?';
                 const parts = title.split(' ');
                 if (parts.length > 2) {
                   const firstPart = parts.slice(0, parts.length - 2).join(' ');
@@ -458,7 +458,7 @@ export function LearningProcessSection({ config, dark }: LearningProcessSectionP
               })()}
             </h2>
             <p className="lp-hero-desc">
-              {currentConfig.subtitle || '7 ta oson qadam orqali maqsadingiz sari ishonch bilan yo‘l oling.'}
+              {currentConfig.subtitle || '7 ta oson qadam orqali maqsadingiz sari işonç bilan yöl oling.'}
             </p>
           </div>
         </div>
@@ -662,7 +662,7 @@ function RenderStepMockup({ stepIndex }: { stepIndex: number }) {
       return (
         <div className="lp-mock-card" style={{ maxWidth: '400px', background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: '#ffffff', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: '#38bdf8' }}>Amaliyot va so‘z o‘yinlari</span>
+            <span style={{ fontSize: '12px', fontWeight: 800, color: '#38bdf8' }}>Amaliyot va söz öyinlari</span>
             <Gamepad2 size={16} color="#38bdf8" />
           </div>
 
@@ -766,10 +766,10 @@ function RenderStepMockup({ stepIndex }: { stepIndex: number }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12.5px' }}>
             {[
-              { icon: GraduationCap, text: 'Chet elda ta’lim olish' },
-              { icon: Briefcase, text: 'Yaxshiroq ish imkoniyatlari' },
-              { icon: Users, text: 'Yangi do‘stlar va xalqaro muloqot' },
-              { icon: Target, text: 'O‘z maqsadlaringizga erishish' }
+              { icon: GraduationCap, text: 'Çet elda ta’lim oliş' },
+              { icon: Briefcase, text: 'Yaxşiroq iş imkoniyatlari' },
+              { icon: Users, text: 'Yangi döstlar va xalqaro muloqot' },
+              { icon: Target, text: 'Öz maqsadlaringizga erişiş' }
             ].map((item, i) => {
               const Icon = item.icon;
               return (

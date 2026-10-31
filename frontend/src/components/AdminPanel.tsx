@@ -19,12 +19,12 @@ import { AdminTrialTestsTab } from './admin/AdminTrialTestsTab';
 const adminNav = [
   ['Dashboard & Statistika', 'dashboard', LayoutDashboard],
   ['Welcome Sahifa / CMS', 'cms', Globe],
-  ['Boshlang‘ich Sinov Testlari', 'trial_tests', Sparkles],
-  ['Foydalanuvchilar', 'users', Users],
-  ['Umumiy Lug‘at', 'vocab', BookOpen],
-  ['O‘yin Mavzulari', 'games', Gamepad2],
+  ['Boşlanğiç Sinov Testlari', 'trial_tests', Sparkles],
+  ['Foydalanuvçilar', 'users', Users],
+  ['Umumiy Luğat', 'vocab', BookOpen],
+  ['Öyin Mavzulari', 'games', Gamepad2],
   ['Reading Materiallari', 'reading', BookMarked],
-  ['Writing Topshiriqlari', 'writing', PenLine],
+  ['Writing Topşiriqlari', 'writing', PenLine],
   ['Listening Audio', 'listening', Headphones],
   ['Video Kutubxona', 'videos', Video],
   ['Tizim Sozlamalari', 'settings', Settings]
@@ -99,31 +99,31 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       heroBgMobile: 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254446169_xxtbf7.webp',
       hero: 'Yangi tilni erkin gapiring',
       heroBadge: '99 PERCENT',
-      heroBadgeFull: 'TILSHUNOS 2.0 · ILG‘OR TIL O‘RGANISH EKOTIZIMI',
-      description: 'TILSHUNOS bilan har kuni tizimli o‘rganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga chiqing.',
-      cta: 'Hoziroq Boshlash',
-      secondaryCta: 'Platformani o‘rganish',
-      header: 'Imkoniyatlar, Biz haqimizda, Kirish',
+      heroBadgeFull: 'TILŞUNOS 2.0 · ILĞOR TIL ÖRGANIŞ EKOTIZIMI',
+      description: 'TILŞUNOS bilan har kuni tizimli örganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga çiqing.',
+      cta: 'Hoziroq Boşlaş',
+      secondaryCta: 'Platformani örganiş',
+      header: 'Imkoniyatlar, Biz haqimizda, Kiriş',
       heroFlags: ['🇬🇧', '🇷🇺', '🇩🇪', '🇺🇿'],
       heroFlagsCount: '5+',
       heroFlagsLabel: 'Tillarda',
       metrics: {
         useLiveStats: true,
         metric1Value: '3+',
-        metric1Label: 'O‘quv Materiallari',
+        metric1Label: 'Öquv Materiallari',
         metric2Value: '50+',
-        metric2Label: 'Lug‘at So‘zlari',
+        metric2Label: 'Luğat Sözlari',
         metric3Value: '4+',
-        metric3Label: 'Jami Foydalanuvchilar'
+        metric3Label: 'Jami Foydalanuvçilar'
       },
       authBanner: {
-        kicker: 'TILSHUNOS PLATFORMASI',
+        kicker: 'TILŞUNOS PLATFORMASI',
         loginTitle: 'Qaytganingizdan xursandmiz!',
         registerTitle: 'Yangi til uchun yangi qadam!',
         verifyTitle: 'Emailingizni tasdiqlang',
-        subtitle: 'O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing.',
+        subtitle: 'Öz maqsadingizni belgilang, kiçik qadamlar bilan katta natijalarga erişing.',
         statNumber: '4+',
-        statLabel: 'asosiy ko‘nikmalar TILSHUNOS platformasida',
+        statLabel: 'asosiy könikmalar TILŞUNOS platformasida',
         bgImage: 'https://avatars.mds.yandex.net/i?id=c545bee4d827964a82e6bb08c63a88ca65bd3bcc-5320607-images-thumbs&n=13'
       },
       floatingBadge1: {
@@ -197,22 +197,22 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
     finalCta: {
       kicker: 'BIZ BILAN O‘RGANING',
       title: 'Yangi tilni erkin gapirish vaqti keldi',
-      desc: 'Til o‘rganish — yangi imkoniyatlar eshiklarini ochadi. Biz siz bilan birga bu yo‘lda!',
-      btnRegister: 'Bepul hisob yaratish',
-      btnLogin: 'Tizimga kirish'
+      desc: 'Til örganiş — yangi imkoniyatlar eşiklarini oçadi. Biz siz bilan birga bu yölda!',
+      btnRegister: 'Bepul hisob yaratiş',
+      btnLogin: 'Tizimga kiriş'
     },
-    about: 'TILSHUNOS til o‘rganishni tartibli, qiziqarli va shaxsiy maqsadlaringizga mos qilish uchun yaratilayotgan ilg‘or platforma.',
+    about: 'TILŞUNOS til örganişni tartibli, qiziqarli va şaxsiy maqsadlaringizga mos qiliş uçun yaratilayotgan ilğor platforma.',
     aboutButton: 'Batafsil ma’lumot',
-    aboutDetailed: 'TILSHUNOS — xalqaro CEFR (A1–C2) standartlariga moslashtirilgan, sun’iy intellekt va professional ustozlar metodikasini o‘zida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvchiga murakkab grammatik qoidalarsiz, interaktiv so‘z o‘yinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy o‘zlashtirish imkoniyatini taqdim etishdir.',
+    aboutDetailed: 'TILŞUNOS — xalqaro CEFR (A1–C2) standartlariga moslaştirilgan, sun’iy intellekt va professional ustozlar metodikasini özida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvçiga murakkab grammatik qoidalarsiz, interaktiv söz öyinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy özlaştiriş imkoniyatini taqdim etişdir.',
     founderName: 'Soxibjon Gaybullayev',
-    founderTitle: 'LOYIHA ASOSCHISI VA RAHBARI',
-    founderBio: 'TILSHUNOS platformasi asoschisi. O‘zbekiston yoshlariga jahon tillarini eng samarali va qulay usulda o‘rganish uchun innovatsion ekotizim yaratish ustida ishlaydi.',
-    founderQuote: 'Bizning niyatimiz — O‘zbekiston yoshlariga jahonning istalgan tili bo‘yicha eng sifatli ta’limni o‘z ona tilida va zamonaviy texnologiyalar bilan taqdim etish.',
+    founderTitle: 'LOYIHA ASOSÇISI VA RAHBARI',
+    founderBio: 'TILŞUNOS platformasi asosçisi. Özbekiston yoşlariga jahon tillarini eng samarali va qulay usulda örganiş uçun innovatsion ekotizim yaratiş ustida işlaydi.',
+    founderQuote: 'Bizning niyatimiz — Özbekiston yoşlariga jahonning istalgan tili böyiça eng sifatli ta’limni öz ona tilida va zamonaviy texnologiyalar bilan taqdim etiş.',
     founderPhoto: '',
     team: [
-      { name: 'Soxibjon Gaybullayev', role: 'Asoschi & Bosh Muhandis', bio: 'Til o‘rganish texnologiyalari va raqamli ta’lim bo‘yicha mutaxassis.', avatar: 'S' },
-      { name: 'Dilnoza Karimova', role: 'Bosh O‘qituvchi & Metodist', bio: 'IELTS va CEFR standartlari bo‘yicha 8 yillik tajribaga ega ustoz.', avatar: 'D' },
-      { name: 'Jasur Aliyev', role: 'Ta’lim Koordinator', bio: 'Talabalar bilan ishlash va interaktiv mashqlar mutaxassisi.', avatar: 'J' }
+      { name: 'Soxibjon Gaybullayev', role: 'Asosçi & Boş Muhandis', bio: 'Til örganiş texnologiyalari va raqamli ta’lim böyiça mutaxassis.', avatar: 'S' },
+      { name: 'Dilnoza Karimova', role: 'Boş Öqituvçi & Metodist', bio: 'IELTS va CEFR standartlari böyiça 8 yillik tajribaga ega ustoz.', avatar: 'D' },
+      { name: 'Jasur Aliyev', role: 'Ta’lim Koordinator', bio: 'Talabalar bilan işlaş va interaktiv maşqlar mutaxassisi.', avatar: 'J' }
     ],
     contacts: {
       telegram: '@tilshunos',
@@ -221,12 +221,12 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       phone: '+998 90 123 45 67',
       youtube: ''
     },
-    footer: '© 2026 TILSHUNOS · Barcha huquqlar himoyalangan',
+    footer: '© 2026 TILŞUNOS · Barça huquqlar himoyalangan',
     faqs: [
-      { q: 'TILSHUNOS platformasidan foydalanish bepulmi?', a: 'Ha, asosiy funksiyalar — so‘z yodlash, mashqlar, CEFR reading va listening materiallari barcha uchun bepul.' },
-      { q: 'CEFR darajalarini qanday aniqlayman?', a: 'Ro‘yxatdan o‘tish chog‘ida darajangizni (A1–C2) o‘zingiz belgilashingiz yoki qisqa diagnostik test orqali aniqlab olishingiz mumkin.' },
-      { q: 'Mobil qurilmalarda ishlaydimi?', a: 'Ha, TILSHUNOS responsive veb-ilova va PWA (Progressive Web App) sifatida smartfon va planshetlarda qulay ishlaydi.' },
-      { q: 'O‘qituvchi bilan qanday bog‘lanaman?', a: 'Platformadagi O‘qituvchilar bo‘limi orqali tasdiqlangan ustozlar bilan bog‘lanib, shaxsiy topshiriqlar olishingiz mumkin.' }
+      { q: 'TILŞUNOS platformasidan foydalaniş bepulmi?', a: 'Ha, asosiy funksiyalar — söz yodlaş, maşqlar, CEFR reading va listening materiallari barça uçun bepul.' },
+      { q: 'CEFR darajalarini qanday aniqlayman?', a: 'Röyxatdan ötiş çoğida darajangizni (A1–C2) özingiz belgilaşingiz yoki qisqa diagnostik test orqali aniqlab olişingiz mumkin.' },
+      { q: 'Mobil qurilmalarda işlaydimi?', a: 'Ha, TILŞUNOS responsive veb-ilova va PWA (Progressive Web App) sifatida smartfon va planşetlarda qulay işlaydi.' },
+      { q: 'Öqituvçi bilan qanday boğlanaman?', a: 'Platformadagi Öqituvçilar bölimi orqali tasdiqlangan ustozlar bilan boğlanib, şaxsiy topşiriqlar olişingiz mumkin.' }
     ]
   };
 });
@@ -1508,13 +1508,13 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
           </div>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div className="brand-name" style={{ fontSize: '18px', fontWeight: 900, color: '#ffffff', letterSpacing: '0.8px', display: 'flex', alignItems: 'center' }}>
-              TILSHUNOS<span style={{ color: '#38bdf8' }}>.</span>
+              TILŞUNOS<span style={{ color: '#38bdf8' }}>.</span>
             </div>
             <div style={{ fontSize: '9px', fontWeight: 800, color: '#38bdf8', letterSpacing: '1.4px', marginTop: '2px', textTransform: 'uppercase' }}>
-              A.D. BOSHQARUV MARKAZI
+              A.D. BOŞQARUV MARKAZI
             </div>
           </div>
-          <button className="icon-btn mobile-close" onClick={() => setMobileNav(false)} aria-label="Menyuni yopish">
+          <button className="icon-btn mobile-close" onClick={() => setMobileNav(false)} aria-label="Menyuni yopiş">
             <X size={18} />
           </button>
         </div>
@@ -1623,7 +1623,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
             }}
           >
             <LogOut size={18} strokeWidth={2} style={{ color: '#f87171' }} />
-            <span>Tizimdan chiqish</span>
+            <span>Tizimdan çiqiş</span>
           </button>
         </div>
       </aside>
@@ -1631,12 +1631,12 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
       <main className="main-area">
         <header className="topbar">
           <div className="topbar-left" style={{ gap: '12px', display: 'flex', alignItems: 'center' }}>
-            <button className="icon-btn hamburger topbar-neon-btn" onClick={() => setMobileNav(true)} aria-label="Menyuni ochish">
+            <button className="icon-btn hamburger topbar-neon-btn" onClick={() => setMobileNav(true)} aria-label="Menyuni oçiş">
               <Menu size={20} />
             </button>
             <div className="breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
               <Home size={15} style={{ color: '#38bdf8' }} />
-              <span style={{ color: '#94a3b8' }}>Boshqaruv</span>
+              <span style={{ color: '#94a3b8' }}>Boşqaruv</span>
               <ChevronRight size={13} style={{ color: '#475569' }} />
               <strong style={{ color: '#ffffff', fontWeight: 700 }}>
                 {String(adminNav.find(x => x[1] === section)?.[0] || 'Dashboard')}
@@ -1647,7 +1647,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
             {/* Notification Bell with red unread counter badge */}
             <button
               className="icon-btn topbar-neon-btn"
-              title="Bildirishnomalar"
+              title="Bildirişnomalar"
               style={{ position: 'relative' }}
             >
               <Bell size={18} />
@@ -1672,7 +1672,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
             <button
               className="icon-btn topbar-neon-btn"
               onClick={() => loadSupabaseData(true)}
-              title="Supabasedan yangilash"
+              title="Supabasedan yangilaş"
               disabled={refreshing}
             >
               <RefreshCw size={17} className={refreshing ? 'animate-spin' : ''} />
@@ -1682,7 +1682,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
             <button
               className="icon-btn topbar-neon-btn"
               onClick={() => setDark(!dark)}
-              title="Mavzuni almashtirish"
+              title="Mavzuni almaştiriş"
             >
               {dark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
@@ -1715,10 +1715,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       <span>ASSOSIY STATISTIKA VA TAHLIL</span>
                     </div>
                     <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#ffffff', margin: '4px 0 10px', lineHeight: 1.25, letterSpacing: '-0.5px' }}>
-                      Platforma <span style={{ background: 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Ko‘rsatkichlari</span>
+                      Platforma <span style={{ background: 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Körsatkiçlari</span>
                     </h1>
                     <p style={{ color: '#94a3b8', fontSize: '13px', lineHeight: 1.6, maxWidth: '480px', margin: 0 }}>
-                      Bu yerda siz platformaning umumiy faoliyati va foydalanuvchilar haqidagi muhim ma’lumotlarni kuzatishingiz mumkin.
+                      Bu yerda siz platformaning umumiy faoliyati va foydalanuvçilar haqidagi muhim ma’lumotlarni kuzatişingiz mumkin.
                     </p>
                   </div>
 
@@ -1804,11 +1804,11 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     </div>
 
                     <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px', fontWeight: 600 }}>
-                      Yaxshi natijalar davom etadi!
+                      Yaxşi natijalar davom etadi!
                     </div>
 
                     <div style={{ fontSize: '13px', fontStyle: 'italic', color: '#cbd5e1', lineHeight: 1.5, background: 'rgba(255, 255, 255, 0.03)', padding: '10px 14px', borderRadius: '12px', borderLeft: '3px solid #8b5cf6' }}>
-                      "Har bir kichik qadam katta maqsad sari olib boradi."
+                      "Har bir kiçik qadam katta maqsad sari olib boradi."
                     </div>
                   </div>
 
@@ -1816,7 +1816,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     <button
                       className="neon-circle-arrow-btn"
                       onClick={() => { setSection('users'); setUsersSubTab('learners'); }}
-                      title="O‘quvchilar ro‘yxatiga o‘tish"
+                      title="Öquvçilar röyxatiga ötiş"
                     >
                       <ArrowRight size={15} />
                     </button>
@@ -1831,14 +1831,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   className="neon-card metric-card-neon"
                   style={{ cursor: 'pointer' }}
                   onClick={() => { setSection('users'); setUsersSubTab('learners'); }}
-                  title="O‘quvchilar ro‘yxatiga o‘tish"
+                  title="Öquvçilar röyxatiga ötiş"
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div className="metric-icon-badge" style={{ background: 'rgba(139, 92, 246, 0.18)', border: '1px solid rgba(139, 92, 246, 0.4)', color: '#c4b5fd', boxShadow: '0 0 14px rgba(139, 92, 246, 0.25)' }}>
                       <Users size={20} />
                     </div>
                     <div style={{ flex: 1, marginLeft: '12px' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8' }}>Faol O‘quvchilar</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8' }}>Faol Öquvçilar</div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
                         <span style={{ fontSize: '30px', fontWeight: 900, color: '#ffffff', lineHeight: 1 }}>{totalStudents}</span>
                         <span className="metric-trend-pill" style={{ background: 'rgba(16, 185, 129, 0.16)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
@@ -1868,14 +1868,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   className="neon-card metric-card-neon"
                   style={{ cursor: 'pointer' }}
                   onClick={() => { setSection('users'); setUsersSubTab('teachers'); }}
-                  title="O‘qituvchilar ro‘yxatiga o‘tish"
+                  title="Öqituvçilar röyxatiga ötiş"
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div className="metric-icon-badge" style={{ background: 'rgba(59, 130, 246, 0.18)', border: '1px solid rgba(59, 130, 246, 0.4)', color: '#93c5fd', boxShadow: '0 0 14px rgba(59, 130, 246, 0.25)' }}>
                       <GraduationCap size={20} />
                     </div>
                     <div style={{ flex: 1, marginLeft: '12px' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8' }}>O‘qituvchilar</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8' }}>Öqituvçilar</div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
                         <span style={{ fontSize: '30px', fontWeight: 900, color: '#ffffff', lineHeight: 1 }}>{stats.activeTeachers || 1}</span>
                         <span className="metric-trend-pill" style={{ background: 'rgba(6, 182, 212, 0.16)', color: '#38bdf8', border: '1px solid rgba(6, 182, 212, 0.3)' }}>
@@ -1895,7 +1895,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   </div>
 
                   <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>
-                    {totalStudents} ta o‘quvchiga biriktirilgan
+                    {totalStudents} ta öquvçiga biriktirilgan
                   </div>
                 </div>
 
@@ -1904,14 +1904,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   className="neon-card metric-card-neon"
                   style={{ cursor: 'pointer' }}
                   onClick={() => setSection('reading')}
-                  title="Materiallar bo‘limiga o‘tish"
+                  title="Materiallar bölimiga ötiş"
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div className="metric-icon-badge" style={{ background: 'rgba(16, 185, 129, 0.18)', border: '1px solid rgba(16, 185, 129, 0.4)', color: '#6ee7b7', boxShadow: '0 0 14px rgba(16, 185, 129, 0.25)' }}>
                       <BookOpen size={20} />
                     </div>
                     <div style={{ flex: 1, marginLeft: '12px' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8' }}>O‘quv Materiallari</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8' }}>Öquv Materiallari</div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
                         <span style={{ fontSize: '30px', fontWeight: 900, color: '#ffffff', lineHeight: 1 }}>{stats.totalMaterials || 3}</span>
                         <span className="metric-trend-pill" style={{ background: 'rgba(16, 185, 129, 0.16)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
@@ -1940,14 +1940,14 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   className="neon-card metric-card-neon"
                   style={{ cursor: 'pointer' }}
                   onClick={() => setSection('vocab')}
-                  title="Lug‘at bo‘limiga o‘tish"
+                  title="Luğat bölimiga ötiş"
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div className="metric-icon-badge" style={{ background: 'rgba(236, 72, 153, 0.18)', border: '1px solid rgba(236, 72, 153, 0.4)', color: '#f472b6', boxShadow: '0 0 14px rgba(236, 72, 153, 0.25)' }}>
                       <TrendingUp size={20} />
                     </div>
                     <div style={{ flex: 1, marginLeft: '12px' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8' }}>Shaxsiy Lug‘at So‘zlari</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8' }}>Şaxsiy Luğat Sözlari</div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
                         <span style={{ fontSize: '30px', fontWeight: 900, color: '#ffffff', lineHeight: 1 }}>{stats.totalVocabularyEntries || 0}</span>
                         <span className="metric-trend-pill" style={{ background: 'rgba(236, 72, 153, 0.16)', color: '#f472b6', border: '1px solid rgba(236, 72, 153, 0.3)' }}>
@@ -1992,10 +1992,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     </div>
                     <div>
                       <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                        O‘quvchilarning CEFR Darajalari Taqsimoti (Haqiqiy Supabase ma’lumotlari)
+                        Öquvçilarning CEFR Darajalari Taqsimoti (Haqiqiy Supabase ma’lumotlari)
                       </h3>
                       <p style={{ fontSize: '12px', color: '#94a3b8', margin: '3px 0 0' }}>
-                        Foydalanuvchilar qaysi darajada ekanligi va real foiz ko‘rsatkichlari
+                        Foydalanuvçilar qaysi darajada ekanligi va real foiz körsatkiçlari
                       </p>
                     </div>
                   </div>
@@ -2013,7 +2013,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                     fontWeight: 700
                   }}>
                     <Users size={14} style={{ color: '#38bdf8' }} />
-                    <span>Jami hisoblangan: {totalStudents} nafar o‘quvchi</span>
+                    <span>Jami hisoblangan: {totalStudents} nafar öquvçi</span>
                   </div>
                 </div>
 
@@ -2079,7 +2079,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         </div>
 
                         <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700 }}>
-                          {pct}% o‘quvchi
+                          {pct}% öquvçi
                         </span>
                       </div>
                     );
@@ -2112,7 +2112,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                           Kontent Turlari Taqsimoti
                         </h3>
                         <p style={{ fontSize: '12px', color: '#94a3b8', margin: '3px 0 0' }}>
-                          Supabaseda mavjud barcha ta’lim materiallari
+                          Supabaseda mavjud barça ta’lim materiallari
                         </p>
                       </div>
                     </div>
@@ -2126,7 +2126,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       <path d="M25 50 L60 34 L60 39 L25 55 Z" fill="#2563eb" />
                       <path d="M12 36 L48 20 L58 25 L22 41 Z" fill="#06b6d4" />
                       <path d="M12 36 L22 41 L22 45 L12 41 Z" fill="#0891b2" />
-                      <path d="M24 41 L58 25 L58 29 L22 45 Z" fill="#0e7490" />
+                      <path d="M22 41 L58 25 L58 29 L22 45 Z" fill="#0e7490" />
                       <path d="M15 28 L44 14 L52 18 L23 32 Z" fill="#8b5cf6" />
                       <path d="M15 28 L23 32 L23 35 L15 32 Z" fill="#7c3aed" />
                       <path d="M23 32 L52 18 L52 21 L23 35 Z" fill="#6d28d9" />
@@ -2143,7 +2143,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         targetSection: 'reading'
                       },
                       {
-                        label: 'Writing (Insho va Grammatika)',
+                        label: 'Writing (Inşo va Grammatika)',
                         count: stats.writingMaterialsCount || 0,
                         color: '#ea580c',
                         icon: PenLine,
@@ -2216,7 +2216,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                             <button
                               className="neon-circle-arrow-btn"
                               onClick={() => setSection(item.targetSection)}
-                              title={`${item.label} bo‘limiga o‘tish`}
+                              title={`${item.label} bölimiga ötiş`}
                             >
                               <ArrowRight size={13} />
                             </button>
@@ -2227,7 +2227,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   </div>
                 </div>
 
-                {/* Right: So'nggi Ro'yxatdan O'tganlar (Supabase) */}
+                {/* Right: Sönggi Röyxatdan Ötganlar (Supabase) */}
                 <div className="neon-card" style={{ padding: '26px 28px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -2247,10 +2247,10 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                       </div>
                       <div>
                         <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                          So‘nggi Ro‘yxatdan O‘tganlar (Supabase)
+                          Sönggi Röyxatdan Ötganlar (Supabase)
                         </h3>
                         <p style={{ fontSize: '12px', color: '#94a3b8', margin: '3px 0 0' }}>
-                          Tizimga yaqinda qo‘shilgan foydalanuvchilar
+                          Tizimga yaqinda qöşilgan foydalanuvçilar
                         </p>
                       </div>
                     </div>
@@ -2270,7 +2270,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                         padding: 0
                       }}
                     >
-                      Barchasi ({users.length || 8}) →
+                      Barçasi ({users.length || 8}) →
                     </button>
                   </div>
 

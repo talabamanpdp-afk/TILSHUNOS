@@ -15,24 +15,24 @@ import {
 import { api, authStorage, normalizeUserRole } from './api';
 import { playSpeech } from './utils/speech';
 
-type Word = { id: number; word: string; translation: string; example: string; topic: string; state: 'Rejalashtirilgan' | 'Jarayonda' | 'O‘rganilgan' };
+type Word = { id: number; word: string; translation: string; example: string; topic: string; state: 'Rejalaştirilgan' | 'Jarayonda' | 'Örganilgan' };
 
 const initialWords: Word[] = [];
 
 type NavItem = { label: string; icon: LucideIcon; section?: string };
 const navItems: NavItem[] = [
-  { label: 'Bosh sahifa', icon: Home, section: 'O‘RGANISH' },
-  { label: 'So‘z daftarim', icon: BookA },
-  { label: 'Mashq qilish', icon: Brain },
-  { label: 'Materiallar', icon: Library, section: 'KASHF ETISH' },
-  { label: 'O‘qish', icon: BookOpen },
-  { label: 'Tinglash', icon: Headphones },
-  { label: 'Gapirish', icon: Mic2 },
-  { label: 'Yozish', icon: MessageCircle },
-  { label: 'So‘z o‘yinlari', icon: Gamepad2, section: 'O‘YIN VA RIVOJLANISH' },
+  { label: 'Boş sahifa', icon: Home, section: 'ÖRGANIŞ' },
+  { label: 'Söz daftarim', icon: BookA },
+  { label: 'Maşq qiliş', icon: Brain },
+  { label: 'Materiallar', icon: Library, section: 'KAŞF ETIŞ' },
+  { label: 'Öqiş', icon: BookOpen },
+  { label: 'Tinglaş', icon: Headphones },
+  { label: 'Gapiriş', icon: Mic2 },
+  { label: 'Yoziş', icon: MessageCircle },
+  { label: 'Söz öyinlari', icon: Gamepad2, section: 'ÖYIN VA RIVOJLANIŞ' },
   { label: 'Vazifalar', icon: ListTodo, section: 'HAMKORLIK' },
-  { label: 'O‘qituvchilar', icon: Users },
-  { label: 'AI yordamchi', icon: Sparkles }
+  { label: 'Öqituvçilar', icon: Users },
+  { label: 'AI yordamçi', icon: Sparkles }
 ];
 
 export const supportedLanguages = [
@@ -44,54 +44,54 @@ export const supportedLanguages = [
 ];
 
 export const cefrLevels = [
-  { code: 'A1', name: 'Boshlang‘ich', desc: 'Oddiy so‘z va iboralar' },
+  { code: 'A1', name: 'Boşlanğiç', desc: 'Oddiy söz va iboralar' },
   { code: 'A2', name: 'Elementar', desc: 'Kundalik muloqot' },
-  { code: 'B1', name: 'O‘rta daraja', desc: 'Erkin suhbat' },
+  { code: 'B1', name: 'Örta daraja', desc: 'Erkin suhbat' },
   { code: 'B2', name: 'Mustaqil', desc: 'Murakkab matnlar' },
-  { code: 'C1', name: 'Ilg‘or', desc: 'Akademik mahorat' },
+  { code: 'C1', name: 'Ilğor', desc: 'Akademik mahorat' },
   { code: 'C2', name: 'Mukammal', desc: 'Ona tili darajasi' },
 ];
 
 export const languageMaterials: Record<string, any[]> = {
   de: [
-    { title: 'Guten Tag! — Begrüßungen', sub: 'Kundalik nemischa salomlashuv va tanishuv', level: 'A1', type: 'Tinglash', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
-    { title: 'Der Alltag in Berlin', sub: 'Berlindagi hayot va madaniyat haqida matn', level: 'A2', type: 'O‘qish', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
-    { title: 'Im Café bestellen', sub: 'Kafeda nemischa buyurtma berish', level: 'A1', type: 'Gapirish', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
-    { title: 'Schreiben: Mein Lieblingstraum', sub: 'Mening orzularim mavzusida insho', level: 'B1', type: 'Yozish', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
-    { title: 'Deutsche Grammatik: Dativ & Akkusativ', sub: 'Kelishiklar qoidasi va amaliy mashqlar', level: 'B1', type: 'O‘qish', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
-    { title: 'Wortschatz: Reise nach München', sub: 'Sayohat uchun eng muhim nemischa so‘zlar', level: 'A2', type: 'Lug‘at', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
+    { title: 'Guten Tag! — Begrüßungen', sub: 'Kundalik nemisça salomlaşuv va tanişuv', level: 'A1', type: 'Tinglaş', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
+    { title: 'Der Alltag in Berlin', sub: 'Berlindagi hayot va madaniyat haqida matn', level: 'A2', type: 'Öqiş', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Im Café bestellen', sub: 'Kafeda nemisça buyurtma beriş', level: 'A1', type: 'Gapiriş', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
+    { title: 'Schreiben: Mein Lieblingstraum', sub: 'Mening orzularim mavzusida inşo', level: 'B1', type: 'Yoziş', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
+    { title: 'Deutsche Grammatik: Dativ & Akkusativ', sub: 'Kelişiklar qoidasi va amaliy maşqlar', level: 'B1', type: 'Öqiş', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Wortschatz: Reise nach München', sub: 'Sayohat uçun eng muhim nemisça sözlar', level: 'A2', type: 'Luğat', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
   ],
   ru: [
-    { title: 'Диалоги на каждый день', sub: 'Kundalik ruscha suhbatlar va tanishuv', level: 'A1', type: 'Tinglash', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
-    { title: 'Зимний вечер в Ташкенте', sub: 'Badiiy matn tahlili va o‘qish', level: 'A2', type: 'O‘qish', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
-    { title: 'В ресторане и кафе', sub: 'Restoranda buyurtma berish', level: 'A1', type: 'Gapirish', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
-    { title: 'Письмо: Мои планы на будущее', sub: 'Kelajak rejalari haqida insho', level: 'B1', type: 'Yozish', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
-    { title: 'Грамматика: Падежи русского языка', sub: '6 ta kelishik va qo‘llanishi', level: 'B1', type: 'O‘qish', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
-    { title: 'Словарь: Путешествия и гостиницы', sub: 'Mehmonxona va sayohat so‘zlari', level: 'A2', type: 'Lug‘at', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
+    { title: 'Диалоги на каждый день', sub: 'Kundalik rusça suhbatlar va tanişuv', level: 'A1', type: 'Tinglaş', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
+    { title: 'Зимний вечер в Ташкенте', sub: 'Badiiy matn tahlili va öqiş', level: 'A2', type: 'Öqiş', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'В ресторане и кафе', sub: 'Restoranda buyurtma beriş', level: 'A1', type: 'Gapiriş', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
+    { title: 'Письмо: Мои планы на будущее', sub: 'Kelajak rejalari haqida inşo', level: 'B1', type: 'Yoziş', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
+    { title: 'Грамматика: Падежи русского языка', sub: '6 ta kelişik va qöllanişi', level: 'B1', type: 'Öqiş', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Словарь: Путешествия и гостиницы', sub: 'Mehmonxona va sayohat sözlari', level: 'A2', type: 'Luğat', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
   ],
   uz: [
-    { title: 'Ona tili: Salomlashish odobi', sub: 'Xushmuomalalik va madaniy muloqot', level: 'A1', type: 'Tinglash', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
-    { title: 'O‘zbekiston me’moriy obidalari', sub: 'Samarqand va Buxoro tarixi haqida matn', level: 'A2', type: 'O‘qish', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
-    { title: 'Bozorlik va savdolashish', sub: 'Sharqona bozor madaniyati va dialog', level: 'A1', type: 'Gapirish', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
-    { title: 'Insho: Milliy qadriyatlarimiz', sub: 'Oila va an’analar haqida insho yozish', level: 'B1', type: 'Yozish', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
-    { title: 'O‘zbek tili grammatikasi', sub: 'Fe’l nisbatlari va qo‘shimchalar', level: 'B1', type: 'O‘qish', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
-    { title: 'Lug‘at: Sayyohlar uchun atamalar', sub: 'Mehmon kutish va mehmondo‘stlik', level: 'A2', type: 'Lug‘at', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
+    { title: 'Ona tili: Salomlaşiş odobi', sub: 'Xuşmuomalalik va madaniy muloqot', level: 'A1', type: 'Tinglaş', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
+    { title: 'Özbekiston me’moriy obidalari', sub: 'Samarqand va Buxoro tarixi haqida matn', level: 'A2', type: 'Öqiş', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Bozorlik va savdolaşiş', sub: 'Şarqona bozor madaniyati va dialog', level: 'A1', type: 'Gapiriş', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
+    { title: 'Inşo: Milliy qadriyatlarimiz', sub: 'Oila va an’analar haqida inşo yoziş', level: 'B1', type: 'Yoziş', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
+    { title: 'Özbek tili grammatikasi', sub: 'Fe’l nisbatlari va qöşimçalar', level: 'B1', type: 'Öqiş', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Luğat: Sayyohlar uçun atamalar', sub: 'Mehmon kutiş va mehmondöstlik', level: 'A2', type: 'Luğat', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
   ],
   tr: [
-    { title: 'Günlük Konuşmalar: Merhabalaşma', sub: 'Kundalik turkcha salomlashuvlar', level: 'A1', type: 'Tinglash', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
-    { title: 'İstanbul Boğazı ve Tarihi', sub: 'Istanbul bo‘g‘ozi haqida matn', level: 'A2', type: 'O‘qish', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
-    { title: 'Restoranda Sipariş Verme', sub: 'Turk oshxonasida buyurtma berish', level: 'A1', type: 'Gapirish', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
-    { title: 'Yazma: Hayalimdeki Tatil Planı', sub: 'Tatil rejalari haqida yozma insho', level: 'B1', type: 'Yozish', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
-    { title: 'Türkçe Dilbilgisi: Fiil Çekimleri', sub: 'Zamonlar va shaxs-son qo‘shimchalari', level: 'B1', type: 'O‘qish', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
-    { title: 'Seyahat ve Alışveriş Kelimeleri', sub: 'Kiyim-kechak va xarid so‘zlari', level: 'A2', type: 'Lug‘at', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
+    { title: 'Günlük Konuşmalar: Merhabalaşma', sub: 'Kundalik turkça salomlaşuvlar', level: 'A1', type: 'Tinglaş', mins: '10 daqiqa', icon: Headphones, color: 'lavender' },
+    { title: 'İstanbul Boğazı ve Tarihi', sub: 'Istanbul böğozi haqida matn', level: 'A2', type: 'Öqiş', mins: '12 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Restoranda Sipariş Verme', sub: 'Turk oşxonasida buyurtma beriş', level: 'A1', type: 'Gapiriş', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
+    { title: 'Yazma: Hayalimdeki Tatil Planı', sub: 'Tatil rejalari haqida yozma inşo', level: 'B1', type: 'Yoziş', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
+    { title: 'Türkçe Dilbilgisi: Fiil Çekimleri', sub: 'Zamonlar va şaxs-son qöşimçalari', level: 'B1', type: 'Öqiş', mins: '14 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'Seyahat ve Alışveriş Kelimeleri', sub: 'Kiyim-keçak va xarid sözlari', level: 'A2', type: 'Luğat', mins: '8 daqiqa', icon: Languages, color: 'lavender' }
   ],
   en: [
-    { title: 'Daily conversations', sub: 'Kundalik suhbatlar va dialoglar', level: 'A2', type: 'Tinglash', mins: '12 daqiqa', icon: Headphones, color: 'lavender' },
-    { title: 'The power of habits', sub: 'Odatlar kuchi va kitobdan parchalar', level: 'B1', type: 'O‘qish', mins: '8 daqiqa', icon: BookOpen, color: 'mint' },
-    { title: 'At the coffee shop', sub: 'Kafeda suhbat va buyurtma', level: 'A1', type: 'Gapirish', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
-    { title: 'Writing: My Daily Routine', sub: 'Kun tartibi haqida insho yozish', level: 'A2', type: 'Yozish', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
-    { title: 'Useful Expressions for Travel', sub: 'Sayohat uchun eng kerakli iboralar', level: 'B1', type: 'Lug‘at', mins: '10 daqiqa', icon: Languages, color: 'lavender' },
-    { title: 'Pronunciation & Accent Mastery', sub: 'Talaffuz va to‘g‘ri aksent mashqi', level: 'A1', type: 'Gapirish', mins: '7 daqiqa', icon: Mic2, color: 'mint' }
+    { title: 'Daily conversations', sub: 'Kundalik suhbatlar va dialoglar', level: 'A2', type: 'Tinglaş', mins: '12 daqiqa', icon: Headphones, color: 'lavender' },
+    { title: 'The power of habits', sub: 'Odatlar kuçi va kitobdan parçalar', level: 'B1', type: 'Öqiş', mins: '8 daqiqa', icon: BookOpen, color: 'mint' },
+    { title: 'At the coffee shop', sub: 'Kafeda suhbat va buyurtma', level: 'A1', type: 'Gapiriş', mins: '6 daqiqa', icon: Mic2, color: 'peach' },
+    { title: 'Writing: My Daily Routine', sub: 'Kun tartibi haqida inşo yoziş', level: 'A2', type: 'Yoziş', mins: '15 daqiqa', icon: MessageCircle, color: 'peach' },
+    { title: 'Useful Expressions for Travel', sub: 'Sayohat uçun eng kerakli iboralar', level: 'B1', type: 'Luğat', mins: '10 daqiqa', icon: Languages, color: 'lavender' },
+    { title: 'Pronunciation & Accent Mastery', sub: 'Talaffuz va töğri aksent maşqi', level: 'A1', type: 'Gapiriş', mins: '7 daqiqa', icon: Mic2, color: 'mint' }
   ]
 };
 
@@ -99,7 +99,7 @@ const lessons = languageMaterials['en'];
 
 function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: boolean; setDark: (d: boolean) => void }) {
   const currentUser = authStorage.getUser();
-  const [active, setActive] = useState('Bosh sahifa');
+  const [active, setActive] = useState('Boş sahifa');
   const [selectedLang, setSelectedLang] = useState(() => localStorage.getItem('tilshunos_language') || 'en');
   const [selectedLevel, setSelectedLevel] = useState(() => localStorage.getItem('tilshunos_level') || 'B1');
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
@@ -254,7 +254,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
   const [aiInput, setAiInput] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiMessages, setAiMessages] = useState<{ role: string; text: string }[]>([
-    { role: 'assistant', text: `Assalomu alaykum${currentUser?.firstName ? `, ${currentUser.firstName}` : ''}! 👋 Men TILSHUNOS AI repetitoriman. Ingliz tili grammatikasi, so‘zlar va mashqlar bo‘yicha har qanday savolingizga yordam beraman. Bugun nimani o‘rganamiz?` }
+    { role: 'assistant', text: `Assalomu alaykum${currentUser?.firstName ? `, ${currentUser.firstName}` : ''}! 👋 Men TILŞUNOS AI repetitoriman. Ingliz tili grammatikasi, sözlar va maşqlar böyiça har qanday savolingizga yordam beraman. Bugun nimani örganamiz?` }
   ]);
 
   // Load words from backend on mount
@@ -459,12 +459,12 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
     <div className={dark ? 'app dark' : 'app'}>
       <aside className={`sidebar ${mobileNav ? 'mobile-open' : ''}`}>
         <div className="brand">
-          <div className="brand-mark"><img src="/brand_logo.png" alt="TILSHUNOS" className="brand-logo-img" /></div>
+          <div className="brand-mark"><img src="/brand_logo.png" alt="TILŞUNOS" className="brand-logo-img" /></div>
           <div>
-            <div className="brand-name">TILSHUNOS<span>.</span></div>
+            <div className="brand-name">TILŞUNOS<span>.</span></div>
             <div className="brand-caption">LEARN YOUR WAY</div>
           </div>
-          <button className="icon-btn mobile-close" onClick={() => setMobileNav(false)} aria-label="Menyuni yopish">
+          <button className="icon-btn mobile-close" onClick={() => setMobileNav(false)} aria-label="Menyuni yopiş">
             <X size={19} />
           </button>
         </div>
@@ -635,11 +635,11 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
             <div className="install-banner">
               <div className="install-badge"><Download size={20} /></div>
               <div>
-                <strong>TILSHUNOS ilovasini telefon yoki kompyuterga o‘rnating</strong>
-                <p>Tezkor kirish, to‘liq ekran va qulay mobil tajriba uchun ilovani asosiy ekranga qo‘shing.</p>
+                <strong>TILŞUNOS ilovasini telefon yoki kompyuterga örnating</strong>
+                <p>Tezkor kiriş, töliq ekran va qulay mobil tajriba uçun ilovani asosiy ekranga qöşing.</p>
               </div>
               <button className="primary-btn" onClick={triggerInstall}>
-                O‘rnatish <ArrowDownRight size={15} />
+                Örnatiş <ArrowDownRight size={15} />
               </button>
               <button
                 className="install-dismiss"
@@ -647,20 +647,20 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                   localStorage.setItem('tilshunos_pwa_banner_dismissed', 'true');
                   setBannerDismissed(true);
                 }}
-                aria-label="Yopish"
+                aria-label="Yopiş"
               >
                 <X size={16} />
               </button>
             </div>
           )}
 
-          {active === 'Bosh sahifa' ? (
+          {active === 'Boş sahifa' || active === 'Bosh sahifa' ? (
             <>
               <div className="welcome-row">
                 <div>
-                  <div className="eyebrow"><Sparkles size={14} /> SHAXSIY O‘RGANISH MAYDONI</div>
-                  <h1>Yana ko‘rishganimizdan xursandmiz, <span>{userName}! 👋</span></h1>
-                  <p className="subheading">Har kuni kichik qadam — kelajakda erkin muloqot. Bugun nimadan boshlaymiz?</p>
+                  <div className="eyebrow"><Sparkles size={14} /> ŞAXSIY ÖRGANIŞ MAYDONI</div>
+                  <h1>Yana körişganimizdan xursandmiz, <span>{userName}! 👋</span></h1>
+                  <p className="subheading">Har kuni kiçik qadam — kelajakda erkin muloqot. Bugun nimadan boşlaymiz?</p>
                 </div>
                 <button className="date-chip">
                   <CalendarDays size={16} /> {formattedDate}
@@ -952,23 +952,23 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 </section>
               </div>
             </>
-          ) : active === 'So‘z daftarim' ? (
+          ) : active === 'Söz daftarim' || active === 'So‘z daftarim' ? (
             <section className="page-section">
               <div className="welcome-row">
                 <div>
-                  <div className="eyebrow"><BookA size={14} /> SHAXSIY LUG‘AT</div>
-                  <h1>So‘z <span>daftarim</span></h1>
-                  <p className="subheading">Yangi so‘zlarni yig‘ing, takrorlang va bilimlaringizni mustahkamlang.</p>
+                  <div className="eyebrow"><BookA size={14} /> ŞAXSIY LUĞAT</div>
+                  <h1>Söz <span>daftarim</span></h1>
+                  <p className="subheading">Yangi sözlarni yiğing, takrorlang va bilimlaringizni mustahkamlang.</p>
                 </div>
                 <button className="primary-btn" onClick={() => setAddOpen(true)}>
-                  <Plus size={17} /> Yangi so‘z
+                  <Plus size={17} /> Yangi söz
                 </button>
               </div>
               <div className="word-stats">
-                <div className="word-stat"><span>Jami so‘zlar</span><strong>{words.length}</strong></div>
-                <div className="word-stat"><span>Rejalashtirilgan</span><strong>{words.filter(w => w.state === 'Rejalashtirilgan').length}</strong></div>
+                <div className="word-stat"><span>Jami sözlar</span><strong>{words.length}</strong></div>
+                <div className="word-stat"><span>Rejalaştirilgan</span><strong>{words.filter(w => w.state === 'Rejalaştirilgan' || (w.state as string) === 'Rejalashtirilgan').length}</strong></div>
                 <div className="word-stat"><span>Jarayonda</span><strong>{words.filter(w => w.state === 'Jarayonda').length}</strong></div>
-                <div className="word-stat"><span>O‘rganilgan</span><strong>{words.filter(w => w.state === 'O‘rganilgan').length}</strong></div>
+                <div className="word-stat"><span>Örganilgan</span><strong>{words.filter(w => w.state === 'Örganilgan' || (w.state as string) === 'O‘rganilgan').length}</strong></div>
               </div>
               <div className="panel vocabulary-table-panel">
                 <div className="table-toolbar">
@@ -1043,61 +1043,61 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 </div>
               </div>
             </section>
-          ) : active === 'Mashq qilish' ? (
+          ) : active === 'Maşq qiliş' || active === 'Mashq qilish' ? (
             <section className="page-section">
               <div className="welcome-row">
                 <div>
-                  <div className="eyebrow"><Brain size={14} /> BILIMNI MUSTAHKAMLASH</div>
-                  <h1>So‘zlarni <span>mashq qiling</span></h1>
-                  <p className="subheading">Spaced repetition usulida eslab qolishni tezlashtiring.</p>
+                  <div className="eyebrow"><Brain size={14} /> BILIMNI MUSTAHKAMLAŞ</div>
+                  <h1>Sözlarni <span>maşq qiling</span></h1>
+                  <p className="subheading">Spaced repetition usulida eslab qolişni tezlaştiring.</p>
                 </div>
               </div>
               <div className="practice-layout">
                 <div className="panel practice-config">
                   <div className="practice-icon"><Brain size={25} /></div>
-                  <h2>Mashq sessiyasi</h2>
-                  <p>So‘zlaringizni eslab qolish uchun tezkor interaktiv test boshlang.</p>
+                  <h2>Maşq sessiyasi</h2>
+                  <p>Sözlaringizni eslab qoliş uçun tezkor interaktiv test boşlang.</p>
                   <div className="config-row">
-                    <label>Til yo‘nalishi</label>
-                    <select><option>Inglizcha → O‘zbekcha</option><option>O‘zbekcha → Inglizcha</option></select>
+                    <label>Til yönalişi</label>
+                    <select><option>Inglizça → Özbekça</option><option>Özbekça → Inglizça</option></select>
                   </div>
                   <div className="config-row">
-                    <label>So‘zlar soni</label>
-                    <select><option>10 ta so‘z</option><option>20 ta so‘z</option><option>Barcha so‘zlar</option></select>
+                    <label>Sözlar soni</label>
+                    <select><option>10 ta söz</option><option>20 ta söz</option><option>Barça sözlar</option></select>
                   </div>
                   <button className="primary-btn full-btn" onClick={() => setPracticeOpen(true)}>
-                    Mashqni boshlash <ArrowRight size={16} />
+                    Maşqni boşlaş <ArrowRight size={16} />
                   </button>
                 </div>
                 <div className="practice-side">
                   <div className="panel practice-tip">
                     <div className="tip-icon"><Sparkles size={20} /></div>
-                    <h3>Anti-Fraud Mustahkamlash</h3>
-                    <p>So‘zni faqat o‘qimang — xotiradan yozing. Har bir to‘g‘ri javob sizni yangi CEFR darajasiga yaqinlashtiradi.</p>
+                    <h3>Anti-Fraud Mustahkamlaş</h3>
+                    <p>Sözni faqat öqimang — xotiradan yozing. Har bir töğri javob sizni yangi CEFR darajasiga yaqinlaştiradi.</p>
                     <div className="tip-footer"><span>SPACED REPETITION</span><span>VERIFIED</span></div>
                   </div>
                   <div className="panel practice-mini-stats">
                     <h3>Bugungi natijangiz</h3>
-                    <div><span>Takrorlangan so‘zlar</span><strong>12 ta</strong></div>
-                    <div><span>To‘g‘ri javoblar</span><strong>92%</strong></div>
+                    <div><span>Takrorlangan sözlar</span><strong>12 ta</strong></div>
+                    <div><span>Töğri javoblar</span><strong>92%</strong></div>
                     <div><span>Sarflangan vaqt</span><strong>8 daqiqa</strong></div>
                   </div>
                 </div>
               </div>
             </section>
-          ) : active === 'So‘z o‘yinlari' ? (
+          ) : active === 'Söz öyinlari' || active === 'So‘z o‘yinlari' ? (
             <section className="page-section games-page">
               <div className="welcome-row">
                 <div>
-                  <div className="eyebrow"><Gamepad2 size={14} /> O‘RGANISHNI O‘YINGA AYLANTIRING</div>
-                  <h1>So‘z <span>o‘yinlari</span> 🎮</h1>
-                  <p className="subheading">Lug‘at boyligingizni qiziqarli typing, so‘z zanjiri va rasmli topshiriqlar bilan oshiring.</p>
+                  <div className="eyebrow"><Gamepad2 size={14} /> ÖRGANIŞNI ÖYINGA AYLANTIRING</div>
+                  <h1>Söz <span>öyinlari</span> 🎮</h1>
+                  <p className="subheading">Luğat boyligingizni qiziqarli typing, söz zanjiri va rasmli topşiriqlar bilan oşiring.</p>
                 </div>
                 <div className="game-score">
                   <Trophy size={19} />
                   <div>
                     <strong>{gameScore} XP</strong>
-                    <small>Bugungi to‘plangan ball</small>
+                    <small>Bugungi töplangan ball</small>
                   </div>
                 </div>
               </div>
@@ -1306,21 +1306,21 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 </div>
               </div>
             </section>
-          ) : active === 'AI yordamchi' ? (
+          ) : active === 'AI yordamçi' || active === 'AI yordamchi' ? (
             <section className="page-section">
               <div className="welcome-row">
                 <div>
-                  <div className="eyebrow"><Sparkles size={14} /> SHAXSIY AI REPETITOR</div>
-                  <h1>AI <span>yordamchi</span></h1>
-                  <p className="subheading">Savol bering, grammatikani tushuntirishni so‘rang yoki dialog mashq qiling.</p>
+                  <div className="eyebrow"><Sparkles size={14} /> ŞAXSIY AI REPETITOR</div>
+                  <h1>AI <span>yordamçi</span></h1>
+                  <p className="subheading">Savol bering, grammatikani tuşuntirişni sörang yoki dialog maşq qiling.</p>
                 </div>
               </div>
               <div className="panel ai-panel">
                 <div className="ai-head">
                   <div className="ai-avatar"><Sparkles size={21} /></div>
                   <div>
-                    <h3>TILSHUNOS AI</h3>
-                    <span><i className="online-dot" /> Jonli til yordamchisi</span>
+                    <h3>TILŞUNOS AI</h3>
+                    <span><i className="online-dot" /> Jonli til yordamçisi</span>
                   </div>
                   <span className="ai-model">Online AI Tutor</span>
                 </div>
@@ -1339,7 +1339,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                   )}
                 </div>
                 <div className="ai-suggestions">
-                  {['Present Perfect ni tushuntir', 'Bu gapimni tekshirib ber', '5 ta yangi B1 daraja so‘z ber', 'Qanday qilib tezroq speaking qilaman?'].map(s => (
+                  {['Present Perfect ni tuşuntir', 'Bu gapimni tekşirib ber', '5 ta yangi B1 daraja söz ber', 'Qanday qilib tezroq speaking qilaman?'].map(s => (
                     <button key={s} onClick={() => setAiInput(s)}>
                       {s} <ArrowUpRight size={13} />
                     </button>
@@ -1350,36 +1350,36 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                     value={aiInput}
                     onChange={e => setAiInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && sendAI()}
-                    placeholder="Savolingizni shu yerga yozing..."
+                    placeholder="Savolingizni şu yerga yozing..."
                   />
                   <button className="send-btn" onClick={sendAI} disabled={aiLoading}>
                     <ArrowRight size={18} />
                   </button>
                 </div>
-                <p className="ai-disclaimer">TILSHUNOS AI javoblari o‘quv mashg‘ulotlari uchun mo‘ljallangan.</p>
+                <p className="ai-disclaimer">TILŞUNOS AI javoblari öquv maşğulotlari uçun möljallangan.</p>
               </div>
             </section>
-          ) : active === 'Materiallar' || active === 'O‘qish' || active === 'Tinglash' || active === 'Gapirish' || active === 'Yozish' ? (
+          ) : active === 'Materiallar' || active === 'Öqiş' || active === 'Tinglaş' || active === 'Gapiriş' || active === 'Yoziş' || active === 'O‘qish' || active === 'Tinglash' || active === 'Gapirish' || active === 'Yozish' ? (
             <section className="page-section">
               <div className="welcome-row">
                 <div>
                   <div className="eyebrow"><Library size={14} /> BILIMLAR OLAMI</div>
-                  <h1>{active === 'Materiallar' ? 'O‘rganish materiallari' : active} <span>markazi</span></h1>
-                  <p className="subheading">CEFR darajangizga mos materiallarni tanlang va o‘rganishni boshlang.</p>
+                  <h1>{active === 'Materiallar' ? 'Örganiş materiallari' : active} <span>markazi</span></h1>
+                  <p className="subheading">CEFR darajangizga mos materiallarni tanlang va örganişni boşlang.</p>
                 </div>
               </div>
               <div className="filter-row">
-                <button className="filter-chip selected">Barchasi</button>
-                <button className="filter-chip">A1 · Boshlang‘ich</button>
+                <button className="filter-chip selected">Barçasi</button>
+                <button className="filter-chip">A1 · Boşlanğiç</button>
                 <button className="filter-chip">A2 · Elementar</button>
-                <button className="filter-chip">B1 · O‘rta</button>
+                <button className="filter-chip">B1 · Örta</button>
                 <button className="filter-chip">B2 · Yuqori</button>
               </div>
               <div className="resource-grid">
                 {currentLessons
-                  .filter(l => active === 'Materiallar' || l.type === active || (active === 'O‘qish' && l.type === 'O‘qish') || (active === 'Tinglash' && l.type === 'Tinglash') || (active === 'Yozish' && l.type === 'Yozish') || (active === 'Gapirish' && l.type === 'Gapirish'))
+                  .filter(l => active === 'Materiallar' || l.type === active || (active === 'Öqiş' && (l.type === 'Öqiş' || l.type === 'O‘qish')) || (active === 'Tinglaş' && (l.type === 'Tinglaş' || l.type === 'Tinglash')) || (active === 'Yoziş' && (l.type === 'Yoziş' || l.type === 'Yozish')) || (active === 'Gapiriş' && (l.type === 'Gapiriş' || l.type === 'Gapirish')) || (active === 'O‘qish' && (l.type === 'Öqiş' || l.type === 'O‘qish')) || (active === 'Tinglash' && (l.type === 'Tinglaş' || l.type === 'Tinglash')) || (active === 'Yozish' && (l.type === 'Yoziş' || l.type === 'Yozish')) || (active === 'Gapirish' && (l.type === 'Gapiriş' || l.type === 'Gapirish')))
                   .map(l => (
-                    <button key={l.title} className="resource-card" onClick={() => notify(`${l.title} ochilmoqda`)}>
+                    <button key={l.title} className="resource-card" onClick={() => notify(`${l.title} oçilmoqda`)}>
                       <div className={`resource-art ${l.color}`}>
                         <l.icon size={27} />
                         <span>{l.level}</span>
@@ -1433,13 +1433,13 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                 ))}
               </div>
             </section>
-          ) : active === 'O‘qituvchilar' ? (
+          ) : active === 'Öqituvçilar' || active === 'O‘qituvchilar' ? (
             <section className="page-section">
               <div className="welcome-row">
                 <div>
-                  <div className="eyebrow"><Users size={14} /> BIRGALIKDA O‘RGANAMIZ</div>
-                  <h1>O‘z <span>ustozingizni</span> tanlang</h1>
-                  <p className="subheading">Tajribali va xalqaro sertifikatli o‘qituvchilar jamoasi.</p>
+                  <div className="eyebrow"><Users size={14} /> BIRGALIKDA ÖRGANAMIZ</div>
+                  <h1>Öz <span>ustozingizni</span> tanlang</h1>
+                  <p className="subheading">Tajribali va xalqaro sertifikatli öqituvçilar jamoasi.</p>
                 </div>
               </div>
               <div className="resource-grid">
@@ -1457,8 +1457,8 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                       </div>
                     </div>
                     <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '8px 0' }}>{t.exp} · {t.badge}</p>
-                    <button className="primary-btn" onClick={() => notify(`${t.name} bilan bog‘lanish so‘rovi yuborildi`)}>
-                      Darsga yozilish <ArrowRight size={15} />
+                    <button className="primary-btn" onClick={() => notify(`${t.name} bilan boğlaniş sörovi yuborildi`)}>
+                      Darsga yoziş <ArrowRight size={15} />
                     </button>
                   </div>
                 ))}
@@ -1468,9 +1468,9 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
             <section className="page-section">
               <div className="welcome-row">
                 <div>
-                  <div className="eyebrow"><Settings size={14} /> SHAXSIY SOZLAMALAR</div>
+                  <div className="eyebrow"><Settings size={14} /> ŞAXSIY SOZLAMALAR</div>
                   <h1>Profil va <span>sozlamalar</span></h1>
-                  <p className="subheading">O‘quv profilingiz va interfeys parametrlarini boshqaring.</p>
+                  <p className="subheading">Öquv profilingiz va interfeys parametrlarini boşqaring.</p>
                 </div>
               </div>
               <div className="settings-grid">
@@ -1484,7 +1484,7 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                   </div>
                   <label>Ism<input defaultValue={userName} /></label>
                   <label>
-                    O‘rganilayotgan til
+                    Örganilayotgan til
                     <select defaultValue="English"><option>English</option><option>Deutsch</option><option>Español</option><option>Türkçe</option></select>
                   </label>
                   <label>
@@ -1492,17 +1492,17 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                     <select defaultValue="B1 — Intermediate"><option>A1 — Beginner</option><option>A2 — Elementary</option><option>B1 — Intermediate</option><option>B2 — Upper Intermediate</option></select>
                   </label>
                   <button className="primary-btn" onClick={() => notify('Sozlamalar muvaffaqiyatli saqlandi!')}>
-                    O‘zgarishlarni saqlash <Check size={15} />
+                    Özgarişlarni saqlaş <Check size={15} />
                   </button>
                 </div>
                 <div className="panel settings-card">
-                  <h3>Ko‘rinish va Ilova</h3>
-                  <p>Mavzu va qurilmaga o‘rnatish parametrlari.</p>
+                  <h3>Köriniş va Ilova</h3>
+                  <p>Mavzu va qurilmaga örnatiş parametrlari.</p>
                   <button className="setting-toggle" onClick={() => setDark(!dark)}>
                     <div className="setting-toggle-icon">{dark ? <Moon size={18} /> : <Sun size={18} />}</div>
                     <div>
-                      <strong>{dark ? 'Qorong‘i mavzu' : 'Yorug‘ mavzu'}</strong>
-                      <span>Interfeys ranglarini almashtirish</span>
+                      <strong>{dark ? 'Qoronği mavzu' : 'Yoruğ mavzu'}</strong>
+                      <span>Interfeys ranglarini almaştiriş</span>
                     </div>
                     <span className={`toggle ${dark ? 'on' : ''}`}><i /></span>
                   </button>
@@ -1513,24 +1513,24 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
                           <Smartphone size={20} />
                         </div>
                         <div>
-                          <strong style={{ fontSize: '13px', display: 'block' }}>TILSHUNOS mobil ilovasi</strong>
-                          <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Ilova hozircha brauzer orqali ochilgan</span>
+                          <strong style={{ fontSize: '13px', display: 'block' }}>TILŞUNOS mobil ilovasi</strong>
+                          <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Ilova hozirça brauzer orqali oçilgan</span>
                         </div>
                       </div>
                       <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '0 0 12px 0', lineHeight: 1.5 }}>
-                        Tezkor kirish, to‘liq ekran va qulay mobil tajriba uchun ilovani telefoningiz bosh ekraniga o‘rnating.
+                        Tezkor kiriş, töliq ekran va qulay mobil tajriba uçun ilovani telefoningiz boş ekraniga örnating.
                       </p>
                       <button className="primary-btn" onClick={triggerInstall} style={{ width: '100%', justifyContent: 'center', padding: '10px 14px', fontWeight: 700 }}>
-                        <Download size={16} /> Ilovani qurilmaga o‘rnatish
+                        <Download size={16} /> Ilovani qurilmaga örnatiş
                       </button>
                     </div>
                   ) : (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#16a34a', fontSize: '12px', fontWeight: 700, marginTop: '14px', background: 'rgba(22, 163, 74, 0.1)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(22, 163, 74, 0.2)' }}>
-                      <Check size={18} /> Ilova ushbu qurilmada to‘liq o‘rnatilgan ilova rejimida ishlamoqda
+                      <Check size={18} /> Ilova uşbu qurilmada töliq örnatilgan ilova rejimida işlamoqda
                     </div>
                   )}
                   <button className="outline-btn" onClick={onLogout} style={{ marginTop: '10px', color: '#e05656' }}>
-                    <LogOut size={15} /> Hisobdan chiqish
+                    <LogOut size={15} /> Hisobdan çiqiş
                   </button>
                 </div>
               </div>
@@ -1538,11 +1538,11 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
           )}
 
           <footer className="page-footer">
-            <span>© 2026 TILSHUNOS. Bilim sari har kuni bir qadam.</span>
+            <span>© 2026 TILŞUNOS. Bilim sari har kuni bir qadam.</span>
             <div>
               <button onClick={() => notify('Maxfiylik siyosati: ma’lumotlaringiz xavfsiz himoyalangan.')}>Maxfiylik</button>
               <button onClick={() => notify('Yordam: hello@tilshunos.uz')}>Yordam</button>
-              <span className="footer-status"><i /> Tizimlar ishlamoqda</span>
+              <span className="footer-status"><i /> Tizimlar işlamoqda</span>
             </div>
           </footer>
         </div>
@@ -1667,8 +1667,8 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
             <div className="modal-heading">
               <div>
                 <span className="eyebrow"><Smartphone size={14} /> MOBIL ILOVA</span>
-                <h2>TILSHUNOS ilovasini o‘rnatish</h2>
-                <p>Ilovani to‘liq ekran va tezkor rejimda ochish uchun:</p>
+                <h2>TILŞUNOS ilovasini örnatiş</h2>
+                <p>Ilovani töliq ekran va tezkor rejimda oçiş uçun:</p>
               </div>
               <button className="icon-btn" onClick={() => setShowPwaModal(false)}><X size={20} /></button>
             </div>
@@ -1676,20 +1676,20 @@ function Dashboard({ onLogout, dark, setDark }: { onLogout: () => void; dark: bo
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'var(--bg)', padding: '14px', borderRadius: '12px' }}>
                 <div style={{ background: '#e0edff', color: '#2563eb', padding: '8px', borderRadius: '8px' }}><Share2 size={20} /></div>
                 <div>
-                  <strong style={{ fontSize: '13px' }}>iPhone (Safari) foydalanuvchilari uchun:</strong>
+                  <strong style={{ fontSize: '13px' }}>iPhone (Safari) foydalanuvçilari uçun:</strong>
                   <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '4px 0 0' }}>
-                    1. Safari pastidagi <b>"Ulashish" (Share)</b> tugmasini bosing.<br />
-                    2. Chiqqan ro‘yxatdan <b>"Bosh ekranga qo‘shish" (Add to Home Screen)</b> bandini tanlang.
+                    1. Safari pastidagi <b>"Ulaşiş" (Share)</b> tugmasini bosing.<br />
+                    2. Çiqqan röyxatdan <b>"Boş ekranga qöşiş" (Add to Home Screen)</b> bandini tanlang.
                   </p>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'var(--bg)', padding: '14px', borderRadius: '12px' }}>
                 <div style={{ background: '#fef3c7', color: '#d97706', padding: '8px', borderRadius: '8px' }}><Download size={20} /></div>
                 <div>
-                  <strong style={{ fontSize: '13px' }}>Android (Chrome) foydalanuvchilari uchun:</strong>
+                  <strong style={{ fontSize: '13px' }}>Android (Chrome) foydalanuvçilari uçun:</strong>
                   <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '4px 0 0' }}>
-                    1. Chrome brauzeri yuqori o‘ng burchagidagi <b>(⋮) uch nuqta</b> tugmasini bosing.<br />
-                    2. <b>"Ilovani o‘rnatish" (Install App)</b> yoki <b>"Bosh ekranga qo‘shish"</b> bandini bosing.
+                    1. Chrome brauzeri yuqori öng burçagidagi <b>(⋮) uç nuqta</b> tugmasini bosing.<br />
+                    2. <b>"Ilovani örnatiş" (Install App)</b> yoki <b>"Boş ekranga qöşiş"</b> bandini bosing.
                   </p>
                 </div>
               </div>
@@ -2044,7 +2044,7 @@ function App() {
           }}>
             <img
               src="/brand_logo.png"
-              alt="TILSHUNOS"
+              alt="TILŞUNOS"
               style={{
                 width: '100%',
                 height: '100%',
@@ -2058,7 +2058,7 @@ function App() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: '#7869f5' }}>
             <span className="animate-spin" style={{ display: 'inline-block', width: '16px', height: '16px', border: '2.5px solid rgba(120, 105, 245, 0.25)', borderTopColor: '#7869f5', borderRadius: '50%' }} />
-            <span>TILSHUNOS yuklanmoqda...</span>
+            <span>TILŞUNOS yuklanmoqda...</span>
           </div>
         </div>
       );
@@ -2113,15 +2113,15 @@ function App() {
     <div className={`entry-shell ${dark ? 'dark' : ''}`}>
       <header className="entry-header">
         <button className="entry-brand" onClick={() => setPage('welcome')}>
-          <span className="entry-logo"><img src="/brand_logo.png" alt="TILSHUNOS" className="brand-logo-img" /></span>
-          <span>TILSHUNOS<span className="entry-dot">.</span><small>LEARN YOUR WAY</small></span>
+          <span className="entry-logo"><img src="/brand_logo.png" alt="TILŞUNOS" className="brand-logo-img" /></span>
+          <span>TILŞUNOS<span className="entry-dot">.</span><small>LEARN YOUR WAY</small></span>
         </button>
         <nav>
-          <button className="entry-theme-toggle" onClick={() => setDark(!dark)} title="Mavzuni almashtirish">
+          <button className="entry-theme-toggle" onClick={() => setDark(!dark)} title="Mavzuni almaştiriş">
             {dark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
           <button className="entry-login" onClick={() => begin(page === 'login' ? 'register' : 'login')}>
-            {page === 'login' ? 'Ro‘yxatdan o‘tish' : 'Kirish'} <ArrowRight size={16} />
+            {page === 'login' ? 'Röyxatdan ötiş' : 'Kiriş'} <ArrowRight size={16} />
           </button>
         </nav>
       </header>
@@ -2142,17 +2142,17 @@ function App() {
             }}
           >
             <span className="entry-kicker">
-              {cmsContent?.authBanner?.kicker || 'TILSHUNOS PLATFORMASI'}
+              {cmsContent?.authBanner?.kicker || 'TILŞUNOS PLATFORMASI'}
             </span>
             <h1>
               {page === 'verify'
                 ? (cmsContent?.authBanner?.verifyTitle || 'Emailingizni tasdiqlang')
                 : page === 'login'
                 ? (cmsContent?.authBanner?.loginTitle || 'Qaytganingizdan xursandmiz!')
-                : (cmsContent?.authBanner?.registerTitle || 'O‘rganish yo‘lingiz shu yerdan boshlanadi.')}
+                : (cmsContent?.authBanner?.registerTitle || 'Örganiş yölingiz şu yerdan boşlanadi.')}
             </h1>
             <p>
-              {cmsContent?.authBanner?.subtitle || 'O‘z maqsadingizni belgilang, kichik qadamlar bilan katta natijalarga erishing.'}
+              {cmsContent?.authBanner?.subtitle || 'Öz maqsadingizni belgilang, kiçik qadamlar bilan katta natijalarga erişing.'}
             </p>
             <div className="auth-visual-stat">
               <strong>{cmsContent?.authBanner?.statNumber || '4+'}</strong>
@@ -2278,10 +2278,10 @@ function App() {
         <section className="onboarding-wrap">
           <div className="onboarding-card">
             <div className="onboarding-step">01 <span>—</span> 02</div>
-            <div className="onboarding-symbol"><img src="/brand_logo.png" alt="TILSHUNOS" className="brand-logo-img" /></div>
-            <span className="entry-kicker">SHAXSIY O‘QUV REJANGIZ</span>
-            <h1>Qaysi tilni <span>o‘rganmoqchisiz?</span></h1>
-            <p>Tanlovingiz bo‘yicha dashboard va lug‘at tavsiyalari moslashtiriladi.</p>
+            <div className="onboarding-symbol"><img src="/brand_logo.png" alt="TILŞUNOS" className="brand-logo-img" /></div>
+            <span className="entry-kicker">ŞAXSIY ÖQUV REJANGIZ</span>
+            <h1>Qaysi tilni <span>örganmoqçisiz?</span></h1>
+            <p>Tanlovingiz böyiça dashboard va luğat tavsiyalari moslaştiriladi.</p>
             <div className="language-options">
               {supportedLanguages.map(item => (
                 <button
@@ -2312,7 +2312,7 @@ function App() {
               ))}
             </div>
             <button className="entry-primary onboarding-submit" onClick={finishOnboarding} disabled={loading}>
-              {loading ? 'Saqlanmoqda...' : 'Tasdiqlash va o‘rganishni boshlash'} <ArrowRight size={18} />
+              {loading ? 'Saqlanmoqda...' : 'Tasdiqlaş va örganişni boşlaş'} <ArrowRight size={18} />
             </button>
           </div>
         </section>

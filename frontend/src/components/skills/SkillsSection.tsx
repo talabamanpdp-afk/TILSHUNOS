@@ -27,39 +27,39 @@ export function SkillsSection({
   dark,
   onSelectSkill
 }: SkillsSectionProps) {
-  const currentKicker = kicker || 'MUVOZANATLI RIVOJLANISH';
-  const currentTitle = title || '5 ta asosiy til ko‘nikmasini mustahkamlang';
-  const currentSubtitle = subtitle || 'Faqat qoidalar yodlash emas — har tomonlama tabiiy o‘rganish uslubi.';
+  const currentKicker = kicker || 'MUVOZANATLI RIVOJLANIŞ';
+  const currentTitle = title || '5 ta asosiy til könikmasini mustahkamlang';
+  const currentSubtitle = subtitle || 'Faqat qoidalar yodlaş emas — har tomonlama tabiiy örganiş uslubi.';
 
   const defaultSkills: SkillItem[] = [
     {
       key: 'reading',
-      title: 'O‘qish (Reading)',
-      desc: 'Darajangizga moslangan qiziqarli hikoyalar, badiiy parchalar va zamonaviy maqolalar.',
+      title: 'Öqiş (Reading)',
+      desc: 'Darajangizga moslangan qiziqarli hikoyalar, badiiy parçalar va zamonaviy maqolalar.',
       color: '#8b5cf6'
     },
     {
       key: 'writing',
-      title: 'Yozish (Writing)',
-      desc: 'Insho va xatlar yozish, grammatik qoidalarni amaliyotda qo‘llash orqali darhol tekshirish.',
+      title: 'Yoziş (Writing)',
+      desc: 'Inşo va xatlar yoziş, grammatik qoidalarni amaliyotda qöllaş orqali darhol tekşiriş.',
       color: '#06b6d4'
     },
     {
       key: 'listening',
-      title: 'Tinglash (Listening)',
+      title: 'Tinglaş (Listening)',
       desc: 'Tabiiy tezlikdagi audio podkastlar, kundalik muloqot dialoglari va transkriptlar.',
       color: '#f97316'
     },
     {
       key: 'speaking',
-      title: 'Gapirish (Speaking)',
-      desc: 'To‘g‘ri talaffuz va intonatsiya mashqlari bilan muloqotdagi to‘siqlarni yengish.',
+      title: 'Gapiriş (Speaking)',
+      desc: 'Töğri talaffuz va intonatsiya maşqlari bilan muloqotdagi tösiqlarni yengiş.',
       color: '#3b82f6'
     },
     {
       key: 'vocab',
-      title: 'Lug‘at (Vocabulary)',
-      desc: 'Shaxsiy so‘z daftari, kontekstual misollar va intervalli takrorlash metodikasi.',
+      title: 'Luğat (Vocabulary)',
+      desc: 'Şaxsiy söz daftari, kontekstual misollar va intervalli takrorlaş metodikasi.',
       color: '#d946ef'
     }
   ];

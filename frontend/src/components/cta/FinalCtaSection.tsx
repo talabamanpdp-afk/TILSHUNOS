@@ -13,23 +13,29 @@ interface FinalCtaSectionProps {
 }
 
 export function FinalCtaSection({
-  kicker = "BIZ BILAN O‘RGANING",
-  title = "Yangi tilni erkin gapirish vaqti keldi",
-  desc = "Til o‘rganish — yangi imkoniyatlar eshiklarini ochadi. Biz siz bilan birga bu yo‘lda!",
-  btnRegister = "Bepul hisob yaratish",
-  btnLogin = "Tizimga kirish",
+  kicker = "BIZ BILAN ÖRGANING",
+  title = "Yangi tilni erkin gapiriş vaqti keldi",
+  desc = "Til örganiş — yangi imkoniyatlar eşiklarini oçadi. Biz siz bilan birga bu yölda!",
+  btnRegister = "Bepul hisob yaratiş",
+  btnLogin = "Tizimga kiriş",
   onRegister,
   onLogin,
   dark
 }: FinalCtaSectionProps) {
-  // Render title with gradient highlight on "erkin gapirish"
+  // Render title with gradient highlight on "erkin gapiriş" (or legacy "erkin gapirish")
   const renderTitle = (rawTitle: string) => {
-    if (rawTitle.includes('erkin gapirish')) {
-      const parts = rawTitle.split('erkin gapirish');
+    const targetWord = rawTitle.includes('erkin gapiriş')
+      ? 'erkin gapiriş'
+      : rawTitle.includes('erkin gapirish')
+      ? 'erkin gapirish'
+      : null;
+
+    if (targetWord) {
+      const parts = rawTitle.split(targetWord);
       return (
         <>
           {parts[0]}
-          <span className="final-cta-gradient-word">erkin gapirish</span>
+          <span className="final-cta-gradient-word">{targetWord}</span>
           {parts[1]}
         </>
       );

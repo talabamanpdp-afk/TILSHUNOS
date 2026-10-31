@@ -27,34 +27,34 @@ export function FeaturesSection({
   dark,
   onExploreFeature
 }: FeaturesSectionProps) {
-  const currentKicker = kicker || 'ILG‘OR IMKONIYATLAR';
+  const currentKicker = kicker || 'ILĞOR IMKONIYATLAR';
   const currentTitle = title || 'Zamonaviy texnologiyalar xizmatingizda';
-  const currentSubtitle = subtitle || 'Biz til o‘rganishni nafaqat samarali, balki maroqli jarayonga aylantiramiz.';
+  const currentSubtitle = subtitle || 'Biz til örganişni nafaqat samarali, balki maroqli jarayonga aylantiramiz.';
 
   const defaultFeatures: FeatureItem[] = [
     {
       key: 'ai',
       color: 'purple',
       title: '24/7 AI Til Repetitori',
-      desc: 'Istalgan savolingizni bering, grammatik xatolaringizni aniqlang va muloyim tushuntirishlar oling.'
+      desc: 'Istalgan savolingizni bering, grammatik xatolaringizni aniqlang va muloyim tuşuntirişlar oling.'
     },
     {
       key: 'pvp',
       color: 'orange',
-      title: '1v1 So‘z Bellashuvi',
-      desc: 'Boshqa o‘quvchilar bilan real vaqtda so‘z boyligingizni sinang, XP to‘plang va yetakchilar safiga kiring.'
+      title: '1v1 Söz Bellaşuvi',
+      desc: 'Boşqa öquvçilar bilan real vaqtda söz boyligingizni sinang, XP töplang va yetakçilar safiga kiring.'
     },
     {
       key: 'anticheat',
       color: 'green',
       title: 'Anti-Cheat & Spaced Repetition',
-      desc: 'So‘zlar tasodifiy takrorlanmaydi — ilmiy tasdiqlangan intervallar bilan uzoq muddatli xotiraga ko‘chadi.'
+      desc: 'Sözlar tasodifiy takrorlanmaydi — ilmiy tasdiqlangan intervallar bilan uzoq muddatli xotiraga köçadi.'
     },
     {
       key: 'teachers',
       color: 'blue',
       title: 'Malakali Ustozlar Nazorati',
-      desc: 'Maxsus o‘qituvchilar tizimda sizning yozma insho va vazifalaringizni tekshirib, shaxsiy baho beradi.'
+      desc: 'Maxsus öqituvçilar tizimda sizning yozma inşo va vazifalaringizni tekşirib, şaxsiy baho beradi.'
     }
   ];
 
@@ -635,7 +635,7 @@ export function FeaturesSection({
 
             <div className="feat-calligraphy-text">
               Zamonaviy texnologiyalar<br />
-              bilan cheksiz imkoniyatlar!
+              bilan çeksiz imkoniyatlar!
             </div>
 
             <svg

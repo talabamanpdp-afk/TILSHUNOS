@@ -20,20 +20,20 @@ export function FaqSection({ faqs, dark }: FaqSectionProps) {
 
   const defaultFaqs: FaqItem[] = [
     {
-      q: 'TILSHUNOS platformasidan foydalanish bepulmi?',
-      a: 'Ha, asosiy funksiyalar — so‘z yodlash, mashqlar, CEFR reading va listening materiallari barcha uchun bepul.'
+      q: 'TILŞUNOS platformasidan foydalaniş bepulmi?',
+      a: 'Ha, asosiy funksiyalar — söz yodlaş, maşqlar, CEFR reading va listening materiallari barça uçun bepul.'
     },
     {
       q: 'CEFR darajalarini qanday aniqlayman?',
-      a: 'Ro‘yxatdan o‘tish chog‘ida darajangizni (A1–C2) o‘zingiz belgilashingiz yoki diagnostik test orqali aniqlab olishingiz mumkin.'
+      a: 'Röyxatdan ötiş çoğida darajangizni (A1–C2) özingiz belgilaşingiz yoki diagnostik test orqali aniqlab olişingiz mumkin.'
     },
     {
-      q: 'Mobil qurilmalarda ishlaydimi?',
-      a: 'Ha, TILSHUNOS responsive veb-ilova va PWA (Progressive Web App) sifatida smartfon va planshetlarda qulay ishlaydi.'
+      q: 'Mobil qurilmalarda işlaydimi?',
+      a: 'Ha, TILŞUNOS responsive veb-ilova va PWA (Progressive Web App) sifatida smartfon va planşetlarda qulay işlaydi.'
     },
     {
-      q: 'O‘qituvchi bilan qanday bog‘lanaman?',
-      a: 'Platformadagi O‘qituvchilar bo‘limi orqali tasdiqlangan ustozlar bilan bog‘lanib, shaxsiy topshiriqlar olishingiz mumkin.'
+      q: 'Öqituvçi bilan qanday boğlanaman?',
+      a: 'Platformadagi Öqituvçilar bölimi orqali tasdiqlangan ustozlar bilan boğlanib, şaxsiy topşiriqlar olişingiz mumkin.'
     }
   ];
 
@@ -511,12 +511,12 @@ export function FaqSection({ faqs, dark }: FaqSectionProps) {
             </span>
 
             <h2 className="faq-main-title">
-              Ko‘p beriladigan <br />
+              Köp beriladigan <br />
               savollar <span className="faq-gradient-text">(FAQ)</span>
             </h2>
 
             <p className="faq-subtitle">
-              Platformadan foydalanish, to‘lovlar va ta’lim jarayoni haqidagi eng muhim ma’lumotlar shu yerda jamlangan.
+              Platformadan foydalaniş, tölovlar va ta’lim jarayoni haqidagi eng muhim ma’lumotlar şu yerda jamlangan.
             </p>
           </div>
 

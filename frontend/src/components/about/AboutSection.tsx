@@ -14,8 +14,8 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
   const founderName = cms?.founderName || 'Soxibjon G‘aybullayev';
   const founderRole = cms?.founderRole || '.NET Developer';
 
-  const aboutShort = cms?.about || 'TILSHUNOS til o‘rganishni tartibli, qiziqarli va shaxsiy maqsadlaringizga mos qilish uchun yaratilayotgan ilg‘or platforma.';
-  const aboutDesc = cms?.aboutDetailed || 'TILSHUNOS har bir o‘quvchi o‘z sur’atida, aniq xalqaro standartlar asosida va zamonaviy sun’iy intellekt yordamida tilni erkin o‘zlashtirishi uchun ishlab chiqilgan.';
+  const aboutShort = cms?.about || 'TILŞUNOS til örganişni tartibli, qiziqarli va şaxsiy maqsadlaringizga mos qiliş uçun yaratilayotgan ilğor platforma.';
+  const aboutDesc = cms?.aboutDetailed || 'TILŞUNOS har bir öquvçi öz sur’atida, aniq xalqaro standartlar asosida va zamonaviy sun’iy intellekt yordamida tilni erkin özlaştirişi uçun işlab çiqilgan.';
   const aboutBtn = cms?.aboutButton || 'Batafsil ma’lumot';
 
   // Desk scene background image (custom or default photorealistic city window desk)
@@ -23,8 +23,8 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
 
   const valuesList = [
     {
-      title: 'Aqlli yondashuv',
-      desc: 'Sizning maqsadingiz, vaqtingiz va darajangiz asosida individual o‘quv reja yaratiladi.',
+      title: 'Aqlli yondaşuv',
+      desc: 'Sizning maqsadingiz, vaqtingiz va darajangiz asosida individual öquv reja yaratiladi.',
       icon: Target,
       iconColor: '#3b82f6',
       iconBg: 'rgba(59, 130, 246, 0.12)',
@@ -33,7 +33,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
     },
     {
       title: 'Zamonaviy texnologiyalar',
-      desc: 'Sun’iy intellekt yordamida til o‘rganish jarayoni yanada samarali va qiziqarli bo‘ladi.',
+      desc: 'Sun’iy intellekt yordamida til örganiş jarayoni yanada samarali va qiziqarli böladi.',
       icon: Cpu,
       iconColor: '#8b5cf6',
       iconBg: 'rgba(139, 92, 246, 0.12)',
@@ -731,7 +731,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
             </span>
 
             <h2 className="as-main-heading">
-              <span className="as-highlight-brand">TILSHUNOS</span> til o‘rganishni tartibli, qiziqarli va shaxsiy maqsadlaringizga mos qilish uchun yaratilayotgan ilg‘or platforma.
+              <span className="as-highlight-brand">TILŞUNOS</span> til örganişni tartibli, qiziqarli va şaxsiy maqsadlaringizga mos qiliş uçun yaratilayotgan ilğor platforma.
             </h2>
 
             <p className="as-paragraph">
@@ -747,8 +747,8 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
           {/* Right Column: Desk Scene with Floating Card */}
           <div className="as-visual-col">
             {/* Floating Card: Loyiha Faollari va Yetakchilari */}
-            <div className="as-floating-team-card" onClick={onOpenAbout} title="Batafsil ko‘rish">
-              <div className="as-team-card-header">Loyiha Faollari va Yetakchilari</div>
+            <div className="as-floating-team-card" onClick={onOpenAbout} title="Batafsil köriş">
+              <div className="as-team-card-header">Loyiha Faollari va Yetakçilari</div>
               <div className="as-team-member-row">
                 <div className="as-member-avatar-wrap">
                   <img
@@ -774,14 +774,14 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
             <div className="as-desk-frame">
               <img
                 src={deskImage}
-                alt="TILSHUNOS Study Workspace"
+                alt="TILŞUNOS Study Workspace"
                 className="as-desk-img"
               />
               <div className="as-desk-overlay" />
 
               {/* Top Right Calligraphy Slogan */}
               <div className="as-desk-calligraphy">
-                Yaxshiroq til — kengroq<br />imkoniyatlar! ✈️
+                Yaxşiroq til — kengroq<br />imkoniyatlar! ✈️
               </div>
 
               {/* Book Spines on Desk */}
@@ -796,7 +796,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
                   <span>Türkçe</span> <span>🇹🇷</span>
                 </div>
                 <div className="as-book-spine as-book-uz">
-                  <span>O‘zbek tili</span> <span>🇺🇿</span>
+                  <span>Özbek tili</span> <span>🇺🇿</span>
                 </div>
               </div>
 
@@ -804,7 +804,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
               <div className="as-desk-laptop-mock">
                 <img
                   src="/brand_logo.png"
-                  alt="TILSHUNOS Logo"
+                  alt="TILŞUNOS Logo"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/favicon.ico'; }}
                 />
               </div>
@@ -813,7 +813,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
               <div className="as-desk-mug">
                 <img
                   src="/brand_logo.png"
-                  alt="TILSHUNOS Mug Logo"
+                  alt="TILŞUNOS Mug Logo"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/favicon.ico'; }}
                 />
               </div>

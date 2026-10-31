@@ -22,18 +22,18 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
     window.scrollTo({ top: 0, behavior: 'instant' });
     onBack();
   };
-  const aboutDetailed = cms?.aboutDetailed || `TILSHUNOS — xalqaro CEFR (A1–C2) standartlariga moslashtirilgan, sun’iy intellekt va professional ustozlar metodikasini o‘zida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvchiga murakkab grammatik qoidalarsiz, interaktiv so‘z o‘yinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy o‘zlashtirish imkoniyatini taqdim etishdir.`;
+  const aboutDetailed = cms?.aboutDetailed || `TILŞUNOS — xalqaro CEFR (A1–C2) standartlariga moslaştirilgan, sun’iy intellekt va professional ustozlar metodikasini özida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvçiga murakkab grammatik qoidalarsiz, interaktiv söz öyinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy özlaştiriş imkoniyatini taqdim etişdir.`;
 
   const founderName = cms?.founderName || 'Soxibjon Gaybullayev';
-  const founderTitle = cms?.founderTitle || 'LOYIHA ASOSCHISI VA RAHBARI';
-  const founderBio = cms?.founderBio || `TILSHUNOS platformasi asoschisi. O‘zbekiston yoshlariga jahon tillarini eng samarali va qulay usulda o‘rganish uchun innovatsion ekotizim yaratish ustida ishlaydi.`;
-  const founderQuote = cms?.founderQuote || 'Bizning niyatimiz — O‘zbekiston yoshlariga jahonning istalgan tili bo‘yicha eng sifatli ta’limni o‘z ona tilida va zamonaviy texnologiyalar bilan taqdim etish.';
+  const founderTitle = cms?.founderTitle || 'LOYIHA ASOSÇISI VA RAHBARI';
+  const founderBio = cms?.founderBio || `TILŞUNOS platformasi asosçisi. Özbekiston yoşlariga jahon tillarini eng samarali va qulay usulda örganiş uçun innovatsion ekotizim yaratiş ustida işlaydi.`;
+  const founderQuote = cms?.founderQuote || 'Bizning niyatimiz — Özbekiston yoşlariga jahonning istalgan tili böyiça eng sifatli ta’limni öz ona tilida va zamonaviy texnologiyalar bilan taqdim etiş.';
   const founderPhoto = cms?.founderPhoto || '';
 
   const teamMembers = Array.isArray(cms?.team) ? cms.team : [
-    { name: 'Soxibjon Gaybullayev', role: 'Asoschi & Bosh Muhandis', bio: 'Til o‘rganish texnologiyalari va raqamli ta’lim bo‘yicha mutaxassis.', avatar: 'S' },
-    { name: 'Dilnoza Karimova', role: 'Bosh O‘qituvchi & Metodist', bio: 'IELTS va CEFR standartlari bo‘yicha 8 yillik tajribaga ega ustoz.', avatar: 'D' },
-    { name: 'Jasur Aliyev', role: 'Ta’lim Koordinatori', bio: 'Talabalar bilan ishlash va interaktiv mashqlar mutaxassisi.', avatar: 'J' }
+    { name: 'Soxibjon Gaybullayev', role: 'Asosçi & Boş Muhandis', bio: 'Til örganiş texnologiyalari va raqamli ta’lim böyiça mutaxassis.', avatar: 'S' },
+    { name: 'Dilnoza Karimova', role: 'Boş Öqituvçi & Metodist', bio: 'IELTS va CEFR standartlari böyiça 8 yillik tajribaga ega ustoz.', avatar: 'D' },
+    { name: 'Jasur Aliyev', role: 'Ta’lim Koordinatori', bio: 'Talabalar bilan işlaş va interaktiv maşqlar mutaxassisi.', avatar: 'J' }
   ];
 
   const contacts = cms?.contacts || {
@@ -43,7 +43,7 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
     phone: '+998 90 123 45 67'
   };
 
-  const footerText = cms?.footer || '© 2026 TILSHUNOS · Barcha huquqlar himoyalangan';
+  const footerText = cms?.footer || '© 2026 TILŞUNOS · Barça huquqlar himoyalangan';
   const heroBgDesktop = cms?.heroBgDesktop || cms?.headerBgDesktop || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254439976_c6auer.webp';
   const heroBgMobile = cms?.heroBgMobile || cms?.headerBgMobile || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254446169_xxtbf7.webp';
 
@@ -53,16 +53,16 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
       <header className="about-page-nav">
         <div className="about-nav-container">
           <div className="about-nav-left">
-            <button className="about-back-btn" onClick={handleBack} title="Bosh sahifaga qaytish">
+            <button className="about-back-btn" onClick={handleBack} title="Boş sahifaga qaytiş">
               <ArrowLeft size={18} />
-              <span>Bosh sahifa</span>
+              <span>Boş sahifa</span>
             </button>
             <div className="nav-divider-v" />
             <button className="about-nav-brand" onClick={handleBack}>
               <span className="brand-icon-box">
-                <img src={cms?.brandLogo || "/brand_logo.png"} alt="TILSHUNOS" className="brand-logo-img" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }} />
+                <img src={cms?.brandLogo || "/brand_logo.png"} alt="TILŞUNOS" className="brand-logo-img" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }} />
               </span>
-              <span className="brand-main">TILSHUNOS<span className="brand-dot">.</span></span>
+              <span className="brand-main">TILŞUNOS<span className="brand-dot">.</span></span>
             </button>
           </div>
 
@@ -70,16 +70,16 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
             <button
               className="theme-toggle-btn"
               onClick={() => setDark(!dark)}
-              title={dark ? 'Yorug‘ mavzuga o‘tish' : 'Tungi mavzuga o‘tish'}
-              aria-label="Mavzuni almashtirish"
+              title={dark ? 'Yoruğ mavzuga ötiş' : 'Tungi mavzuga ötiş'}
+              aria-label="Mavzuni almaştiriş"
             >
               {dark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <button className="nav-btn-secondary" onClick={() => onBegin('login')}>
-              Kirish
+              Kiriş
             </button>
             <button className="nav-btn-primary" onClick={() => onBegin('register')}>
-              <span>Ro‘yxatdan o‘tish</span>
+              <span>Röyxatdan ötiş</span>
               <ArrowRight size={15} />
             </button>
           </div>
@@ -91,11 +91,11 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
         <div className="about-hero-container animate-fade-in-up">
           <div className="about-hero-badge">
             <Sparkles size={14} />
-            <span>TILSHUNOS TA’LIM EKOTIZIMI</span>
+            <span>TILŞUNOS TA’LIM EKOTIZIMI</span>
           </div>
           <h1>Bizning Tariximiz va <span>Oliy Missiyamiz</span></h1>
           <p>
-            Har bir inson uchun til o‘rganishni erkin, tabiiy va yuqori natijali qilish yo‘lida birlashgan
+            Har bir inson uçun til örganişni erkin, tabiiy va yuqori natijali qiliş yölida birlaşgan
             mutaxassislar hamda innovatsion sun’iy intellekt texnologiyalari.
           </p>
         </div>
@@ -107,8 +107,8 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
           {/* Article Story */}
           <article className="about-story-card animate-fade-in-up">
             <div className="story-header">
-              <span className="section-kicker">LOVIHA HAQIDA BATAFSIL</span>
-              <h2>Til o‘rganish — imkoniyatlar eshigini ochadi</h2>
+              <span className="section-kicker">LOYIHA HAQIDA BATAFSIL</span>
+              <h2>Til örganiş — imkoniyatlar eşigini oçadi</h2>
             </div>
 
             <div className="story-paragraphs">
@@ -122,17 +122,17 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
               <div className="value-card">
                 <div className="value-icon purple"><Target size={22} /></div>
                 <h3>Haqiqiy Foyda</h3>
-                <p>Quruq grammatika emas, ilk kundan boshlab kundalik real muloqot va amaliyotga urg‘u beramiz.</p>
+                <p>Quruq grammatika emas, ilk kundan boşlab kundalik real muloqot va amaliyotga urğu beramiz.</p>
               </div>
               <div className="value-card">
                 <div className="value-icon orange"><Heart size={22} /></div>
-                <h3>O‘zbekona Yondashuv</h3>
-                <p>Tushuntirishlar va taqqoslashlar ona tilimizning boy lug‘ati va nozik tomonlariga moslashtirilgan.</p>
+                <h3>Özbekona Yondaşuv</h3>
+                <p>Tuşuntirişlar va taqqoslaşlar ona tilimizning boy luğati va nozik tomonlariga moslaştirilgan.</p>
               </div>
               <div className="value-card">
                 <div className="value-icon green"><ShieldCheck size={22} /></div>
                 <h3>CEFR Standartlari</h3>
-                <p>A1 dan C2 gacha har bir bosqich xalqaro o‘quv mezonlariga to‘liq javob beradigan materiallar bilan boyitilgan.</p>
+                <p>A1 dan C2 gaça har bir bosqiç xalqaro öquv mezonlariga töliq javob beradigan materiallar bilan boyitilgan.</p>
               </div>
             </div>
           </article>
@@ -143,7 +143,7 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
               <div className="section-heading-centered">
                 <span className="section-kicker">BIZNING JAMOA</span>
                 <h2>Loyiha Faollari va Mutaxassislari</h2>
-                <p>Platforma ta’lim metodikasi, texnologik infratuzilmasi va sifatini ta’minlab kelayotgan yetakchilar.</p>
+                <p>Platforma ta’lim metodikasi, texnologik infratuzilmasi va sifatini ta’minlab kelayotgan yetakçilar.</p>
               </div>
 
               <div className="about-team-grid">
@@ -192,15 +192,15 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
 
           {/* CTA Row */}
           <section className="about-bottom-cta animate-fade-in-up">
-            <h2>O‘rganish sayohatingizni bugun boshlang</h2>
-            <p>Hech qanday murakkabliksiz, o‘zingizga mos sur’atda katta natijalarga erishing.</p>
+            <h2>Örganiş sayohatingizni bugun boşlang</h2>
+            <p>Heç qanday murakkabliksiz, özingizga mos sur’atda katta natijalarga erişing.</p>
             <div className="about-cta-buttons">
               <button className="primary-btn-large" onClick={() => onBegin('register')}>
-                <span>Bepul boshlash</span>
+                <span>Bepul boşlaş</span>
                 <ArrowRight size={18} />
               </button>
               <button className="outline-btn-large" onClick={handleBack}>
-                <span>← Bosh sahifaga qaytish</span>
+                <span>← Boş sahifaga qaytiş</span>
               </button>
             </div>
           </section>
@@ -244,8 +244,8 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
         <div className="about-footer-container">
           <div className="about-footer-top">
             <div>
-              <strong style={{ fontSize: '18px', color: 'var(--text)' }}>TILSHUNOS<span style={{ color: 'var(--purple)' }}>.</span></strong>
-              <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--muted)' }}>Ilg‘or til o‘rganish platformasi</p>
+              <strong style={{ fontSize: '18px', color: 'var(--text)' }}>TILŞUNOS<span style={{ color: 'var(--purple)' }}>.</span></strong>
+              <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--muted)' }}>Ilğor til örganiş platformasi</p>
             </div>
             <div className="about-footer-contacts">
               {contacts.telegram && (
@@ -265,7 +265,7 @@ export function AboutPage({ cms, onBack, onBegin, dark, setDark }: AboutPageProp
           </div>
           <div className="about-footer-bottom">
             <span>{footerText}</span>
-            <button className="footer-back-link" onClick={handleBack}>← Bosh sahifa</button>
+            <button className="footer-back-link" onClick={handleBack}>← Boş sahifa</button>
           </div>
         </div>
       </footer>

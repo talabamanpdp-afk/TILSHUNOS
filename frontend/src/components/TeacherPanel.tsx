@@ -228,11 +228,11 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
             justifyContent: 'center',
             boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)'
           }}>
-            <img src="/brand_logo.png" alt="TILSHUNOS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src="/brand_logo.png" alt="TILŞUNOS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: dark ? '#f1f0fc' : '#0f172a' }}>TILSHUNOS</h1>
+              <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: dark ? '#f1f0fc' : '#0f172a' }}>TILŞUNOS</h1>
               <span style={{
                 background: dark ? '#312e81' : '#e0e7ff',
                 color: dark ? '#c7d2fe' : '#4338ca',
@@ -241,11 +241,11 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                 padding: '2px 8px',
                 borderRadius: '6px'
               }}>
-                O'QITUVCHI PANELI
+                ÖQITUVÇI PANELI
               </span>
             </div>
             <p style={{ margin: 0, fontSize: '12px', color: dark ? '#94a3b8' : '#64748b' }}>
-              O'quvchilar monitoringi, vazifalar taqsimoti va shaxsiy kabinet
+              Öquvçilar monitoringi, vazifalar taqsimoti va şaxsiy kabinet
             </p>
           </div>
         </div>
@@ -269,7 +269,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
                 color: dark ? '#f1f0fc' : '#475569',
                 cursor: 'pointer'
               }}
-              title="Mavzuni almashtirish"
+              title="Mavzuni almaştiriş"
             >
               {dark ? <Sun size={17} /> : <Moon size={17} />}
             </button>
@@ -287,7 +287,7 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLogout, dark, setD
               cursor: 'pointer'
             }}
           >
-            Chiqish
+            Çiqiş
           </button>
         </div>
       </header>

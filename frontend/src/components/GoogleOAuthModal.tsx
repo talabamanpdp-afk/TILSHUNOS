@@ -338,9 +338,9 @@ export const GoogleOAuthModal: React.FC<GoogleOAuthModalProps> = ({
             </div>
             <div>
               <strong style={{ fontSize: '15px', display: 'block', color: '#0f172a', letterSpacing: '-0.3px' }}>
-                TILSHUNOS
+                TILŞUNOS
               </strong>
-              <span style={{ fontSize: '11px', color: '#64748b' }}>Google & Email orqali tezkor kirish</span>
+              <span style={{ fontSize: '11px', color: '#64748b' }}>Google & Email orqali tezkor kiriş</span>
             </div>
           </div>
           <button

@@ -20,9 +20,9 @@ interface PracticeGuideSectionProps {
 }
 
 const SKILL_MODULES = [
-  { id: 0, key: 'vocab', label: '1. Vocab', sub: 'Lug‘at boyligi', icon: BookOpen },
-  { id: 1, key: 'writing', label: '2. Writing', sub: 'Rasmiy yozish', icon: PenLine },
-  { id: 2, key: 'reading', label: '3. Reading', sub: 'Matn o‘qish & tahlil', icon: BookOpen },
+  { id: 0, key: 'vocab', label: '1. Vocab', sub: 'Luğat boyligi', icon: BookOpen },
+  { id: 1, key: 'writing', label: '2. Writing', sub: 'Rasmiy yoziş', icon: PenLine },
+  { id: 2, key: 'reading', label: '3. Reading', sub: 'Matn öqiş & tahlil', icon: BookOpen },
   { id: 3, key: 'listening', label: '4. Listening', sub: 'Audio & Gap-fill', icon: Headphones },
   { id: 4, key: 'speaking', label: '5. Speaking', sub: 'Jonli intervyu', icon: MessageSquare },
   { id: 5, key: 'grammar', label: '6. Grammar', sub: 'Grammatika & tahlil', icon: Sparkles },
@@ -2792,7 +2792,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       <div className="music-meta">
                         <div className="music-meta-title">{currentLangData.listening.title}</div>
                         <div className="music-meta-artist">
-                          TILSHUNOS Audio · {currentLangData.langName} Listening
+                          TILŞUNOS Audio · {currentLangData.langName} Listening
                         </div>
                       </div>
 

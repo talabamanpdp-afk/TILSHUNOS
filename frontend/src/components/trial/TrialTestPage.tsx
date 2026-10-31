@@ -418,14 +418,14 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms }
         <button className="trial-brand" onClick={onBack}>
           <img
             src="/brand_logo.png"
-            alt="TILSHUNOS"
+            alt="TILŞUNOS"
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/favicon.ico'; }}
           />
           <div>
             <div className="trial-brand-text">
-              TILSHUNOS<span className="trial-brand-badge">SINOV DARAJASI</span>
+              TILŞUNOS<span className="trial-brand-badge">SINOV DARAJASI</span>
             </div>
-            <div style={{ fontSize: '11px', color: '#64748b' }}>Boshlang‘ich diagnostika testi</div>
+            <div style={{ fontSize: '11px', color: '#64748b' }}>Boşlanğiç diagnostika testi</div>
           </div>
         </button>
 
@@ -434,9 +434,9 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms }
             <button
               className="trial-back-btn"
               onClick={() => setSelectedSkill(null)}
-              title="Boshqa skillni tanlash"
+              title="Boşqa skillni tanlaş"
             >
-              <RefreshCw size={14} /> Boshqa sinovni tanlash
+              <RefreshCw size={14} /> Boşqa sinovni tanlaş
             </button>
           )}
 

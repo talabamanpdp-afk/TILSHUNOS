@@ -318,9 +318,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   // Safe defaults & Hero texts
   const heroTitle = cms?.hero || 'Yangi tilni erkin gapiring';
   const heroBadge = cms?.heroBadge || '99 PERCENT';
-  const heroDesc = cms?.description || 'TILSHUNOS bilan har kuni tizimli o‘rganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga chiqing.';
-  const primaryCta = cms?.cta || 'Hoziroq Boshlash';
-  const secondaryCta = cms?.secondaryCta || 'Platformani o‘rganish';
+  const heroDesc = cms?.description || 'TILŞUNOS bilan har kuni tizimli örganing, CEFR standartlarida bilimingizni mustahkamlang va erkin muloqotga çiqing.';
+  const primaryCta = cms?.cta || 'Hoziroq Boşlaş';
+  const secondaryCta = cms?.secondaryCta || 'Platformani örganiş';
   const heroBgDesktop = cms?.heroBgDesktop || cms?.headerBgDesktop || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254439976_c6auer.webp';
   const heroBgMobile = cms?.heroBgMobile || cms?.headerBgMobile || 'https://yipexommqztxnvpckqyi.supabase.co/storage/v1/object/public/tilshunos-media/img_1793254446169_xxtbf7.webp';
   const heroFlags = (cms?.heroFlags && cms.heroFlags.length > 0)
@@ -330,7 +330,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
   const heroFlagsLabel = cms?.heroFlagsLabel || 'Tillarda';
 
   // Dynamic top menu anchor links from cms.header
-  const rawNavHeader = cms?.header?.trim() || 'Imkoniyatlar, Biz haqimizda, Kirish';
+  const rawNavHeader = cms?.header?.trim() || 'Imkoniyatlar, Biz haqimizda, Kiriş';
   const navItems = rawNavHeader
     .split(',')
     .map(item => item.trim())
@@ -526,18 +526,18 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
     : defaultFeatures;
 
   // About, Founder, Contacts
-  const aboutShort = cms?.about || 'TILSHUNOS til o‘rganishni tartibli, qiziqarli va shaxsiy maqsadlaringizga mos qilish uchun yaratilayotgan ilg‘or platforma.';
-  const aboutDetailed = cms?.aboutDetailed || 'TILSHUNOS — xalqaro CEFR (A1–C2) standartlariga moslashtirilgan, sun’iy intellekt va professional ustozlar metodikasini o‘zida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvchiga murakkab grammatik qoidalarsiz, interaktiv so‘z o‘yinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy o‘zlashtirish imkoniyatini taqdim etishdir.';
+  const aboutShort = cms?.about || 'TILŞUNOS til örganişni tartibli, qiziqarli va şaxsiy maqsadlaringizga mos qiliş uçun yaratilayotgan ilğor platforma.';
+  const aboutDetailed = cms?.aboutDetailed || 'TILŞUNOS — xalqaro CEFR (A1–C2) standartlariga moslaştirilgan, sun’iy intellekt va professional ustozlar metodikasini özida mujassam etgan zamonaviy ta’lim platformasi. Bizning asosiy maqsadimiz — har bir foydalanuvçiga murakkab grammatik qoidalarsiz, interaktiv söz öyinlari, amaliy audio-dialoglar, yozma tahlil va real muloqot orqali tilni tabiiy özlaştiriş imkoniyatini taqdim etişdir.';
   const aboutBtn = cms?.aboutButton || 'Batafsil ma’lumot';
 
   const teamMembers = Array.isArray(cms?.team) ? cms.team : [
-    { name: 'Soxibjon Gaybullayev', role: 'Asoschi & Bosh Muhandis', bio: 'Til o‘rganish texnologiyalari va raqamli ta’lim bo‘yicha mutaxassis.', avatar: 'S' },
-    { name: 'Dilnoza Karimova', role: 'Bosh O‘qituvchi & Metodist', bio: 'IELTS va CEFR standartlari bo‘yicha 8 yillik tajribaga ega ustoz.', avatar: 'D' },
-    { name: 'Jasur Aliyev', role: 'Ta’lim Koordinatori', bio: 'Talabalar bilan ishlash va interaktiv mashqlar mutaxassisi.', avatar: 'J' }
+    { name: 'Soxibjon Gaybullayev', role: 'Asosçi & Boş Muhandis', bio: 'Til örganiş texnologiyalari va raqamli ta’lim böyiça mutaxassis.', avatar: 'S' },
+    { name: 'Dilnoza Karimova', role: 'Boş Öqituvçi & Metodist', bio: 'IELTS va CEFR standartlari böyiça 8 yillik tajribaga ega ustoz.', avatar: 'D' },
+    { name: 'Jasur Aliyev', role: 'Ta’lim Koordinatori', bio: 'Talabalar bilan işlaş va interaktiv maşqlar mutaxassisi.', avatar: 'J' }
   ];
 
   const founderName = cms?.founderName || 'Soxibjon Gaybullayev';
-  const founderBio = cms?.founderBio || 'TILSHUNOS platformasi asoschisi. O‘zbekiston yoshlariga jahon tillarini eng samarali va qulay usulda o‘rganish uchun innovatsion ekotizim yaratish ustida ishlaydi.';
+  const founderBio = cms?.founderBio || 'TILŞUNOS platformasi asosçisi. Özbekiston yoşlariga jahon tillarini eng samarali va qulay usulda örganiş uçun innovatsion ekotizim yaratiş ustida işlaydi.';
 
   const contacts = cms?.contacts || {
     telegram: '@tilshunos',
@@ -546,22 +546,22 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
     phone: '+998 90 123 45 67'
   };
 
-  const footerText = cms?.footer || '© 2026 TILSHUNOS · Barcha huquqlar himoyalangan';
+  const footerText = cms?.footer || '© 2026 TILŞUNOS · Barça huquqlar himoyalangan';
 
   const defaultFaqs = [
-    { q: 'TILSHUNOS platformasidan foydalanish bepulmi?', a: 'Ha, asosiy funksiyalar — so‘z yodlash, mashqlar, CEFR reading va listening materiallari barcha uchun bepul.' },
-    { q: 'CEFR darajalarini qanday aniqlayman?', a: 'Ro‘yxatdan o‘tish chog‘ida darajangizni (A1–C2) o‘zingiz belgilashingiz yoki diagnostik test orqali aniqlab olishingiz mumkin.' },
-    { q: 'Mobil qurilmalarda ishlaydimi?', a: 'Ha, TILSHUNOS responsive veb-ilova va PWA (Progressive Web App) sifatida smartfon va planshetlarda qulay ishlaydi.' },
-    { q: 'O‘qituvchi bilan qanday bog‘lanaman?', a: 'Platformadagi O‘qituvchilar bo‘limi orqali tasdiqlangan ustozlar bilan bog‘lanib, shaxsiy topshiriqlar olishingiz mumkin.' }
+    { q: 'TILŞUNOS platformasidan foydalaniş bepulmi?', a: 'Ha, asosiy funksiyalar — söz yodlaş, maşqlar, CEFR reading va listening materiallari barça uçun bepul.' },
+    { q: 'CEFR darajalarini qanday aniqlayman?', a: 'Röyxatdan ötiş çoğida darajangizni (A1–C2) özingiz belgilaşingiz yoki diagnostik test orqali aniqlab olişingiz mumkin.' },
+    { q: 'Mobil qurilmalarda işlaydimi?', a: 'Ha, TILŞUNOS responsive veb-ilova va PWA (Progressive Web App) sifatida smartfon va planşetlarda qulay işlaydi.' },
+    { q: 'Öqituvçi bilan qanday boğlanaman?', a: 'Platformadagi Öqituvçilar bölimi orqali tasdiqlangan ustozlar bilan boğlanib, şaxsiy topşiriqlar olişingiz mumkin.' }
   ];
   const faqs = Array.isArray(cms?.faqs) ? cms.faqs : defaultFaqs;
 
   // Final CTA Data
-  const finalCtaKicker = cms?.finalCta?.kicker || 'BIZ BILAN O‘RGANING';
-  const finalCtaTitle = cms?.finalCta?.title || 'Yangi tilni erkin gapirish vaqti keldi';
-  const finalCtaDesc = cms?.finalCta?.desc || 'Til o‘rganish — yangi imkoniyatlar eshiklarini ochadi. Biz siz bilan birga bu yo‘lda!';
-  const finalCtaBtnRegister = cms?.finalCta?.btnRegister || 'Bepul hisob yaratish';
-  const finalCtaBtnLogin = cms?.finalCta?.btnLogin || 'Tizimga kirish';
+  const finalCtaKicker = cms?.finalCta?.kicker || 'BIZ BILAN ÖRGANING';
+  const finalCtaTitle = cms?.finalCta?.title || 'Yangi tilni erkin gapiriş vaqti keldi';
+  const finalCtaDesc = cms?.finalCta?.desc || 'Til örganiş — yangi imkoniyatlar eşiklarini oçadi. Biz siz bilan birga bu yölda!';
+  const finalCtaBtnRegister = cms?.finalCta?.btnRegister || 'Bepul hisob yaratiş';
+  const finalCtaBtnLogin = cms?.finalCta?.btnLogin || 'Tizimga kiriş';
 
   return (
     <div className={`welcome-root ${dark ? 'dark' : ''}`}>
@@ -605,9 +605,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
             <div className="holo-nav-left">
               <a href="#" className="holo-brand">
                 <span className="holo-brand-icon">
-                  <img src={cms?.brandLogo || "/brand_logo.png"} alt="TILSHUNOS" className="brand-logo-img" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }} />
+                  <img src={cms?.brandLogo || "/brand_logo.png"} alt="TILŞUNOS" className="brand-logo-img" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/brand_logo.png'; }} />
                 </span>
-                <span className="holo-brand-name">TILSHUNOS</span>
+                <span className="holo-brand-name">TILŞUNOS</span>
               </a>
 
               <nav className="holo-nav-links">
@@ -643,18 +643,18 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                 id="welcome-theme-toggle"
                 className="holo-theme-toggle"
                 onClick={() => setDark(!dark)}
-                title={dark ? 'Yorug‘ mavzuga o‘tish' : 'Tungi mavzuga o‘tish'}
-                aria-label="Mavzuni almashtirish"
+                title={dark ? 'Yoruğ mavzuga ötiş' : 'Tungi mavzuga ötiş'}
+                aria-label="Mavzuni almaştiriş"
               >
                 {dark ? <Sun size={17} /> : <Moon size={17} />}
               </button>
 
               <button className="holo-sign-in" onClick={() => onBegin('login')}>
-                Kirish
+                Kiriş
               </button>
 
               <button className="holo-get-started" onClick={() => onBegin('register')}>
-                Boshlash
+                Boşlaş
               </button>
 
               <button
@@ -674,9 +674,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
               <div className="holo-mobile-select-menu">
                 <div className="mobile-select-header">
                   <span className="mobile-select-eyebrow">
-                    <Compass size={12} /> Bo‘limni tanlang
+                    <Compass size={12} /> Bölimni tanlang
                   </span>
-                  <span className="mobile-select-pill">TILSHUNOS</span>
+                  <span className="mobile-select-pill">TILŞUNOS</span>
                 </div>
 
                 <div className="mobile-select-list">
@@ -691,7 +691,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                     },
                     {
                       text: 'Biz haqimizda',
-                      desc: 'Loyiha maqsadi va asoschi',
+                      desc: 'Loyiha maqsadi va asosçi',
                       href: '#about',
                       icon: <BookOpen size={15} />,
                       color: '#2563eb',
@@ -700,7 +700,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                     },
                     {
                       text: 'Interaktiv tajriba',
-                      desc: 'Haqiqiy so‘z va dars namunasi',
+                      desc: 'Haqiqiy söz va dars namunasi',
                       href: '#preview',
                       icon: <Play size={15} />,
                       color: '#10b981',
@@ -708,7 +708,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                     },
                     {
                       text: 'CEFR Xaritasi',
-                      desc: 'A1 dan C2 gacha bosqichlar',
+                      desc: 'A1 dan C2 gaça bosqiçlar',
                       href: '#cefr',
                       icon: <Target size={15} />,
                       color: '#8b5cf6',
@@ -716,7 +716,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                     },
                     {
                       text: 'Savol-javoblar',
-                      desc: 'Ko‘p beriladigan savollar',
+                      desc: 'Köp beriladigan savollar',
                       href: '#faq',
                       icon: <HelpCircle size={15} />,
                       color: '#f59e0b',
@@ -942,7 +942,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                   <div className="laptop-screen">
                     <img
                       src={desktopTutorImg}
-                      alt="Tilshunos professional o‘qituvchi"
+                      alt="Tilşunos professional öqituvçi"
                       className="laptop-tutor-img"
                     />
                   </div>
@@ -977,7 +977,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                   <div className="phone-screen">
                     <img
                       src={mobileTutorImg}
-                      alt="Tilshunos mobil ilova"
+                      alt="Tilşunos mobil ilova"
                       className="phone-tutor-img"
                     />
 
@@ -989,7 +989,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
 
                     {/* App badge tag overlay */}
                     <div className="phone-screen-overlay">
-                      <span className="phone-screen-tag">TILSHUNOS APP</span>
+                      <span className="phone-screen-tag">TILŞUNOS APP</span>
                     </div>
 
                     {/* Modern iOS Home Indicator Bar - on top of image */}

@@ -721,12 +721,12 @@ export function FooterSection({
                   <BookOpen size={22} strokeWidth={2.5} />
                 </div>
                 <span className="footer-brand-text">
-                  TILSHUNOS<span>.</span>
+                  TILŞUNOS<span>.</span>
                 </span>
               </a>
 
               <p className="footer-brand-slogan">
-                Til o‘rganish — yangi imkoniyatlar eshiklarini ochadi. Biz siz bilan birga bu yo‘lda!
+                Til örganiş — yangi imkoniyatlar eşiklarini oçadi. Biz siz bilan birga bu yölda!
               </p>
 
               {/* Social Media Circular Buttons */}
@@ -785,9 +785,9 @@ export function FooterSection({
                 </svg>
               </div>
 
-              <h4 className="connect-card-title">Biz bilan bog‘laning</h4>
+              <h4 className="connect-card-title">Biz bilan boğlaning</h4>
               <p className="connect-card-desc">
-                Savollaringiz bo‘lsa, biz bilan aloqaga chiqing. Sizning fikringiz biz uchun muhim!
+                Savollaringiz bölsa, biz bilan aloqaga çiqing. Sizning fikringiz biz uçun muhim!
               </p>
 
               <a
@@ -796,7 +796,7 @@ export function FooterSection({
                 rel="noopener noreferrer"
                 className="connect-action-btn"
               >
-                <span>Bog‘lanish</span>
+                <span>Boğlaniş</span>
                 <ArrowRight size={15} strokeWidth={2.4} />
               </a>
             </div>
@@ -811,10 +811,10 @@ export function FooterSection({
               </div>
 
               <ul className="footer-links-list">
-                <li><a href="#preview" onClick={(e) => { e.preventDefault(); scrollToSection('preview'); }}>Interfeys ko‘rinishi</a></li>
+                <li><a href="#preview" onClick={(e) => { e.preventDefault(); scrollToSection('preview'); }}>Interfeys körinişi</a></li>
                 <li><a href="#roadmap" onClick={(e) => { e.preventDefault(); scrollToSection('roadmap'); }}>CEFR Standartlari</a></li>
-                <li><a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>5 ta Ko‘nikma</a></li>
-                <li><a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollToSection('how-it-works'); }}>Qanday ishlaydi?</a></li>
+                <li><a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>5 ta Könikma</a></li>
+                <li><a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollToSection('how-it-works'); }}>Qanday işlaydi?</a></li>
                 <li><a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection('features'); }}>Imkoniyatlar</a></li>
               </ul>
             </div>
@@ -836,22 +836,22 @@ export function FooterSection({
                 </li>
                 <li>
                   <a href="#faq" onClick={(e) => { e.preventDefault(); scrollToSection('faq'); }}>
-                    Ko‘p beriladigan savollar
+                    Köp beriladigan savollar
                   </a>
                 </li>
                 <li>
                   <button type="button" onClick={() => onBegin('register')}>
-                    O‘qituvchilar bilan ishlash
+                    Öqituvçilar bilan işlaş
                   </button>
                 </li>
                 <li>
                   <button type="button" onClick={() => onBegin('login')}>
-                    Hisobga kirish
+                    Hisobga kiriş
                   </button>
                 </li>
                 <li>
                   <button type="button" onClick={() => onBegin('register')}>
-                    Ro‘yxatdan o‘tish
+                    Röyxatdan ötiş
                   </button>
                 </li>
               </ul>
@@ -867,7 +867,7 @@ export function FooterSection({
               </div>
 
               <p className="footer-contacts-intro">
-                Taklif yoki savollaringiz bo‘lsa, biz bilan bog‘laning:
+                Taklif yoki savollaringiz bölsa, biz bilan boğlaning:
               </p>
 
               <div className="footer-contact-pills-list">
@@ -937,12 +937,12 @@ export function FooterSection({
                   <BookOpen size={20} strokeWidth={2.5} />
                 </div>
                 <span className="footer-brand-text">
-                  TILSHUNOS<span>.</span>
+                  TILŞUNOS<span>.</span>
                 </span>
               </a>
 
               <p className="footer-brand-slogan" style={{ maxWidth: '100%' }}>
-                Til o‘rganish — yangi imkoniyatlar eshiklarini ochadi. Biz siz bilan birga bu yo‘lda!
+                Til örganiş — yangi imkoniyatlar eşiklarini oçadi. Biz siz bilan birga bu yölda!
               </p>
 
               <div className="footer-social-row" style={{ marginBottom: '14px' }}>
@@ -975,9 +975,9 @@ export function FooterSection({
                 </svg>
               </div>
 
-              <h4 className="connect-card-title">Biz bilan bog‘laning</h4>
+              <h4 className="connect-card-title">Biz bilan boğlaning</h4>
               <p className="connect-card-desc">
-                Savollaringiz bo‘lsa, biz bilan aloqaga chiqing. Sizning fikringiz biz uchun muhim!
+                Savollaringiz bölsa, biz bilan aloqaga çiqing. Sizning fikringiz biz uçun muhim!
               </p>
 
               <a
@@ -986,7 +986,7 @@ export function FooterSection({
                 rel="noopener noreferrer"
                 className="connect-action-btn"
               >
-                <span>Bog‘lanish</span>
+                <span>Boğlaniş</span>
                 <ArrowRight size={15} strokeWidth={2.4} />
               </a>
             </div>
@@ -1010,10 +1010,10 @@ export function FooterSection({
               {openAccordion === 'platform' && (
                 <div className="footer-accordion-content">
                   <ul className="footer-links-list">
-                    <li><a href="#preview" onClick={(e) => { e.preventDefault(); scrollToSection('preview'); }}>Interfeys ko‘rinishi</a></li>
+                    <li><a href="#preview" onClick={(e) => { e.preventDefault(); scrollToSection('preview'); }}>Interfeys körinişi</a></li>
                     <li><a href="#roadmap" onClick={(e) => { e.preventDefault(); scrollToSection('roadmap'); }}>CEFR Standartlari</a></li>
-                    <li><a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>5 ta Ko‘nikma</a></li>
-                    <li><a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollToSection('how-it-works'); }}>Qanday ishlaydi?</a></li>
+                    <li><a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>5 ta Könikma</a></li>
+                    <li><a href="#how-it-works" onClick={(e) => { e.preventDefault(); scrollToSection('how-it-works'); }}>Qanday işlaydi?</a></li>
                     <li><a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection('features'); }}>Imkoniyatlar</a></li>
                   </ul>
                 </div>
@@ -1040,10 +1040,10 @@ export function FooterSection({
                 <div className="footer-accordion-content">
                   <ul className="footer-links-list">
                     <li><a href="#about" onClick={(e) => { e.preventDefault(); onOpenAbout(); }}>Biz haqimizda (Batafsil)</a></li>
-                    <li><a href="#faq" onClick={(e) => { e.preventDefault(); scrollToSection('faq'); }}>Ko‘p beriladigan savollar</a></li>
-                    <li><button type="button" onClick={() => onBegin('register')}>O‘qituvchilar bilan ishlash</button></li>
-                    <li><button type="button" onClick={() => onBegin('login')}>Hisobga kirish</button></li>
-                    <li><button type="button" onClick={() => onBegin('register')}>Ro‘yxatdan o‘tish</button></li>
+                    <li><a href="#faq" onClick={(e) => { e.preventDefault(); scrollToSection('faq'); }}>Köp beriladigan savollar</a></li>
+                    <li><button type="button" onClick={() => onBegin('register')}>Öqituvçilar bilan işlaş</button></li>
+                    <li><button type="button" onClick={() => onBegin('login')}>Hisobga kiriş</button></li>
+                    <li><button type="button" onClick={() => onBegin('register')}>Röyxatdan ötiş</button></li>
                   </ul>
                 </div>
               )}
@@ -1102,7 +1102,7 @@ export function FooterSection({
         {/* Bottom Bar: Copyright & Legal Policies (Outside the card, exactly like image) */}
         <div className="footer-bottom-bar-modern">
           <div className="footer-copyright">
-            <span>© 2026 TILSHUNOS — Barcha huquqlar himoyalangan.</span>
+            <span>© 2026 TILŞUNOS — Barça huquqlar himoyalangan.</span>
           </div>
 
           <div className="footer-legal-links">
@@ -1112,7 +1112,7 @@ export function FooterSection({
             </a>
             <span className="footer-legal-divider">|</span>
             <a href="#about" onClick={(e) => { e.preventDefault(); onOpenAbout(); }}>
-              <span>Foydalanish shartlari</span>
+              <span>Foydalaniş şartlari</span>
             </a>
           </div>
         </div>
