@@ -2,14 +2,26 @@ import React, { useState, useRef } from 'react';
 import {
   Sparkles, BookOpen, Headphones, PenLine, Mic, Trophy,
   Save, Plus, Trash2, Edit3, Image as ImageIcon, Upload,
-  CheckCircle2, AlertCircle, RefreshCw, Eye, Search, ExternalLink, X
+  CheckCircle2, AlertCircle, RefreshCw, Eye, Search, ExternalLink, X,
+  Play, Pause, Youtube, Video, FileText, ChevronDown, ChevronRight, HelpCircle
 } from 'lucide-react';
 import {
   TrialTestsConfig, INITIAL_TRIAL_CONFIG, WordQuizItem,
-  SpeakingQuestion, SpeakingDescribeImage, ReadingTestItem,
-  ListeningTestItem, WritingTestItem, GrammarTestItem
+  SpeakingQuestion, SpeakingDescribeImage, ReadingTestItem, ReadingQuestion, ReadingGapFillBlank,
+  ListeningTestItem, ListeningGapBlank, WritingTestItem, WritingEssayItem,
+  WritingLetterItem, GrammarTestItem, GrammarTopicItem, GrammarQuestion,
+  DEFAULT_WRITING_ESSAYS, DEFAULT_WRITING_LETTERS, DEFAULT_GRAMMAR_TOPICS
 } from '../../data/trialTestData';
 import { api } from '../../api';
+
+function getYouTubeEmbedUrl(url?: string): string | null {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  if (match && match[1]) {
+    return `https://www.youtube.com/embed/${match[1]}?enablejsapi=1`;
+  }
+  return null;
+}
 
 interface AdminTrialTestsTabProps {
   cms: any;
@@ -21,11 +33,24 @@ interface AdminTrialTestsTabProps {
 type AdminSubTab = 'word' | 'speaking' | 'reading' | 'listening' | 'writing' | 'grammar';
 
 export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialTestsTabProps) {
-  // Current config
-  const currentConfig: TrialTestsConfig = cms?.trialTests || INITIAL_TRIAL_CONFIG;
+  // Current config with robust fallbacks
+  const currentConfig: TrialTestsConfig = {
+    ...INITIAL_TRIAL_CONFIG,
+    ...(cms?.trialTests || {}),
+    writingPool: cms?.trialTests?.writingPool || INITIAL_TRIAL_CONFIG.writingPool || {
+      essayTopics: DEFAULT_WRITING_ESSAYS,
+      letterTopics: DEFAULT_WRITING_LETTERS
+    },
+    grammarTopics: cms?.trialTests?.grammarTopics || INITIAL_TRIAL_CONFIG.grammarTopics || DEFAULT_GRAMMAR_TOPICS
+  };
   const [trialConfig, setTrialConfig] = useState<TrialTestsConfig>(currentConfig);
   const [activeTab, setActiveTab] = useState<AdminSubTab>('word');
   const [saving, setSaving] = useState(false);
+
+  // Subtab states for Writing and expanded accordions
+  const [writingSubTab, setWritingSubTab] = useState<'essay' | 'letter'>('essay');
+  const [expandedReadingId, setExpandedReadingId] = useState<string | null>(trialConfig.reading[0]?.id || null);
+  const [expandedGrammarId, setExpandedGrammarId] = useState<string | null>(trialConfig.grammarTopics?.[0]?.id || null);
 
   // Word pool search & edit
   const [wordSearch, setWordSearch] = useState('');
@@ -500,124 +525,1380 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
       )}
 
       {/* =================================================================== */}
-      {/* 3. READING SECTION                                                  */}
+      {/* 3. READING SECTION (MATNLAR VA SAVOLLAR/BO‘SH JOYLAR CRUD)           */}
       {/* =================================================================== */}
       {activeTab === 'reading' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {trialConfig.reading.map((r, idx) => (
-            <div key={r.id} style={{ padding: '18px', borderRadius: '14px', border: '1px solid var(--border)', background: 'var(--soft)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--purple)' }}>
-                  {r.type === 'comprehension' ? '1-Tur: Matn va savollar' : '2-Tur: Bo‘sh joylarni to‘ldirish'} ({r.level})
-                </span>
-                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{r.genre}</span>
-              </div>
-
-              <input
-                type="text"
-                value={r.title}
-                onChange={e => {
-                  const updated = [...trialConfig.reading];
-                  updated[idx].title = e.target.value;
-                  setTrialConfig({ ...trialConfig, reading: updated });
-                }}
-                style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 800, marginBottom: '8px' }}
-              />
-
-              <textarea
-                rows={5}
-                value={r.text}
-                onChange={e => {
-                  const updated = [...trialConfig.reading];
-                  updated[idx].text = e.target.value;
-                  setTrialConfig({ ...trialConfig, reading: updated });
-                }}
-                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '13px', lineHeight: '1.6' }}
-              />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
+                3. Reading (Öqiş) Matnlari va Savollar Jamğarmasi ({trialConfig.reading.length} ta)
+              </h3>
+              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--muted)' }}>
+                Har bir matn uchun CEFR darajasi, matn mazmuni va unga tegishli savollar yoki böş joylarni boshqaring.
+              </p>
             </div>
-          ))}
+
+            <button
+              onClick={() => {
+                const newTest: ReadingTestItem = {
+                  id: `r-test-${Date.now()}`,
+                  title: 'Yangi Reading Matni',
+                  genre: 'Ilmiy-ommabop maqola',
+                  level: 'B1',
+                  type: 'comprehension',
+                  text: 'Reading matnini shu yerga yozing yoki nusxa köçirib qöying...',
+                  questions: [
+                    {
+                      id: 1,
+                      question: 'Matnning asosiy mavzusi nima haqida?',
+                      options: ['1-variant', '2-variant', '3-variant', '4-variant'],
+                      correctAnswer: 0,
+                      explanation: 'Matnning birinchi xatboshisidan kelib çiqadi.'
+                    }
+                  ]
+                };
+                setTrialConfig(prev => ({ ...prev, reading: [...prev.reading, newTest] }));
+                setExpandedReadingId(newTest.id);
+              }}
+              className="outline-btn"
+              style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Plus size={15} />
+              <span>Yangi Reading Matni Qo‘şiş</span>
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {trialConfig.reading.map((r, rIdx) => {
+              const isExpanded = expandedReadingId === r.id;
+
+              return (
+                <div
+                  key={r.id}
+                  style={{
+                    borderRadius: '16px',
+                    border: '1.5px solid var(--border)',
+                    background: 'var(--soft)',
+                    overflow: 'hidden',
+                    transition: 'border-color 0.2s'
+                  }}
+                >
+                  {/* Card Header Accordion */}
+                  <div
+                    onClick={() => setExpandedReadingId(isExpanded ? null : r.id)}
+                    style={{
+                      padding: '16px 20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: 'pointer',
+                      background: isExpanded ? 'rgba(120, 105, 245, 0.08)' : 'transparent',
+                      borderBottom: isExpanded ? '1px solid var(--border)' : 'none'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        background: r.type === 'comprehension' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                        color: r.type === 'comprehension' ? '#3b82f6' : '#10b981',
+                        fontSize: '11.5px',
+                        fontWeight: 800
+                      }}>
+                        {r.type === 'comprehension' ? 'Savollar' : 'Böş joylar'} · {r.level}
+                      </span>
+                      <strong style={{ fontSize: '15px' }}>{r.title || 'Sarlavhasiz matn'}</strong>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '12.5px', color: 'var(--muted)' }}>
+                        {r.type === 'comprehension' ? `${r.questions?.length || 0} ta savol` : `${r.blanks?.length || 0} ta böş joy`}
+                      </span>
+                      {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                    </div>
+                  </div>
+
+                  {/* Expanded Content */}
+                  {isExpanded && (
+                    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                      {/* Meta Fields */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '5px' }}>Matn Sarlavhasi:</label>
+                          <input
+                            type="text"
+                            value={r.title}
+                            onChange={e => {
+                              const updated = [...trialConfig.reading];
+                              updated[rIdx].title = e.target.value;
+                              setTrialConfig({ ...trialConfig, reading: updated });
+                            }}
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 700 }}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '5px' }}>Janr / Mavzu:</label>
+                          <input
+                            type="text"
+                            value={r.genre}
+                            onChange={e => {
+                              const updated = [...trialConfig.reading];
+                              updated[rIdx].genre = e.target.value;
+                              setTrialConfig({ ...trialConfig, reading: updated });
+                            }}
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit' }}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '5px' }}>CEFR Darajasi:</label>
+                          <select
+                            value={r.level}
+                            onChange={e => {
+                              const updated = [...trialConfig.reading];
+                              updated[rIdx].level = e.target.value;
+                              setTrialConfig({ ...trialConfig, reading: updated });
+                            }}
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit' }}
+                          >
+                            {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map(lvl => (
+                              <option key={lvl} value={lvl}>{lvl}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '5px' }}>Topşiriq Turi:</label>
+                          <select
+                            value={r.type}
+                            onChange={e => {
+                              const updated = [...trialConfig.reading];
+                              updated[rIdx].type = e.target.value as any;
+                              setTrialConfig({ ...trialConfig, reading: updated });
+                            }}
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit' }}
+                          >
+                            <option value="comprehension">1-Tur: Matn va Savollar (Comprehension)</option>
+                            <option value="gap_fill">2-Tur: Böş Joylarni Töldiriş (Gap-Fill)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Reading Passage Text */}
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '5px' }}>
+                          Reading Matni (Passage Text):
+                        </label>
+                        <textarea
+                          rows={6}
+                          value={r.text}
+                          onChange={e => {
+                            const updated = [...trialConfig.reading];
+                            updated[rIdx].text = e.target.value;
+                            setTrialConfig({ ...trialConfig, reading: updated });
+                          }}
+                          style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '13.5px', lineHeight: '1.6' }}
+                        />
+                      </div>
+
+                      {/* COMPREHENSION QUESTIONS MANAGER */}
+                      {r.type === 'comprehension' && (
+                        <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                            <div style={{ fontSize: '14px', fontWeight: 800, color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <HelpCircle size={16} /> Matn Savollari ({r.questions?.length || 0} ta)
+                            </div>
+                            <button
+                              onClick={() => {
+                                const questions = r.questions ? [...r.questions] : [];
+                                questions.push({
+                                  id: Date.now(),
+                                  question: '',
+                                  options: ['', '', '', ''],
+                                  correctAnswer: 0,
+                                  explanation: ''
+                                });
+                                const updated = [...trialConfig.reading];
+                                updated[rIdx].questions = questions;
+                                setTrialConfig({ ...trialConfig, reading: updated });
+                              }}
+                              className="outline-btn"
+                              style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <Plus size={14} /> Savol Qo‘şiş
+                            </button>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            {(r.questions || []).map((q, qIdx) => (
+                              <div key={q.id} style={{ padding: '14px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--card-bg, #ffffff)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                  <span style={{ fontSize: '12.5px', fontWeight: 800, color: 'var(--purple)' }}>
+                                    {qIdx + 1}-Savol:
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      const questions = r.questions!.filter((_, i) => i !== qIdx);
+                                      const updated = [...trialConfig.reading];
+                                      updated[rIdx].questions = questions;
+                                      setTrialConfig({ ...trialConfig, reading: updated });
+                                    }}
+                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                                    title="Savolni öçiriş"
+                                  >
+                                    <Trash2 size={15} />
+                                  </button>
+                                </div>
+
+                                <input
+                                  type="text"
+                                  placeholder="Savol matnini kiriting..."
+                                  value={q.question}
+                                  onChange={e => {
+                                    const questions = [...r.questions!];
+                                    questions[qIdx].question = e.target.value;
+                                    const updated = [...trialConfig.reading];
+                                    updated[rIdx].questions = questions;
+                                    setTrialConfig({ ...trialConfig, reading: updated });
+                                  }}
+                                  style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 700, marginBottom: '10px' }}
+                                />
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px', marginBottom: '10px' }}>
+                                  {q.options.map((opt, oIdx) => (
+                                    <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <input
+                                        type="radio"
+                                        name={`correct_${r.id}_${q.id}`}
+                                        checked={q.correctAnswer === oIdx}
+                                        onChange={() => {
+                                          const questions = [...r.questions!];
+                                          questions[qIdx].correctAnswer = oIdx;
+                                          const updated = [...trialConfig.reading];
+                                          updated[rIdx].questions = questions;
+                                          setTrialConfig({ ...trialConfig, reading: updated });
+                                        }}
+                                        title="Uşbu variantni töğri javob sifatida belgilang"
+                                      />
+                                      <span style={{ fontSize: '12px', fontWeight: 800 }}>{String.fromCharCode(65 + oIdx)})</span>
+                                      <input
+                                        type="text"
+                                        placeholder={`${String.fromCharCode(65 + oIdx)} varianti`}
+                                        value={opt}
+                                        onChange={e => {
+                                          const questions = [...r.questions!];
+                                          const opts = [...questions[qIdx].options];
+                                          opts[oIdx] = e.target.value;
+                                          questions[qIdx].options = opts;
+                                          const updated = [...trialConfig.reading];
+                                          updated[rIdx].questions = questions;
+                                          setTrialConfig({ ...trialConfig, reading: updated });
+                                        }}
+                                        style={{ flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '12.5px' }}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+
+                                <input
+                                  type="text"
+                                  placeholder="Töğri javob izohi / tushuntirishi (Explanation)..."
+                                  value={q.explanation}
+                                  onChange={e => {
+                                    const questions = [...r.questions!];
+                                    questions[qIdx].explanation = e.target.value;
+                                    const updated = [...trialConfig.reading];
+                                    updated[rIdx].questions = questions;
+                                    setTrialConfig({ ...trialConfig, reading: updated });
+                                  }}
+                                  style={{ width: '100%', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '12px', fontStyle: 'italic' }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* GAP-FILL BLANKS MANAGER */}
+                      {r.type === 'gap_fill' && (
+                        <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                            <div style={{ fontSize: '14px', fontWeight: 800, color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <CheckCircle2 size={16} /> Böş Joylar ({r.blanks?.length || 0} ta)
+                            </div>
+                            <button
+                              onClick={() => {
+                                const blanks = r.blanks ? [...r.blanks] : [];
+                                blanks.push({
+                                  id: Date.now(),
+                                  label: `${blanks.length + 1}-böş joy`,
+                                  correctWord: '',
+                                  options: ['', '', '', '']
+                                });
+                                const updated = [...trialConfig.reading];
+                                updated[rIdx].blanks = blanks;
+                                setTrialConfig({ ...trialConfig, reading: updated });
+                              }}
+                              className="outline-btn"
+                              style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <Plus size={14} /> Böş Joy Qo‘şiş
+                            </button>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+                            {(r.blanks || []).map((blank, bIdx) => (
+                              <div key={blank.id} style={{ padding: '12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--card-bg, #ffffff)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                  <input
+                                    type="text"
+                                    value={blank.label}
+                                    onChange={e => {
+                                      const blanks = [...r.blanks!];
+                                      blanks[bIdx].label = e.target.value;
+                                      const updated = [...trialConfig.reading];
+                                      updated[rIdx].blanks = blanks;
+                                      setTrialConfig({ ...trialConfig, reading: updated });
+                                    }}
+                                    style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border)', fontWeight: 800, fontSize: '12.5px', background: 'var(--input-bg, transparent)', color: 'inherit' }}
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const blanks = r.blanks!.filter((_, i) => i !== bIdx);
+                                      const updated = [...trialConfig.reading];
+                                      updated[rIdx].blanks = blanks;
+                                      setTrialConfig({ ...trialConfig, reading: updated });
+                                    }}
+                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+
+                                <div style={{ marginBottom: '8px' }}>
+                                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#10b981', marginBottom: '2px' }}>Töğri söz:</label>
+                                  <input
+                                    type="text"
+                                    value={blank.correctWord}
+                                    onChange={e => {
+                                      const blanks = [...r.blanks!];
+                                      blanks[bIdx].correctWord = e.target.value;
+                                      const updated = [...trialConfig.reading];
+                                      updated[rIdx].blanks = blanks;
+                                      setTrialConfig({ ...trialConfig, reading: updated });
+                                    }}
+                                    style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1.5px solid #10b981', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 750, fontSize: '13px' }}
+                                  />
+                                </div>
+
+                                <div>
+                                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--muted)', marginBottom: '2px' }}>4 ta tanlov varianti:</label>
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                                    {blank.options.map((opt, oIdx) => (
+                                      <input
+                                        key={oIdx}
+                                        type="text"
+                                        placeholder={`Variant ${oIdx + 1}`}
+                                        value={opt}
+                                        onChange={e => {
+                                          const blanks = [...r.blanks!];
+                                          const opts = [...blanks[bIdx].options];
+                                          opts[oIdx] = e.target.value;
+                                          blanks[bIdx].options = opts;
+                                          const updated = [...trialConfig.reading];
+                                          updated[rIdx].blanks = blanks;
+                                          setTrialConfig({ ...trialConfig, reading: updated });
+                                        }}
+                                        style={{ padding: '4px 6px', borderRadius: '5px', border: '1px solid var(--border)', fontSize: '11.5px', background: 'var(--input-bg, transparent)', color: 'inherit' }}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Delete Test Button */}
+                      <div style={{ textAlign: 'right', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`"${r.title}" reading matnini öçirmoqçimisiz?`)) {
+                              const updated = trialConfig.reading.filter((_, i) => i !== rIdx);
+                              setTrialConfig({ ...trialConfig, reading: updated });
+                            }
+                          }}
+                          className="danger-btn"
+                          style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Trash2 size={14} />
+                          <span>Uşbu Reading Matnini Öçiriş</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
       {/* =================================================================== */}
-      {/* 4. LISTENING SECTION                                                */}
+      {/* 4. LISTENING SECTION (YOUTUBE LINK, AUDIO & GAP-FILL CRUD)          */}
       {/* =================================================================== */}
       {activeTab === 'listening' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ padding: '18px', borderRadius: '14px', border: '1px solid var(--border)', background: 'var(--soft)' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Audio Sarlavhasi:</label>
-            <input
-              type="text"
-              value={trialConfig.listening.title}
-              onChange={e => setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, title: e.target.value } })}
-              style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', marginBottom: '14px' }}
-            />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
+              4. Listening (Tinglaş) Sozlamalari & Gap-Fill Variantlari
+            </h3>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--muted)' }}>
+              Listening uchun YouTube havolasi yoki audio fayl joylang va öquvchi eshitib töldirishi kerak bölgan böş joylarni sozlang.
+            </p>
+          </div>
 
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Audioda Aytiladigan Matn (TTS / Narration Script):</label>
-            <textarea
-              rows={4}
-              value={trialConfig.listening.narrationScript}
-              onChange={e => setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, narrationScript: e.target.value } })}
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '13.5px', lineHeight: '1.6' }}
-            />
+          <div style={{ padding: '20px', borderRadius: '16px', border: '1.5px solid var(--border)', background: 'var(--soft)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* YouTube Link Field with Live Preview */}
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 800, marginBottom: '6px', color: '#ef4444' }}>
+                <Youtube size={16} /> YouTube Video / Audio Havolasi:
+              </label>
+              <input
+                type="text"
+                placeholder="https://www.youtube.com/watch?v=0hK2f3VfP0U yoki video ID"
+                value={trialConfig.listening.youtubeUrl || ''}
+                onChange={e => setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, youtubeUrl: e.target.value } })}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '14px', fontWeight: 650 }}
+              />
+              <span style={{ fontSize: '12px', color: 'var(--muted)', display: 'block', marginTop: '4px' }}>
+                💡 YouTube videosi yoki audiosi sinov testida öquvchiga avtomatik ijro etiladi.
+              </span>
+
+              {/* YouTube Live Embed Preview */}
+              {getYouTubeEmbedUrl(trialConfig.listening.youtubeUrl) && (
+                <div style={{ marginTop: '14px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', maxWidth: '500px', height: '280px', background: '#000' }}>
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={getYouTubeEmbedUrl(trialConfig.listening.youtubeUrl)!}
+                    title="YouTube Listening Audio Preview"
+                    style={{ border: 'none' }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Direct Audio URL */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>
+                Yoki To‘g‘ridan-to‘g‘ri Audio URL (.mp3):
+              </label>
+              <input
+                type="text"
+                placeholder="https://example.com/audio.mp3 (ixtiyoriy zaxira audio)"
+                value={trialConfig.listening.audioUrl || ''}
+                onChange={e => setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, audioUrl: e.target.value } })}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '13px' }}
+              />
+            </div>
+
+            {/* Audio Title & Duration */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Audio Sarlavhasi:</label>
+                <input
+                  type="text"
+                  value={trialConfig.listening.title}
+                  onChange={e => setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, title: e.target.value } })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 700 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Davomiyligi (soniya):</label>
+                <input
+                  type="number"
+                  value={trialConfig.listening.totalDurationSec}
+                  onChange={e => setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, totalDurationSec: parseInt(e.target.value) || 60 } })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 700 }}
+                />
+              </div>
+            </div>
+
+            {/* Narration Script */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>
+                Audioda Aytiladigan Matn (Dialog Transkripti / TTS Script):
+              </label>
+              <textarea
+                rows={4}
+                value={trialConfig.listening.narrationScript}
+                onChange={e => setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, narrationScript: e.target.value } })}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '13.5px', lineHeight: '1.6' }}
+              />
+            </div>
+
+            {/* GAP-FILL BLANKS MANAGER */}
+            <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(236, 72, 153, 0.05)', border: '1.5px solid rgba(236, 72, 153, 0.25)', marginTop: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#ec4899', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Headphones size={16} /> Böş Joylar va Javob Variantlari ({trialConfig.listening.blanks?.length || 0} ta)
+                </div>
+                <button
+                  onClick={() => {
+                    const blanks = [...(trialConfig.listening.blanks || [])];
+                    const nextNum = blanks.length + 1;
+                    blanks.push({
+                      id: Date.now(),
+                      blankNumber: nextNum,
+                      correctWord: '',
+                      options: ['', '', '', ''],
+                      hint: ''
+                    });
+                    setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, blanks } });
+                  }}
+                  className="outline-btn"
+                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Plus size={14} /> Böş Joy Qo‘şiş
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                {(trialConfig.listening.blanks || []).map((blank, bIdx) => (
+                  <div key={blank.id} style={{ padding: '14px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--card-bg, #ffffff)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#ec4899' }}>
+                        {blank.blankNumber}-böş joy:
+                      </span>
+                      <button
+                        onClick={() => {
+                          const blanks = trialConfig.listening.blanks.filter((_, i) => i !== bIdx);
+                          setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, blanks } });
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                        title="Böş joyni öçiriş"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+
+                    <div style={{ marginBottom: '8px' }}>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#10b981', marginBottom: '2px' }}>
+                        Töğri Söz (Audioda eshitiladigan söz):
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="masalan: communication"
+                        value={blank.correctWord}
+                        onChange={e => {
+                          const blanks = [...trialConfig.listening.blanks];
+                          blanks[bIdx].correctWord = e.target.value;
+                          setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, blanks } });
+                        }}
+                        style={{ width: '100%', padding: '6px 10px', borderRadius: '6px', border: '1.5px solid #10b981', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 750 }}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: '8px' }}>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--muted)', marginBottom: '2px' }}>
+                        Maslahat / Hint (ixtiyoriy):
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Masalan: Muloqot va axborot almashinuvi"
+                        value={blank.hint || ''}
+                        onChange={e => {
+                          const blanks = [...trialConfig.listening.blanks];
+                          blanks[bIdx].hint = e.target.value;
+                          setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, blanks } });
+                        }}
+                        style={{ width: '100%', padding: '5px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '12px' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--muted)', marginBottom: '4px' }}>
+                        4 ta Tanlov Varianti:
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                        {blank.options.map((opt, oIdx) => (
+                          <input
+                            key={oIdx}
+                            type="text"
+                            placeholder={`${String.fromCharCode(65 + oIdx)} varianti`}
+                            value={opt}
+                            onChange={e => {
+                              const blanks = [...trialConfig.listening.blanks];
+                              const opts = [...blanks[bIdx].options];
+                              opts[oIdx] = e.target.value;
+                              blanks[bIdx].options = opts;
+                              setTrialConfig({ ...trialConfig, listening: { ...trialConfig.listening, blanks } });
+                            }}
+                            style={{ padding: '5px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '12px' }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {/* =================================================================== */}
-      {/* 5. WRITING SECTION                                                  */}
+      {/* 5. WRITING SECTION (ESSAY & LETTER TOPICS POOL CRUD)                */}
       {/* =================================================================== */}
       {activeTab === 'writing' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ padding: '18px', borderRadius: '14px', border: '1px solid var(--border)', background: 'var(--soft)' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Insho Mavzusi (Topic Title):</label>
-            <input
-              type="text"
-              value={trialConfig.writing.topicTitle}
-              onChange={e => setTrialConfig({ ...trialConfig, writing: { ...trialConfig.writing, topicTitle: e.target.value } })}
-              style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', marginBottom: '12px' }}
-            />
-
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Minimal So‘z Son (Min Words):</label>
-            <input
-              type="number"
-              value={trialConfig.writing.minWords}
-              onChange={e => setTrialConfig({ ...trialConfig, writing: { ...trialConfig.writing, minWords: parseInt(e.target.value) || 150 } })}
-              style={{ width: '120px', padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', marginBottom: '12px' }}
-            />
-
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Mavzu Tavsifi va Topshiriq Qoidalari:</label>
-            <textarea
-              rows={3}
-              value={trialConfig.writing.promptDescription}
-              onChange={e => setTrialConfig({ ...trialConfig, writing: { ...trialConfig.writing, promptDescription: e.target.value } })}
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '13px' }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* =================================================================== */}
-      {/* 6. GRAMMAR SECTION                                                  */}
-      {/* =================================================================== */}
-      {activeTab === 'grammar' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ padding: '18px', borderRadius: '14px', border: '1px solid var(--border)', background: 'var(--soft)' }}>
-            <h3 style={{ margin: '0 0 10px', fontSize: '16px', fontWeight: 800 }}>
-              {trialConfig.grammar.title} ({trialConfig.grammar.level})
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
+              5. Writing (Yoziş) Mavzular Jamğarmasi & Random Taqsimot
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {trialConfig.grammar.questions.map((q, idx) => (
-                <div key={q.id} style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                  <div style={{ fontSize: '13.5px', fontWeight: 700 }}>
-                    {idx + 1}. {q.sentence}
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--muted)' }}>
+              Foydalanuvchi sinov testiga kirganda insho (Part 1 - Essay) va xat (Part 2 - Letter) mavzulari random tarzda taqdim etiladi.
+            </p>
+          </div>
+
+          {/* Sub-Tabs: Essay vs Letter */}
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={() => setWritingSubTab('essay')}
+              style={{
+                padding: '8px 18px',
+                borderRadius: '10px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 800,
+                fontSize: '13px',
+                background: writingSubTab === 'essay' ? '#10b981' : 'var(--soft)',
+                color: writingSubTab === 'essay' ? '#ffffff' : 'inherit',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <PenLine size={15} />
+              <span>1. Insho Mavzulari (Part 1 - Essay, {(trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS).length} ta)</span>
+            </button>
+
+            <button
+              onClick={() => setWritingSubTab('letter')}
+              style={{
+                padding: '8px 18px',
+                borderRadius: '10px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 800,
+                fontSize: '13px',
+                background: writingSubTab === 'letter' ? '#7869f5' : 'var(--soft)',
+                color: writingSubTab === 'letter' ? '#ffffff' : 'inherit',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <FileText size={15} />
+              <span>2. Xat Topşiriqlari (Part 2 - Letter, {(trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS).length} ta)</span>
+            </button>
+          </div>
+
+          {/* ESSAY POOL */}
+          {writingSubTab === 'essay' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => {
+                    const currentEssays = trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS;
+                    const newEssay: WritingEssayItem = {
+                      id: `essay-${Date.now()}`,
+                      topicTitle: 'Yangi Insho Mavzusi',
+                      genre: 'Argumentative Essay',
+                      minWords: 150,
+                      promptDescription: 'Mavzu tavsifi va foydalanuvchiga beriladigan savol...',
+                      bulletPoints: [
+                        'Ikkala taraf nuqtayi nazarini muhokama qiling.',
+                        'Öz shaxsiy fikringizni misollar bilan asoslang.',
+                        'Kamida 150 ta sözdan iborat xulosa yozing.'
+                      ]
+                    };
+                    const updatedPool = {
+                      ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }),
+                      essayTopics: [...currentEssays, newEssay]
+                    };
+                    setTrialConfig({ ...trialConfig, writingPool: updatedPool });
+                  }}
+                  className="outline-btn"
+                  style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Plus size={15} />
+                  <span>Yangi Insho Mavzusi Qo‘şiş</span>
+                </button>
+              </div>
+
+              {(trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS).map((essay, eIdx) => (
+                <div key={essay.id} style={{ padding: '20px', borderRadius: '16px', border: '1.5px solid var(--border)', background: 'var(--soft)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ padding: '3px 8px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontSize: '12px', fontWeight: 800 }}>
+                        Insho #{eIdx + 1}
+                      </span>
+                      <strong style={{ fontSize: '15px' }}>{essay.topicTitle}</strong>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        const currentEssays = trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS;
+                        const updated = currentEssays.filter((_, i) => i !== eIdx);
+                        setTrialConfig({
+                          ...trialConfig,
+                          writingPool: {
+                            ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }),
+                            essayTopics: updated
+                          }
+                        });
+                      }}
+                      className="danger-btn"
+                      style={{ padding: '4px 10px', fontSize: '12px' }}
+                    >
+                      <Trash2 size={13} /> Öçiriş
+                    </button>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#10b981', marginTop: '4px' }}>
-                    To‘g‘ri tuzatish: {q.correctCorrection} ({q.explanation})
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Mavzu Nomi (Topic Title):</label>
+                      <input
+                        type="text"
+                        value={essay.topicTitle}
+                        onChange={e => {
+                          const currentEssays = [...(trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS)];
+                          currentEssays[eIdx].topicTitle = e.target.value;
+                          setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), essayTopics: currentEssays } });
+                        }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 700 }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Insho Janri / Turi:</label>
+                      <input
+                        type="text"
+                        value={essay.genre}
+                        onChange={e => {
+                          const currentEssays = [...(trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS)];
+                          currentEssays[eIdx].genre = e.target.value;
+                          setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), essayTopics: currentEssays } });
+                        }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Minimal Söz Soni:</label>
+                      <input
+                        type="number"
+                        value={essay.minWords}
+                        onChange={e => {
+                          const currentEssays = [...(trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS)];
+                          currentEssays[eIdx].minWords = parseInt(e.target.value) || 150;
+                          setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), essayTopics: currentEssays } });
+                        }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Mavzu Tavsifi & Savol Matni:</label>
+                    <textarea
+                      rows={3}
+                      value={essay.promptDescription}
+                      onChange={e => {
+                        const currentEssays = [...(trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS)];
+                        currentEssays[eIdx].promptDescription = e.target.value;
+                        setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), essayTopics: currentEssays } });
+                      }}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '13px' }}
+                    />
+                  </div>
+
+                  {/* Bullet points */}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: 800 }}>Reja Talablari (Bullet Points):</label>
+                      <button
+                        onClick={() => {
+                          const currentEssays = [...(trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS)];
+                          currentEssays[eIdx].bulletPoints.push('Yangi reja talabi');
+                          setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), essayTopics: currentEssays } });
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#10b981', fontSize: '11.5px', fontWeight: 800, cursor: 'pointer' }}
+                      >
+                        + Band qo‘şiş
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {essay.bulletPoints.map((bp, bpIdx) => (
+                        <div key={bpIdx} style={{ display: 'flex', gap: '6px' }}>
+                          <input
+                            type="text"
+                            value={bp}
+                            onChange={e => {
+                              const currentEssays = [...(trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS)];
+                              currentEssays[eIdx].bulletPoints[bpIdx] = e.target.value;
+                              setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), essayTopics: currentEssays } });
+                            }}
+                            style={{ flex: 1, padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '12.5px' }}
+                          />
+                          <button
+                            onClick={() => {
+                              const currentEssays = [...(trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS)];
+                              currentEssays[eIdx].bulletPoints = currentEssays[eIdx].bulletPoints.filter((_, i) => i !== bpIdx);
+                              setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), essayTopics: currentEssays } });
+                            }}
+                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Namuna Insho (Band 8.0 Text):</label>
+                    <textarea
+                      rows={4}
+                      value={essay.sampleBand8Text || ''}
+                      onChange={e => {
+                        const currentEssays = [...(trialConfig.writingPool?.essayTopics || DEFAULT_WRITING_ESSAYS)];
+                        currentEssays[eIdx].sampleBand8Text = e.target.value;
+                        setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), essayTopics: currentEssays } });
+                      }}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '12.5px', fontStyle: 'italic' }}
+                    />
                   </div>
                 </div>
               ))}
             </div>
+          )}
+
+          {/* LETTER POOL */}
+          {writingSubTab === 'letter' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => {
+                    const currentLetters = trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS;
+                    const newLetter: WritingLetterItem = {
+                      id: `letter-${Date.now()}`,
+                      topicTitle: 'Yangi Xat Topşirig‘i',
+                      letterType: 'formal',
+                      minWords: 120,
+                      promptDescription: 'Xat kimga va nima maqsadda yozilishi kerakligi...',
+                      bulletPoints: [
+                        'Murojaat sababini yozing.',
+                        'Vaziyatni tushuntiring.',
+                        'Amaliy yechim yoki javob taklif qiling.'
+                      ]
+                    };
+                    const updatedPool = {
+                      ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }),
+                      letterTopics: [...currentLetters, newLetter]
+                    };
+                    setTrialConfig({ ...trialConfig, writingPool: updatedPool });
+                  }}
+                  className="outline-btn"
+                  style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Plus size={15} />
+                  <span>Yangi Xat Topşirig‘i Qo‘şiş</span>
+                </button>
+              </div>
+
+              {(trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS).map((letter, lIdx) => (
+                <div key={letter.id} style={{ padding: '20px', borderRadius: '16px', border: '1.5px solid var(--border)', background: 'var(--soft)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ padding: '3px 8px', borderRadius: '6px', background: 'rgba(120, 105, 245, 0.15)', color: '#7869f5', fontSize: '12px', fontWeight: 800 }}>
+                        Xat #{lIdx + 1} ({letter.letterType})
+                      </span>
+                      <strong style={{ fontSize: '15px' }}>{letter.topicTitle}</strong>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        const currentLetters = trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS;
+                        const updated = currentLetters.filter((_, i) => i !== lIdx);
+                        setTrialConfig({
+                          ...trialConfig,
+                          writingPool: {
+                            ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }),
+                            letterTopics: updated
+                          }
+                        });
+                      }}
+                      className="danger-btn"
+                      style={{ padding: '4px 10px', fontSize: '12px' }}
+                    >
+                      <Trash2 size={13} /> Öçiriş
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Xat Sarlavhasi (Topic Title):</label>
+                      <input
+                        type="text"
+                        value={letter.topicTitle}
+                        onChange={e => {
+                          const currentLetters = [...(trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS)];
+                          currentLetters[lIdx].topicTitle = e.target.value;
+                          setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), letterTopics: currentLetters } });
+                        }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 700 }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Xat Turi (Letter Type):</label>
+                      <select
+                        value={letter.letterType}
+                        onChange={e => {
+                          const currentLetters = [...(trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS)];
+                          currentLetters[lIdx].letterType = e.target.value as any;
+                          setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), letterTopics: currentLetters } });
+                        }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit' }}
+                      >
+                        <option value="formal">Formal (Rasmiy ariza / murojaat)</option>
+                        <option value="informal">Informal (Do‘stona xat)</option>
+                        <option value="semi-formal">Semi-formal (Yarim rasmiy taklif / shikoyat)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Minimal Söz Soni:</label>
+                      <input
+                        type="number"
+                        value={letter.minWords}
+                        onChange={e => {
+                          const currentLetters = [...(trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS)];
+                          currentLetters[lIdx].minWords = parseInt(e.target.value) || 120;
+                          setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), letterTopics: currentLetters } });
+                        }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Xat Tavsifi va Topshiriq Qoidasi:</label>
+                    <textarea
+                      rows={3}
+                      value={letter.promptDescription}
+                      onChange={e => {
+                        const currentLetters = [...(trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS)];
+                        currentLetters[lIdx].promptDescription = e.target.value;
+                        setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), letterTopics: currentLetters } });
+                      }}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '13px' }}
+                    />
+                  </div>
+
+                  {/* Bullet points */}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: 800 }}>Xat Reja Talablari:</label>
+                      <button
+                        onClick={() => {
+                          const currentLetters = [...(trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS)];
+                          currentLetters[lIdx].bulletPoints.push('Yangi reja bandi');
+                          setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), letterTopics: currentLetters } });
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#7869f5', fontSize: '11.5px', fontWeight: 800, cursor: 'pointer' }}
+                      >
+                        + Band qo‘şiş
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {letter.bulletPoints.map((bp, bpIdx) => (
+                        <div key={bpIdx} style={{ display: 'flex', gap: '6px' }}>
+                          <input
+                            type="text"
+                            value={bp}
+                            onChange={e => {
+                              const currentLetters = [...(trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS)];
+                              currentLetters[lIdx].bulletPoints[bpIdx] = e.target.value;
+                              setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), letterTopics: currentLetters } });
+                            }}
+                            style={{ flex: 1, padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '12.5px' }}
+                          />
+                          <button
+                            onClick={() => {
+                              const currentLetters = [...(trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS)];
+                              currentLetters[lIdx].bulletPoints = currentLetters[lIdx].bulletPoints.filter((_, i) => i !== bpIdx);
+                              setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), letterTopics: currentLetters } });
+                            }}
+                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '4px' }}>Namuna Xat (Sample Letter):</label>
+                    <textarea
+                      rows={4}
+                      value={letter.sampleBand8Text || ''}
+                      onChange={e => {
+                        const currentLetters = [...(trialConfig.writingPool?.letterTopics || DEFAULT_WRITING_LETTERS)];
+                        currentLetters[lIdx].sampleBand8Text = e.target.value;
+                        setTrialConfig({ ...trialConfig, writingPool: { ...(trialConfig.writingPool || { essayTopics: DEFAULT_WRITING_ESSAYS, letterTopics: DEFAULT_WRITING_LETTERS }), letterTopics: currentLetters } });
+                      }}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '12.5px', fontStyle: 'italic' }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* 6. GRAMMAR SECTION (3-MINUTE THEORY GUIDE & QUESTIONS CRUD)         */}
+      {/* =================================================================== */}
+      {activeTab === 'grammar' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
+                6. Grammar (Grammatika) Mavzulari & 3 Daqiqalik Nazariya ({ (trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS).length } ta)
+              </h3>
+              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--muted)' }}>
+                Har bir grammatik mavzu boshida foydalanuvchiga 3 daqiqalik qisqa, sodda tushuntirish beriladi, söng mashqlar yechiladi.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                const currentTopics = trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS;
+                const newTopic: GrammarTopicItem = {
+                  id: `gt-${Date.now()}`,
+                  title: 'Yangi Grammatik Mavzu (masalan: Relative Clauses)',
+                  level: 'B1',
+                  readTimeMin: 3,
+                  explanationGuide: `⏱️ 3 DAQIQALIK SODDA VA QISQA TUSHUNTIRISH:
+
+1. Asosiy Qoida:
+   • Mavzuning mohiyati va formulasi.
+
+2. Qachon ishlatiladi:
+   • Amaliy holatlar va misollar.
+
+3. Keng tarqalgan xatolar:
+   • E'tibor berish lozim bo'lgan nozik joylar.`,
+                  questions: [
+                    {
+                      id: 1,
+                      sentence: 'Misol gap va tagiga chizilgan qismlar',
+                      highlightedOptions: ['1-qism', '2-qism', '3-qism', '4-qism'],
+                      errorIndex: 1,
+                      correctCorrection: 'Töğri shakl',
+                      explanation: 'Nega xato ekanligi va grammatik qoida.'
+                    }
+                  ]
+                };
+                setTrialConfig({ ...trialConfig, grammarTopics: [...currentTopics, newTopic] });
+                setExpandedGrammarId(newTopic.id);
+              }}
+              className="outline-btn"
+              style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Plus size={15} />
+              <span>Yangi Grammatik Mavzu Qo‘şiş</span>
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS).map((topic, tIdx) => {
+              const isExpanded = expandedGrammarId === topic.id;
+
+              return (
+                <div
+                  key={topic.id}
+                  style={{
+                    borderRadius: '16px',
+                    border: '1.5px solid var(--border)',
+                    background: 'var(--soft)',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {/* Topic Header Accordion */}
+                  <div
+                    onClick={() => setExpandedGrammarId(isExpanded ? null : topic.id)}
+                    style={{
+                      padding: '16px 20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: 'pointer',
+                      background: isExpanded ? 'rgba(245, 158, 11, 0.08)' : 'transparent',
+                      borderBottom: isExpanded ? '1px solid var(--border)' : 'none'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        background: 'rgba(245, 158, 11, 0.15)',
+                        color: '#d97706',
+                        fontSize: '11.5px',
+                        fontWeight: 800
+                      }}>
+                        {topic.level} · {topic.readTimeMin || 3} daqiqa
+                      </span>
+                      <strong style={{ fontSize: '15px' }}>{topic.title}</strong>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '12.5px', color: 'var(--muted)' }}>
+                        {topic.questions.length} ta savol
+                      </span>
+                      {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                    </div>
+                  </div>
+
+                  {/* Expanded Topic Details */}
+                  {isExpanded && (
+                    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '5px' }}>Mavzu Nomi (Grammar Title):</label>
+                          <input
+                            type="text"
+                            value={topic.title}
+                            onChange={e => {
+                              const currentTopics = [...(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS)];
+                              currentTopics[tIdx].title = e.target.value;
+                              setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                            }}
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 700 }}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '5px' }}>CEFR Darajasi:</label>
+                          <input
+                            type="text"
+                            value={topic.level}
+                            onChange={e => {
+                              const currentTopics = [...(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS)];
+                              currentTopics[tIdx].level = e.target.value;
+                              setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                            }}
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit' }}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '5px' }}>Öqiş Vaqti (daqiqa):</label>
+                          <input
+                            type="number"
+                            value={topic.readTimeMin || 3}
+                            onChange={e => {
+                              const currentTopics = [...(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS)];
+                              currentTopics[tIdx].readTimeMin = parseInt(e.target.value) || 3;
+                              setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                            }}
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit' }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* 3-Minute Theory Explanation Editor */}
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '5px', color: '#d97706' }}>
+                          📖 Mashq Boshidagi 3 Daqiqalik Sodda Tushuntirish Matni (Theory Guide):
+                        </label>
+                        <textarea
+                          rows={8}
+                          value={topic.explanationGuide}
+                          onChange={e => {
+                            const currentTopics = [...(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS)];
+                            currentTopics[tIdx].explanationGuide = e.target.value;
+                            setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                          }}
+                          style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid rgba(245, 158, 11, 0.4)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '13px', lineHeight: '1.6', fontFamily: 'monospace' }}
+                        />
+                      </div>
+
+                      {/* PRACTICE QUESTIONS CRUD */}
+                      <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <HelpCircle size={16} /> Maşq Savollari ({topic.questions.length} ta)
+                          </div>
+                          <button
+                            onClick={() => {
+                              const currentTopics = [...(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS)];
+                              currentTopics[tIdx].questions.push({
+                                id: Date.now(),
+                                sentence: 'Yangi gap misoli',
+                                highlightedOptions: ['1-qism', '2-qism', '3-qism', '4-qism'],
+                                errorIndex: 1,
+                                correctCorrection: 'Töğri shakli',
+                                explanation: 'Grammatik qoida tushuntirishi'
+                              });
+                              setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                            }}
+                            className="outline-btn"
+                            style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <Plus size={14} /> Savol Qo‘şiş
+                          </button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                          {topic.questions.map((q, qIdx) => (
+                            <div key={q.id} style={{ padding: '14px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--card-bg, #ffffff)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#d97706' }}>
+                                  {qIdx + 1}-Savol (Xatolikni aniqlash):
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    const currentTopics = [...(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS)];
+                                    currentTopics[tIdx].questions = currentTopics[tIdx].questions.filter((_, i) => i !== qIdx);
+                                    setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                                  }}
+                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                                  title="Savolni öçiriş"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+
+                              <div style={{ marginBottom: '8px' }}>
+                                <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, marginBottom: '2px' }}>Gap Matni (Sentence):</label>
+                                <input
+                                  type="text"
+                                  value={q.sentence}
+                                  onChange={e => {
+                                    const currentTopics = [...(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS)];
+                                    currentTopics[tIdx].questions[qIdx].sentence = e.target.value;
+                                    setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                                  }}
+                                  style={{ width: '100%', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 700, fontSize: '13px' }}
+                                />
+                              </div>
+
+                              <div style={{ marginBottom: '8px' }}>
+                                <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, marginBottom: '4px' }}>
+                                  Tagiga chizilgan 4 ta qism va Xato variant (radio tanlang):
+                                </label>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '6px' }}>
+                                  {q.highlightedOptions.map((opt, oIdx) => (
+                                    <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <input
+                                        type="radio"
+                                        name={`error_${topic.id}_${q.id}`}
+                                        checked={q.errorIndex === oIdx}
+                                        onChange={() => {
+                                          const currentTopics = [...(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS)];
+                                          currentTopics[tIdx].questions[qIdx].errorIndex = oIdx;
+                                          setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                                        }}
+                                        title="Ushbu qismda xato borligini belgilash"
+                                      />
+                                      <span style={{ fontSize: '11.5px', fontWeight: 800, color: q.errorIndex === oIdx ? '#ef4444' : 'inherit' }}>
+                                        [{oIdx + 1}]
+                                      </span>
+                                      <input
+                                        type="text"
+                                        value={opt}
+                                        onChange={e => {
+                                          const currentTopics = [...(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS)];
+                                          const opts = [...currentTopics[tIdx].questions[qIdx].highlightedOptions];
+                                          opts[oIdx] = e.target.value;
+                                          currentTopics[tIdx].questions[qIdx].highlightedOptions = opts;
+                                          setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                                        }}
+                                        style={{ flex: 1, padding: '4px 6px', borderRadius: '5px', border: q.errorIndex === oIdx ? '1.5px solid #ef4444' : '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '12px' }}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                <div>
+                                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#10b981', marginBottom: '2px' }}>Töğri Tuzatiş Shakli:</label>
+                                  <input
+                                    type="text"
+                                    value={q.correctCorrection}
+                                    onChange={e => {
+                                      const currentTopics = [...(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS)];
+                                      currentTopics[tIdx].questions[qIdx].correctCorrection = e.target.value;
+                                      setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                                    }}
+                                    style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1.5px solid #10b981', background: 'var(--input-bg, transparent)', color: 'inherit', fontWeight: 700, fontSize: '12px' }}
+                                  />
+                                </div>
+
+                                <div>
+                                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: 'var(--muted)', marginBottom: '2px' }}>Grammatik Qoida Izohi (Explanation):</label>
+                                  <input
+                                    type="text"
+                                    value={q.explanation}
+                                    onChange={e => {
+                                      const currentTopics = [...(trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS)];
+                                      currentTopics[tIdx].questions[qIdx].explanation = e.target.value;
+                                      setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                                    }}
+                                    style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--input-bg, transparent)', color: 'inherit', fontSize: '12px' }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Delete Topic Button */}
+                      <div style={{ textAlign: 'right', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`"${topic.title}" grammatik mavzusini öçirmoqçimisiz?`)) {
+                              const currentTopics = (trialConfig.grammarTopics || DEFAULT_GRAMMAR_TOPICS).filter((_, i) => i !== tIdx);
+                              setTrialConfig({ ...trialConfig, grammarTopics: currentTopics });
+                            }
+                          }}
+                          className="danger-btn"
+                          style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Trash2 size={14} />
+                          <span>Uşbu Grammatik Mavzuni Öçiriş</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

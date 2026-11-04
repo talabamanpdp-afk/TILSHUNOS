@@ -2032,7 +2032,23 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           }
         }
 
+        .practice-speaking-q-row {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 14px;
+        }
         @media (max-width: 640px) {
+          .practice-speaking-q-row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px !important;
+          }
+          .practice-speaking-q-row .practice-action-btn-test {
+            align-self: flex-start !important;
+            width: 100% !important;
+            justify-content: center !important;
+          }
           .practice-features-grid {
             grid-template-columns: 1fr;
           }
@@ -2941,10 +2957,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       <button
                         onClick={() => setShowListeningAnswers(!showListeningAnswers)}
                         className="practice-action-btn-green"
-                        title="Javoblarni tekshirish"
+                        title="Javoblarni tekşiriş"
                       >
                         <CheckCircle2 size={15} />
-                        <span>{showListeningAnswers ? 'Yashirish' : 'Tekshirish'}</span>
+                        <span>{showListeningAnswers ? 'Yaşiriş' : 'Tekşiriş'}</span>
                       </button>
                     </div>
                   </div>
@@ -2952,10 +2968,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   {/* Subtitle */}
                   <div>
                     <div className="practice-trans-green">
-                      Audioni tinglang va bo‘sh joylarni to‘ldiring
+                      Audioni tinglang va böş joylarni töldiring
                     </div>
                     <p className="practice-explanation-text">
-                      Tabiiy suhbat tempiga e’tibor bering va kalit so‘zlarni aniqlang.
+                      Tabiiy suhbat tempiga e’tibor bering va kalit sözlarni aniqlang.
                     </p>
                   </div>
 
@@ -2963,7 +2979,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   <div className="practice-example-box">
                     <div className="practice-example-head">
                       <span className="practice-example-label">
-                        AUDIO DIALOG VA GAP-FILL TOPSHIRIG‘I:
+                        AUDIO DIALOG VA GAP-FILL TOPŞIRIĞI:
                       </span>
                     </div>
 
@@ -2990,8 +3006,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                               transition: 'all 0.3s ease'
                             }}>
                               {showListeningAnswers
-                                ? (currentLangData.listening.gapsAnswers[index] || 'to‘g‘ri javob')
-                                : `[ ${index + 1}-bo‘sh joy ]`}
+                                ? (currentLangData.listening.gapsAnswers[index] || 'töğri javob')
+                                : `[ ${index + 1}-böş joy ]`}
                             </span>
                           )}
                         </React.Fragment>
@@ -3107,7 +3123,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
                       return (
                         <div key={q.id} className="practice-example-box">
-                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                          <div className="practice-speaking-q-row">
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontSize: '15px', fontWeight: 750, color: '#f1f5f9', lineHeight: '1.45' }}>
                                 {q.id}. {q.question}

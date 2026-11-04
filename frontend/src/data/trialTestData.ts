@@ -59,11 +59,13 @@ export interface ListeningGapBlank {
   blankNumber: number;
   correctWord: string;
   options: string[];
+  hint?: string;
 }
 
 export interface ListeningTestItem {
   id: string;
   title: string;
+  youtubeUrl?: string; // YouTube video URL or ID (e.g. https://www.youtube.com/watch?v=...)
   audioUrl?: string;
   narrationScript: string;
   totalDurationSec: number;
@@ -75,6 +77,26 @@ export interface WritingTestItem {
   topicTitle: string;
   genre: string;
   minWords: number; // 150
+  promptDescription: string;
+  bulletPoints: string[];
+  sampleBand8Text?: string;
+}
+
+export interface WritingEssayItem {
+  id: string;
+  topicTitle: string;
+  genre: string; // e.g. "Argumentative Essay", "Opinion Essay", "Problem-Solution"
+  minWords: number; // 150
+  promptDescription: string;
+  bulletPoints: string[];
+  sampleBand8Text?: string;
+}
+
+export interface WritingLetterItem {
+  id: string;
+  topicTitle: string;
+  letterType: 'formal' | 'informal' | 'semi-formal';
+  minWords: number; // 120
   promptDescription: string;
   bulletPoints: string[];
   sampleBand8Text?: string;
@@ -97,6 +119,15 @@ export interface GrammarTestItem {
   questions: GrammarQuestion[];
 }
 
+export interface GrammarTopicItem {
+  id: string;
+  title: string;
+  level: string;
+  explanationGuide: string; // 3-minute simple explanation with formulas, rules, and examples
+  readTimeMin: number; // default 3
+  questions: GrammarQuestion[];
+}
+
 export interface TrialTestsConfig {
   wordPool: WordQuizItem[];
   speaking: {
@@ -106,7 +137,12 @@ export interface TrialTestsConfig {
   reading: ReadingTestItem[];
   listening: ListeningTestItem;
   writing: WritingTestItem;
+  writingPool?: {
+    essayTopics: WritingEssayItem[];
+    letterTopics: WritingLetterItem[];
+  };
   grammar: GrammarTestItem;
+  grammarTopics?: GrammarTopicItem[];
 }
 
 // 100 High-Quality Curated Image-Word Quiz Pool
@@ -1311,10 +1347,12 @@ Finally, integrating vertical gardens and rooftop vegetation restores natural bi
   }
 ];
 
-// Listening Default Data (2 plays strict limit, seeking disabled, gap-fill)
+// Listening Default Data (YouTube link or audio, strict limit, gap-fill)
 export const DEFAULT_LISTENING_TEST: ListeningTestItem = {
   id: 'l-test-1',
   title: 'The Power of Active Listening and Cultural Empathy',
+  youtubeUrl: 'https://www.youtube.com/watch?v=0hK2f3VfP0U',
+  audioUrl: '',
   totalDurationSec: 68,
   narrationScript: "Effective communication across cultures requires much more than just a wide vocabulary and flawless grammar. In today's interconnected society, genuine mutual understanding depends upon active empathy and patient listening. When individuals listen with sincere curiosity, they bridge cultural divides and establish lasting mutual respect that transcends geographic boundaries.",
   blanks: [
@@ -1322,25 +1360,29 @@ export const DEFAULT_LISTENING_TEST: ListeningTestItem = {
       id: 1,
       blankNumber: 1,
       correctWord: 'communication',
-      options: ['communication', 'transportation', 'imagination', 'anticipation']
+      options: ['communication', 'transportation', 'imagination', 'anticipation'],
+      hint: 'Muloqot va axborot almashish jarayoni'
     },
     {
       id: 2,
       blankNumber: 2,
       correctWord: 'interconnected',
-      options: ['interconnected', 'isolated', 'interrupted', 'underrated']
+      options: ['interconnected', 'isolated', 'interrupted', 'underrated'],
+      hint: 'Bir-biri bilan chambarchas bog‘langan'
     },
     {
       id: 3,
       blankNumber: 3,
       correctWord: 'empathy',
-      options: ['empathy', 'sympathy', 'apathy', 'jealousy']
+      options: ['empathy', 'sympathy', 'apathy', 'jealousy'],
+      hint: 'O‘zgalar his-tuyg‘usini chuqur tushunish'
     },
     {
       id: 4,
       blankNumber: 4,
       correctWord: 'boundaries',
-      options: ['boundaries', 'mountains', 'territories', 'languages']
+      options: ['boundaries', 'mountains', 'territories', 'languages'],
+      hint: 'Chegaralar yoki cheklovlar'
     }
   ]
 };
@@ -1365,6 +1407,158 @@ On the other hand, essential human qualities such as emotional intelligence, eth
 
 In conclusion, artificial intelligence should be embraced as an augmentative tool that elevates human potential, provided it is governed with wisdom and ethical responsibility.`
 };
+
+// Writing Essay Pool (Part 1 - Random Assignment)
+export const DEFAULT_WRITING_ESSAYS: WritingEssayItem[] = [
+  {
+    id: 'essay-1',
+    topicTitle: 'Environment & Climate Change: Individual Responsibility vs Government Action',
+    genre: 'Argumentative Essay',
+    minWords: 150,
+    promptDescription: "Global warming and ecological degradation pose critical threats to our planet. Some people assert that international governments and corporations must bear the sole responsibility for solving climate issues, whereas others contend that individual lifestyle shifts are equally paramount.",
+    bulletPoints: [
+      "Discuss both viewpoints in detail.",
+      "Explain the specific role of renewable energy policies versus consumer habits.",
+      "Conclude with your personal stance supported by logical reasoning."
+    ],
+    sampleBand8Text: `Climate degradation represents one of the most pressing crises of the modern era. While large corporations and legislative bodies undeniably hold the keys to systemic reform, I contend that sustainable consumer choices and grassroots movements are equally indispensable in mitigating environmental harm.
+
+On one level, state intervention is mandatory to enforce green infrastructure. Without stringent emissions caps, carbon taxation, and substantial subsidies for renewable energies, corporate giants will continue prioritizing short-term profits over ecological balance. National policy has the unique authority to revolutionize energy grids and waste management systems at scale.
+
+Conversely, public demand dictates industrial output. When conscious citizens transition toward zero-waste lifestyles, minimize single-use plastics, and adopt public transit, markets inevitably shift to satisfy these sustainable preferences. Individual mindfulness fosters a societal culture that holds institutions accountable.
+
+To conclude, addressing climate change demands a harmonious synergy between top-down governmental enforcement and bottom-up individual vigilance.`
+  },
+  {
+    id: 'essay-2',
+    topicTitle: 'Artificial Intelligence & Future Careers: Catalyst or Threat?',
+    genre: 'Evaluative Essay',
+    minWords: 150,
+    promptDescription: "The rapid integration of AI into industries has created unprecedented anxieties regarding job obsolescence. To what extent will AI redefine human labor, and how can future generations adapt?",
+    bulletPoints: [
+      "Analyze the impact of automation on routine and analytical tasks.",
+      "Highlight irreplaceable human traits such as emotional intelligence and creative empathy.",
+      "Propose actionable strategies for lifelong learning and educational reform."
+    ],
+    sampleBand8Text: `The rise of generative artificial intelligence is rapidly restructuring the global labor landscape. Although alarms regarding massive job displacement are understandable, history demonstrates that technological revolutions typically redefine work rather than eliminate it outright.
+
+Automation undoubtedly excels at processing massive datasets, writing baseline software code, and handling redundant administrative workflows. However, this shift liberates human specialists to focus on strategic leadership, ethical judgment, and complex interpersonal diplomacy—domains where algorithmic models remain inadequate.
+
+To prosper in this evolving era, educational curricula must pivot away from rote memorization and toward critical problem-solving, cognitive agility, and technological fluency. Professionals who leverage AI as a collaborative companion rather than an adversary will spearhead the modern economy.
+
+In conclusion, AI is an augmentative amplifier of human ingenuity, destined to reshape professional roles into higher-value creative pursuits.`
+  },
+  {
+    id: 'essay-3',
+    topicTitle: 'Urbanization & Smart Cities: Sustainable Living for Future Generations',
+    genre: 'Problem-Solution Essay',
+    minWords: 150,
+    promptDescription: "More than half of the world's population resides in urban metropolises, resulting in severe traffic congestion, housing shortages, and environmental strain. What major problems does this cause, and what solutions can smart city planning offer?",
+    bulletPoints: [
+      "Identify the primary challenges caused by uncontrolled urban sprawl.",
+      "Explain how smart city technologies (intelligent grids, green transit) solve these issues.",
+      "Offer realistic recommendations for local municipalities."
+    ],
+    sampleBand8Text: `Rapid urban migration has placed unprecedented strain on metropolitan infrastructure worldwide. Overcrowding, chronic traffic gridlock, and substandard air quality increasingly jeopardize the well-being of city dwellers. Nevertheless, implementing smart urban planning paradigms presents a viable path forward.
+
+A prominent solution lies in establishing compact, decentralized '15-minute cities', where all fundamental services—employment, healthcare, and leisure—are accessible within a brief walk or cycle. Coupled with automated electric transit networks and sensor-driven traffic signals, this drastically reduces vehicular emissions and commuter stress.
+
+Furthermore, retrofitting metropolitan architectures with vertical greenery and rooftop solar installations neutralizes urban heat islands while generating clean localized power.
+
+In summary, while urban density creates intense logistical hurdles, embracing data-driven sustainable architecture transforms metropolises into resilient hubs of human flourishing.`
+  },
+  {
+    id: 'essay-4',
+    topicTitle: 'Global Tourism and Cultural Identity: Preservation or Dilution?',
+    genre: 'Discursive Essay',
+    minWords: 150,
+    promptDescription: "International travel has expanded dramatically over the past two decades. Does massive tourism preserve cultural heritage by providing economic revenues, or does it erode authentic local traditions?",
+    bulletPoints: [
+      "Examine how tourism finances historical restoration and creates jobs.",
+      "Discuss the risks of commercialization and cultural homogenization.",
+      "Suggest balanced solutions for sustainable cultural tourism."
+    ],
+    sampleBand8Text: `The meteoric expansion of international travel has sparked ongoing discussion regarding its cultural ramifications. While mass tourism inevitably risks trivializing authentic customs into commercial spectacles, it simultaneously supplies vital funding for historical conservation that would otherwise languish unfunded.
+
+Economically, revenue generated by visitors sustains artisanal trades, funds museum upkeep, and restores ancient architectural monuments. In destinations such as Samarkand or Venice, tourist interest directly revitalizes centuries-old craftsmanship and folklore that might otherwise fade in a modernized world.
+
+Nonetheless, overtourism must be systematically regulated to prevent the erosion of residential community life and cultural authenticity. Implementing visitor quotas and promoting community-based ecotourism ensures that travel fosters reciprocal respect rather than shallow consumption.
+
+Ultimately, conscious and well-regulated tourism serves as a powerful bridge connecting civilizations while preserving sacred cultural heritage.`
+  }
+];
+
+// Writing Letter Pool (Part 2 - Random Assignment)
+export const DEFAULT_WRITING_LETTERS: WritingLetterItem[] = [
+  {
+    id: 'letter-1',
+    topicTitle: 'Xalqaro Kompaniyaga Ishga Qabul Qilish Arizasi (Formal Job Application Letter)',
+    letterType: 'formal',
+    minWords: 120,
+    promptDescription: "Siz xalqaro kompaniyada e’lon qilingan bo‘sh ish o‘rni (masalan: Junior Project Manager yoki Content Specialist) uchun rasmiy ariza xati yozishingiz lozim.",
+    bulletPoints: [
+      "O‘zingizni tanishtiring va qaysi lavozimga murojaat qilayotganingizni yozing.",
+      "O‘z bilimingiz, xorijiy til darajangiz va asosiy yutuqlaringizni ta’riflang.",
+      "Kompaniya bilan suhbatga (interview) tayyor ekanligingizni bildirib xatni yakunlang."
+    ],
+    sampleBand8Text: `Dear Hiring Committee,
+
+I am writing to express my enthusiastic interest in the Project Specialist position currently advertised on your corporate careers portal. With a strong academic background in linguistics and three years of practical experience coordinating cross-functional educational initiatives, I am eager to contribute effectively to your global team.
+
+Throughout my tenure at my previous organization, I successfully spearheaded digital collaboration workshops, improving workflow efficiency by over twenty percent. Moreover, possessing certified C1 English fluency enables me to communicate seamlessly with diverse international stakeholders and draft comprehensive operational reports.
+
+I would welcome the opportunity to discuss in greater detail how my qualifications and proactive work ethic align with your organizational goals. Thank you for your time and consideration.
+
+Yours faithfully,
+Akmal Rahimov`
+  },
+  {
+    id: 'letter-2',
+    topicTitle: 'Xorijdagi Do‘stga O‘zbekistonga Sayohat Haqida Xat (Informal Letter to a Friend)',
+    letterType: 'informal',
+    minWords: 120,
+    promptDescription: "Xorijdagi chet ellik do‘stingiz O‘zbekistonga sayohat qilishni rejalashtirmoqda. Unga samimiy xat yozib, qaysi shaharlarni ziyorat qilishni va nimalarga e’tibor berishni maslahat bering.",
+    bulletPoints: [
+      "Do‘stingizning safari haqidagi yangilikdan xursand ekanligingizni bildiring.",
+      "Samarqand, Buxoro yoki Xivada ko‘rish lozim bo‘lgan tarixiy obidalar va milliy taomlarni tavsiya qiling.",
+      "Uning aeroportda kutib olinishi yoki mehmondorchilik taklifini bildiring."
+    ],
+    sampleBand8Text: `Dear Alex,
+
+It was such a fantastic surprise to hear that you are planning a trip to Uzbekistan this coming spring! You simply could not have chosen a more scenic season to explore our ancient Silk Road heritage.
+
+I strongly recommend spending at least two days wandering through Samarkand's breathtaking Registan Square and savoring authentic Samarkand plov. After that, head straight to Bukhara, where walking through the old fortress feels like stepping directly into a historical fairytale. Don't forget to pack comfortable walking shoes, as you will be exploring magnificent bazaars and minarets from sunrise to sunset!
+
+Let me know your exact flight details as soon as they are confirmed—I will gladly meet you at the airport and show you around Tashkent.
+
+Warm wishes,
+Sardor`
+  },
+  {
+    id: 'letter-3',
+    topicTitle: 'Shahar Hokimiyatiga Jamoat Transporti Bo‘yicha Taklif (Semi-formal Complaint / Suggestion Letter)',
+    letterType: 'semi-formal',
+    minWords: 120,
+    promptDescription: "Yashash tumaningizdagi jamoat transporti harakati va bekatlar holatini yaxshilash yuzasidan shahar transport boshqarmasiga muloyim va asosli taklif xati yozing.",
+    bulletPoints: [
+      "Murojaat sababini va tumaningizdagi transport bilan bog‘liq asosiy muammoni bayon qiling.",
+      "Bu muammo o‘quvchilar va ishchilar kun tartibiga qanday salbiy ta’sir ko‘rsatayotganini tushuntiring.",
+      "Vaziyatni o‘nglash uchun 2 ta aniq, amaliy yechim taklif qiling."
+    ],
+    sampleBand8Text: `Dear Municipal Transport Authorities,
+
+I am writing to draw your attention to the increasing transit congestion and bus scheduling delays currently affecting residents in the Chilanzar district. Over the past three months, commuter wait times during peak morning hours have exceeded forty minutes.
+
+This chronic irregularity creates substantial disruption for students attempting to reach universities on time, as well as working professionals facing workplace penalties. Furthermore, during evening rush hours, arriving buses are severely overcrowded, posing both comfort and safety concerns.
+
+To remedy this situation constructively, I respectfully propose introducing two express bus routes operating specifically between 7:30 and 9:30 AM. Additionally, installing digital arrival tracking screens at major intersections would help commuters plan their transit efficiently.
+
+Thank you for your proactive dedication to our city's infrastructure.
+
+Sincerely,
+Dilnoza Karimova`
+  }
+];
 
 // Grammar Default Data (Identify error in text & correct it)
 export const DEFAULT_GRAMMAR_TEST: GrammarTestItem = {
@@ -1416,6 +1610,217 @@ export const DEFAULT_GRAMMAR_TEST: GrammarTestItem = {
   ]
 };
 
+// Grammar Topics Pool (Each topic has a 3-minute simple explanation + practice questions)
+export const DEFAULT_GRAMMAR_TOPICS: GrammarTopicItem[] = [
+  {
+    id: 'gt-1',
+    title: 'Past Simple va Past Continuous (O‘tgan Zamon Qoidalari)',
+    level: 'A2 - B1',
+    readTimeMin: 3,
+    explanationGuide: `⏱️ 3 DAQIQALIK SODDA VA QISQA TUSHUNTIRISH:
+
+1. Past Simple (Oddiy o‘tgan zamon):
+   • Formula: Ega + V2 (to‘g‘ri fe’llarga -ed, noto‘g‘ri fe’llar 2-ustun).
+   • Inkor / So‘roq: didn't + V1 / Did + Ega + V1?
+   • Qachon ishlatiladi: O‘tgan zamonda aniq vaqtda (yesterday, in 2021, two days ago) tugallangan qisqa harakatlar uchun.
+   • Misol: "I visited London in 2022." (Vaqt aniq, ish tugagan).
+
+2. Past Continuous (O‘tgan davomli zamon):
+   • Formula: was / were + V-ing.
+   • Qachon ishlatiladi: O‘tgan zamonda ma’lum bir vaqt davomida cho‘zilgan jarayon uchun.
+   • Misol: "At 8 PM yesterday, I was studying English."
+
+3. Ikkala zamonning birgalikda qo‘llanishi ('When' va 'While'):
+   • Qoida: Davom etayotgan uzoq harakat (Past Continuous) paytida to‘satdan qisqa harakat (Past Simple) sodir bo‘lsa:
+   • Misol: "While I was walking in the park, I met my teacher."
+   • Yodda tuting: 'While'dan keyin odatda Continuous (was/were V-ing), 'When'dan keyin odatda Past Simple (V2) keladi!`,
+    questions: [
+      {
+        id: 1,
+        sentence: "While they was watching the football match, the electricity suddenly failed.",
+        highlightedOptions: ["While", "was watching", "the football match", "suddenly failed"],
+        errorIndex: 1,
+        correctCorrection: "were watching",
+        explanation: "Ega 'they' (ko'plik olmoshi) bo'lganligi sababli 'was' emas, 'were watching' ishlatilishi lozim."
+      },
+      {
+        id: 2,
+        sentence: "She didn't bought any fresh groceries because the supermarket was already closed.",
+        highlightedOptions: ["didn't bought", "fresh groceries", "because", "was already closed"],
+        errorIndex: 0,
+        correctCorrection: "didn't buy",
+        explanation: "Past Simple inkor shaklida 'didn't' yordamchi fe'lidan keyin asosiy fe'l o'tgan shaklda emas, boshlang'ich (V1) shaklda bo'ladi: didn't buy."
+      },
+      {
+        id: 3,
+        sentence: "When the phone rang, I cooked dinner in the spacious kitchen.",
+        highlightedOptions: ["When", "the phone rang", "I cooked", "in the spacious kitchen"],
+        errorIndex: 2,
+        correctCorrection: "I was cooking",
+        explanation: "Telefon jiringlagan vaqtda ovqat pishirish jarayoni davom etayotgan bo'lgan, shuning uchun 'I was cooking' bo'lishi shart."
+      },
+      {
+        id: 4,
+        sentence: "Last night at 9 PM, we listened to the new podcast when our neighbors knocked on the door.",
+        highlightedOptions: ["Last night", "we listened", "to the new podcast", "knocked on the door"],
+        errorIndex: 1,
+        correctCorrection: "we were listening",
+        explanation: "Aniq vaqt ko'rsatkichi ('at 9 PM') va davom etayotgan jarayon uchun Past Continuous ('we were listening') ishlatiladi."
+      }
+    ]
+  },
+  {
+    id: 'gt-2',
+    title: 'Present Perfect vs. Past Simple (Natija va Aniq Vaqt)',
+    level: 'B1 - B2',
+    readTimeMin: 3,
+    explanationGuide: `⏱️ 3 DAQIQALIK SODDA VA QISQA TUSHUNTIRISH:
+
+1. Eng muhim oltin farq:
+   • Agar gapda 'yesterday', 'last week', 'in 2019', 'two hours ago' kabi ANIQ O‘TGAN VAQT ko‘rsatilsa — FAQAT Past Simple (V2) ishlatiladi!
+   • Agar harakatning o‘tgan vaqti noma’lum yoki muhim bo‘lmay, uning NATIJASI hozirgi kunga bog‘liq bo‘lsa — Present Perfect (have/has + V3) ishlatiladi!
+
+2. Misollar:
+   • ❌ XATO: "I have lost my passport yesterday." (Yesterday bo'lgani uchun have lost mumkin emas!)
+   • ✅ TO‘G‘RI: "I lost my passport yesterday." (Past Simple)
+   • ✅ TO‘G‘RI: "I have lost my passport. Can you help me find it?" (Present Perfect: qachon yo'qolgani noma'lum, lekin hozir pasport yo'q - natija bor!)
+
+3. Kalit so‘zlar:
+   • Present Perfect: already, just, yet, ever, never, recently, so far, since, for.
+   • Past Simple: yesterday, ago, last..., in (o'tgan yil), when I was young.`,
+    questions: [
+      {
+        id: 1,
+        sentence: "I have seen that captivating historical documentary yesterday with my colleagues.",
+        highlightedOptions: ["have seen", "captivating", "yesterday", "with my colleagues"],
+        errorIndex: 0,
+        correctCorrection: "saw",
+        explanation: "'Yesterday' (kecha) aniq o'tgan vaqt ko'rsatkichi bo'lganligi sababli Present Perfect emas, Past Simple 'saw' ishlatilishi shart."
+      },
+      {
+        id: 2,
+        sentence: "She has already lived in this apartment since three years without any complaints.",
+        highlightedOptions: ["has already lived", "in this apartment", "since three years", "without any complaints"],
+        errorIndex: 2,
+        correctCorrection: "for three years",
+        explanation: "Vaqt oralig'i (davomiylik) ko'rsatilganda 'since' emas, 'for' ishlatiladi ('for three years'). 'Since' aniq boshlanish nuqtasi bilan keladi (masalan: since 2020)."
+      },
+      {
+        id: 3,
+        sentence: "Did you ever tasted genuine Italian gelato during your vacation in Rome?",
+        highlightedOptions: ["Did you ever", "tasted", "genuine Italian", "during your vacation"],
+        errorIndex: 0,
+        correctCorrection: "Have you ever tasted",
+        explanation: "Hayotiy tajriba haqida so'ralganda 'Have you ever + V3' (Present Perfect) konstruksiyasi qo'llaniladi."
+      },
+      {
+        id: 4,
+        sentence: "The research team has published their breakthrough paper three days ago.",
+        highlightedOptions: ["has published", "breakthrough paper", "three days ago", "in the medical journal"],
+        errorIndex: 0,
+        correctCorrection: "published",
+        explanation: "'Three days ago' (uch kun avval) aniq o'tgan zamon bo'lgani sababli fe'l 'published' shaklida bo'ladi."
+      }
+    ]
+  },
+  {
+    id: 'gt-3',
+    title: 'Conditionals (Third Conditional — O‘tgan Zamondagi Nereal Shart)',
+    level: 'B2',
+    readTimeMin: 3,
+    explanationGuide: `⏱️ 3 DAQIQALIK SODDA VA QISQA TUSHUNTIRISH:
+
+1. Third Conditional nima?
+   • O‘tgan zamonda bo‘lib o‘tgan ish-harakatga nisbatan afsuslanish yoki nereal farazni ifodalaydi.
+   • "Agar shunday qilganimda, bunday bo‘lgan bo‘lardi (lekin amalda unday bo‘lmadi)."
+
+2. Qat’iy formulasi:
+   • If + Past Perfect (had + V3), would / could / might + have + V3.
+   • Inkor: If + hadn't + V3, wouldn't have + V3.
+
+3. Misollar:
+   • "If I had studied harder, I would have passed the IELTS exam." (Lekin o'qimadim va imtihondan o'tolmadim).
+   • "If she had left earlier, she wouldn't have missed the train."
+
+4. Keng tarqalgan xatolar:
+   • ❌ "If I would have known..." (Hech qachon 'If'li qismda 'would' ishlatilmaydi! Faqat 'had + V3' keladi).
+   • ❌ "she wouldn't missed" ('have' tushirib qoldirilmasligi shart: 'wouldn't have missed').`,
+    questions: [
+      {
+        id: 1,
+        sentence: "If she had arrived at the airport on time, she wouldn't missed the international conference flight.",
+        highlightedOptions: ["had arrived", "on time", "wouldn't missed", "international conference"],
+        errorIndex: 2,
+        correctCorrection: "wouldn't have missed",
+        explanation: "Third Conditional qoidasiga ko'ra asosiy gapda 'would/could + have + V3' kelishi shart. Bu yerda 'have' tushib qolgan."
+      },
+      {
+        id: 2,
+        sentence: "If I would have known about your arrival, I would have prepared a welcoming dinner.",
+        highlightedOptions: ["If I would have known", "about your arrival", "would have prepared", "welcoming dinner"],
+        errorIndex: 0,
+        correctCorrection: "If I had known",
+        explanation: "Shart ergash gaplarning 'If'li qismida 'would' ishlatilmaydi, uning o'rniga Past Perfect 'had known' bo'ladi."
+      },
+      {
+        id: 3,
+        sentence: "Had the weather been warmer, the students would had enjoyed the botanical garden excursion.",
+        highlightedOptions: ["Had the weather been", "warmer", "would had enjoyed", "botanical garden"],
+        errorIndex: 2,
+        correctCorrection: "would have enjoyed",
+        explanation: "Modal fe'llardan keyin 'had' emas, faqat boshlang'ich shakl 'have' ishlatiladi ('would have enjoyed')."
+      }
+    ]
+  },
+  {
+    id: 'gt-4',
+    title: 'Passive Voice (Majhul Nisbat Qoidalari)',
+    level: 'B1 - B2',
+    readTimeMin: 3,
+    explanationGuide: `⏱️ 3 DAQIQALIK SODDA VA QISQA TUSHUNTIRISH:
+
+1. Passive Voice (Majhul nisbat) nima?
+   • Harakatni kim bajarganidan ko‘ra, harakatning O‘ZI yoki uning OBYEKTI muhimroq bo‘lganda qo‘llaniladi.
+   • Bosh qoida: Har doim 'TO BE' + V3 (Past Participle).
+
+2. Asosiy zamonlar formulasi:
+   • Present Simple: am / is / are + V3 ("English is spoken here.")
+   • Past Simple: was / were + V3 ("The car was stolen yesterday.")
+   • Present Perfect: have / has been + V3 ("The report has been completed.")
+   • Future Simple: will be + V3 ("A new hospital will be built next year.")
+
+3. Bajiruvchini ko‘rsatish:
+   • Agar ish kim tomonidan bajarilgani aytilsa, 'BY' predlogi ishlatiladi:
+   • "Hamlet was written by William Shakespeare."`,
+    questions: [
+      {
+        id: 1,
+        sentence: "The historic city castle was built from ancient stones by skilled craftsmen in the 14th century.",
+        highlightedOptions: ["historic city castle", "was build", "by skilled craftsmen", "in the 14th century"],
+        errorIndex: 1,
+        correctCorrection: "was built",
+        explanation: "Passive Voice formulasida fe'lning 3-shakli (V3) ishlatilishi kerak. 'Build'ning V3 shakli 'built'dir."
+      },
+      {
+        id: 2,
+        sentence: "All diplomatic documents has been signed before the press conference began.",
+        highlightedOptions: ["All diplomatic documents", "has been signed", "before the press", "began"],
+        errorIndex: 1,
+        correctCorrection: "have been signed (or had been signed)",
+        explanation: "'Documents' ko'plik ot bo'lgani sababli 'has' emas, 'have been signed' ishlatilishi zarur."
+      },
+      {
+        id: 3,
+        sentence: "The annual scholarship will being awarded to the top three academic performers tomorrow.",
+        highlightedOptions: ["The annual scholarship", "will being awarded", "to the top three", "tomorrow"],
+        errorIndex: 1,
+        correctCorrection: "will be awarded",
+        explanation: "Future Simple Passive qolipida 'will be + V3' bo'ladi, 'will being' emas."
+      }
+    ]
+  }
+];
+
 // Initial Full Trial Tests Config
 export const INITIAL_TRIAL_CONFIG: TrialTestsConfig = {
   wordPool: DEFAULT_100_WORD_POOL,
@@ -1426,6 +1831,11 @@ export const INITIAL_TRIAL_CONFIG: TrialTestsConfig = {
   reading: DEFAULT_READING_TESTS,
   listening: DEFAULT_LISTENING_TEST,
   writing: DEFAULT_WRITING_TEST,
-  grammar: DEFAULT_GRAMMAR_TEST
+  writingPool: {
+    essayTopics: DEFAULT_WRITING_ESSAYS,
+    letterTopics: DEFAULT_WRITING_LETTERS
+  },
+  grammar: DEFAULT_GRAMMAR_TEST,
+  grammarTopics: DEFAULT_GRAMMAR_TOPICS
 };
 

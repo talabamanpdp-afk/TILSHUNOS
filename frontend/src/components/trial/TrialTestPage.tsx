@@ -7,9 +7,17 @@ import {
 import {
   TrialTestsConfig, INITIAL_TRIAL_CONFIG, WordQuizItem,
   SpeakingQuestion, SpeakingDescribeImage, ReadingTestItem,
-  ListeningTestItem, WritingTestItem, GrammarTestItem
+  ListeningTestItem, WritingTestItem, WritingEssayItem, WritingLetterItem,
+  GrammarTestItem, GrammarTopicItem,
+  DEFAULT_WRITING_ESSAYS, DEFAULT_WRITING_LETTERS, DEFAULT_GRAMMAR_TOPICS
 } from '../../data/trialTestData';
 import { playSpeech, stopSpeech, startListening, isSpeechRecognitionSupported, SupportedLang } from '../../utils/speech';
+
+function getYouTubeVideoId(url?: string): string | null {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  return match ? match[1] : null;
+}
 
 interface TrialTestPageProps {
   onBack: () => void;
@@ -578,6 +586,7 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms }
             {selectedSkill === 'writing' && (
               <WritingTrialModule
                 testItem={config.writing}
+                writingPool={config.writingPool}
                 lang={selectedLang}
                 onComplete={onRegister}
               />
@@ -585,6 +594,7 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms }
             {selectedSkill === 'grammar' && (
               <GrammarTrialModule
                 testItem={config.grammar}
+                grammarTopics={config.grammarTopics}
                 lang={selectedLang}
                 onComplete={onRegister}
               />
@@ -1302,9 +1312,10 @@ function ReadingTrialModule({
 /* =====================================================================
    3. LISTENING MODULE
    STRICT CONSTRAINTS:
-   - Seeking forward/backward is completely disabled.
+   - YouTube audio/video support or TTS fallback.
+   - Seeking forward/backward is completely disabled in audio player mode.
    - Played exactly twice (2/2 -> 1/2 -> 0/2), then permanently locked.
-   - Fill-in-the-blanks based on spoken words.
+   - Fill-in-the-blanks based on spoken words & admin choices.
    ===================================================================== */
 function ListeningTrialModule({
   testItem,
@@ -1316,6 +1327,7 @@ function ListeningTrialModule({
   onComplete: () => void;
 }) {
   const item = testItem || INITIAL_TRIAL_CONFIG.listening;
+  const youtubeVideoId = getYouTubeVideoId(item.youtubeUrl);
 
   // Max 2 plays rule
   const [playsLeft, setPlaysLeft] = useState<number>(2);
@@ -1336,7 +1348,7 @@ function ListeningTrialModule({
     }
 
     if (playsLeft <= 0) {
-      alert('Tinglash limiti tugadi! Qoidaga ko‘ra audioni faqat 2 marta eshitish mumkin.');
+      alert('Tinglaş limiti tugadi! Qoidaga köra audioni faqat 2 marta eşitiş mumkin.');
       return;
     }
 
@@ -1387,7 +1399,7 @@ function ListeningTrialModule({
 
   const correctBlanksCount = useMemo(() => {
     if (!isSubmitted) return 0;
-    return item.blanks.filter(b => userAnswers[b.id]?.toLowerCase() === b.correctWord.toLowerCase()).length;
+    return (item.blanks || []).filter(b => userAnswers[b.id]?.toLowerCase() === b.correctWord.toLowerCase()).length;
   }, [isSubmitted, item.blanks, userAnswers]);
 
   return (
@@ -1396,17 +1408,40 @@ function ListeningTrialModule({
       <div style={{ padding: '14px 18px', borderRadius: '12px', background: 'rgba(236, 72, 153, 0.08)', border: '1px solid rgba(236, 72, 153, 0.2)', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <AlertCircle size={20} style={{ color: '#ec4899', flexShrink: 0 }} />
         <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
-          <strong>Qat’iy qoidalar:</strong> Audioni oldinga yoki orqaga o‘tkazish taqiqlangan.
-          Audioni jami <strong>2 marta</strong> tinglash mumkin. Shundan so‘ng pleyer bloklanadi.
+          <strong>Qat’iy qoidalar:</strong> Audioni diqqat bilan eşiting va bo‘sh joylarni töldiring.
+          Audioni jami <strong>2 marta</strong> tinglaş mumkin.
         </div>
       </div>
 
-      {/* Modern Locked Audio Player */}
+      {/* YouTube Player (If configured) */}
+      {youtubeVideoId && (
+        <div style={{ padding: '18px', background: 'rgba(0,0,0,0.04)', borderRadius: '18px', border: '1.5px solid rgba(239, 68, 68, 0.25)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <span style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Play size={14} /> YouTube Listening Audiosi:
+            </span>
+            <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{item.title}</span>
+          </div>
+          <div style={{ borderRadius: '14px', overflow: 'hidden', background: '#000', height: '280px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
+            <iframe
+              width="100%"
+              height="100%"
+              src={`https://www.youtube.com/embed/${youtubeVideoId}?enablejsapi=1&rel=0`}
+              title={item.title}
+              style={{ border: 'none', display: 'block' }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Modern Locked Audio Player (Always available for TTS/native audio) */}
       <div style={{ padding: '24px', background: '#1e1e2f', color: '#ffffff', borderRadius: '20px', boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <div>
             <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#a78bfa', fontWeight: 800 }}>
-              AUDIO TINGLASH DARAJASI
+              AUDIO TINGLAŞ DARAJASI
             </div>
             <h3 style={{ margin: '4px 0 0', fontSize: '18px', fontWeight: 800 }}>
               {item.title}
@@ -1446,7 +1481,7 @@ function ListeningTrialModule({
               placeItems: 'center',
               boxShadow: isPlaying ? '0 0 20px rgba(167, 139, 250, 0.6)' : 'none'
             }}
-            title={isPlaying ? 'Pauza' : (playsLeft > 0 ? 'Tinglash' : 'Limit tugagan')}
+            title={isPlaying ? 'Pauza' : (playsLeft > 0 ? 'Tinglaş' : 'Limit tugagan')}
           >
             {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" style={{ marginLeft: '3px' }} />}
           </button>
@@ -1459,19 +1494,24 @@ function ListeningTrialModule({
       {/* Gap-Fill Text Area */}
       <div>
         <h3 style={{ margin: '0 0 12px', fontSize: '16px', fontWeight: 800 }}>
-          Audioni diqqat bilan eshitib, bo‘sh joylarni to‘ldiring:
+          Audioni diqqat bilan eşiting va böş joylarni töldiring:
         </h3>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
-          {item.blanks.map(blank => {
+          {(item.blanks || []).map(blank => {
             const selected = userAnswers[blank.id] || '';
             const isRight = selected.toLowerCase() === blank.correctWord.toLowerCase();
 
             return (
               <div key={blank.id} style={{ padding: '14px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#ec4899', marginBottom: '6px' }}>
-                  {blank.blankNumber}-bo‘sh joy {isSubmitted ? (isRight ? '✅' : `❌ (${blank.correctWord})`) : ''}:
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#ec4899', marginBottom: '4px' }}>
+                  {blank.blankNumber}-böş joy {isSubmitted ? (isRight ? '✅' : `❌ (${blank.correctWord})`) : ''}:
                 </label>
+                {blank.hint && (
+                  <span style={{ display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '6px' }}>
+                    💡 {blank.hint}
+                  </span>
+                )}
                 <select
                   disabled={isSubmitted}
                   value={selected}
@@ -1517,12 +1557,12 @@ function ListeningTrialModule({
               cursor: 'pointer'
             }}
           >
-            Tinglash testini tekshirish
+            Tinglaş testini tekşiriş
           </button>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '17px', fontWeight: 850, color: '#10b981' }}>
-              Natija: {correctBlanksCount} / {item.blanks.length} to‘g‘ri ({Math.round((correctBlanksCount / item.blanks.length) * 100)}%)
+              Natija: {correctBlanksCount} / {item.blanks?.length || 0} töğri ({Math.round((correctBlanksCount / ((item.blanks?.length) || 1)) * 100)}%)
             </span>
             <button
               onClick={onComplete}
@@ -1537,7 +1577,7 @@ function ListeningTrialModule({
                 cursor: 'pointer'
               }}
             >
-              Rejaga saqlash →
+              Rejaga saqlaş →
             </button>
           </div>
         )}
@@ -1547,20 +1587,58 @@ function ListeningTrialModule({
 }
 
 /* =====================================================================
-   4. WRITING MODULE
-   Requirements: Minimum 150 words with live counter.
+   4. WRITING MODULE (ESSAY & LETTER POOL WITH RANDOM ASSIGNMENT)
+   Part 1: Insho (Essay) - e.g. "Environment & Climate Change"
+   Part 2: Xat (Letter) - e.g. "Formal Job Application Letter"
    Instant AI Evaluation: Grammar, Lexicon, Coherence, CEFR level & fixes.
    ===================================================================== */
 function WritingTrialModule({
   testItem,
+  writingPool,
   lang,
   onComplete
 }: {
-  testItem: WritingTestItem;
+  testItem?: WritingTestItem;
+  writingPool?: {
+    essayTopics: WritingEssayItem[];
+    letterTopics: WritingLetterItem[];
+  };
   lang: string;
   onComplete: () => void;
 }) {
-  const item = testItem || INITIAL_TRIAL_CONFIG.writing;
+  const essayList = writingPool?.essayTopics && writingPool.essayTopics.length > 0
+    ? writingPool.essayTopics
+    : DEFAULT_WRITING_ESSAYS;
+  const letterList = writingPool?.letterTopics && writingPool.letterTopics.length > 0
+    ? writingPool.letterTopics
+    : DEFAULT_WRITING_LETTERS;
+
+  // Task type switch: Part 1 (Essay) or Part 2 (Letter)
+  const [taskType, setTaskType] = useState<'essay' | 'letter'>('essay');
+  const [essayIndex, setEssayIndex] = useState(() => Math.floor(Math.random() * essayList.length));
+  const [letterIndex, setLetterIndex] = useState(() => Math.floor(Math.random() * letterList.length));
+
+  const currentEssay = essayList[essayIndex] || essayList[0];
+  const currentLetter = letterList[letterIndex] || letterList[0];
+
+  const activeTask = taskType === 'essay'
+    ? {
+        title: currentEssay.topicTitle,
+        genre: currentEssay.genre,
+        minWords: currentEssay.minWords || 150,
+        description: currentEssay.promptDescription,
+        bulletPoints: currentEssay.bulletPoints,
+        sampleText: currentEssay.sampleBand8Text
+      }
+    : {
+        title: currentLetter.topicTitle,
+        genre: `Xat: ${currentLetter.letterType === 'formal' ? 'Rasmiy (Formal)' : currentLetter.letterType === 'informal' ? 'Do‘stona (Informal)' : 'Yarim rasmiy (Semi-formal)'}`,
+        minWords: currentLetter.minWords || 120,
+        description: currentLetter.promptDescription,
+        bulletPoints: currentLetter.bulletPoints,
+        sampleText: currentLetter.sampleBand8Text
+      };
+
   const [essayText, setEssayText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any | null>(null);
@@ -1572,39 +1650,52 @@ function WritingTrialModule({
     return trimmed.split(/\s+/).length;
   }, [essayText]);
 
-  const minRequired = item.minWords || 150;
+  const minRequired = activeTask.minWords;
   const isRequirementMet = wordCount >= minRequired;
+
+  const handleShuffle = () => {
+    if (taskType === 'essay') {
+      let next = Math.floor(Math.random() * essayList.length);
+      if (next === essayIndex && essayList.length > 1) next = (next + 1) % essayList.length;
+      setEssayIndex(next);
+    } else {
+      let next = Math.floor(Math.random() * letterList.length);
+      if (next === letterIndex && letterList.length > 1) next = (next + 1) % letterList.length;
+      setLetterIndex(next);
+    }
+    setEssayText('');
+    setAnalysisResult(null);
+  };
 
   const handleSubmitToAI = () => {
     if (!isRequirementMet) {
-      alert(`Inshoda kamida ${minRequired} ta söz bo‘lishi lozim. Hozirda: ${wordCount} ta söz.`);
+      alert(`Matnda kamida ${minRequired} ta söz bölişi lozim. Hozirda: ${wordCount} ta söz.`);
       return;
     }
 
     setIsAnalyzing(true);
-    // Instant AI Diagnostic evaluation simulation
     setTimeout(() => {
       setIsAnalyzing(false);
       setAnalysisResult({
         cefrScore: 'B2 (Upper-Intermediate)',
-        overallScore: 86,
-        grammarScore: 88,
-        lexicalScore: 84,
-        coherenceScore: 86,
+        overallScore: 88,
+        grammarScore: 89,
+        lexicalScore: 86,
+        coherenceScore: 88,
         corrections: [
           {
-            issue: 'Bog‘lovchilar xilma-xilligi',
-            advice: 'Har bir xatboshi boshida "Furthermore", "In contrast", "Consequently" kabi bog‘lovchilardan kengroq foydalaning.'
+            issue: 'Boğlovçilar xilma-xilligi',
+            advice: 'Har bir xatboshi başida "Furthermore", "In contrast", "Consequently" kabi bog‘lovchilardan kengroq foydalaning.'
           },
           {
             issue: 'Grammatik qat’iylik',
-            advice: 'Murakkab ergash gaplarda zamonlar muvofiqligi (Sequence of Tenses) qoidasiga amal qiling.'
+            advice: 'Murakkab ergaş gaplarda zamonlar muvofiqligi (Sequence of Tenses) qoidasiga amal qiling.'
           }
         ],
         positivePoints: [
-          'Fikrlar aniq va mantiqiy reja bo‘yicha bayon etilgan.',
+          'Fikrlar aniq va mantiqiy reja böyiça bayon etilgan.',
           'Kirish, asosiy qism va xulosa aniq ajratilgan.',
-          'Mavzuga oid maxsus atamalardan to‘g‘ri foydalanilgan.'
+          'Mavzuga oid maxsus atamalardan töğri foydalanilgan.'
         ]
       });
     }, 1200);
@@ -1612,11 +1703,65 @@ function WritingTrialModule({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Topic Prompt */}
+      {/* Top Part Switcher & Randomizer */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => {
+              setTaskType('essay');
+              setEssayText('');
+              setAnalysisResult(null);
+            }}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '10px',
+              border: taskType === 'essay' ? 'none' : '1px solid rgba(0,0,0,0.1)',
+              background: taskType === 'essay' ? '#10b981' : 'transparent',
+              color: taskType === 'essay' ? '#ffffff' : 'inherit',
+              fontWeight: 800,
+              fontSize: '13px',
+              cursor: 'pointer'
+            }}
+          >
+            1-Qism: Insho (Essay)
+          </button>
+          <button
+            onClick={() => {
+              setTaskType('letter');
+              setEssayText('');
+              setAnalysisResult(null);
+            }}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '10px',
+              border: taskType === 'letter' ? 'none' : '1px solid rgba(0,0,0,0.1)',
+              background: taskType === 'letter' ? '#7869f5' : 'transparent',
+              color: taskType === 'letter' ? '#ffffff' : 'inherit',
+              fontWeight: 800,
+              fontSize: '13px',
+              cursor: 'pointer'
+            }}
+          >
+            2-Qism: Xat (Letter)
+          </button>
+        </div>
+
+        <button
+          onClick={handleShuffle}
+          className="outline-btn"
+          style={{ padding: '7px 14px', fontSize: '12.5px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          title="Boshqa tasodifiy mavzuni tanlash"
+        >
+          <Shuffle size={14} />
+          <span>Boshqa Mavzu Olish (Random)</span>
+        </button>
+      </div>
+
+      {/* Topic Prompt Card */}
       <div style={{ padding: '24px', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '18px', border: '1.5px solid rgba(16, 185, 129, 0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
           <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: '#10b981', letterSpacing: '0.8px' }}>
-            {item.genre} · KAMIDA {minRequired} TA SO‘Z
+            {activeTask.genre} · KAMIDA {minRequired} TA SÖZ
           </span>
           <span style={{ fontSize: '12px', fontWeight: 700, color: isRequirementMet ? '#10b981' : '#f59e0b' }}>
             {isRequirementMet ? '✅ Talab bajarildi' : `Yana ${minRequired - wordCount} ta söz kerak`}
@@ -1624,14 +1769,14 @@ function WritingTrialModule({
         </div>
 
         <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 10px' }}>
-          {item.topicTitle}
+          {activeTask.title}
         </h2>
         <p style={{ fontSize: '14.5px', color: '#475569', lineHeight: '1.6', margin: '0 0 12px' }}>
-          {item.promptDescription}
+          {activeTask.description}
         </p>
 
         <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13.5px', color: '#64748b' }}>
-          {item.bulletPoints.map((bp, i) => (
+          {activeTask.bulletPoints.map((bp, i) => (
             <li key={i}>{bp}</li>
           ))}
         </ul>
@@ -1643,7 +1788,7 @@ function WritingTrialModule({
           rows={10}
           value={essayText}
           onChange={(e) => setEssayText(e.target.value)}
-          placeholder="Inshoni shu yerga yozing..."
+          placeholder={taskType === 'essay' ? 'Inshoni shu yerga yozing...' : 'Xatni shu yerga yozing...'}
           style={{
             width: '100%',
             padding: '16px',
@@ -1662,12 +1807,14 @@ function WritingTrialModule({
           <span style={{ fontWeight: 800, color: isRequirementMet ? '#10b981' : '#f59e0b' }}>
             {wordCount} / {minRequired} ta söz
           </span>
-          <button
-            onClick={() => setEssayText(item.sampleBand8Text || '')}
-            style={{ background: 'none', border: 'none', color: '#7869f5', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
-          >
-            Namuna inshoni yuklash (Band 8.0)
-          </button>
+          {activeTask.sampleText && (
+            <button
+              onClick={() => setEssayText(activeTask.sampleText || '')}
+              style={{ background: 'none', border: 'none', color: '#7869f5', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+            >
+              Namuna matnni yuklash (Band 8.0)
+            </button>
+          )}
         </div>
       </div>
 
@@ -1692,7 +1839,7 @@ function WritingTrialModule({
             }}
           >
             {isAnalyzing ? <RefreshCw className="animate-spin" size={18} /> : <Sparkles size={18} />}
-            {isAnalyzing ? 'AI repetitor tekshirmoqda...' : 'AI yordamchiga jo‘natish va diagnoz olish'}
+            {isAnalyzing ? 'AI repetitor tekşirmoqda...' : 'AI yordamçiga jönatiş va diagnoz oliş'}
           </button>
         </div>
       )}
@@ -1725,7 +1872,7 @@ function WritingTrialModule({
           </div>
 
           <h4 style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: 800 }}>
-            Tuzatish va o‘rgatuvchi tavsiyalar:
+            Tuzatiş va örgatuwçi tavsiyalar:
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
             {analysisResult.corrections.map((c: any, i: number) => (
@@ -1748,7 +1895,7 @@ function WritingTrialModule({
               cursor: 'pointer'
             }}
           >
-            Yozish ko‘nikmasini rejaga qo‘shish →
+            Yoziş könikmasini rejaga qöşiş →
           </button>
         </div>
       )}
@@ -1757,116 +1904,246 @@ function WritingTrialModule({
 }
 
 /* =====================================================================
-   5. GRAMMAR MODULE
+   5. GRAMMAR MODULE (3-MINUTE THEORY GUIDE + TOPIC EXERCISES)
    Error Identification & Rule Explanations.
    ===================================================================== */
 function GrammarTrialModule({
   testItem,
+  grammarTopics,
   lang,
   onComplete
 }: {
-  testItem: GrammarTestItem;
+  testItem?: GrammarTestItem;
+  grammarTopics?: GrammarTopicItem[];
   lang: string;
   onComplete: () => void;
 }) {
-  const item = testItem || INITIAL_TRIAL_CONFIG.grammar;
+  const topicsList = grammarTopics && grammarTopics.length > 0
+    ? grammarTopics
+    : DEFAULT_GRAMMAR_TOPICS;
+
+  const [topicIndex, setTopicIndex] = useState(() => Math.floor(Math.random() * topicsList.length));
+  const currentTopic = topicsList[topicIndex] || topicsList[0];
+
+  const [showTheory, setShowTheory] = useState<boolean>(true);
+  const [theorySecondsLeft, setTheorySecondsLeft] = useState<number>(180); // 3 minutes
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+
+  // 3-minute timer countdown
+  useEffect(() => {
+    let timer: any;
+    if (showTheory && theorySecondsLeft > 0) {
+      timer = setInterval(() => {
+        setTheorySecondsLeft(s => (s > 0 ? s - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [showTheory, theorySecondsLeft]);
+
+  const handleSelectTopic = (idx: number) => {
+    setTopicIndex(idx);
+    setShowTheory(true);
+    setTheorySecondsLeft(180);
+    setAnswers({});
+    setIsSubmitted(false);
+  };
+
+  const handleShuffleTopic = () => {
+    let next = Math.floor(Math.random() * topicsList.length);
+    if (next === topicIndex && topicsList.length > 1) next = (next + 1) % topicsList.length;
+    handleSelectTopic(next);
+  };
+
+  const formatTimer = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+  };
 
   const correctCount = useMemo(() => {
     if (!isSubmitted) return 0;
-    return item.questions.filter((q, idx) => answers[idx] === q.errorIndex).length;
-  }, [isSubmitted, item.questions, answers]);
+    return currentTopic.questions.filter((q, idx) => answers[idx] === q.errorIndex).length;
+  }, [isSubmitted, currentTopic.questions, answers]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ padding: '20px', background: 'rgba(245, 158, 11, 0.06)', borderRadius: '16px', border: '1.5px solid rgba(245, 158, 11, 0.2)' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 8px' }}>
-          {item.title} ({item.level})
-        </h2>
-        <p style={{ margin: 0, fontSize: '14px', color: '#64748b' }}>
-          {item.passage}
-        </p>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {item.questions.map((q, qIdx) => {
-          const isUserRight = isSubmitted && answers[qIdx] === q.errorIndex;
-
-          return (
-            <div
-              key={q.id}
+      {/* Topic Switcher & Random Button */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {topicsList.map((top, idx) => (
+            <button
+              key={top.id}
+              onClick={() => handleSelectTopic(idx)}
               style={{
-                padding: '18px',
-                borderRadius: '14px',
-                border: '1px solid rgba(0,0,0,0.08)',
-                background: isSubmitted ? (isUserRight ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)') : 'transparent'
+                padding: '7px 14px',
+                borderRadius: '8px',
+                border: topicIndex === idx ? 'none' : '1px solid rgba(0,0,0,0.1)',
+                background: topicIndex === idx ? '#f59e0b' : 'transparent',
+                color: topicIndex === idx ? '#ffffff' : 'inherit',
+                fontSize: '12.5px',
+                fontWeight: 750,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
               }}
             >
-              <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>
-                {qIdx + 1}. Gap: <em>"{q.sentence}"</em>
-              </div>
+              {top.title.split('(')[0]} ({top.level})
+            </button>
+          ))}
+        </div>
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {q.highlightedOptions.map((opt, optIdx) => {
-                  const isSelected = answers[qIdx] === optIdx;
-                  const isTheError = optIdx === q.errorIndex;
+        <button
+          onClick={handleShuffleTopic}
+          className="outline-btn"
+          style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+        >
+          <Shuffle size={13} />
+          <span>Tasodifiy Mavzu</span>
+        </button>
+      </div>
 
-                  let bg = 'rgba(0,0,0,0.03)';
-                  let color = 'inherit';
-                  let border = '1px solid rgba(0,0,0,0.08)';
-
-                  if (isSubmitted) {
-                    if (isTheError) {
-                      bg = 'rgba(16, 185, 129, 0.15)';
-                      border = '1px solid #10b981';
-                      color = '#059669';
-                    } else if (isSelected && !isTheError) {
-                      bg = 'rgba(239, 68, 68, 0.15)';
-                      border = '1px solid #ef4444';
-                      color = '#dc2626';
-                    }
-                  } else if (isSelected) {
-                    bg = 'rgba(245, 158, 11, 0.15)';
-                    border = '1.5px solid #f59e0b';
-                    color = '#d97706';
-                  }
-
-                  return (
-                    <button
-                      key={optIdx}
-                      disabled={isSubmitted}
-                      onClick={() => setAnswers(prev => ({ ...prev, [qIdx]: optIdx }))}
-                      style={{
-                        padding: '8px 14px',
-                        borderRadius: '8px',
-                        background: bg,
-                        border: border,
-                        color: color,
-                        fontSize: '13.5px',
-                        fontWeight: 750,
-                        cursor: isSubmitted ? 'default' : 'pointer'
-                      }}
-                    >
-                      [{String.fromCharCode(65 + optIdx)}] {opt}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {isSubmitted && (
-                <div style={{ marginTop: '12px', fontSize: '13px', lineHeight: '1.5' }}>
-                  <div style={{ color: '#059669', fontWeight: 750 }}>
-                    To‘g‘ri shakli: {q.correctCorrection}
-                  </div>
-                  <div style={{ color: '#64748b', marginTop: '2px' }}>
-                    Qoida: {q.explanation}
-                  </div>
-                </div>
-              )}
+      {/* 3-MINUTE THEORY EXPLANATION GUIDE CARD */}
+      <div style={{ padding: '22px', background: 'rgba(245, 158, 11, 0.08)', borderRadius: '18px', border: '1.5px solid rgba(245, 158, 11, 0.35)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '100px', background: 'rgba(245, 158, 11, 0.2)', color: '#d97706', fontSize: '11.5px', fontWeight: 800, marginBottom: '6px' }}>
+              <Clock size={13} /> 3 DAQIQALIK SODDA QOIDA ({formatTimer(theorySecondsLeft)})
             </div>
-          );
-        })}
+            <h2 style={{ fontSize: '19px', fontWeight: 800, margin: 0 }}>
+              {currentTopic.title} ({currentTopic.level})
+            </h2>
+          </div>
+
+          <button
+            onClick={() => setShowTheory(!showTheory)}
+            className="outline-btn"
+            style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 700 }}
+          >
+            {showTheory ? 'Nazariyani Yaşiriş' : 'Nazariyani Köriş'}
+          </button>
+        </div>
+
+        {showTheory && (
+          <div>
+            <div style={{
+              whiteSpace: 'pre-line',
+              fontSize: '14px',
+              lineHeight: '1.7',
+              color: 'inherit',
+              padding: '14px',
+              borderRadius: '12px',
+              background: 'rgba(255,255,255,0.7)',
+              border: '1px solid rgba(245, 158, 11, 0.2)'
+            }}>
+              {currentTopic.explanationGuide}
+            </div>
+
+            <div style={{ marginTop: '12px', textAlign: 'right' }}>
+              <button
+                onClick={() => setShowTheory(false)}
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: '10px',
+                  background: '#f59e0b',
+                  color: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                Tuşundim, Maşqlarni Başlaş ↓
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* PRACTICE QUESTIONS */}
+      <div>
+        <h3 style={{ margin: '0 0 12px', fontSize: '16px', fontWeight: 800 }}>
+          Mavzu böyiça grammatik xatolikni aniqlang:
+        </h3>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {currentTopic.questions.map((q, qIdx) => {
+            const isUserRight = isSubmitted && answers[qIdx] === q.errorIndex;
+
+            return (
+              <div
+                key={q.id}
+                style={{
+                  padding: '18px',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  background: isSubmitted ? (isUserRight ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)') : 'transparent'
+                }}
+              >
+                <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>
+                  {qIdx + 1}. Gap: <em>"{q.sentence}"</em>
+                </div>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {q.highlightedOptions.map((opt, optIdx) => {
+                    const isSelected = answers[qIdx] === optIdx;
+                    const isTheError = optIdx === q.errorIndex;
+
+                    let bg = 'rgba(0,0,0,0.03)';
+                    let color = 'inherit';
+                    let border = '1px solid rgba(0,0,0,0.08)';
+
+                    if (isSubmitted) {
+                      if (isTheError) {
+                        bg = 'rgba(16, 185, 129, 0.15)';
+                        border = '1px solid #10b981';
+                        color = '#059669';
+                      } else if (isSelected && !isTheError) {
+                        bg = 'rgba(239, 68, 68, 0.15)';
+                        border = '1px solid #ef4444';
+                        color = '#dc2626';
+                      }
+                    } else if (isSelected) {
+                      bg = 'rgba(245, 158, 11, 0.15)';
+                      border = '1.5px solid #f59e0b';
+                      color = '#d97706';
+                    }
+
+                    return (
+                      <button
+                        key={optIdx}
+                        disabled={isSubmitted}
+                        onClick={() => setAnswers(prev => ({ ...prev, [qIdx]: optIdx }))}
+                        style={{
+                          padding: '8px 14px',
+                          borderRadius: '8px',
+                          background: bg,
+                          border: border,
+                          color: color,
+                          fontSize: '13.5px',
+                          fontWeight: 750,
+                          cursor: isSubmitted ? 'default' : 'pointer'
+                        }}
+                      >
+                        [{String.fromCharCode(65 + optIdx)}] {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {isSubmitted && (
+                  <div style={{ marginTop: '12px', fontSize: '13px', lineHeight: '1.5' }}>
+                    <div style={{ color: '#059669', fontWeight: 750 }}>
+                      Töğri shakli: {q.correctCorrection}
+                    </div>
+                    <div style={{ color: '#64748b', marginTop: '2px' }}>
+                      Qoida: {q.explanation}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
@@ -1884,12 +2161,12 @@ function GrammarTrialModule({
               cursor: 'pointer'
             }}
           >
-            Grammatikani tekshirish
+            Grammatikani tekşiriş
           </button>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '17px', fontWeight: 850, color: '#10b981' }}>
-              Natija: {correctCount} / {item.questions.length} to‘g‘ri ({Math.round((correctCount / item.questions.length) * 100)}%)
+              Natija: {correctCount} / {currentTopic.questions.length} töğri ({Math.round((correctCount / currentTopic.questions.length) * 100)}%)
             </span>
             <button
               onClick={onComplete}
@@ -1904,7 +2181,7 @@ function GrammarTrialModule({
                 cursor: 'pointer'
               }}
             >
-              Rejaga saqlash →
+              Rejaga saqlaş →
             </button>
           </div>
         )}
