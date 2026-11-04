@@ -1758,7 +1758,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
           {section === 'dashboard' && (
             <>
               {/* ROW 1: Hero Banner (Left) + Today & Quote Card (Right) */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2.2fr) minmax(280px, 1fr)', gap: '20px', marginBottom: '22px' }}>
+              <div className="neon-dashboard-hero-row">
                 {/* Hero Card */}
                 <div className="neon-card neon-hero-card">
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -1877,7 +1877,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               </div>
 
               {/* ROW 2: 4 Metric Cards */}
-              <div className="neon-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px', marginBottom: '22px' }}>
+              <div className="neon-stats-grid">
                 {/* Metric 1: Faol Öquvçilar */}
                 <div
                   className="neon-card metric-card-neon"
@@ -2140,7 +2140,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               </div>
 
               {/* ROW 4: Kontent Turlari Taqsimoti & So'nggi Ro'yxatdan O'tganlar */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '20px', marginBottom: '22px' }}>
+              <div className="neon-activity-grid">
                 {/* Left: Kontent Turlari Taqsimoti */}
                 <div className="neon-card" style={{ padding: '26px 28px', position: 'relative' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
@@ -2409,16 +2409,12 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
               </div>
 
               {/* Segmented Sub-Tab Bar */}
-              <div style={{
-                display: 'flex',
-                gap: '8px',
+              <div className="admin-subtabs-scroll" style={{
                 background: 'var(--panel)',
                 padding: '6px',
                 borderRadius: '14px',
                 border: '1px solid var(--border)',
-                overflowX: 'auto',
-                marginBottom: '20px',
-                scrollbarWidth: 'none'
+                marginBottom: '20px'
               }}>
                 {[
                   ['all', 'Umumiy Foydalanuvçilar', Users, users.length],
@@ -8197,7 +8193,7 @@ export function AdminPanel({ onLogout, dark, setDark }: { onLogout: () => void; 
                   </p>
                 </div>
               </div>
-              <button className="icon-btn" onClick={() => setPermsModalAdmin(null)} aria-label="Yopish"><X size={18} /></button>
+              <button className="icon-btn" onClick={() => setPermsModalAdmin(null)} aria-label="Yopiş"><X size={18} /></button>
             </div>
 
             <div style={{ margin: '18px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
