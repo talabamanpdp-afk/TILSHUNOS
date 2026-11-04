@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Mic, MicOff, Volume2, Play, Pause, CheckCircle2, XCircle, AlertCircle,
   Sparkles, Award, ArrowRight, ArrowLeft, RefreshCw, Eye, EyeOff, BookOpen,
-  Headphones, PenLine, Check, HelpCircle, Sun, Moon, Clock, Trophy, Shuffle
+  Headphones, PenLine, Check, HelpCircle, Sun, Moon, Clock, Trophy, Shuffle,
+  Bot, Zap
 } from 'lucide-react';
 import {
   TrialTestsConfig, INITIAL_TRIAL_CONFIG, WordQuizItem,
@@ -11,6 +12,10 @@ import {
   GrammarTestItem, GrammarTopicItem,
   DEFAULT_WRITING_ESSAYS, DEFAULT_WRITING_LETTERS, DEFAULT_GRAMMAR_TOPICS
 } from '../../data/trialTestData';
+import {
+  evaluateWritingWithGemini, evaluateSpeakingWithGemini,
+  WritingEvaluationResult, SpeakingEvaluationResult
+} from '../../services/geminiAiService';
 import { playSpeech, stopSpeech, startListening, isSpeechRecognitionSupported, SupportedLang } from '../../utils/speech';
 
 function getYouTubeVideoId(url?: string): string | null {
@@ -643,12 +648,31 @@ function SpeakingTrialModule({
   const [isRecording, setIsRecording] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
   const [recognizedText, setRecognizedText] = useState('');
-  const [part1Answers, setPart1Answers] = useState<Record<number, { text: string; score: number; feedback: string }>>({});
+  const [part1Answers, setPart1Answers] = useState<Record<number, {
+    text: string;
+    score: number;
+    feedback: string;
+    cefrLevel?: string;
+    fluencyScore?: number;
+    pronunciationFeedback?: string;
+    improvements?: string[];
+    isLiveAi?: boolean;
+  }>>({});
   const [hasRecordedCurrent, setHasRecordedCurrent] = useState(false);
 
   // Part 2 states
-  const [part2Answer, setPart2Answer] = useState<{ text: string; score: number; feedback: string } | null>(null);
+  const [part2Answer, setPart2Answer] = useState<{
+    text: string;
+    score: number;
+    feedback: string;
+    cefrLevel?: string;
+    fluencyScore?: number;
+    pronunciationFeedback?: string;
+    improvements?: string[];
+    isLiveAi?: boolean;
+  } | null>(null);
   const [hasRecordedPart2, setHasRecordedPart2] = useState(false);
+  const [isEvaluatingSpeaking, setIsEvaluatingSpeaking] = useState(false);
 
   // Countdown timer effect
   useEffect(() => {
@@ -705,19 +729,47 @@ function SpeakingTrialModule({
     }
   };
 
-  const finishPart1Question = (text: string, confidence: number) => {
+  const finishPart1Question = async (text: string, confidence: number) => {
     setHasRecordedCurrent(true);
     setIsRecording(false);
-    // AI Diagnosis Simulation
-    const score = Math.max(72, Math.min(96, Math.round(confidence * 100) || 84));
-    const feedback = score > 88
-      ? 'Ajoyib ravonlik, to‘g‘ri leksika va tabiiy talaffuz!'
-      : 'Yaxshi muloqot, biroq gap tuzilishida sodda fe’l shakllariga e’tibor bering.';
+    setIsEvaluatingSpeaking(true);
 
-    setPart1Answers(prev => ({
-      ...prev,
-      [qIndex]: { text, score, feedback }
-    }));
+    const questionText = questions[qIndex]?.question || 'Speaking Question';
+
+    try {
+      const aiRes = await evaluateSpeakingWithGemini({
+        spokenText: text,
+        question: questionText,
+        part: 'part1',
+        targetLanguage: lang,
+        lang: 'uz'
+      });
+
+      setPart1Answers(prev => ({
+        ...prev,
+        [qIndex]: {
+          text,
+          score: aiRes.score,
+          feedback: aiRes.feedback,
+          cefrLevel: aiRes.cefrLevel,
+          fluencyScore: aiRes.fluencyScore,
+          pronunciationFeedback: aiRes.pronunciationFeedback,
+          improvements: aiRes.improvements,
+          isLiveAi: aiRes.isLiveAi
+        }
+      }));
+    } catch {
+      const score = Math.max(72, Math.min(96, Math.round(confidence * 100) || 84));
+      const feedback = score > 88
+        ? 'Ajoyib ravonlik, to‘g‘ri leksika va tabiiy talaffuz!'
+        : 'Yaxshi muloqot, biroq gap tuzilishida sodda fe’l shakllariga e’tibor bering.';
+      setPart1Answers(prev => ({
+        ...prev,
+        [qIndex]: { text, score, feedback, isLiveAi: false }
+      }));
+    } finally {
+      setIsEvaluatingSpeaking(false);
+    }
   };
 
   const handleNextPart1Question = () => {
@@ -763,12 +815,38 @@ function SpeakingTrialModule({
     });
   };
 
-  const finishPart2 = (text: string, confidence: number) => {
+  const finishPart2 = async (text: string, confidence: number) => {
     setHasRecordedPart2(true);
     setIsRecording(false);
-    const score = Math.max(75, Math.min(97, Math.round(confidence * 100) || 86));
-    const feedback = 'Rasm detallari, ranglar va harakatlar juda yaxshi tasvirlab berildi.';
-    setPart2Answer({ text, score, feedback });
+    setIsEvaluatingSpeaking(true);
+
+    try {
+      const aiRes = await evaluateSpeakingWithGemini({
+        spokenText: text,
+        question: describeImage.title,
+        part: 'part2',
+        topicTitle: describeImage.title,
+        targetLanguage: lang,
+        lang: 'uz'
+      });
+
+      setPart2Answer({
+        text,
+        score: aiRes.score,
+        feedback: aiRes.feedback,
+        cefrLevel: aiRes.cefrLevel,
+        fluencyScore: aiRes.fluencyScore,
+        pronunciationFeedback: aiRes.pronunciationFeedback,
+        improvements: aiRes.improvements,
+        isLiveAi: aiRes.isLiveAi
+      });
+    } catch {
+      const score = Math.max(75, Math.min(97, Math.round(confidence * 100) || 86));
+      const feedback = 'Rasm detallari, ranglar va harakatlar juda yaxshi tasvirlab berildi.';
+      setPart2Answer({ text, score, feedback, isLiveAi: false });
+    } finally {
+      setIsEvaluatingSpeaking(false);
+    }
   };
 
   // Calculate Overall Speaking Result
@@ -842,6 +920,13 @@ function SpeakingTrialModule({
               </div>
             )}
 
+            {/* Evaluation Spinner */}
+            {isEvaluatingSpeaking && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '100px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontWeight: 800, fontSize: '13px' }}>
+                <RefreshCw className="animate-spin" size={16} /> Google Gemini AI nutqingizni tahlil qilmoqda...
+              </div>
+            )}
+
             <div style={{ marginTop: '16px', minHeight: '44px', fontStyle: 'italic', fontSize: '14.5px', color: '#475569' }}>
               {recognizedText ? `"${recognizedText}"` : (isRecording ? 'Siz gapirayapsiz, eshitmoqdaman...' : 'Mikrofon bir martalik rejimda ishlaydi.')}
             </div>
@@ -849,18 +934,32 @@ function SpeakingTrialModule({
 
           {/* AI Diagnosis Result for this Question */}
           {hasRecordedCurrent && part1Answers[qIndex] && (
-            <div style={{ padding: '18px', background: '#f8fafc', borderRadius: '14px', border: '1px solid rgba(0,0,0,0.08)', marginBottom: '20px' }}>
+            <div style={{ padding: '20px', background: 'rgba(120, 105, 245, 0.05)', borderRadius: '16px', border: '1.5px solid rgba(120, 105, 245, 0.2)', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: '#7869f5' }}>
-                  🤖 AI Repetitor Diagnostikasi:
+                <span style={{ fontSize: '13px', fontWeight: 800, color: '#7869f5', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Bot size={16} /> AI Repetitor Diagnostikasi:
+                  {part1Answers[qIndex].isLiveAi ? (
+                    <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: '#10b981', color: '#fff', fontWeight: 800 }}>
+                      ⚡ Gemini 2.0 AI
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', fontWeight: 750 }}>
+                      Evristik Tahlil
+                    </span>
+                  )}
                 </span>
                 <span style={{ fontSize: '15px', fontWeight: 850, color: '#10b981' }}>
-                  {part1Answers[qIndex].score} / 100 ball
+                  {part1Answers[qIndex].score} / 100 ball {part1Answers[qIndex].cefrLevel && `(${part1Answers[qIndex].cefrLevel})`}
                 </span>
               </div>
-              <p style={{ margin: 0, fontSize: '13.5px', color: '#334155' }}>
+              <p style={{ margin: 0, fontSize: '13.5px', color: '#334155', lineHeight: '1.5' }}>
                 {part1Answers[qIndex].feedback}
               </p>
+              {part1Answers[qIndex].pronunciationFeedback && (
+                <div style={{ marginTop: '8px', fontSize: '12.5px', color: '#64748b' }}>
+                  🗣️ <strong>Talaffuz va ravonlik:</strong> {part1Answers[qIndex].pronunciationFeedback}
+                </div>
+              )}
             </div>
           )}
 
@@ -966,6 +1065,46 @@ function SpeakingTrialModule({
               {recognizedText ? `"${recognizedText}"` : 'Rasmni diqqat bilan ko‘rib, nimalarni ko‘rayotganingizni gapirib bering.'}
             </div>
           </div>
+
+          {/* AI Evaluation in progress */}
+          {isEvaluatingSpeaking && (
+            <div style={{ textAlign: 'center', margin: '14px 0' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '100px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontWeight: 800, fontSize: '13px' }}>
+                <RefreshCw className="animate-spin" size={16} /> Google Gemini AI rasm tasvirlanishini tahlil qilmoqda...
+              </div>
+            </div>
+          )}
+
+          {/* Part 2 AI Diagnosis Card */}
+          {hasRecordedPart2 && part2Answer && (
+            <div style={{ padding: '20px', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '16px', border: '1.5px solid rgba(16, 185, 129, 0.25)', marginTop: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Bot size={16} /> 2-Qism AI Diagnostikasi:
+                  {part2Answer.isLiveAi ? (
+                    <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: '#10b981', color: '#fff', fontWeight: 800 }}>
+                      ⚡ Gemini 2.0 AI
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', fontWeight: 750 }}>
+                      Evristik Tahlil
+                    </span>
+                  )}
+                </span>
+                <span style={{ fontSize: '15px', fontWeight: 850, color: '#10b981' }}>
+                  {part2Answer.score} / 100 ball {part2Answer.cefrLevel && `(${part2Answer.cefrLevel})`}
+                </span>
+              </div>
+              <p style={{ margin: 0, fontSize: '13.5px', color: '#334155', lineHeight: '1.5' }}>
+                {part2Answer.feedback}
+              </p>
+              {part2Answer.pronunciationFeedback && (
+                <div style={{ marginTop: '8px', fontSize: '12.5px', color: '#64748b' }}>
+                  🗣️ <strong>Talaffuz va ravonlik:</strong> {part2Answer.pronunciationFeedback}
+                </div>
+              )}
+            </div>
+          )}
 
           {hasRecordedPart2 && (
             <div style={{ textAlign: 'right', marginTop: '20px' }}>
@@ -1667,38 +1806,35 @@ function WritingTrialModule({
     setAnalysisResult(null);
   };
 
-  const handleSubmitToAI = () => {
+  const handleSubmitToAI = async () => {
     if (!isRequirementMet) {
       alert(`Matnda kamida ${minRequired} ta söz bölişi lozim. Hozirda: ${wordCount} ta söz.`);
       return;
     }
 
     setIsAnalyzing(true);
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      setAnalysisResult({
-        cefrScore: 'B2 (Upper-Intermediate)',
-        overallScore: 88,
-        grammarScore: 89,
-        lexicalScore: 86,
-        coherenceScore: 88,
-        corrections: [
-          {
-            issue: 'Boğlovçilar xilma-xilligi',
-            advice: 'Har bir xatboshi başida "Furthermore", "In contrast", "Consequently" kabi bog‘lovchilardan kengroq foydalaning.'
-          },
-          {
-            issue: 'Grammatik qat’iylik',
-            advice: 'Murakkab ergaş gaplarda zamonlar muvofiqligi (Sequence of Tenses) qoidasiga amal qiling.'
-          }
-        ],
-        positivePoints: [
-          'Fikrlar aniq va mantiqiy reja böyiça bayon etilgan.',
-          'Kirish, asosiy qism va xulosa aniq ajratilgan.',
-          'Mavzuga oid maxsus atamalardan töğri foydalanilgan.'
-        ]
+    try {
+      const topicTitle = activeTask?.title || 'Writing Task';
+      const topicPrompt = taskType === 'essay'
+        ? (activeTask as any)?.prompt || (activeTask as any)?.description || ''
+        : (activeTask as any)?.prompt || (activeTask as any)?.description || '';
+
+      const result = await evaluateWritingWithGemini({
+        text: essayText,
+        topicTitle,
+        topicPrompt,
+        taskType,
+        minWords: minRequired,
+        targetLanguage: lang,
+        lang: 'uz'
       });
-    }, 1200);
+      setAnalysisResult(result);
+    } catch (err: any) {
+      console.error('Gemini Writing Evaluation error:', err);
+      alert('Tahlil paytida xatolik yuz berdi: ' + (err.message || 'Iltimos, qayta urinib ko‘ring'));
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -1847,18 +1983,33 @@ function WritingTrialModule({
       {/* AI Diagnostic Report */}
       {analysisResult && (
         <div style={{ padding: '24px', borderRadius: '18px', background: 'rgba(16, 185, 129, 0.05)', border: '1.5px solid #10b981' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: '#10b981', textTransform: 'uppercase' }}>
-              🤖 AI Repetitor Yozma Tahlili
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Bot size={18} /> AI Repetitor Yozma Tahlili
+              </span>
+              {analysisResult.isLiveAi ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '100px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: 800, fontSize: '11px' }}>
+                  <Zap size={11} /> {analysisResult.providerModel || 'Google Gemini 2.0 Flash'}
+                </span>
+              ) : (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '100px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', fontWeight: 800, fontSize: '11px' }}>
+                  Aqlli Evristik Tahlil
+                </span>
+              )}
+            </div>
             <span style={{ fontSize: '18px', fontWeight: 900, color: '#10b981' }}>
               {analysisResult.overallScore} ball ({analysisResult.cefrScore})
             </span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '20px' }}>
             <div style={{ padding: '12px', background: 'rgba(255,255,255,0.7)', borderRadius: '10px' }}>
-              <div style={{ fontSize: '11px', color: '#64748b' }}>Grammatika aniqligi</div>
+              <div style={{ fontSize: '11px', color: '#64748b' }}>Mavzu ochilishi</div>
+              <strong style={{ fontSize: '18px', color: '#10b981' }}>{analysisResult.taskAchievementScore ?? 85}%</strong>
+            </div>
+            <div style={{ padding: '12px', background: 'rgba(255,255,255,0.7)', borderRadius: '10px' }}>
+              <div style={{ fontSize: '11px', color: '#64748b' }}>Grammatika</div>
               <strong style={{ fontSize: '18px', color: '#10b981' }}>{analysisResult.grammarScore}%</strong>
             </div>
             <div style={{ padding: '12px', background: 'rgba(255,255,255,0.7)', borderRadius: '10px' }}>
@@ -1866,21 +2017,64 @@ function WritingTrialModule({
               <strong style={{ fontSize: '18px', color: '#7869f5' }}>{analysisResult.lexicalScore}%</strong>
             </div>
             <div style={{ padding: '12px', background: 'rgba(255,255,255,0.7)', borderRadius: '10px' }}>
-              <div style={{ fontSize: '11px', color: '#64748b' }}>Mantiq & Koherensiya</div>
+              <div style={{ fontSize: '11px', color: '#64748b' }}>Mantiq & Bog‘liqlik</div>
               <strong style={{ fontSize: '18px', color: '#f59e0b' }}>{analysisResult.coherenceScore}%</strong>
             </div>
           </div>
 
-          <h4 style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: 800 }}>
-            Tuzatiş va örgatuwçi tavsiyalar:
-          </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
-            {analysisResult.corrections.map((c: any, i: number) => (
-              <div key={i} style={{ fontSize: '13px', lineHeight: '1.5', color: '#334155' }}>
-                <strong style={{ color: '#ef4444' }}>• {c.issue}:</strong> {c.advice}
+          {/* Corrections */}
+          {analysisResult.corrections && analysisResult.corrections.length > 0 && (
+            <div style={{ marginBottom: '18px' }}>
+              <h4 style={{ margin: '0 0 10px', fontSize: '14px', fontWeight: 800 }}>
+                Tuzatiş va örgatuwçi tavsiyalar:
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {analysisResult.corrections.map((c: any, i: number) => (
+                  <div key={i} style={{ padding: '10px 14px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.04)', border: '1px solid rgba(239, 68, 68, 0.15)', fontSize: '13px', lineHeight: '1.5' }}>
+                    <div style={{ fontWeight: 800, color: '#ef4444', marginBottom: '4px' }}>
+                      • {c.issue}
+                    </div>
+                    {c.originalSnippet && (
+                      <div style={{ fontSize: '12.5px', color: '#64748b', marginBottom: '3px' }}>
+                        Asl matn: <span style={{ textDecoration: 'line-through', color: '#ef4444' }}>"{c.originalSnippet}"</span> → To‘g‘rilangan: <strong style={{ color: '#10b981' }}>"{c.correction}"</strong>
+                      </div>
+                    )}
+                    <div style={{ color: '#334155' }}>
+                      {c.advice}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {/* Positive Points */}
+          {analysisResult.positivePoints && analysisResult.positivePoints.length > 0 && (
+            <div style={{ marginBottom: '16px' }}>
+              <h4 style={{ margin: '0 0 8px', fontSize: '13.5px', fontWeight: 800, color: '#10b981' }}>
+                Kuchli tomonlaringiz:
+              </h4>
+              <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', lineHeight: '1.6', color: '#334155' }}>
+                {analysisResult.positivePoints.map((p: string, i: number) => (
+                  <li key={i}>{p}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Recommendations */}
+          {analysisResult.recommendations && analysisResult.recommendations.length > 0 && (
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ margin: '0 0 8px', fontSize: '13.5px', fontWeight: 800, color: '#f59e0b' }}>
+                Keyingi qadamlar va maslahatlar:
+              </h4>
+              <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', lineHeight: '1.6', color: '#334155' }}>
+                {analysisResult.recommendations.map((r: string, i: number) => (
+                  <li key={i}>{r}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <button
             onClick={onComplete}

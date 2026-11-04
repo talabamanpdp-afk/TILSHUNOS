@@ -3,7 +3,8 @@ import {
   Sparkles, BookOpen, Headphones, PenLine, Mic, Trophy,
   Save, Plus, Trash2, Edit3, Image as ImageIcon, Upload,
   CheckCircle2, AlertCircle, RefreshCw, Eye, Search, ExternalLink, X,
-  Play, Pause, Youtube, Video, FileText, ChevronDown, ChevronRight, HelpCircle
+  Play, Pause, Youtube, Video, FileText, ChevronDown, ChevronRight, HelpCircle,
+  Bot, Cpu, Key, Zap, ShieldCheck
 } from 'lucide-react';
 import {
   TrialTestsConfig, INITIAL_TRIAL_CONFIG, WordQuizItem,
@@ -12,6 +13,9 @@ import {
   WritingLetterItem, GrammarTestItem, GrammarTopicItem, GrammarQuestion,
   DEFAULT_WRITING_ESSAYS, DEFAULT_WRITING_LETTERS, DEFAULT_GRAMMAR_TOPICS
 } from '../../data/trialTestData';
+import {
+  getStoredAiConfig, saveStoredAiConfig, testGeminiConnection, GeminiAiConfig
+} from '../../services/geminiAiService';
 import { api } from '../../api';
 
 function getYouTubeEmbedUrl(url?: string): string | null {
@@ -30,7 +34,7 @@ interface AdminTrialTestsTabProps {
   dark?: boolean;
 }
 
-type AdminSubTab = 'word' | 'speaking' | 'reading' | 'listening' | 'writing' | 'grammar';
+type AdminSubTab = 'word' | 'speaking' | 'reading' | 'listening' | 'writing' | 'grammar' | 'ai_settings';
 
 export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialTestsTabProps) {
   // Current config with robust fallbacks
@@ -41,11 +45,34 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
       essayTopics: DEFAULT_WRITING_ESSAYS,
       letterTopics: DEFAULT_WRITING_LETTERS
     },
-    grammarTopics: cms?.trialTests?.grammarTopics || INITIAL_TRIAL_CONFIG.grammarTopics || DEFAULT_GRAMMAR_TOPICS
+    grammarTopics: cms?.trialTests?.grammarTopics || INITIAL_TRIAL_CONFIG.grammarTopics || DEFAULT_GRAMMAR_TOPICS,
+    aiConfig: cms?.trialTests?.aiConfig || INITIAL_TRIAL_CONFIG.aiConfig || {
+      apiKey: '',
+      model: 'gemini-2.0-flash',
+      enabled: true,
+      temperature: 0.2
+    }
   };
   const [trialConfig, setTrialConfig] = useState<TrialTestsConfig>(currentConfig);
   const [activeTab, setActiveTab] = useState<AdminSubTab>('word');
   const [saving, setSaving] = useState(false);
+
+  // AI Settings states
+  const [aiConfig, setAiConfig] = useState<GeminiAiConfig>(() => {
+    const stored = getStoredAiConfig();
+    return {
+      ...stored,
+      ...(currentConfig.aiConfig || {})
+    };
+  });
+  const [testingAiConnection, setTestingAiConnection] = useState(false);
+  const [aiConnectionResult, setAiConnectionResult] = useState<{
+    success: boolean;
+    latencyMs?: number;
+    message: string;
+    sampleResponse?: string;
+  } | null>(null);
+  const [showAiApiKey, setShowAiApiKey] = useState(false);
 
   // Subtab states for Writing and expanded accordions
   const [writingSubTab, setWritingSubTab] = useState<'essay' | 'letter'>('essay');
@@ -151,7 +178,8 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
           { key: 'reading', label: '3. Reading (O‘qish)', icon: BookOpen },
           { key: 'listening', label: '4. Listening (Tinglash)', icon: Headphones },
           { key: 'writing', label: '5. Writing (Yozish)', icon: PenLine },
-          { key: 'grammar', label: '6. Grammar (Grammatika)', icon: Sparkles }
+          { key: 'grammar', label: '6. Grammar (Grammatika)', icon: Sparkles },
+          { key: 'ai_settings', label: '7. AI Yordamçi (Gemini API)', icon: Bot }
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -1899,6 +1927,280 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* 7. AI YORDAMÇI & GOOGLE GEMINI API SOZLAMALARI                      */}
+      {/* =================================================================== */}
+      {activeTab === 'ai_settings' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Main Info Card */}
+          <div style={{ padding: '24px', borderRadius: '18px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(120, 105, 245, 0.08) 100%)', border: '1.5px solid rgba(16, 185, 129, 0.3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#10b981', color: '#ffffff', display: 'grid', placeItems: 'center', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)' }}>
+                  <Bot size={26} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    Google Gemini AI Integratsiyasi (Real-time Evaluation)
+                    <span style={{ fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '6px', background: '#10b981', color: '#ffffff' }}>
+                      2.0 Flash
+                    </span>
+                  </h3>
+                  <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--muted)' }}>
+                    Writing (insho va xatlar) hamda Speaking (ovozli savollar va rasm tasvirlash) topshiriqlarini haqiqiy sun’iy intellekt orqali tekshirish.
+                  </p>
+                </div>
+              </div>
+
+              {/* Status Badge */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '100px', background: aiConfig.apiKey ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)', border: `1px solid ${aiConfig.apiKey ? '#10b981' : '#f59e0b'}` }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: aiConfig.apiKey ? '#10b981' : '#f59e0b', display: 'inline-block', boxShadow: aiConfig.apiKey ? '0 0 10px #10b981' : 'none' }} />
+                <span style={{ fontSize: '12.5px', fontWeight: 800, color: aiConfig.apiKey ? '#10b981' : '#f59e0b' }}>
+                  {aiConfig.apiKey ? 'Haqiqiy Gemini API Faol' : 'Simulyatsiya Rejimida (Kalit Kiritilmagan)'}
+                </span>
+              </div>
+            </div>
+
+            <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.6', color: 'var(--muted)' }}>
+              Ushbu tizim Google Gemini modeliga to‘g‘ridan-to‘g‘ri yoki Vercel serverless proksisi orqali xavfsiz ulanadi. Foydalanuvchilar insho yozganda yoki gapirganda, AI ularning grammatikasini, so‘z boyligini (lexicon), ravonligini (fluency) va xalqaro CEFR darajasini soniyalar ichida professional tahlil qilib beradi.
+            </p>
+          </div>
+
+          {/* Form Settings */}
+          <div style={{ padding: '24px', borderRadius: '18px', background: 'var(--soft)', border: '1.5px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* API Key Input */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Key size={15} style={{ color: 'var(--purple)' }} />
+                  Google Gemini API Kaliti (API Key):
+                </label>
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontSize: '12px', fontWeight: 750, color: '#10b981', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                >
+                  Bepul Gemini API kaliti olish (Google AI Studio) <ExternalLink size={12} />
+                </a>
+              </div>
+
+              <div style={{ position: 'relative', display: 'flex', gap: '8px' }}>
+                <input
+                  type={showAiApiKey ? 'text' : 'password'}
+                  value={aiConfig.apiKey}
+                  onChange={e => setAiConfig({ ...aiConfig, apiKey: e.target.value })}
+                  placeholder="AIzaSy..."
+                  style={{
+                    flex: 1,
+                    padding: '12px 14px',
+                    borderRadius: '10px',
+                    border: '1.5px solid var(--border)',
+                    background: 'var(--input-bg, transparent)',
+                    color: 'inherit',
+                    fontSize: '14px',
+                    fontFamily: 'monospace'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAiApiKey(!showAiApiKey)}
+                  className="outline-btn"
+                  style={{ padding: '0 16px', fontSize: '12.5px', fontWeight: 700 }}
+                >
+                  {showAiApiKey ? 'Yashirish' : 'Ko‘rsatish'}
+                </button>
+              </div>
+              <p style={{ margin: '6px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
+                🔒 Sizning API kalitingiz shifrlangan holda xavfsiz saqlanadi va faqat topshiriqlarni tekshirish uchun ishlatiladi.
+              </p>
+            </div>
+
+            {/* Model & Parameters Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>
+                  AI Modeli:
+                </label>
+                <select
+                  value={aiConfig.model}
+                  onChange={e => setAiConfig({ ...aiConfig, model: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '11px 12px',
+                    borderRadius: '10px',
+                    border: '1.5px solid var(--border)',
+                    background: 'var(--input-bg, transparent)',
+                    color: 'inherit',
+                    fontSize: '13.5px',
+                    fontWeight: 700
+                  }}
+                >
+                  <option value="gemini-2.0-flash">⚡ Google Gemini 2.0 Flash (Tavsiya etiladi - Ultra-tezkor)</option>
+                  <option value="gemini-1.5-flash">Google Gemini 1.5 Flash (Tezkor & Barqaror)</option>
+                  <option value="gemini-1.5-pro">Google Gemini 1.5 Pro (Maksimal chuqur tahlil)</option>
+                </select>
+                <span style={{ fontSize: '11.5px', color: 'var(--muted)', display: 'block', marginTop: '4px' }}>
+                  Gemini 2.0 Flash har bir insho va audioni 0.5–1 soniyada tekshirib, real vaqtda javob beradi.
+                </span>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, marginBottom: '6px' }}>
+                  Baholash Harorati (Temperature: {aiConfig.temperature ?? 0.2}):
+                </label>
+                <input
+                  type="range"
+                  min="0.0"
+                  max="0.7"
+                  step="0.05"
+                  value={aiConfig.temperature ?? 0.2}
+                  onChange={e => setAiConfig({ ...aiConfig, temperature: parseFloat(e.target.value) })}
+                  style={{ width: '100%', accentColor: 'var(--purple)', margin: '8px 0' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: 'var(--muted)' }}>
+                  <span>0.0 (O‘ta qat’iy & xolis)</span>
+                  <span>0.2 (Tavsiya: Ilmiy-akademik)</span>
+                  <span>0.7 (Ijodiy)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Toggle Real AI */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 18px', borderRadius: '12px', background: 'var(--soft)' }}>
+              <input
+                type="checkbox"
+                id="enableAiToggle"
+                checked={aiConfig.enabled}
+                onChange={e => setAiConfig({ ...aiConfig, enabled: e.target.checked })}
+                style={{ width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
+              />
+              <label htmlFor="enableAiToggle" style={{ fontSize: '13.5px', fontWeight: 750, cursor: 'pointer' }}>
+                Writing va Speaking modullarida jonli AI tahlilini faol qilish
+              </label>
+            </div>
+
+            {/* Test Connection Result Box */}
+            {aiConnectionResult && (
+              <div
+                style={{
+                  padding: '16px 20px',
+                  borderRadius: '12px',
+                  background: aiConnectionResult.success ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  border: `1.5px solid ${aiConnectionResult.success ? '#10b981' : '#ef4444'}`,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px'
+                }}
+              >
+                {aiConnectionResult.success ? (
+                  <CheckCircle2 size={22} style={{ color: '#10b981', flexShrink: 0, marginTop: '2px' }} />
+                ) : (
+                  <AlertCircle size={22} style={{ color: '#ef4444', flexShrink: 0, marginTop: '2px' }} />
+                )}
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '14px', color: aiConnectionResult.success ? '#10b981' : '#ef4444' }}>
+                    {aiConnectionResult.success ? 'Aloqa Muvaffaqiyatli O‘rnatildi!' : 'Aloqa O‘rnatilmadi'}
+                  </div>
+                  <div style={{ fontSize: '13px', marginTop: '4px', color: 'inherit' }}>
+                    {aiConnectionResult.message}
+                  </div>
+                  {aiConnectionResult.latencyMs && (
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
+                      ⚡ Server javob vaqti (Latency): <strong>{aiConnectionResult.latencyMs} ms</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+              <button
+                type="button"
+                onClick={async () => {
+                  setTestingAiConnection(true);
+                  setAiConnectionResult(null);
+                  try {
+                    const result = await testGeminiConnection(aiConfig.apiKey, aiConfig.model);
+                    setAiConnectionResult(result);
+                    if (result.success) {
+                      notify('Google Gemini API bilan muvaffaqiyatli bog‘lanildi! ⚡');
+                    } else {
+                      notify(result.message, true);
+                    }
+                  } catch (err: any) {
+                    setAiConnectionResult({
+                      success: false,
+                      message: err.message || 'Kutilmagan xatolik yuz berdi'
+                    });
+                  } finally {
+                    setTestingAiConnection(false);
+                  }
+                }}
+                disabled={testingAiConnection || !aiConfig.apiKey}
+                className="outline-btn"
+                style={{
+                  padding: '11px 20px',
+                  fontSize: '13px',
+                  fontWeight: 750,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                {testingAiConnection ? <RefreshCw className="animate-spin" size={16} /> : <Zap size={16} />}
+                <span>{testingAiConnection ? 'Tekshirilmoqda...' : 'Aloqani Tekshirish (Test Ping)'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  saveStoredAiConfig(aiConfig);
+                  const updated = {
+                    ...trialConfig,
+                    aiConfig
+                  };
+                  handleSaveAll(updated);
+                  notify('AI sozlamalari muvaffaqiyatli saqlandi! 🎉');
+                }}
+                disabled={saving}
+                className="primary-btn"
+                style={{
+                  padding: '11px 24px',
+                  fontSize: '13.5px',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <Save size={16} />
+                <span>AI Sozlamalarini Saqlash</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Guide on Google AI Studio */}
+          <div style={{ padding: '20px', borderRadius: '16px', background: 'var(--soft)', border: '1px solid var(--border)' }}>
+            <h4 style={{ margin: '0 0 10px', fontSize: '14.5px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ShieldCheck size={18} style={{ color: '#10b981' }} />
+              Google Gemini API Kalitini 30 soniyada olish yo‘riqnomasi:
+            </h4>
+            <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', lineHeight: '1.7', color: 'var(--muted)' }}>
+              <li>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" style={{ color: '#10b981', fontWeight: 700 }}>
+                  aistudio.google.com/app/apikey
+                </a> sahifasiga Google hisobingiz bilan kiring.
+              </li>
+              <li><strong>"Create API key"</strong> ko‘k tugmasini bosing.</li>
+              <li>Hosil bo‘lgan kalitni (odatda <code>AIzaSy...</code> bilan boshlanadi) nusxalang va yuqoridagi maydonga kiriting.</li>
+              <li><strong>"Aloqani Tekshirish"</strong> tugmasini bosib, aloqa yashil yongach <strong>"Saqlash"</strong> tugmasini bosing!</li>
+            </ol>
           </div>
         </div>
       )}

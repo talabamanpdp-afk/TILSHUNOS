@@ -143,6 +143,12 @@ export interface TrialTestsConfig {
   };
   grammar: GrammarTestItem;
   grammarTopics?: GrammarTopicItem[];
+  aiConfig?: {
+    apiKey: string;
+    model: string;
+    enabled: boolean;
+    temperature?: number;
+  };
 }
 
 // 100 High-Quality Curated Image-Word Quiz Pool
@@ -1836,6 +1842,12 @@ export const INITIAL_TRIAL_CONFIG: TrialTestsConfig = {
     letterTopics: DEFAULT_WRITING_LETTERS
   },
   grammar: DEFAULT_GRAMMAR_TEST,
-  grammarTopics: DEFAULT_GRAMMAR_TOPICS
+  grammarTopics: DEFAULT_GRAMMAR_TOPICS,
+  aiConfig: {
+    apiKey: '',
+    model: 'gemini-2.0-flash',
+    enabled: true,
+    temperature: 0.2
+  }
 };
 
