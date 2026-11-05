@@ -95,25 +95,30 @@ export default async function handler(req, res) {
       } = payload || {};
 
       if (!text || text.trim().length < 10) {
-        return res.status(400).json({ error: 'Tekshirish uchun matn juda qisqa.' });
+        return res.status(400).json({ error: 'Tekşiriş uçun matn juda qisqa.' });
       }
 
-      const systemInstruction = `Siz xalqaro darajadagi tajribali til imtihonchisisiz (CEFR & IELTS Writing baholovchisi).
-Vazifangiz: Talabaning ${taskType === 'essay' ? 'inshosi (Essay)' : 'xati (Letter)'} matnini xolis, professional va o'ta aniq tahlil qilish.
+      const systemInstruction = `Siz xalqaro darajadagi tajribali til imtihonçisisiz (CEFR & IELTS Writing baholovçisi).
+Vazifangiz: Talabaning ${taskType === 'essay' ? 'inşosi (Essay)' : 'xati (Letter)'} matnini xolis, professional va o'ta aniq tahlil qiliş.
 Mavzu: "${topicTitle}".
-Topshiriq yo'riqnomasi: "${topicPrompt}".
-Kutilgan minimal so'zlar: ${minWords}.
+Topşiriq yöriqnomasi: "${topicPrompt}".
+Kutilgan minimal sözlar: ${minWords}.
 O'rganilayotgan til kodi: "${targetLanguage}".
-Tahlil tili: O'zbek tili (qat'iy isloh qilingan lotin alifbosi: 'Ş ş', 'Ç ç', 'Ğ ğ', 'Ö ö' harflaridan foydalaning, hech qachon 'sh', 'ch', 'o'', 'g'' yozmang!).
+Tahlil tili: O'zbek tili (qat'iy isloh qilingan lotin alifbosi: 'Ş ş', 'Ç ç', 'Ğ ğ', 'Ö ö' harflaridan foydalaning, heç qaçon 'sh', 'ch', 'o\'', 'g\'' yozmang!).
+
+QAT'IY QOIDA - JANR VA FORMAT TEKŞIRUVI:
+1. Agar topşiriq turi 'essay' (Inşo) bölsa va talaba matnida xat elementlari (masalan: "Dear...", "Yours sincerely", "Yours faithfully", "Best regards", "I am writing this letter...") mavjud bölsa, bu o'ta jiddiy xatodir! Bunday holatda "taskAchievementScore" balini 20-30 atrofida qilib keskin pasaytiring, umumiy ball (overallScore) 45 dan oşmasin va corrections röyxatida 1-örinda "Janr nomuvofiqligi (Genre Mismatch): Inşo örniga xat kiritilgan" deb körsating!
+2. Agar topşiriq turi 'letter' (Xat) bölsa va talaba salomlaşiş ("Dear...") yoki xatni yakunlovçi imzo ("Yours sincerely", "Best regards") yozmagan bölsa, xat strukturasi buzilganligini qayd etib, ballni pasaytiring.
+3. Matndagi har bir aniq orfografik, grammatik yoki uslubiy xatoni talaba matnining özidan iqtibos (originalSnippet) keltirgan holda tahlil qiling. Heç qaçon umumiy yoki shablon gaplarni takrorlamang!
 
 Baholash mezonlari:
-1. Task Achievement / Fulfillment (Mavzu qanchalik to'liq yoritilgan, 0-100)
-2. Coherence & Cohesion (Fikrlar ketma-ketligi, bog'lovchilar, mantiq, 0-100)
-3. Lexical Resource (Lug'at boyligi, akademik va tabiiy so'zlar, 0-100)
+1. Task Achievement / Fulfillment (Mavzu va janr qançalik töliq yoritilgan, 0-100)
+2. Coherence & Cohesion (Fikrlar ketma-ketligi, boğlovçilar, mantiq, 0-100)
+3. Lexical Resource (Lug'at boyligi, akademik va tabiiy sözlar, 0-100)
 4. Grammatical Range & Accuracy (Grammatik qoidalar, zamonlar, xatolarsizlik, 0-100)
 5. Umumiy ball (Overall Score: 0-100) va CEFR darajasi (masalan: "A2 (Elementary)", "B1 (Intermediate)", "B2 (Upper-Intermediate)", "C1 (Advanced)", "C2 (Mastery)").
 
-Muhim: Javobni FAQAT va FAQAT quyidagi JSON formatida qaytaring, boshqa hech qanday so'z yoki markdown formati qo'shmang:
+Muhim: Javobni FAQAT va FAQAT quyidagi JSON formatida qaytaring, boşqa heç qanday söz yoki markdown formati qöşmang:
 {
   "cefrScore": "B2 (Upper-Intermediate)",
   "overallScore": 86,
@@ -123,19 +128,19 @@ Muhim: Javobni FAQAT va FAQAT quyidagi JSON formatida qaytaring, boshqa hech qan
   "taskAchievementScore": 85,
   "corrections": [
     {
-      "issue": "Xato nomi (masalan: Noto'g'ri zamon ishlatilgan)",
+      "issue": "Xato nomi (masalan: Noto'ğri zamon işlatilgan)",
       "originalSnippet": "talabaning matnidagi xato ibora",
-      "correction": "to'g'rilangan variant",
-      "advice": "Nega bu xato ekanligi va to'g'ri qoidasi haqida sodda o'zbekcha izoh (Ş, Ç, Ğ, Ö lotinida)"
+      "correction": "to'ğrilangan variant",
+      "advice": "Nega bu xato ekanligi va to'ğri qoidasi haqida sodda o'zbekça izoh (Ş, Ç, Ğ, Ö lotinida)"
     }
   ],
   "positivePoints": [
-    "Talabaning yozuvidagi 2-3 ta kuchli jihat o'zbekcha",
-    "Mavzu rejasiga to'g'ri amal qilinganligi haqida fikr"
+    "Talabaning yozuvidagi 2-3 ta kuçli jihat o'zbekça",
+    "Mavzu rejasiga to'ğri amal qilinganligi haqida fikr"
   ],
   "recommendations": [
-    "Keyingi safar natijani oshirish uchun 2-3 ta aniq amaliy maslahat",
-    "Qaysi bog'lovchi yoki grammatik mavzuni takrorlash kerakligi"
+    "Keyingi safar natijani oşiriş uçun 2-3 ta aniq amaliy maslahat",
+    "Qaysi boğlovçi yoki grammatik mavzuni takrorlaş kerakligi"
   ]
 }`;
 
@@ -192,8 +197,28 @@ Muhim: Javobni FAQAT va FAQAT quyidagi JSON formatida qaytaring, boshqa hech qan
         lang = 'uz'
       } = payload || {};
 
-      if (!spokenText || spokenText.trim().length < 3) {
-        return res.status(400).json({ error: 'Ovozli javob matni bo\'sh yoki juda qisqa.' });
+      const cleanSpoken = (spokenText || '').trim();
+      const wordsCount = cleanSpoken.split(/\s+/).filter(w => w.length > 1).length;
+
+      // Silence or no speech guard: Do not give random high score for silence!
+      if (!cleanSpoken || wordsCount < 2) {
+        return res.status(200).json({
+          success: true,
+          evaluation: {
+            score: 0,
+            cefrLevel: 'Aniqlanmadi',
+            fluencyScore: 0,
+            vocabularyScore: 0,
+            grammarScore: 0,
+            pronunciationFeedback: 'Ovoz signali aniqlanmadi. Iltimos, mikrofoningiz yoqilganligini tekşiring va savolga ingliz tilida ovozli javob bering.',
+            feedback: 'Nutq aniqlanmadi. Siz heç narsa gapirmadingiz yoki mikrofon ovozni yozib olmadi.',
+            improvements: [
+              'Mikrofon sozlamalari va brauzer audio ruxsatlarini tekşiring.',
+              'Qayta urinib, savolga balandroq va ravon ovozda ingliz tilida javob berişga harakat qiling.'
+            ],
+            isSilence: true
+          }
+        });
       }
 
       const systemInstruction = `Siz xalqaro darajadagi malakali Speaking (Gapirish) imtihonchisisiz (CEFR & IELTS Speaking).
@@ -224,6 +249,133 @@ Muhim: Javobni FAQAT va FAQAT quyidagi JSON formatida qaytaring:
     "Lug'at boyligini kengaytirish uchun 2-maslahat"
   ]
 }`;
+
+      const requestBody = {
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: `${systemInstruction}\n\nTalaba nutqining matni (Speech transcript):\n"""\n${cleanSpoken}\n"""`
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 1500,
+          responseMimeType: 'application/json'
+        }
+      };
+
+      const response = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        return res.status(response.status).json({
+          error: `Gemini API Speaking baholashda xatolik yuz berdi (${response.status}): ${errText}`
+        });
+      }
+
+      const data = await response.json();
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{}';
+      const cleanJson = cleanJsonString(rawText);
+      const parsed = JSON.parse(cleanJson);
+
+      return res.status(200).json({
+        success: true,
+        evaluation: parsed
+      });
+    }
+
+    // 4. SHADOWING EVALUATION
+    if (action === 'evaluate-shadowing') {
+      const {
+        referenceText = '',
+        spokenText = '',
+        targetLanguage = 'en',
+        lang = 'uz'
+      } = payload || {};
+
+      const cleanSpoken = (spokenText || '').trim();
+      const spokenWords = cleanSpoken.split(/\s+/).filter(w => w.length > 0);
+
+      if (!cleanSpoken || spokenWords.length === 0) {
+        return res.status(200).json({
+          success: true,
+          evaluation: {
+            score: 0,
+            accuracyScore: 0,
+            fluencyScore: 0,
+            pronunciationScore: 0,
+            feedback: 'Ovoz aniqlanmadi. Siz heç narsa gapirmadingiz yoki audio qabul qilinmadi.',
+            pronunciationAdvice: 'Iltimos, audio jumlani diqqat bilan tinglab, uni mikrofonga qayta ovoz chiqarib takrorlang.',
+            matchedWordsCount: 0,
+            totalWordsCount: referenceText.split(/\s+/).filter(Boolean).length,
+            isSilence: true
+          }
+        });
+      }
+
+      const systemInstruction = `Siz xalqaro darajadagi fonetika va talaffuz bo'yicha repetitorsiz (Shadowing va Nutq tahlili bo'yicha mutaxassis).
+Vazifangiz: Talabaning namunaviy audio matnga taqlid qilib (Shadowing metodi) aytgan nutqini berilgan asl matn bilan solishtirish va talaffuz aniqligini baholash.
+Asl namunaviy matn (Reference text): "${referenceText}".
+Talaba aytgan nutq transkripsiyasi (Spoken transcript): "${cleanSpoken}".
+Tahlil tili: O'zbek tili (qat'iy isloh qilingan lotin alifbosi: 'Ş ş', 'Ç ç', 'Ğ ğ', 'Ö ö' harflaridan foydalaning, hech qachon 'sh', 'ch', 'o'', 'g'' yozmang!).
+
+Baholash mezonlari:
+1. score (0-100): Asl matn bilan moslik darajasi (so'zlar to'g'ri aytilganligi).
+2. accuracyScore (0-100): Fonetik va leksik aniqlik.
+3. fluencyScore (0-100): Nutq sur'ati va ravonligi.
+4. feedback: Qisqa va rag'batlantiruvchi xulosa (Ş, Ç, Ğ, Ö lotinida).
+5. pronunciationAdvice: Urg'u, intonatsiya va qaysi so'zlarni qayta mashq qilish kerakligi haqida amaliy maslahat.
+6. omittedWords: Tushirib qoldirilgan yoki noto'g'ri talaffuz qilingan so'zlar ro'yxati.
+
+Muhim: Javobni FAQAT quyidagi JSON formatida qaytaring:
+{
+  "score": 88,
+  "accuracyScore": 86,
+  "fluencyScore": 90,
+  "feedback": "Juda yaxshi natija! Talaffuz sur'ati va intonatsiya namunaga ancha yaqin.",
+  "pronunciationAdvice": "Urg'uni to'g'ri qo'yishga va so'zlar orasidagi bog'lanishga (linking sounds) e'tibor qarating.",
+  "omittedWords": []
+}`;
+
+      const requestBody = {
+        contents: [{ role: 'user', parts: [{ text: systemInstruction }] }],
+        generationConfig: { temperature: 0.2, maxOutputTokens: 1000, responseMimeType: 'application/json' }
+      };
+
+      const response = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        return res.status(response.status).json({
+          error: `Gemini API Shadowing baholashda xatolik yuz berdi (${response.status}): ${errText}`
+        });
+      }
+
+      const data = await response.json();
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{}';
+      const cleanJson = cleanJsonString(rawText);
+      const parsed = JSON.parse(cleanJson);
+
+      return res.status(200).json({
+        success: true,
+        evaluation: parsed
+      });
+    }
+
+    // 5. ASK TUTOR / EXPLAIN
+    if (action === 'ask-tutor') {`;
 
       const requestBody = {
         contents: [
@@ -327,3 +479,4 @@ function cleanJsonString(str) {
   }
   return cleaned.trim();
 }
+

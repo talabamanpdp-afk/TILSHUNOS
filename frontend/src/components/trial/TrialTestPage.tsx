@@ -3,7 +3,7 @@ import {
   Mic, MicOff, Volume2, Play, Pause, CheckCircle2, XCircle, AlertCircle,
   Sparkles, Award, ArrowRight, ArrowLeft, RefreshCw, Eye, EyeOff, BookOpen,
   Headphones, PenLine, Check, HelpCircle, Sun, Moon, Clock, Trophy, Shuffle,
-  Bot, Zap
+  Bot, Zap, RotateCcw, Send, Key, ExternalLink
 } from 'lucide-react';
 import {
   TrialTestsConfig, INITIAL_TRIAL_CONFIG, WordQuizItem,
@@ -14,7 +14,9 @@ import {
 } from '../../data/trialTestData';
 import {
   evaluateWritingWithGemini, evaluateSpeakingWithGemini,
-  WritingEvaluationResult, SpeakingEvaluationResult
+  WritingEvaluationResult, SpeakingEvaluationResult,
+  getStoredAiConfig, saveStoredAiConfig, syncAiConfigFromCms,
+  askAiAboutSubmission, testGeminiConnection, GeminiAiConfig
 } from '../../services/geminiAiService';
 import { playSpeech, stopSpeech, startListening, isSpeechRecognitionSupported, SupportedLang } from '../../utils/speech';
 
@@ -109,13 +111,39 @@ export const SKILL_CARDS: {
   }
 ];
 
-export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms }: TrialTestPageProps) {
+export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms, onUpdateCms }: TrialTestPageProps) {
   // Config loaded from CMS or default
   const config: TrialTestsConfig = cms?.trialTests || INITIAL_TRIAL_CONFIG;
 
   // Selected language and skill
   const [selectedLang, setSelectedLang] = useState<string>('en');
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null);
+
+  // Gemini AI Config Modal State
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [currentAiConfig, setCurrentAiConfig] = useState<GeminiAiConfig>(() => getStoredAiConfig());
+
+  // Sync when cms changes
+  useEffect(() => {
+    if (config?.aiConfig?.apiKey) {
+      syncAiConfigFromCms(config.aiConfig);
+      setCurrentAiConfig(getStoredAiConfig());
+    }
+  }, [config?.aiConfig]);
+
+  const handleSaveAiConfig = (cfg: GeminiAiConfig) => {
+    saveStoredAiConfig(cfg);
+    setCurrentAiConfig(cfg);
+    if (onUpdateCms && cms) {
+      onUpdateCms({
+        ...cms,
+        trialTests: {
+          ...(cms?.trialTests || {}),
+          aiConfig: cfg
+        }
+      });
+    }
+  };
 
   return (
     <div className={`trial-page-shell ${dark ? 'dark' : ''}`}>
@@ -443,6 +471,20 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms }
         </button>
 
         <div className="trial-header-actions">
+          <button
+            className="trial-back-btn"
+            onClick={() => setShowAiModal(true)}
+            title="Google Gemini AI Sozlamalari"
+            style={{
+              borderColor: currentAiConfig.apiKey ? '#10b981' : '#f59e0b',
+              color: currentAiConfig.apiKey ? '#10b981' : '#f59e0b',
+              background: currentAiConfig.apiKey ? 'rgba(16, 185, 129, 0.08)' : 'rgba(245, 158, 11, 0.08)'
+            }}
+          >
+            <Bot size={14} />
+            <span>{currentAiConfig.apiKey ? 'Gemini 2.0 AI Faol' : '🔑 Gemini AI Kaliti'}</span>
+          </button>
+
           {selectedSkill && (
             <button
               className="trial-back-btn"
@@ -572,6 +614,8 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms }
                 config={config.speaking}
                 lang={selectedLang}
                 onComplete={onRegister}
+                onOpenAiSettings={() => setShowAiModal(true)}
+                isAiActive={Boolean(currentAiConfig.apiKey)}
               />
             )}
             {selectedSkill === 'reading' && (
@@ -594,6 +638,8 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms }
                 writingPool={config.writingPool}
                 lang={selectedLang}
                 onComplete={onRegister}
+                onOpenAiSettings={() => setShowAiModal(true)}
+                isAiActive={Boolean(currentAiConfig.apiKey)}
               />
             )}
             {selectedSkill === 'grammar' && (
@@ -614,6 +660,234 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms }
           </div>
         )}
       </main>
+
+      {/* Gemini AI Key & Settings Modal */}
+      <GeminiApiKeyModal
+        isOpen={showAiModal}
+        onClose={() => setShowAiModal(false)}
+        initialConfig={currentAiConfig}
+        onSave={handleSaveAiConfig}
+      />
+    </div>
+  );
+}
+
+/* =====================================================================
+   GEMINI API KEY & SETTINGS MODAL
+   ===================================================================== */
+function GeminiApiKeyModal({
+  isOpen,
+  onClose,
+  initialConfig,
+  onSave
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  initialConfig: GeminiAiConfig;
+  onSave: (cfg: GeminiAiConfig) => void;
+}) {
+  const [key, setKey] = useState(initialConfig.apiKey || '');
+  const [model, setModel] = useState(initialConfig.model || 'gemini-2.0-flash');
+  const [showKey, setShowKey] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  useEffect(() => {
+    setKey(initialConfig.apiKey || '');
+    setModel(initialConfig.model || 'gemini-2.0-flash');
+  }, [initialConfig, isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleTest = async () => {
+    if (!key.trim()) {
+      setTestResult({ success: false, message: 'Iltimos, avval API kalitni kiriting.' });
+      return;
+    }
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      const res = await testGeminiConnection(key, model);
+      setTestResult({ success: res.success, message: res.message });
+    } catch (e: any) {
+      setTestResult({ success: false, message: e.message || 'Aloqa xatosi yuz berdi' });
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  const handleSave = () => {
+    const updated: GeminiAiConfig = {
+      apiKey: key.trim(),
+      model,
+      enabled: true,
+      temperature: 0.2
+    };
+    onSave(updated);
+    onClose();
+  };
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.65)',
+      backdropFilter: 'blur(6px)',
+      display: 'grid',
+      placeItems: 'center',
+      zIndex: 9999,
+      padding: '16px'
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '520px',
+        background: '#ffffff',
+        borderRadius: '20px',
+        padding: '28px',
+        boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
+        color: '#0f172a'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Bot size={22} color="#7869f5" />
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Google Gemini AI Sozlamalari</h3>
+          </div>
+          <button
+            onClick={onClose}
+            style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#64748b' }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b', lineHeight: '1.5' }}>
+          Writing, Speaking va Shadowing mashqlarida 100% haqiqiy jonli sun'iy intellekt tahlilini yoqish uchun Google Gemini API kalitini kiriting.
+        </p>
+
+        {/* API Key Input */}
+        <div style={{ marginBottom: '14px' }}>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '6px', color: '#334155' }}>
+            Gemini API Kaliti (Google AI Studio):
+          </label>
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showKey ? 'text' : 'password'}
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+              placeholder="AIzaSy..."
+              style={{
+                width: '100%',
+                padding: '10px 40px 10px 12px',
+                borderRadius: '10px',
+                border: '1.5px solid #cbd5e1',
+                fontSize: '13.5px',
+                boxSizing: 'border-box',
+                outline: 'none'
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowKey(!showKey)}
+              style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}
+            >
+              {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Model Selector */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, marginBottom: '6px', color: '#334155' }}>
+            AI Modeli:
+          </label>
+          <select
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              borderRadius: '10px',
+              border: '1.5px solid #cbd5e1',
+              fontSize: '13.5px',
+              boxSizing: 'border-box',
+              outline: 'none',
+              background: '#ffffff'
+            }}
+          >
+            <option value="gemini-2.0-flash">Gemini 2.0 Flash (Tavsiya: O‘ta tez & aniq CEFR)</option>
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Tezkor tahlil)</option>
+            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Eng chuqur akademik baholash)</option>
+          </select>
+        </div>
+
+        {/* Free key link */}
+        <div style={{ marginBottom: '16px', padding: '10px 14px', borderRadius: '10px', background: 'rgba(120, 105, 245, 0.08)', fontSize: '12px', color: '#475569' }}>
+          💡 Bepul API kalit olish uchun:{' '}
+          <a
+            href="https://aistudio.google.com/app/apikey"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#7869f5', fontWeight: 750, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+          >
+            Google AI Studio ochish <ExternalLink size={12} />
+          </a>
+        </div>
+
+        {/* Test Result Message */}
+        {testResult && (
+          <div style={{
+            padding: '10px 14px',
+            borderRadius: '10px',
+            marginBottom: '16px',
+            fontSize: '12.5px',
+            fontWeight: 700,
+            background: testResult.success ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+            color: testResult.success ? '#059669' : '#dc2626',
+            border: `1px solid ${testResult.success ? '#10b981' : '#ef4444'}`
+          }}>
+            {testResult.message}
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+          <button
+            type="button"
+            onClick={handleTest}
+            disabled={isTesting || !key.trim()}
+            style={{
+              padding: '10px 16px',
+              borderRadius: '10px',
+              border: '1.5px solid #cbd5e1',
+              background: '#f8fafc',
+              fontSize: '13px',
+              fontWeight: 750,
+              cursor: isTesting || !key.trim() ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {isTesting ? 'Tekshirilmoqda...' : 'Aloqani tekshirish'}
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            style={{
+              padding: '10px 22px',
+              borderRadius: '10px',
+              border: 'none',
+              background: '#10b981',
+              color: '#ffffff',
+              fontSize: '13px',
+              fontWeight: 800,
+              cursor: 'pointer'
+            }}
+          >
+            Saqlash va qo‘llash
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -627,11 +901,15 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms }
 function SpeakingTrialModule({
   config,
   lang,
-  onComplete
+  onComplete,
+  onOpenAiSettings,
+  isAiActive
 }: {
   config: TrialTestsConfig['speaking'];
   lang: string;
   onComplete: () => void;
+  onOpenAiSettings?: () => void;
+  isAiActive?: boolean;
 }) {
   // Step: 'part1' (0..4) | 'part2' | 'result'
   const [currentPart, setCurrentPart] = useState<'part1' | 'part2' | 'result'>('part1');
@@ -657,6 +935,7 @@ function SpeakingTrialModule({
     pronunciationFeedback?: string;
     improvements?: string[];
     isLiveAi?: boolean;
+    isSilence?: boolean;
   }>>({});
   const [hasRecordedCurrent, setHasRecordedCurrent] = useState(false);
 
@@ -670,6 +949,7 @@ function SpeakingTrialModule({
     pronunciationFeedback?: string;
     improvements?: string[];
     isLiveAi?: boolean;
+    isSilence?: boolean;
   } | null>(null);
   const [hasRecordedPart2, setHasRecordedPart2] = useState(false);
   const [isEvaluatingSpeaking, setIsEvaluatingSpeaking] = useState(false);
@@ -707,13 +987,13 @@ function SpeakingTrialModule({
       expectedWord: questions[qIndex]?.question,
       onPartial: (p) => setRecognizedText(p),
       onResult: (res) => {
-        const text = res.transcript || 'Javob qabul qilindi';
+        const text = res.transcript || '';
         setRecognizedText(text);
         finishPart1Question(text, res.confidence);
       },
       onError: () => {
         setIsRecording(false);
-        finishPart1Question(recognizedText || 'Javob qisman yozib olindi', 0.8);
+        finishPart1Question(recognizedText || '', 0);
       },
       onEnd: () => {
         setIsRecording(false);
@@ -725,20 +1005,44 @@ function SpeakingTrialModule({
     stopSpeech();
     setIsRecording(false);
     if (!hasRecordedCurrent) {
-      finishPart1Question(recognizedText || 'Audioni tahlil qilish yakunlandi', 0.85);
+      finishPart1Question(recognizedText || '', 0.85);
     }
   };
 
   const finishPart1Question = async (text: string, confidence: number) => {
+    const clean = (text || '').trim();
+    const words = clean.split(/\s+/).filter(w => w.length > 1 &&
+      !w.startsWith('Audioni') && !w.startsWith('Javob') && !w.startsWith('Rasm') && !w.startsWith('Tasvir'));
+    const isSilence = words.length < 2;
+
     setHasRecordedCurrent(true);
     setIsRecording(false);
-    setIsEvaluatingSpeaking(true);
 
+    if (isSilence) {
+      setIsEvaluatingSpeaking(false);
+      setPart1Answers(prev => ({
+        ...prev,
+        [qIndex]: {
+          text: '',
+          score: 0,
+          feedback: '⚠️ Ovoz aniqlanmadi yoki siz gapirmadingiz. Mikrofonga yaqinroq kelib, savolga ingliz tilida ovoz chiqarib javob bering.',
+          cefrLevel: 'Aniqlanmadi',
+          fluencyScore: 0,
+          pronunciationFeedback: 'Ovoz signali qayd etilmadi. Iltimos, mikrofon sozlamalarini tekşiring.',
+          improvements: ['Mikrofon ovozini balandroq qiling', 'Savolga ingliz tilida aniq talaffuz bilan javob bering'],
+          isLiveAi: false,
+          isSilence: true
+        }
+      }));
+      return;
+    }
+
+    setIsEvaluatingSpeaking(true);
     const questionText = questions[qIndex]?.question || 'Speaking Question';
 
     try {
       const aiRes = await evaluateSpeakingWithGemini({
-        spokenText: text,
+        spokenText: clean,
         question: questionText,
         part: 'part1',
         targetLanguage: lang,
@@ -748,24 +1052,23 @@ function SpeakingTrialModule({
       setPart1Answers(prev => ({
         ...prev,
         [qIndex]: {
-          text,
+          text: clean,
           score: aiRes.score,
           feedback: aiRes.feedback,
           cefrLevel: aiRes.cefrLevel,
           fluencyScore: aiRes.fluencyScore,
           pronunciationFeedback: aiRes.pronunciationFeedback,
           improvements: aiRes.improvements,
-          isLiveAi: aiRes.isLiveAi
+          isLiveAi: aiRes.isLiveAi,
+          isSilence: aiRes.isSilence
         }
       }));
     } catch {
-      const score = Math.max(72, Math.min(96, Math.round(confidence * 100) || 84));
-      const feedback = score > 88
-        ? 'Ajoyib ravonlik, to‘g‘ri leksika va tabiiy talaffuz!'
-        : 'Yaxshi muloqot, biroq gap tuzilishida sodda fe’l shakllariga e’tibor bering.';
+      const score = Math.max(55, Math.min(92, Math.round(confidence * 100) || 75));
+      const feedback = 'Nutq qabul qilindi. Fikr bildirishga intilish yaxshi, nutq sur’atini barqaror saqlang.';
       setPart1Answers(prev => ({
         ...prev,
-        [qIndex]: { text, score, feedback, isLiveAi: false }
+        [qIndex]: { text: clean, score, feedback, isLiveAi: false }
       }));
     } finally {
       setIsEvaluatingSpeaking(false);
@@ -803,26 +1106,47 @@ function SpeakingTrialModule({
       expectedWord: describeImage.title,
       onPartial: (p) => setRecognizedText(p),
       onResult: (res) => {
-        const text = res.transcript || 'Rasm tasviri töliq yozib olindi';
+        const text = res.transcript || '';
         setRecognizedText(text);
         finishPart2(text, res.confidence);
       },
       onError: () => {
         setIsRecording(false);
-        finishPart2(recognizedText || 'Tasvir muvaffaqiyatli saqlandi', 0.82);
+        finishPart2(recognizedText || '', 0);
       },
       onEnd: () => setIsRecording(false)
     });
   };
 
   const finishPart2 = async (text: string, confidence: number) => {
+    const clean = (text || '').trim();
+    const words = clean.split(/\s+/).filter(w => w.length > 1 &&
+      !w.startsWith('Rasm') && !w.startsWith('Tasvir') && !w.startsWith('Audioni'));
+    const isSilence = words.length < 2;
+
     setHasRecordedPart2(true);
     setIsRecording(false);
+
+    if (isSilence) {
+      setIsEvaluatingSpeaking(false);
+      setPart2Answer({
+        text: '',
+        score: 0,
+        feedback: '⚠️ Rasm bo‘yicha hech qanday ovozli tasvir aniqlanmadi. Siz hech narsa gapirmadingiz yoki mikrofon audio yozmadi.',
+        cefrLevel: 'Aniqlanmadi',
+        fluencyScore: 0,
+        pronunciationFeedback: 'Ovoz qayd etilmadi. Mikrofon sozlamalarini tekşiring.',
+        isLiveAi: false,
+        isSilence: true
+      });
+      return;
+    }
+
     setIsEvaluatingSpeaking(true);
 
     try {
       const aiRes = await evaluateSpeakingWithGemini({
-        spokenText: text,
+        spokenText: clean,
         question: describeImage.title,
         part: 'part2',
         topicTitle: describeImage.title,
@@ -831,19 +1155,20 @@ function SpeakingTrialModule({
       });
 
       setPart2Answer({
-        text,
+        text: clean,
         score: aiRes.score,
         feedback: aiRes.feedback,
         cefrLevel: aiRes.cefrLevel,
         fluencyScore: aiRes.fluencyScore,
         pronunciationFeedback: aiRes.pronunciationFeedback,
         improvements: aiRes.improvements,
-        isLiveAi: aiRes.isLiveAi
+        isLiveAi: aiRes.isLiveAi,
+        isSilence: aiRes.isSilence
       });
     } catch {
-      const score = Math.max(75, Math.min(97, Math.round(confidence * 100) || 86));
-      const feedback = 'Rasm detallari, ranglar va harakatlar juda yaxshi tasvirlab berildi.';
-      setPart2Answer({ text, score, feedback, isLiveAi: false });
+      const score = Math.max(55, Math.min(92, Math.round(confidence * 100) || 78));
+      const feedback = 'Rasm detallari tasvirlab berildi. Nutq sur’atini barqaror saqlashga harakat qiling.';
+      setPart2Answer({ text: clean, score, feedback, isLiveAi: false });
     } finally {
       setIsEvaluatingSpeaking(false);
     }
@@ -851,30 +1176,56 @@ function SpeakingTrialModule({
 
   // Calculate Overall Speaking Result
   const part1Avg = useMemo(() => {
-    const vals = Object.values(part1Answers);
-    if (!vals.length) return 80;
+    const vals = Object.values(part1Answers).filter(a => !a.isSilence);
+    if (!vals.length) return 0;
     return Math.round(vals.reduce((a, b) => a + b.score, 0) / vals.length);
   }, [part1Answers]);
 
   const overallSpeakingScore = useMemo(() => {
-    const p2 = part2Answer?.score || 85;
+    const p2 = part2Answer && !part2Answer.isSilence ? part2Answer.score : 0;
     return Math.round((part1Avg * 0.5) + (p2 * 0.5));
   }, [part1Avg, part2Answer]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Speaking Header with AI Status */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: '#7869f5', textTransform: 'uppercase' }}>
+            {currentPart === 'part1' ? `1-QISM: QISQA SAVOLLAR (5 TAdan ${qIndex + 1}-si)` : currentPart === 'part2' ? '2-QISM: RASMNI TASVIRLASH' : 'NATIJA'}
+          </span>
+          {onOpenAiSettings && (
+            <button
+              onClick={onOpenAiSettings}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '4px 10px',
+                borderRadius: '100px',
+                background: isAiActive ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                border: `1px solid ${isAiActive ? '#10b981' : '#f59e0b'}`,
+                color: isAiActive ? '#10b981' : '#f59e0b',
+                fontSize: '11px',
+                fontWeight: 750,
+                cursor: 'pointer'
+              }}
+            >
+              <Key size={11} />
+              <span>{isAiActive ? '⚡ Gemini AI Faol' : '🔑 API Kalit'}</span>
+            </button>
+          )}
+        </div>
+        {currentPart !== 'result' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 800, color: timeLeft <= 10 ? '#ef4444' : '#7869f5' }}>
+            <Clock size={16} /> {timeLeft} soniya
+          </div>
+        )}
+      </div>
+
       {/* PART 1: 5 SHORT QUESTIONS */}
       {currentPart === 'part1' && (
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 800, color: '#7869f5', textTransform: 'uppercase' }}>
-              1-QISM: QISQA SAVOLLAR (5 TAdan {qIndex + 1}-si)
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 800, color: timeLeft <= 10 ? '#ef4444' : '#7869f5' }}>
-              <Clock size={16} /> {timeLeft} soniya
-            </div>
-          </div>
-
           {/* Question Card */}
           <div style={{ padding: '24px', background: 'rgba(120, 105, 245, 0.05)', borderRadius: '18px', border: '1.5px solid rgba(120, 105, 245, 0.15)', marginBottom: '20px' }}>
             <h2 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 8px' }}>
@@ -915,8 +1266,9 @@ function SpeakingTrialModule({
                 {isRecording ? 'Javobni yakunlash (Mikrofonni o‘chirish)' : 'Mikrofonni yoqish va javob berish (30s)'}
               </button>
             ) : (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '100px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontWeight: 750, fontSize: '14px' }}>
-                <CheckCircle2 size={18} /> Javob 1 marta qabul qilindi va tahlil qilindi
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '100px', background: part1Answers[qIndex]?.isSilence ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: part1Answers[qIndex]?.isSilence ? '#ef4444' : '#10b981', fontWeight: 750, fontSize: '14px' }}>
+                {part1Answers[qIndex]?.isSilence ? <AlertCircle size={18} /> : <CheckCircle2 size={18} />}
+                {part1Answers[qIndex]?.isSilence ? 'Ovoz aniqlanmadi (Nutq yo‘q)' : 'Javob 1 marta qabul qilindi va tahlil qilindi'}
               </div>
             )}
 
@@ -934,33 +1286,76 @@ function SpeakingTrialModule({
 
           {/* AI Diagnosis Result for this Question */}
           {hasRecordedCurrent && part1Answers[qIndex] && (
-            <div style={{ padding: '20px', background: 'rgba(120, 105, 245, 0.05)', borderRadius: '16px', border: '1.5px solid rgba(120, 105, 245, 0.2)', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: '#7869f5', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Bot size={16} /> AI Repetitor Diagnostikasi:
-                  {part1Answers[qIndex].isLiveAi ? (
-                    <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: '#10b981', color: '#fff', fontWeight: 800 }}>
-                      ⚡ Gemini 2.0 AI
-                    </span>
-                  ) : (
-                    <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', fontWeight: 750 }}>
-                      Evristik Tahlil
-                    </span>
-                  )}
-                </span>
-                <span style={{ fontSize: '15px', fontWeight: 850, color: '#10b981' }}>
-                  {part1Answers[qIndex].score} / 100 ball {part1Answers[qIndex].cefrLevel && `(${part1Answers[qIndex].cefrLevel})`}
-                </span>
-              </div>
-              <p style={{ margin: 0, fontSize: '13.5px', color: '#334155', lineHeight: '1.5' }}>
-                {part1Answers[qIndex].feedback}
-              </p>
-              {part1Answers[qIndex].pronunciationFeedback && (
-                <div style={{ marginTop: '8px', fontSize: '12.5px', color: '#64748b' }}>
-                  🗣️ <strong>Talaffuz va ravonlik:</strong> {part1Answers[qIndex].pronunciationFeedback}
+            part1Answers[qIndex].isSilence ? (
+              <div style={{ padding: '20px', background: 'rgba(239, 68, 68, 0.08)', borderRadius: '16px', border: '1.5px solid rgba(239, 68, 68, 0.3)', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <AlertCircle size={16} /> Ovoz aniqlanmadi (Nutq yo‘q)
+                  </span>
+                  <span style={{ fontSize: '14px', fontWeight: 850, color: '#ef4444' }}>
+                    0 ball (Aniqlanmadi)
+                  </span>
                 </div>
-              )}
-            </div>
+                <p style={{ margin: '0 0 14px', fontSize: '13.5px', color: '#991b1b', lineHeight: '1.5' }}>
+                  {part1Answers[qIndex].feedback}
+                </p>
+                <button
+                  onClick={() => {
+                    setHasRecordedCurrent(false);
+                    setRecognizedText('');
+                    setTimeLeft(30);
+                    setPart1Answers(prev => {
+                      const next = { ...prev };
+                      delete next[qIndex];
+                      return next;
+                    });
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '9px 18px',
+                    borderRadius: '10px',
+                    background: '#ef4444',
+                    color: '#ffffff',
+                    fontWeight: 750,
+                    fontSize: '13px',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <RotateCcw size={14} /> Qayta urinib gapirish
+                </button>
+              </div>
+            ) : (
+              <div style={{ padding: '20px', background: 'rgba(120, 105, 245, 0.05)', borderRadius: '16px', border: '1.5px solid rgba(120, 105, 245, 0.2)', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#7869f5', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Bot size={16} /> AI Repetitor Diagnostikasi:
+                    {part1Answers[qIndex].isLiveAi ? (
+                      <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: '#10b981', color: '#fff', fontWeight: 800 }}>
+                        ⚡ Gemini 2.0 AI
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', fontWeight: 750 }}>
+                        Evristik Tahlil
+                      </span>
+                    )}
+                  </span>
+                  <span style={{ fontSize: '15px', fontWeight: 850, color: '#10b981' }}>
+                    {part1Answers[qIndex].score} / 100 ball {part1Answers[qIndex].cefrLevel && `(${part1Answers[qIndex].cefrLevel})`}
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '13.5px', color: '#334155', lineHeight: '1.5' }}>
+                  {part1Answers[qIndex].feedback}
+                </p>
+                {part1Answers[qIndex].pronunciationFeedback && (
+                  <div style={{ marginTop: '8px', fontSize: '12.5px', color: '#64748b' }}>
+                    🗣️ <strong>Talaffuz va ravonlik:</strong> {part1Answers[qIndex].pronunciationFeedback}
+                  </div>
+                )}
+              </div>
+            )
           )}
 
           {/* Action Button */}
@@ -992,15 +1387,6 @@ function SpeakingTrialModule({
       {/* PART 2: DESCRIBE IMAGE (60s) */}
       {currentPart === 'part2' && (
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 800, color: '#7869f5', textTransform: 'uppercase' }}>
-              2-QISM: RASMNI TASVIRLASH (DESCRIBE IMAGE)
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 800, color: timeLeft <= 15 ? '#ef4444' : '#7869f5' }}>
-              <Clock size={16} /> {timeLeft} soniya
-            </div>
-          </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '24px' }}>
             <div>
               <img
@@ -1036,7 +1422,7 @@ function SpeakingTrialModule({
           <div style={{ textAlign: 'center', margin: '20px 0' }}>
             {!hasRecordedPart2 ? (
               <button
-                onClick={isRecording ? () => finishPart2(recognizedText || 'Tasvir yakunlandi', 0.85) : handleStartPart2}
+                onClick={isRecording ? () => finishPart2(recognizedText || '', 0.85) : handleStartPart2}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -1056,8 +1442,9 @@ function SpeakingTrialModule({
                 {isRecording ? 'Tasvirni yakunlash' : 'Rasmni tasvirlashni boşlaş (60 soniya)'}
               </button>
             ) : (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '100px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontWeight: 750, fontSize: '14px' }}>
-                <CheckCircle2 size={18} /> Rasm tasvirlanishi muvaffaqiyatli qabul qilindi
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '100px', background: part2Answer?.isSilence ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: part2Answer?.isSilence ? '#ef4444' : '#10b981', fontWeight: 750, fontSize: '14px' }}>
+                {part2Answer?.isSilence ? <AlertCircle size={18} /> : <CheckCircle2 size={18} />}
+                {part2Answer?.isSilence ? 'Rasm bo‘yicha nutq aniqlanmadi' : 'Rasm tasvirlanishi muvaffaqiyatli qabul qilindi'}
               </div>
             )}
 
@@ -1077,33 +1464,72 @@ function SpeakingTrialModule({
 
           {/* Part 2 AI Diagnosis Card */}
           {hasRecordedPart2 && part2Answer && (
-            <div style={{ padding: '20px', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '16px', border: '1.5px solid rgba(16, 185, 129, 0.25)', marginTop: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Bot size={16} /> 2-Qism AI Diagnostikasi:
-                  {part2Answer.isLiveAi ? (
-                    <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: '#10b981', color: '#fff', fontWeight: 800 }}>
-                      ⚡ Gemini 2.0 AI
-                    </span>
-                  ) : (
-                    <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', fontWeight: 750 }}>
-                      Evristik Tahlil
-                    </span>
-                  )}
-                </span>
-                <span style={{ fontSize: '15px', fontWeight: 850, color: '#10b981' }}>
-                  {part2Answer.score} / 100 ball {part2Answer.cefrLevel && `(${part2Answer.cefrLevel})`}
-                </span>
-              </div>
-              <p style={{ margin: 0, fontSize: '13.5px', color: '#334155', lineHeight: '1.5' }}>
-                {part2Answer.feedback}
-              </p>
-              {part2Answer.pronunciationFeedback && (
-                <div style={{ marginTop: '8px', fontSize: '12.5px', color: '#64748b' }}>
-                  🗣️ <strong>Talaffuz va ravonlik:</strong> {part2Answer.pronunciationFeedback}
+            part2Answer.isSilence ? (
+              <div style={{ padding: '20px', background: 'rgba(239, 68, 68, 0.08)', borderRadius: '16px', border: '1.5px solid rgba(239, 68, 68, 0.3)', marginTop: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <AlertCircle size={16} /> Ovoz aniqlanmadi (Nutq yo‘q)
+                  </span>
+                  <span style={{ fontSize: '14px', fontWeight: 850, color: '#ef4444' }}>
+                    0 ball (Aniqlanmadi)
+                  </span>
                 </div>
-              )}
-            </div>
+                <p style={{ margin: '0 0 14px', fontSize: '13.5px', color: '#991b1b', lineHeight: '1.5' }}>
+                  {part2Answer.feedback}
+                </p>
+                <button
+                  onClick={() => {
+                    setHasRecordedPart2(false);
+                    setRecognizedText('');
+                    setTimeLeft(60);
+                    setPart2Answer(null);
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '9px 18px',
+                    borderRadius: '10px',
+                    background: '#ef4444',
+                    color: '#ffffff',
+                    fontWeight: 750,
+                    fontSize: '13px',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <RotateCcw size={14} /> Rasmni qayta tasvirlash
+                </button>
+              </div>
+            ) : (
+              <div style={{ padding: '20px', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '16px', border: '1.5px solid rgba(16, 185, 129, 0.25)', marginTop: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Bot size={16} /> 2-Qism AI Diagnostikasi:
+                    {part2Answer.isLiveAi ? (
+                      <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: '#10b981', color: '#fff', fontWeight: 800 }}>
+                        ⚡ Gemini 2.0 AI
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '11px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', fontWeight: 750 }}>
+                        Evristik Tahlil
+                      </span>
+                    )}
+                  </span>
+                  <span style={{ fontSize: '15px', fontWeight: 850, color: '#10b981' }}>
+                    {part2Answer.score} / 100 ball {part2Answer.cefrLevel && `(${part2Answer.cefrLevel})`}
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '13.5px', color: '#334155', lineHeight: '1.5' }}>
+                  {part2Answer.feedback}
+                </p>
+                {part2Answer.pronunciationFeedback && (
+                  <div style={{ marginTop: '8px', fontSize: '12.5px', color: '#64748b' }}>
+                    🗣️ <strong>Talaffuz va ravonlik:</strong> {part2Answer.pronunciationFeedback}
+                  </div>
+                )}
+              </div>
+            )
           )}
 
           {hasRecordedPart2 && (
@@ -1735,7 +2161,9 @@ function WritingTrialModule({
   testItem,
   writingPool,
   lang,
-  onComplete
+  onComplete,
+  onOpenAiSettings,
+  isAiActive
 }: {
   testItem?: WritingTestItem;
   writingPool?: {
@@ -1744,6 +2172,8 @@ function WritingTrialModule({
   };
   lang: string;
   onComplete: () => void;
+  onOpenAiSettings?: () => void;
+  isAiActive?: boolean;
 }) {
   const essayList = writingPool?.essayTopics && writingPool.essayTopics.length > 0
     ? writingPool.essayTopics
@@ -1778,16 +2208,64 @@ function WritingTrialModule({
         sampleText: currentLetter.sampleBand8Text
       };
 
-  const [essayText, setEssayText] = useState('');
+  // INDEPENDENT DRAFTS & ANALYSES (NEVER OVERWRITES ON SWITCH!)
+  const [essayDraft, setEssayDraft] = useState<string>(() => {
+    try { return localStorage.getItem('tilshunos_writing_essay_draft') || ''; } catch { return ''; }
+  });
+  const [letterDraft, setLetterDraft] = useState<string>(() => {
+    try { return localStorage.getItem('tilshunos_writing_letter_draft') || ''; } catch { return ''; }
+  });
+  const [essayAnalysis, setEssayAnalysis] = useState<WritingEvaluationResult | null>(() => {
+    try {
+      const raw = localStorage.getItem('tilshunos_writing_essay_analysis');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  });
+  const [letterAnalysis, setLetterAnalysis] = useState<WritingEvaluationResult | null>(() => {
+    try {
+      const raw = localStorage.getItem('tilshunos_writing_letter_analysis');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  });
+
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<any | null>(null);
+
+  // Active draft and analysis based on current taskType
+  const currentText = taskType === 'essay' ? essayDraft : letterDraft;
+  const analysisResult = taskType === 'essay' ? essayAnalysis : letterAnalysis;
+
+  const handleTextChange = (text: string) => {
+    if (taskType === 'essay') {
+      setEssayDraft(text);
+      try { localStorage.setItem('tilshunos_writing_essay_draft', text); } catch {}
+    } else {
+      setLetterDraft(text);
+      try { localStorage.setItem('tilshunos_writing_letter_draft', text); } catch {}
+    }
+  };
+
+  const handleSetAnalysis = (res: WritingEvaluationResult | null) => {
+    if (taskType === 'essay') {
+      setEssayAnalysis(res);
+      try {
+        if (res) localStorage.setItem('tilshunos_writing_essay_analysis', JSON.stringify(res));
+        else localStorage.removeItem('tilshunos_writing_essay_analysis');
+      } catch {}
+    } else {
+      setLetterAnalysis(res);
+      try {
+        if (res) localStorage.setItem('tilshunos_writing_letter_analysis', JSON.stringify(res));
+        else localStorage.removeItem('tilshunos_writing_letter_analysis');
+      } catch {}
+    }
+  };
 
   // Live word count
   const wordCount = useMemo(() => {
-    const trimmed = essayText.trim();
+    const trimmed = currentText.trim();
     if (!trimmed) return 0;
     return trimmed.split(/\s+/).length;
-  }, [essayText]);
+  }, [currentText]);
 
   const minRequired = activeTask.minWords;
   const isRequirementMet = wordCount >= minRequired;
@@ -1802,25 +2280,23 @@ function WritingTrialModule({
       if (next === letterIndex && letterList.length > 1) next = (next + 1) % letterList.length;
       setLetterIndex(next);
     }
-    setEssayText('');
-    setAnalysisResult(null);
+    // Only reset analysis for the current task
+    handleSetAnalysis(null);
   };
 
   const handleSubmitToAI = async () => {
     if (!isRequirementMet) {
-      alert(`Matnda kamida ${minRequired} ta söz bölişi lozim. Hozirda: ${wordCount} ta söz.`);
+      alert(`Matnda kamida ${minRequired} ta so‘z bo‘lishi lozim. Hozirda: ${wordCount} ta so‘z.`);
       return;
     }
 
     setIsAnalyzing(true);
     try {
       const topicTitle = activeTask?.title || 'Writing Task';
-      const topicPrompt = taskType === 'essay'
-        ? (activeTask as any)?.prompt || (activeTask as any)?.description || ''
-        : (activeTask as any)?.prompt || (activeTask as any)?.description || '';
+      const topicPrompt = (activeTask as any)?.description || '';
 
       const result = await evaluateWritingWithGemini({
-        text: essayText,
+        text: currentText,
         topicTitle,
         topicPrompt,
         taskType,
@@ -1828,7 +2304,7 @@ function WritingTrialModule({
         targetLanguage: lang,
         lang: 'uz'
       });
-      setAnalysisResult(result);
+      handleSetAnalysis(result);
     } catch (err: any) {
       console.error('Gemini Writing Evaluation error:', err);
       alert('Tahlil paytida xatolik yuz berdi: ' + (err.message || 'Iltimos, qayta urinib ko‘ring'));
@@ -1837,17 +2313,45 @@ function WritingTrialModule({
     }
   };
 
+  // Interactive AI Tutor Q&A Chat State
+  const [tutorInput, setTutorInput] = useState('');
+  const [isAskingTutor, setIsAskingTutor] = useState(false);
+  const [tutorMessages, setTutorMessages] = useState<Array<{ sender: 'user' | 'tutor'; text: string }>>([]);
+
+  const handleAskTutor = async (predefinedQuestion?: string) => {
+    const question = (predefinedQuestion || tutorInput).trim();
+    if (!question || isAskingTutor) return;
+
+    setTutorMessages(prev => [...prev, { sender: 'user', text: question }]);
+    if (!predefinedQuestion) setTutorInput('');
+    setIsAskingTutor(true);
+
+    try {
+      const reply = await askAiAboutSubmission({
+        text: currentText,
+        question,
+        topicTitle: activeTask.title,
+        taskType,
+        lang
+      });
+      setTutorMessages(prev => [...prev, { sender: 'tutor', text: reply }]);
+    } catch (e: any) {
+      setTutorMessages(prev => [
+        ...prev,
+        { sender: 'tutor', text: 'AI repetitor bilan aloqada xatolik yuz berdi. Iltimos, qayta so‘rang.' }
+      ]);
+    } finally {
+      setIsAskingTutor(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Top Part Switcher & Randomizer */}
+      {/* Top Part Switcher & Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
-            onClick={() => {
-              setTaskType('essay');
-              setEssayText('');
-              setAnalysisResult(null);
-            }}
+            onClick={() => setTaskType('essay')}
             style={{
               padding: '8px 16px',
               borderRadius: '10px',
@@ -1856,17 +2360,17 @@ function WritingTrialModule({
               color: taskType === 'essay' ? '#ffffff' : 'inherit',
               fontWeight: 800,
               fontSize: '13px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            1-Qism: Insho (Essay)
+            <span>1-Qism: Insho (Essay)</span>
+            {essayDraft && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: taskType === 'essay' ? '#ffffff' : '#10b981' }} />}
           </button>
           <button
-            onClick={() => {
-              setTaskType('letter');
-              setEssayText('');
-              setAnalysisResult(null);
-            }}
+            onClick={() => setTaskType('letter')}
             style={{
               padding: '8px 16px',
               borderRadius: '10px',
@@ -1875,22 +2379,50 @@ function WritingTrialModule({
               color: taskType === 'letter' ? '#ffffff' : 'inherit',
               fontWeight: 800,
               fontSize: '13px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            2-Qism: Xat (Letter)
+            <span>2-Qism: Xat (Letter)</span>
+            {letterDraft && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: taskType === 'letter' ? '#ffffff' : '#7869f5' }} />}
           </button>
         </div>
 
-        <button
-          onClick={handleShuffle}
-          className="outline-btn"
-          style={{ padding: '7px 14px', fontSize: '12.5px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          title="Boshqa tasodifiy mavzuni tanlash"
-        >
-          <Shuffle size={14} />
-          <span>Boshqa Mavzu Olish (Random)</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {onOpenAiSettings && (
+            <button
+              onClick={onOpenAiSettings}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 14px',
+                borderRadius: '100px',
+                background: isAiActive ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                border: `1px solid ${isAiActive ? '#10b981' : '#f59e0b'}`,
+                color: isAiActive ? '#10b981' : '#f59e0b',
+                fontSize: '12px',
+                fontWeight: 750,
+                cursor: 'pointer'
+              }}
+            >
+              <Key size={13} />
+              <span>{isAiActive ? '⚡ Gemini AI Faol' : '🔑 Gemini API Kaliti'}</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleShuffle}
+            className="outline-btn"
+            style={{ padding: '7px 14px', fontSize: '12.5px', fontWeight: 750, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            title="Boshqa tasodifiy mavzuni tanlash"
+          >
+            <Shuffle size={14} />
+            <span>Boshqa Mavzu Olish (Random)</span>
+          </button>
+        </div>
       </div>
 
       {/* Topic Prompt Card */}
@@ -1900,7 +2432,7 @@ function WritingTrialModule({
             {activeTask.genre} · KAMIDA {minRequired} TA SÖZ
           </span>
           <span style={{ fontSize: '12px', fontWeight: 700, color: isRequirementMet ? '#10b981' : '#f59e0b' }}>
-            {isRequirementMet ? '✅ Talab bajarildi' : `Yana ${minRequired - wordCount} ta söz kerak`}
+            {isRequirementMet ? '✅ Talab bajarildi' : `Yana ${minRequired - wordCount} ta so‘z kerak`}
           </span>
         </div>
 
@@ -1922,8 +2454,8 @@ function WritingTrialModule({
       <div>
         <textarea
           rows={10}
-          value={essayText}
-          onChange={(e) => setEssayText(e.target.value)}
+          value={currentText}
+          onChange={(e) => handleTextChange(e.target.value)}
           placeholder={taskType === 'essay' ? 'Inshoni shu yerga yozing...' : 'Xatni shu yerga yozing...'}
           style={{
             width: '100%',
@@ -1941,11 +2473,11 @@ function WritingTrialModule({
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', fontSize: '13px' }}>
           <span style={{ fontWeight: 800, color: isRequirementMet ? '#10b981' : '#f59e0b' }}>
-            {wordCount} / {minRequired} ta söz
+            {wordCount} / {minRequired} ta so‘z
           </span>
           {activeTask.sampleText && (
             <button
-              onClick={() => setEssayText(activeTask.sampleText || '')}
+              onClick={() => handleTextChange(activeTask.sampleText || '')}
               style={{ background: 'none', border: 'none', color: '#7869f5', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
             >
               Namuna matnni yuklash (Band 8.0)
@@ -1975,7 +2507,7 @@ function WritingTrialModule({
             }}
           >
             {isAnalyzing ? <RefreshCw className="animate-spin" size={18} /> : <Sparkles size={18} />}
-            {isAnalyzing ? 'AI repetitor tekşirmoqda...' : 'AI yordamçiga jönatiş va diagnoz oliş'}
+            {isAnalyzing ? 'AI repetitor tekshirmoqda...' : 'AI yordamchiga jo‘natish va diagnoz olish'}
           </button>
         </div>
       )}
@@ -1994,19 +2526,37 @@ function WritingTrialModule({
                 </span>
               ) : (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '100px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', fontWeight: 800, fontSize: '11px' }}>
-                  Aqlli Evristik Tahlil
+                  Evristik Tahlil
                 </span>
               )}
             </div>
-            <span style={{ fontSize: '18px', fontWeight: 900, color: '#10b981' }}>
-              {analysisResult.overallScore} ball ({analysisResult.cefrScore})
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '18px', fontWeight: 900, color: analysisResult.overallScore < 50 ? '#ef4444' : '#10b981' }}>
+                {analysisResult.overallScore} ball ({analysisResult.cefrScore})
+              </span>
+              <button
+                onClick={() => handleSetAnalysis(null)}
+                style={{ padding: '4px 10px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'transparent', fontSize: '12px', fontWeight: 700, cursor: 'pointer', color: '#64748b' }}
+                title="Qayta tahlil qilish uchun natijani yopish"
+              >
+                Qayta tahlil ↺
+              </button>
+            </div>
           </div>
+
+          {/* Genre Mismatch Banner */}
+          {analysisResult.genreMismatch && (
+            <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1.5px solid #ef4444', color: '#b91c1c', marginBottom: '16px', fontSize: '13.5px', fontWeight: 750, lineHeight: '1.5' }}>
+              ⚠️ Janr nomuvofiqligi aniqlandi: Siz Insho (Essay) topshirig‘iga Xat (Letter) formatidagi matn kiritgansiz! Inshoda "Dear...", "Yours sincerely" kabi salomlashish va imzolar ishlatilmaydi. Shu sababli Task Achievement bali keskin pasaytirildi.
+            </div>
+          )}
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '20px' }}>
             <div style={{ padding: '12px', background: 'rgba(255,255,255,0.7)', borderRadius: '10px' }}>
               <div style={{ fontSize: '11px', color: '#64748b' }}>Mavzu ochilishi</div>
-              <strong style={{ fontSize: '18px', color: '#10b981' }}>{analysisResult.taskAchievementScore ?? 85}%</strong>
+              <strong style={{ fontSize: '18px', color: (analysisResult.taskAchievementScore ?? 85) < 50 ? '#ef4444' : '#10b981' }}>
+                {analysisResult.taskAchievementScore ?? 85}%
+              </strong>
             </div>
             <div style={{ padding: '12px', background: 'rgba(255,255,255,0.7)', borderRadius: '10px' }}>
               <div style={{ fontSize: '11px', color: '#64748b' }}>Grammatika</div>
@@ -2076,21 +2626,130 @@ function WritingTrialModule({
             </div>
           )}
 
-          <button
-            onClick={onComplete}
-            style={{
-              padding: '10px 24px',
-              borderRadius: '10px',
-              background: '#10b981',
-              color: '#ffffff',
-              fontSize: '14px',
-              fontWeight: 800,
-              border: 'none',
-              cursor: 'pointer'
-            }}
-          >
-            Yoziş könikmasini rejaga qöşiş →
-          </button>
+          {/* Interactive AI Tutor Q&A Chat */}
+          <div style={{ marginTop: '24px', padding: '18px 20px', borderRadius: '14px', background: 'rgba(120, 105, 245, 0.06)', border: '1.5px solid rgba(120, 105, 245, 0.25)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+              <Bot size={18} color="#7869f5" />
+              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#7869f5' }}>
+                AI Repetitorga Insho / Xatingiz Bo‘yicha Savol Berish
+              </h4>
+            </div>
+
+            {/* Quick suggested chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+              {[
+                "Qanday qilib Band 8 ga yetkazish mumkin?",
+                "Mening eng katta xatoim nima?",
+                "Kirish qismini qayta yozib ber",
+                "Bog‘lovchilarni qanday boyitish mumkin?"
+              ].map((chip, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleAskTutor(chip)}
+                  disabled={isAskingTutor}
+                  style={{
+                    padding: '5px 11px',
+                    borderRadius: '100px',
+                    background: '#ffffff',
+                    border: '1px solid rgba(120, 105, 245, 0.25)',
+                    fontSize: '11.5px',
+                    fontWeight: 650,
+                    color: '#475569',
+                    cursor: 'pointer'
+                  }}
+                >
+                  💡 {chip}
+                </button>
+              ))}
+            </div>
+
+            {/* Messages Log */}
+            {tutorMessages.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px', maxHeight: '280px', overflowY: 'auto' }}>
+                {tutorMessages.map((m, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '12px',
+                      background: m.sender === 'user' ? 'rgba(120, 105, 245, 0.15)' : '#ffffff',
+                      border: m.sender === 'user' ? '1px solid rgba(120, 105, 245, 0.3)' : '1px solid rgba(0,0,0,0.08)',
+                      alignSelf: m.sender === 'user' ? 'flex-end' : 'flex-start',
+                      maxWidth: '85%',
+                      fontSize: '13px',
+                      lineHeight: '1.5'
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, fontSize: '11px', color: m.sender === 'user' ? '#7869f5' : '#10b981', marginBottom: '3px' }}>
+                      {m.sender === 'user' ? 'Sizning savolingiz:' : 'TILŞUNOS AI Repetitor:'}
+                    </div>
+                    <div style={{ whiteSpace: 'pre-line', color: '#1e293b' }}>
+                      {m.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Question Input */}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                value={tutorInput}
+                onChange={(e) => setTutorInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleAskTutor(); }}
+                placeholder="Insho/xat yuzasidan istalgan savol so‘rang (masalan: Xatboshilarni qanday boyitish mumkin?)..."
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(0,0,0,0.15)',
+                  fontSize: '13px',
+                  background: '#ffffff',
+                  color: '#0f172a',
+                  outline: 'none'
+                }}
+              />
+              <button
+                onClick={() => handleAskTutor()}
+                disabled={!tutorInput.trim() || isAskingTutor}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  background: '#7869f5',
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: '13px',
+                  border: 'none',
+                  cursor: tutorInput.trim() && !isAskingTutor ? 'pointer' : 'not-allowed',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                {isAskingTutor ? <RefreshCw className="animate-spin" size={14} /> : <Send size={14} />}
+                <span>So‘rash</span>
+              </button>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '20px' }}>
+            <button
+              onClick={onComplete}
+              style={{
+                padding: '10px 24px',
+                borderRadius: '10px',
+                background: '#10b981',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: 800,
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              Yoziş könikmasini rejaga qöşiş →
+            </button>
+          </div>
         </div>
       )}
     </div>

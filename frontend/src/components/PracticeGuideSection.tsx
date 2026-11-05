@@ -12,6 +12,9 @@ import {
 import {
   PracticeGuideConfig, LanguagePracticeGuide, DEFAULT_PRACTICE_GUIDE
 } from '../data/practiceGuideData';
+import {
+  evaluateSpeakingWithGemini, evaluateShadowingWithGemini
+} from '../services/geminiAiService';
 import confetti from 'canvas-confetti';
 import { motion } from 'framer-motion';
 
@@ -79,6 +82,13 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   const [isShadowingListening, setIsShadowingListening] = useState(false);
   const [shadowingRecognizedText, setShadowingRecognizedText] = useState('');
   const [shadowingScore, setShadowingScore] = useState<number | null>(null);
+  const [shadowingFeedback, setShadowingFeedback] = useState<{
+    score: number;
+    feedback: string;
+    advice: string;
+    isSilence?: boolean;
+    omittedWords?: string[];
+  } | null>(null);
 
   // Copy example phrase state
   const [copiedPhrase, setCopiedPhrase] = useState(false);
@@ -438,14 +448,46 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       expectedWord: questionText,
       onResult: (res) => {
         setActiveListeningQuestionId(null);
-        const calcScore = Math.floor(Math.random() * 16) + 82; // 82 - 97 ball
-        setSpeakingScores((prev) => ({
-          ...prev,
-          [questionId]: {
-            score: calcScore,
-            text: res.transcript || 'Javob muvaffaqiyatli qabul qilindi'
-          }
-        }));
+        const clean = (res.transcript || '').trim();
+        const words = clean.split(/\s+/).filter(w => w.length > 1);
+
+        // Silence guard: Do NOT assign scores if user did not speak!
+        if (!clean || words.length < 2) {
+          setSpeakingScores((prev) => ({
+            ...prev,
+            [questionId]: {
+              score: 0,
+              text: '⚠️ Ovoz aniqlanmadi (Nutq yöq)'
+            }
+          }));
+          return;
+        }
+
+        // Live AI or Dynamic Evaluation
+        evaluateSpeakingWithGemini({
+          spokenText: clean,
+          question: questionText,
+          part: 'part1',
+          targetLanguage: selectedLang,
+          lang: 'uz'
+        }).then(aiRes => {
+          setSpeakingScores((prev) => ({
+            ...prev,
+            [questionId]: {
+              score: aiRes.score,
+              text: clean
+            }
+          }));
+        }).catch(() => {
+          const score = Math.max(60, Math.min(94, Math.round(55 + words.length * 5)));
+          setSpeakingScores((prev) => ({
+            ...prev,
+            [questionId]: {
+              score,
+              text: clean
+            }
+          }));
+        });
       },
       onError: () => setActiveListeningQuestionId(null),
       onEnd: () => setActiveListeningQuestionId(null)
@@ -465,6 +507,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     setIsShadowingListening(true);
     setShadowingRecognizedText('');
     setShadowingScore(null);
+    setShadowingFeedback(null);
 
     startListening({
       lang: selectedLang as SupportedLang,
@@ -474,10 +517,48 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       },
       onResult: (res) => {
         setIsShadowingListening(false);
-        setShadowingRecognizedText(res.transcript || '');
-        const score = Math.max(75, Math.min(100, Math.round(res.confidence * 100)));
-        setShadowingScore(score);
-        if (score >= 80) triggerConfetti();
+        const clean = (res.transcript || '').trim();
+        setShadowingRecognizedText(clean);
+
+        // Silence guard for Shadowing
+        if (!clean || clean.split(/\s+/).filter(Boolean).length === 0) {
+          setShadowingScore(0);
+          setShadowingFeedback({
+            score: 0,
+            feedback: '⚠️ Ovoz aniqlanmadi. Siz heç narsa gapirmadingiz yoki audio qabul qilinmadi.',
+            advice: 'Iltimos, namunaviy audio gapni diqqat bilan tinglab, uni mikrofonga ovoz chiqarib takrorlang.',
+            isSilence: true,
+            omittedWords: currentLangData.shadowing.shadowingText.split(/\s+/).filter(Boolean)
+          });
+          return;
+        }
+
+        // Real AI Shadowing Evaluation
+        evaluateShadowingWithGemini({
+          referenceText: currentLangData.shadowing.shadowingText,
+          spokenText: clean,
+          targetLanguage: selectedLang,
+          lang: 'uz'
+        }).then(evalRes => {
+          setShadowingScore(evalRes.score);
+          setShadowingFeedback({
+            score: evalRes.score,
+            feedback: evalRes.feedback,
+            advice: evalRes.pronunciationAdvice,
+            isSilence: evalRes.isSilence,
+            omittedWords: evalRes.omittedWords
+          });
+          if (evalRes.score >= 80) triggerConfetti();
+        }).catch(() => {
+          const score = Math.max(50, Math.min(100, Math.round(res.confidence * 100)));
+          setShadowingScore(score);
+          setShadowingFeedback({
+            score,
+            feedback: score >= 80 ? 'Ajoyib talaffuz!' : 'Yaxshi urinish.',
+            advice: 'Namunaga taqlid qilib, nutq ritmi va intonatsiyasini barqaror saqlang.'
+          });
+          if (score >= 80) triggerConfetti();
+        });
       },
       onError: () => setIsShadowingListening(false),
       onEnd: () => setIsShadowingListening(false)
@@ -3447,18 +3528,29 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   {/* Shadowing Score Feedback */}
                   {shadowingScore !== null && (
                     <div className="practice-example-box" style={{
-                      background: 'rgba(6, 25, 20, 0.88) !important',
-                      border: '1.5px solid rgba(16, 185, 129, 0.6) !important',
-                      boxShadow: '0 0 16px rgba(16, 185, 129, 0.25) !important'
+                      background: shadowingScore === 0 ? 'rgba(40, 10, 10, 0.92) !important' : 'rgba(6, 25, 20, 0.88) !important',
+                      border: shadowingScore === 0 ? '1.5px solid rgba(239, 68, 68, 0.6) !important' : '1.5px solid rgba(16, 185, 129, 0.6) !important',
+                      boxShadow: shadowingScore === 0 ? '0 0 16px rgba(239, 68, 68, 0.25) !important' : '0 0 16px rgba(16, 185, 129, 0.25) !important'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                        <span style={{ color: '#34d399', fontWeight: 800, fontSize: '14px' }}>
-                          ✓ Aytilgan nutq bilan soliştirildi
+                        <span style={{ color: shadowingScore === 0 ? '#ef4444' : '#34d399', fontWeight: 800, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {shadowingScore === 0 ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
+                          {shadowingScore === 0 ? 'Ovoz aniqlanmadi (Nutq yöq)' : '✓ Aytilgan nutq bilan soliştirildi'}
                         </span>
-                        <strong style={{ fontSize: '15px', color: '#10b981', filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))' }}>
-                          ⭐ Moslik darajasi: {shadowingScore}%
+                        <strong style={{ fontSize: '15px', color: shadowingScore === 0 ? '#ef4444' : '#10b981', filter: shadowingScore === 0 ? 'none' : 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))' }}>
+                          {shadowingScore === 0 ? '0%' : `⭐ Moslik darajasi: ${shadowingScore}%`}
                         </strong>
                       </div>
+                      {shadowingFeedback?.advice && (
+                        <div style={{ fontSize: '12.5px', color: '#cbd5e1', lineHeight: '1.5', marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px' }}>
+                          💡 <strong>AI repetitor tavsiyasi:</strong> {shadowingFeedback.advice}
+                        </div>
+                      )}
+                      {shadowingFeedback?.omittedWords && shadowingFeedback.omittedWords.length > 0 && shadowingScore > 0 && (
+                        <div style={{ fontSize: '12px', color: '#f59e0b', marginTop: '4px' }}>
+                          ⚠️ Noaniq yoki tuşirib qoldirilgan sözlar: {shadowingFeedback.omittedWords.slice(0, 4).join(', ')}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
