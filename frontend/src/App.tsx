@@ -1746,6 +1746,9 @@ function Stat({ icon: Icon, label, value, note, color, trend }: { icon: LucideIc
 
 function App() {
   const [page, setPage] = useState<'welcome' | 'about' | 'login' | 'register' | 'verify' | 'onboarding' | 'dashboard' | 'trial'>(() => {
+    if (typeof window !== 'undefined' && (window.location.hash === '#trial' || window.location.hash.includes('trial'))) {
+      return 'trial';
+    }
     const token = authStorage.getToken();
     if (!token) return 'welcome';
     const currentRole = localStorage.getItem('tilshunos_role') || 'user';
@@ -1791,6 +1794,16 @@ function App() {
       return false;
     }
   });
+
+  useEffect(() => {
+    const handleHash = () => {
+      if (typeof window !== 'undefined' && (window.location.hash === '#trial' || window.location.hash.includes('trial'))) {
+        setPage('trial');
+      }
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
 
   useEffect(() => {
     try {

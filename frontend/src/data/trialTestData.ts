@@ -128,6 +128,17 @@ export interface GrammarTopicItem {
   questions: GrammarQuestion[];
 }
 
+export type SkillType = 'speaking' | 'reading' | 'listening' | 'writing' | 'grammar' | 'word';
+
+export const DEFAULT_SKILL_COVERS: Record<SkillType, string> = {
+  speaking: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80',
+  reading: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80',
+  listening: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+  writing: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80',
+  grammar: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80',
+  word: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80'
+};
+
 export interface TrialTestsConfig {
   wordPool: WordQuizItem[];
   speaking: {
@@ -143,6 +154,7 @@ export interface TrialTestsConfig {
   };
   grammar: GrammarTestItem;
   grammarTopics?: GrammarTopicItem[];
+  skillCovers?: Partial<Record<SkillType, string>>;
   aiConfig?: {
     apiKey: string;
     model: string;
@@ -1843,6 +1855,7 @@ export const INITIAL_TRIAL_CONFIG: TrialTestsConfig = {
   },
   grammar: DEFAULT_GRAMMAR_TEST,
   grammarTopics: DEFAULT_GRAMMAR_TOPICS,
+  skillCovers: DEFAULT_SKILL_COVERS,
   aiConfig: {
     apiKey: '',
     model: 'gemini-2.0-flash',

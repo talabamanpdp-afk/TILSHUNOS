@@ -3,13 +3,13 @@ import {
   Mic, MicOff, Volume2, Play, Pause, CheckCircle2, XCircle, AlertCircle,
   Sparkles, Award, ArrowRight, ArrowLeft, RefreshCw, Eye, EyeOff, BookOpen,
   Headphones, PenLine, Check, HelpCircle, Sun, Moon, Clock, Trophy, Shuffle,
-  Bot, Zap, RotateCcw, Send, Key, ExternalLink
+  Bot, Zap, RotateCcw, Send, Key, ExternalLink, Globe, ChevronDown
 } from 'lucide-react';
 import {
   TrialTestsConfig, INITIAL_TRIAL_CONFIG, WordQuizItem,
   SpeakingQuestion, SpeakingDescribeImage, ReadingTestItem,
   ListeningTestItem, WritingTestItem, WritingEssayItem, WritingLetterItem,
-  GrammarTestItem, GrammarTopicItem,
+  GrammarTestItem, GrammarTopicItem, SkillType, DEFAULT_SKILL_COVERS,
   DEFAULT_WRITING_ESSAYS, DEFAULT_WRITING_LETTERS, DEFAULT_GRAMMAR_TOPICS
 } from '../../data/trialTestData';
 import {
@@ -35,14 +35,12 @@ interface TrialTestPageProps {
   onUpdateCms?: (cms: any) => void;
 }
 
-export type SkillType = 'speaking' | 'reading' | 'listening' | 'writing' | 'grammar' | 'word';
-
 export const TRIAL_LANGUAGES = [
   { code: 'en', flag: '🇬🇧', name: 'Ingliz tili', sub: 'English' },
   { code: 'de', flag: '🇩🇪', name: 'Nemis tili', sub: 'Deutsch' },
   { code: 'ru', flag: '🇷🇺', name: 'Rus tili', sub: 'Русский язык' },
   { code: 'tr', flag: '🇹🇷', name: 'Turk tili', sub: 'Türkçe' },
-  { code: 'uz', flag: '🇺🇿', name: 'O‘zbek tili', sub: 'O‘zbekcha' },
+  { code: 'uz', flag: '🇺🇿', name: 'Özbek tili', sub: 'Özbekça' },
   { code: 'es', flag: '🇪🇸', name: 'Ispan tili', sub: 'Español' }
 ];
 
@@ -54,60 +52,67 @@ export const SKILL_CARDS: {
   duration: string;
   icon: any;
   color: string;
+  defaultBg: string;
 }[] = [
   {
     key: 'speaking',
     title: 'Speaking (Nutq)',
     badge: '5 savol + 1 rasm',
-    desc: '30s qisqa savollar va 60s rasm tasvirlash. 1 martalik mic va AI tashxisi.',
+    desc: '30s qisqa savollar va 60s rasm tasvirlash. AI teşxisi.',
     duration: '4-5 daqiqa',
     icon: Mic,
-    color: '#8b5cf6'
+    color: '#8b5cf6',
+    defaultBg: DEFAULT_SKILL_COVERS.speaking
   },
   {
     key: 'reading',
-    title: 'Reading (O‘qish)',
+    title: 'Reading (Öqiş)',
     badge: 'Matn & Gap-fill',
-    desc: 'Ilmiy-ommabop matn tahlili va bo‘sh joylarni to‘g‘ri sözlar bilan to‘ldirish.',
+    desc: 'Matn tahlili va böş joylarni töldiriş.',
     duration: '6-8 daqiqa',
     icon: BookOpen,
-    color: '#3b82f6'
+    color: '#3b82f6',
+    defaultBg: DEFAULT_SKILL_COVERS.reading
   },
   {
     key: 'listening',
-    title: 'Listening (Tinglash)',
-    badge: 'Max 2 marta ijro',
-    desc: 'Audioni orqaga/oldinga o‘tkazib bo‘lmaydi. Aniq 2 marta tinglab bo‘sh joylarni topish.',
+    title: 'Listening (Tinglaş)',
+    badge: 'Maks 2 marta ijro',
+    desc: '2 marta tinglab böş joylarni aniq topiş topşiriği.',
     duration: '3-4 daqiqa',
     icon: Headphones,
-    color: '#ec4899'
+    color: '#ec4899',
+    defaultBg: DEFAULT_SKILL_COVERS.listening
   },
   {
     key: 'writing',
-    title: 'Writing (Yozish)',
+    title: 'Writing (Yoziş)',
     badge: 'Kamida 150 söz',
-    desc: 'Berilgan mavzuda insho yozish va bir zumda AI repetitordan chuqur tahlil olish.',
+    desc: 'Berilgan mavzuda inşo va AI repetitordan çuqur tahlil.',
     duration: '10-15 daqiqa',
     icon: PenLine,
-    color: '#10b981'
+    color: '#10b981',
+    defaultBg: DEFAULT_SKILL_COVERS.writing
   },
   {
     key: 'grammar',
     title: 'Grammar (Grammatika)',
     badge: 'Xatolikni aniqlash',
-    desc: 'Matndagi grammatik xatoliklarni topish va qoidalarni örganiş testi.',
+    desc: 'Grammatik qoidalar, xatoliklarni topiş va tahlil testi.',
     duration: '4-6 daqiqa',
     icon: Sparkles,
-    color: '#f59e0b'
+    color: '#f59e0b',
+    defaultBg: DEFAULT_SKILL_COVERS.grammar
   },
   {
     key: 'word',
-    title: 'Word Quiz (Rasmli sözlar)',
-    badge: '100 tadan 10 ta random',
-    desc: '100 ta rasm ichidan tasodifiy 10 ta quiz savoli. Oxirida xatolar tahlili.',
+    title: 'Word Quiz (Sözlar)',
+    badge: '10 ta tasodifiy',
+    desc: '100 ta rasm içidan 10 ta quiz savoli va xatolar tahlili.',
     duration: '2-3 daqiqa',
     icon: Trophy,
-    color: '#06b6d4'
+    color: '#06b6d4',
+    defaultBg: DEFAULT_SKILL_COVERS.word
   }
 ];
 
@@ -122,6 +127,39 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms, 
   // Gemini AI Config Modal State
   const [showAiModal, setShowAiModal] = useState(false);
   const [currentAiConfig, setCurrentAiConfig] = useState<GeminiAiConfig>(() => getStoredAiConfig());
+
+  // Smart Sticky Navbar (Auto-hide on scroll down, auto-reveal on scroll up)
+  const [navVisible, setNavVisible] = useState(true);
+  const [navScrolled, setNavScrolled] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setNavScrolled(currentScrollY > 15);
+
+      // Near top of page: always visible
+      if (currentScrollY < 40) {
+        setNavVisible(true);
+        lastScrollY.current = currentScrollY;
+        return;
+      }
+
+      // Scrolling UP: reveal navbar smoothly
+      if (currentScrollY < lastScrollY.current - 4) {
+        setNavVisible(true);
+      }
+      // Scrolling DOWN: hide navbar smoothly
+      else if (currentScrollY > lastScrollY.current + 6 && currentScrollY > 60) {
+        setNavVisible(false);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Sync when cms changes
   useEffect(() => {
@@ -163,67 +201,103 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms, 
           color: #f1f5f9;
         }
 
-        /* Header */
+        /* Fixed & Smart Sticky Header */
         .trial-header {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 64px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 16px 28px;
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(16px);
-          border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-          position: sticky;
-          top: 0;
-          z-index: 50;
+          padding: 0 24px;
+          background: rgba(255, 255, 255, 0.92);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          z-index: 100;
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s, box-shadow 0.2s;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+          box-sizing: border-box;
         }
         .trial-page-shell.dark .trial-header {
-          background: rgba(17, 24, 39, 0.85);
+          background: rgba(15, 17, 26, 0.94);
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+        }
+        .trial-header.scrolled {
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        .trial-page-shell.dark .trial-header.scrolled {
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .trial-header.nav-hidden {
+          transform: translateY(-100%);
+        }
+        .trial-header.nav-visible {
+          transform: translateY(0);
         }
 
+        .trial-page-shell {
+          padding-top: 64px;
+        }
+
+        /* Brand */
         .trial-brand {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
           background: none;
           border: none;
           cursor: pointer;
           color: inherit;
           text-align: left;
+          padding: 0;
         }
         .trial-brand img {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
+          width: 34px;
+          height: 34px;
+          border-radius: 9px;
           object-fit: cover;
         }
         .trial-brand-text {
-          font-size: 17px;
-          font-weight: 800;
+          font-size: 16px;
+          font-weight: 850;
           letter-spacing: -0.3px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
         }
         .trial-brand-badge {
           display: inline-block;
-          font-size: 10.5px;
-          font-weight: 700;
-          padding: 2px 7px;
-          border-radius: 6px;
-          background: #7869f518;
+          font-size: 9.5px;
+          font-weight: 800;
+          padding: 2px 6px;
+          border-radius: 5px;
+          background: rgba(120, 105, 245, 0.12);
           color: #7869f5;
-          margin-left: 6px;
+          letter-spacing: 0.5px;
+        }
+        .trial-brand-sub {
+          font-size: 11px;
+          color: #64748b;
+        }
+        .trial-page-shell.dark .trial-brand-sub {
+          color: #94a3b8;
         }
 
         .trial-header-actions {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
         }
 
         .trial-btn-icon {
-          width: 38px;
-          height: 38px;
+          width: 36px;
+          height: 36px;
           border-radius: 10px;
-          border: 1px solid rgba(0,0,0,0.1);
+          border: 1px solid rgba(0, 0, 0, 0.1);
           background: transparent;
           color: inherit;
           display: grid;
@@ -232,7 +306,7 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms, 
           transition: all 0.2s;
         }
         .trial-page-shell.dark .trial-btn-icon {
-          border-color: rgba(255,255,255,0.12);
+          border-color: rgba(255, 255, 255, 0.12);
         }
         .trial-btn-icon:hover {
           background: rgba(120, 105, 245, 0.1);
@@ -243,15 +317,16 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms, 
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 8px 16px;
+          padding: 7px 14px;
           border-radius: 10px;
-          font-size: 13.5px;
-          font-weight: 700;
+          font-size: 13px;
+          font-weight: 750;
           background: transparent;
           border: 1px solid rgba(0, 0, 0, 0.12);
           color: inherit;
           cursor: pointer;
           transition: all 0.2s;
+          white-space: nowrap;
         }
         .trial-page-shell.dark .trial-back-btn {
           border-color: rgba(255, 255, 255, 0.15);
@@ -267,162 +342,339 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms, 
           max-width: 1040px;
           width: 100%;
           margin: 0 auto;
-          padding: 32px 20px 60px;
+          padding: 24px 20px 60px;
           flex: 1;
+          box-sizing: border-box;
         }
 
-        /* Selection Screen */
-        .trial-hero {
-          text-align: center;
-          margin-bottom: 36px;
-        }
-        .trial-hero-kicker {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 0.8px;
-          text-transform: uppercase;
-          color: #7869f5;
-          background: rgba(120, 105, 245, 0.1);
-          padding: 5px 12px;
-          border-radius: 100px;
-          margin-bottom: 12px;
-        }
-        .trial-hero h1 {
-          font-size: clamp(26px, 4vw, 36px);
-          font-weight: 900;
-          letter-spacing: -0.6px;
-          margin: 0 0 10px;
-        }
-        .trial-hero p {
-          font-size: 15px;
-          color: #64748b;
-          max-width: 620px;
-          margin: 0 auto;
-          line-height: 1.6;
-        }
-        .trial-page-shell.dark .trial-hero p {
-          color: #94a3b8;
-        }
-
-        /* Language Picker */
-        .trial-lang-picker {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-wrap: wrap;
-          gap: 10px;
-          margin-bottom: 36px;
-        }
-        .trial-lang-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 18px;
-          border-radius: 14px;
-          background: #ffffff;
-          border: 1.5px solid rgba(0, 0, 0, 0.08);
-          color: inherit;
-          font-size: 14px;
-          font-weight: 750;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .trial-page-shell.dark .trial-lang-btn {
-          background: #181c2e;
-          border-color: rgba(255, 255, 255, 0.08);
-        }
-        .trial-lang-btn:hover {
-          border-color: #7869f5;
-          transform: translateY(-2px);
-        }
-        .trial-lang-btn.active {
-          background: linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%);
-          color: #ffffff;
-          border-color: transparent;
-          box-shadow: 0 6px 18px rgba(120, 105, 245, 0.35);
-        }
-
-        /* Skills Grid */
-        .trial-skills-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-          gap: 18px;
-        }
-        .trial-skill-card {
-          background: #ffffff;
-          border: 1.5px solid rgba(0, 0, 0, 0.07);
-          border-radius: 20px;
-          padding: 24px;
-          cursor: pointer;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          position: relative;
-          overflow: hidden;
-          text-align: left;
-        }
-        .trial-page-shell.dark .trial-skill-card {
-          background: #181c2e;
-          border-color: rgba(255, 255, 255, 0.08);
-        }
-        .trial-skill-card:hover {
-          transform: translateY(-4px);
-          border-color: #7869f5;
-          box-shadow: 0 14px 32px rgba(120, 105, 245, 0.16);
-        }
-        .trial-skill-icon-wrap {
-          width: 48px;
-          height: 48px;
-          border-radius: 14px;
-          display: grid;
-          place-items: center;
-          color: #ffffff;
-        }
-        .trial-skill-badge {
-          display: inline-block;
-          font-size: 11px;
-          font-weight: 800;
-          padding: 3px 8px;
-          border-radius: 6px;
-          background: rgba(0,0,0,0.05);
-          color: #64748b;
-          text-transform: uppercase;
-        }
-        .trial-page-shell.dark .trial-skill-badge {
-          background: rgba(255,255,255,0.06);
-          color: #94a3b8;
-        }
-        .trial-skill-card h3 {
-          font-size: 18px;
-          font-weight: 800;
-          margin: 0;
-        }
-        .trial-skill-card p {
-          font-size: 13.5px;
-          color: #64748b;
-          line-height: 1.55;
-          margin: 0;
-          flex: 1;
-        }
-        .trial-page-shell.dark .trial-skill-card p {
-          color: #94a3b8;
-        }
-        .trial-skill-footer {
+        /* Compact Top Bar */
+        .trial-compact-top-bar {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding-top: 10px;
-          border-top: 1px solid rgba(0,0,0,0.05);
-          font-size: 12.5px;
-          font-weight: 700;
-          color: #7869f5;
+          flex-wrap: wrap;
+          gap: 14px;
+          margin-bottom: 20px;
+          padding-bottom: 14px;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.06);
         }
-        .trial-page-shell.dark .trial-skill-footer {
-          border-top-color: rgba(255,255,255,0.06);
+        .trial-page-shell.dark .trial-compact-top-bar {
+          border-bottom-color: rgba(255, 255, 255, 0.07);
+        }
+        .trial-top-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+          color: #7869f5;
+          background: rgba(120, 105, 245, 0.1);
+          padding: 3px 9px;
+          border-radius: 9999px;
+          margin-bottom: 4px;
+        }
+        .trial-top-heading {
+          font-size: clamp(20px, 3.5vw, 26px);
+          font-weight: 900;
+          letter-spacing: -0.5px;
+          margin: 0;
+        }
+
+        /* Language Dropdown Box */
+        .trial-lang-dropdown-box {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .trial-lang-dropdown-label {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 13px;
+          font-weight: 750;
+          color: #64748b;
+          white-space: nowrap;
+        }
+        .trial-page-shell.dark .trial-lang-dropdown-label {
+          color: #94a3b8;
+        }
+        .trial-select-field-wrap {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+        }
+        .trial-lang-select-input {
+          appearance: none;
+          -webkit-appearance: none;
+          background: #ffffff;
+          border: 1.5px solid rgba(0, 0, 0, 0.12);
+          border-radius: 12px;
+          padding: 8px 34px 8px 14px;
+          font-size: 13.5px;
+          font-weight: 750;
+          color: inherit;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .trial-page-shell.dark .trial-lang-select-input {
+          background: #181c2e;
+          border-color: rgba(255, 255, 255, 0.12);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        .trial-lang-select-input:hover,
+        .trial-lang-select-input:focus {
+          border-color: #7869f5;
+          outline: none;
+          box-shadow: 0 0 0 3px rgba(120, 105, 245, 0.2);
+        }
+        .trial-select-arrow-icon {
+          position: absolute;
+          right: 12px;
+          pointer-events: none;
+          color: #64748b;
+        }
+
+        /* Skills Grid - 2 columns on mobile, 3 on desktop */
+        .trial-skills-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 18px;
+        }
+        @media (max-width: 900px) {
+          .trial-skills-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+          }
+        }
+        @media (max-width: 640px) {
+          .trial-skills-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+          }
+          .trial-header {
+            padding: 0 14px !important;
+            height: 56px !important;
+          }
+          .trial-page-shell {
+            padding-top: 56px !important;
+          }
+          .trial-container {
+            padding: 16px 12px 50px !important;
+          }
+          .trial-brand-sub {
+            display: none !important;
+          }
+          .trial-compact-top-bar {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 10px !important;
+            margin-bottom: 12px !important;
+            padding-bottom: 10px !important;
+          }
+          .trial-lang-dropdown-box {
+            width: 100% !important;
+            justify-content: space-between !important;
+          }
+          .trial-select-field-wrap {
+            flex: 1 !important;
+          }
+          .trial-lang-select-input {
+            width: 100% !important;
+          }
+        }
+
+        /* Card with Background Image & Dark Overlay */
+        .trial-skill-card {
+          position: relative;
+          overflow: hidden;
+          border-radius: 18px;
+          min-height: 220px;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          border: 1.5px solid rgba(255, 255, 255, 0.12);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+          cursor: pointer;
+          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.2s;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          text-align: left;
+          padding: 16px 14px;
+          box-sizing: border-box;
+        }
+        .trial-skill-card:hover {
+          transform: translateY(-4px) scale(1.015);
+          border-color: rgba(120, 105, 245, 0.85);
+          box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 0 0 25px rgba(120, 105, 245, 0.25);
+        }
+        .trial-skill-card-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            180deg,
+            rgba(9, 14, 28, 0.55) 0%,
+            rgba(7, 10, 22, 0.88) 55%,
+            rgba(5, 7, 16, 0.98) 100%
+          );
+          transition: background 0.25s ease;
+          z-index: 1;
+        }
+        .trial-skill-card:hover .trial-skill-card-overlay {
+          background: linear-gradient(
+            180deg,
+            rgba(9, 14, 28, 0.42) 0%,
+            rgba(7, 10, 22, 0.82) 50%,
+            rgba(5, 7, 16, 0.96) 100%
+          );
+        }
+        .trial-skill-top-accent {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          z-index: 2;
+          opacity: 0.9;
+        }
+        .trial-skill-card-content {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          justify-content: space-between;
+          gap: 10px;
+        }
+        .trial-skill-top-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
+        }
+        .trial-skill-icon-box {
+          width: 36px;
+          height: 36px;
+          border-radius: 11px;
+          display: grid;
+          place-items: center;
+          color: #ffffff;
+          flex-shrink: 0;
+        }
+        .trial-skill-time-pill {
+          font-size: 10.5px;
+          font-weight: 750;
+          color: #e2e8f0;
+          background: rgba(0, 0, 0, 0.55);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          padding: 2.5px 7px;
+          border-radius: 9999px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          white-space: nowrap;
+        }
+        .trial-skill-body {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          flex: 1;
+        }
+        .trial-skill-tag-pill {
+          font-size: 9.5px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          padding: 2px 6px;
+          border-radius: 5px;
+          background: rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          color: #cbd5e1;
+          display: inline-block;
+          align-self: flex-start;
+          white-space: nowrap;
+          margin-bottom: 2px;
+        }
+        .trial-skill-title {
+          font-size: 15px;
+          font-weight: 850;
+          color: #ffffff;
+          margin: 0;
+          line-height: 1.25;
+          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+        }
+        .trial-skill-desc {
+          font-size: 11px;
+          color: #cbd5e1;
+          line-height: 1.4;
+          margin: 0;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .trial-skill-footer-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-top: 6px;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          margin-top: auto;
+        }
+        .trial-skill-start-label {
+          font-size: 12px;
+          font-weight: 850;
+          letter-spacing: 0.3px;
+        }
+        .trial-skill-arrow-btn {
+          width: 24px;
+          height: 24px;
+          border-radius: 9999px;
+          display: grid;
+          place-items: center;
+          transition: transform 0.2s ease;
+        }
+        .trial-skill-card:hover .trial-skill-arrow-btn {
+          transform: translateX(3px);
+        }
+
+        @media (max-width: 640px) {
+          .trial-skill-card {
+            min-height: 180px !important;
+            padding: 12px 10px !important;
+          }
+          .trial-skill-icon-box {
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 9px !important;
+          }
+          .trial-skill-title {
+            font-size: 13.5px !important;
+          }
+          .trial-skill-desc {
+            font-size: 10px !important;
+            line-height: 1.35 !important;
+          }
+          .trial-skill-time-pill {
+            font-size: 9px !important;
+            padding: 2px 5px !important;
+          }
+          .trial-skill-footer-row {
+            padding-top: 4px !important;
+          }
+          .trial-skill-start-label {
+            font-size: 11px !important;
+          }
+          .trial-skill-arrow-btn {
+            width: 22px !important;
+            height: 22px !important;
+          }
         }
 
         /* Active Test Shell */
@@ -454,9 +706,9 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms, 
         }
       `}</style>
 
-      {/* Header */}
-      <header className="trial-header">
-        <button className="trial-brand" onClick={onBack}>
+      {/* Header with smart scroll-reveal */}
+      <header className={`trial-header ${navVisible ? 'nav-visible' : 'nav-hidden'} ${navScrolled ? 'scrolled' : ''}`}>
+        <button className="trial-brand" onClick={onBack} title="Asosiy sahifaga qaytish">
           <img
             src="/brand_logo.png"
             alt="TILŞUNOS"
@@ -464,34 +716,20 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms, 
           />
           <div>
             <div className="trial-brand-text">
-              TILŞUNOS<span className="trial-brand-badge">SINOV DARAJASI</span>
+              TILŞUNOS<span className="trial-brand-badge">SINOV</span>
             </div>
-            <div style={{ fontSize: '11px', color: '#64748b' }}>Boşlanğiç diagnostika testi</div>
+            <div className="trial-brand-sub">Boşlanğiç diagnostika testi</div>
           </div>
         </button>
 
         <div className="trial-header-actions">
-          <button
-            className="trial-back-btn"
-            onClick={() => setShowAiModal(true)}
-            title="Google Gemini AI Sozlamalari"
-            style={{
-              borderColor: currentAiConfig.apiKey ? '#10b981' : '#f59e0b',
-              color: currentAiConfig.apiKey ? '#10b981' : '#f59e0b',
-              background: currentAiConfig.apiKey ? 'rgba(16, 185, 129, 0.08)' : 'rgba(245, 158, 11, 0.08)'
-            }}
-          >
-            <Bot size={14} />
-            <span>{currentAiConfig.apiKey ? 'Gemini 2.0 AI Faol' : '🔑 Gemini AI Kaliti'}</span>
-          </button>
-
           {selectedSkill && (
             <button
               className="trial-back-btn"
               onClick={() => setSelectedSkill(null)}
-              title="Boşqa skillni tanlaş"
+              title="Boşqa sinovni tanlaş"
             >
-              <RefreshCw size={14} /> Boşqa sinovni tanlaş
+              <RefreshCw size={14} /> <span>Boşqa sinov</span>
             </button>
           )}
 
@@ -505,8 +743,8 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms, 
             </button>
           )}
 
-          <button className="trial-back-btn" onClick={onBack}>
-            <ArrowLeft size={15} /> Chiqish
+          <button className="trial-back-btn" onClick={onBack} title="Çiqiş">
+            <ArrowLeft size={15} /> <span>Çiqiş</span>
           </button>
         </div>
       </header>
@@ -514,68 +752,106 @@ export function TrialTestPage({ onBack, onRegister, dark = false, setDark, cms, 
       {/* Main Content Area */}
       <main className="trial-container">
         {!selectedSkill ? (
-          /* STEP 1: PRE-TEST SELECTOR */
+          /* STEP 1: PRE-TEST SELECTOR (Sleek, Compact, No Bloated Hero) */
           <div>
-            <div className="trial-hero">
-              <span className="trial-hero-kicker">
-                <Sparkles size={14} /> BOSHLANG‘ICH DIAGNOSTIKA
-              </span>
-              <h1>O‘zingizni qaysi yo‘nalishda sinamoqchisiz?</h1>
-              <p>
-                Avval tilni, so‘ngra 6 ta amaliy ko‘nikmadan birini tanlang.
-                AI repetitor sizning darajangizni aniqlab, kamchiliklaringizni ko‘rsatib beradi.
-              </p>
+            {/* Compact Top Bar */}
+            <div className="trial-compact-top-bar">
+              <div className="trial-top-info">
+                <div className="trial-top-badge">
+                  <Sparkles size={13} />
+                  <span>Sinov Diagnostikasi</span>
+                </div>
+                <h1 className="trial-top-heading">
+                  Sinov turini tanlang
+                </h1>
+              </div>
+
+              {/* Language Selector Dropdown */}
+              <div className="trial-lang-dropdown-box">
+                <label htmlFor="trial-lang-select" className="trial-lang-dropdown-label">
+                  <Globe size={14} />
+                  <span>Sinov tili:</span>
+                </label>
+                <div className="trial-select-field-wrap">
+                  <select
+                    id="trial-lang-select"
+                    aria-label="Sinov tilini tanlang"
+                    value={selectedLang}
+                    onChange={(e) => setSelectedLang(e.target.value)}
+                    className="trial-lang-select-input"
+                  >
+                    {TRIAL_LANGUAGES.map(lang => (
+                      <option key={lang.code} value={lang.code}>
+                        {lang.flag} {lang.name} ({lang.sub})
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={15} className="trial-select-arrow-icon" />
+                </div>
+              </div>
             </div>
 
-            {/* Language Selector */}
-            <div style={{ textAlign: 'center', marginBottom: '12px', fontSize: '13px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>
-              1. Tilni tanlang:
-            </div>
-            <div className="trial-lang-picker">
-              {TRIAL_LANGUAGES.map(lang => (
-                <button
-                  key={lang.code}
-                  className={`trial-lang-btn ${selectedLang === lang.code ? 'active' : ''}`}
-                  onClick={() => setSelectedLang(lang.code)}
-                >
-                  <span style={{ fontSize: '18px' }}>{lang.flag}</span>
-                  <span>{lang.name}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Skills Grid */}
-            <div style={{ textAlign: 'center', marginBottom: '16px', fontSize: '13px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>
-              2. Sinov turini tanlang:
-            </div>
+            {/* Skills Grid: 2 per row on mobile, 3 per row on desktop */}
             <div className="trial-skills-grid">
               {SKILL_CARDS.map(skill => {
                 const Icon = skill.icon;
+                const bgImage = config?.skillCovers?.[skill.key] || skill.defaultBg;
                 return (
                   <button
                     key={skill.key}
                     className="trial-skill-card"
                     onClick={() => setSelectedSkill(skill.key)}
+                    style={{
+                      backgroundImage: `url(${bgImage})`
+                    }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div className="trial-skill-icon-wrap" style={{ background: skill.color }}>
-                        <Icon size={24} />
+                    {/* Dark Glass Overlay */}
+                    <div className="trial-skill-card-overlay" />
+
+                    {/* Top Accent Line */}
+                    <div className="trial-skill-top-accent" style={{ background: skill.color }} />
+
+                    {/* Content */}
+                    <div className="trial-skill-card-content">
+                      <div className="trial-skill-top-row">
+                        <div
+                          className="trial-skill-icon-box"
+                          style={{
+                            background: `linear-gradient(135deg, ${skill.color}ee, ${skill.color}aa)`,
+                            boxShadow: `0 4px 14px ${skill.color}55`
+                          }}
+                        >
+                          <Icon size={18} />
+                        </div>
+                        <span className="trial-skill-time-pill">
+                          <Clock size={11} />
+                          {skill.duration}
+                        </span>
                       </div>
-                      <span className="trial-skill-badge">{skill.badge}</span>
-                    </div>
 
-                    <div>
-                      <h3>{skill.title}</h3>
-                      <p>{skill.desc}</p>
-                    </div>
+                      <div className="trial-skill-body">
+                        <span className="trial-skill-tag-pill">
+                          {skill.badge}
+                        </span>
+                        <h3 className="trial-skill-title">
+                          {skill.title}
+                        </h3>
+                        <p className="trial-skill-desc">
+                          {skill.desc}
+                        </p>
+                      </div>
 
-                    <div className="trial-skill-footer">
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <Clock size={13} /> {skill.duration}
-                      </span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        Boşlaş <ArrowRight size={14} />
-                      </span>
+                      <div className="trial-skill-footer-row">
+                        <span className="trial-skill-start-label" style={{ color: skill.color }}>
+                          Boşlaş
+                        </span>
+                        <div
+                          className="trial-skill-arrow-btn"
+                          style={{ background: `${skill.color}25`, color: skill.color }}
+                        >
+                          <ArrowRight size={14} />
+                        </div>
+                      </div>
                     </div>
                   </button>
                 );

@@ -11,7 +11,8 @@ import {
   SpeakingQuestion, SpeakingDescribeImage, ReadingTestItem, ReadingQuestion, ReadingGapFillBlank,
   ListeningTestItem, ListeningGapBlank, WritingTestItem, WritingEssayItem,
   WritingLetterItem, GrammarTestItem, GrammarTopicItem, GrammarQuestion,
-  DEFAULT_WRITING_ESSAYS, DEFAULT_WRITING_LETTERS, DEFAULT_GRAMMAR_TOPICS
+  DEFAULT_WRITING_ESSAYS, DEFAULT_WRITING_LETTERS, DEFAULT_GRAMMAR_TOPICS,
+  SkillType, DEFAULT_SKILL_COVERS
 } from '../../data/trialTestData';
 import {
   getStoredAiConfig, saveStoredAiConfig, testGeminiConnection, GeminiAiConfig
@@ -46,6 +47,7 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
       letterTopics: DEFAULT_WRITING_LETTERS
     },
     grammarTopics: cms?.trialTests?.grammarTopics || INITIAL_TRIAL_CONFIG.grammarTopics || DEFAULT_GRAMMAR_TOPICS,
+    skillCovers: cms?.trialTests?.skillCovers || INITIAL_TRIAL_CONFIG.skillCovers || DEFAULT_SKILL_COVERS,
     aiConfig: cms?.trialTests?.aiConfig || INITIAL_TRIAL_CONFIG.aiConfig || {
       apiKey: '',
       model: 'gemini-2.0-flash',
@@ -90,6 +92,63 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
   const [uploadingSpeakingImg, setUploadingSpeakingImg] = useState(false);
   const speakingFileInputRef = useRef<HTMLInputElement | null>(null);
   const [editingSpeakingImage, setEditingSpeakingImage] = useState<SpeakingDescribeImage | null>(null);
+
+  // Skill Card Cover Image Helper
+  const renderCoverImageSetting = (skillKey: SkillType, label: string) => (
+    <div style={{
+      padding: '12px 16px',
+      borderRadius: '12px',
+      background: 'rgba(120, 105, 245, 0.05)',
+      border: '1.5px solid rgba(120, 105, 245, 0.2)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: '12px',
+      flexWrap: 'wrap',
+      marginBottom: '14px'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <ImageIcon size={18} style={{ color: '#7869f5' }} />
+        <div>
+          <div style={{ fontSize: '13px', fontWeight: 800 }}>{label} kartochkasi orqa fon rasmi (Cover Image URL)</div>
+          <div style={{ fontSize: '11px', color: '#64748b' }}>Foydalanuvchi sinov tanlaganda kartochka fonida ko‘rinadigan rasm</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: '260px' }}>
+        <input
+          type="text"
+          placeholder="https://images.unsplash.com/..."
+          value={trialConfig.skillCovers?.[skillKey] ?? DEFAULT_SKILL_COVERS[skillKey]}
+          onChange={(e) => {
+            const val = e.target.value;
+            setTrialConfig(prev => ({
+              ...prev,
+              skillCovers: {
+                ...(prev.skillCovers || {}),
+                [skillKey]: val
+              }
+            }));
+          }}
+          style={{
+            flex: 1,
+            padding: '7px 12px',
+            borderRadius: '8px',
+            border: '1px solid var(--border)',
+            background: 'var(--input-bg, transparent)',
+            color: 'inherit',
+            fontSize: '12.5px'
+          }}
+        />
+        {(trialConfig.skillCovers?.[skillKey] || DEFAULT_SKILL_COVERS[skillKey]) && (
+          <img
+            src={trialConfig.skillCovers?.[skillKey] || DEFAULT_SKILL_COVERS[skillKey]}
+            alt="Preview"
+            style={{ width: '36px', height: '36px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(120, 105, 245, 0.3)' }}
+          />
+        )}
+      </div>
+    </div>
+  );
 
   // Save changes to Supabase & CMS
   const handleSaveAll = async (overrideConfig?: TrialTestsConfig) => {
@@ -215,6 +274,7 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
       {/* =================================================================== */}
       {activeTab === 'word' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {renderCoverImageSetting('word', 'Word Quiz (So‘zlar)')}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, maxWidth: '400px' }}>
               <Search size={16} style={{ color: 'var(--muted)' }} />
@@ -493,6 +553,7 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
       {/* =================================================================== */}
       {activeTab === 'speaking' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {renderCoverImageSetting('speaking', 'Speaking (Nutq)')}
           {/* Part 1: 5 Questions */}
           <div>
             <h3 style={{ margin: '0 0 12px', fontSize: '16px', fontWeight: 800 }}>
@@ -557,6 +618,7 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
       {/* =================================================================== */}
       {activeTab === 'reading' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {renderCoverImageSetting('reading', 'Reading (O‘qish)')}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
@@ -980,6 +1042,7 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
       {/* =================================================================== */}
       {activeTab === 'listening' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {renderCoverImageSetting('listening', 'Listening (Tinglash)')}
           <div>
             <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
               4. Listening (Tinglaş) Sozlamalari & Gap-Fill Variantlari
@@ -1187,6 +1250,7 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
       {/* =================================================================== */}
       {activeTab === 'writing' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {renderCoverImageSetting('writing', 'Writing (Yoziş)')}
           <div>
             <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
               5. Writing (Yoziş) Mavzular Jamğarmasi & Random Taqsimot
@@ -1611,6 +1675,7 @@ export function AdminTrialTestsTab({ cms, onSaveCms, notify, dark }: AdminTrialT
       {/* =================================================================== */}
       {activeTab === 'grammar' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {renderCoverImageSetting('grammar', 'Grammar (Grammatika)')}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
