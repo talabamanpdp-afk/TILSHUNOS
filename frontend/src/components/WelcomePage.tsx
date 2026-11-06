@@ -237,6 +237,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      try {
+        sessionStorage.setItem('tilshunos_welcome_scroll', String(currentScrollY));
+      } catch {}
       if (!ticking) {
         window.requestAnimationFrame(() => {
           if (currentScrollY <= 70) {
@@ -263,6 +266,41 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, [mobileMenuOpen]);
+
+  // Scroll Restoration: Restore exact scroll position when returning to Welcome page
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const savedYStr = sessionStorage.getItem('tilshunos_welcome_scroll');
+      const targetY = savedYStr ? parseInt(savedYStr, 10) : 0;
+      if (targetY > 0) {
+        const timer = setTimeout(() => {
+          window.scrollTo({ top: targetY, behavior: 'instant' as ScrollBehavior });
+          if ((window as any).__lenis) {
+            (window as any).__lenis.scrollTo(targetY, { immediate: true });
+          }
+        }, 70);
+        return () => clearTimeout(timer);
+      }
+    } catch {}
+  }, []);
+
+  // Close mobile drawer on tap / click anywhere outside the popup menu
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleOutsideInteraction = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.holo-mobile-select-menu') && !target.closest('.holo-mobile-hamburger')) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideInteraction);
+    document.addEventListener('touchstart', handleOutsideInteraction, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideInteraction);
+      document.removeEventListener('touchstart', handleOutsideInteraction);
+    };
   }, [mobileMenuOpen]);
 
   // Scroll reveal observer: smoothly animates every element as user scrolls down the page (Zero-jitter 60fps)
@@ -783,7 +821,11 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
           {/* Mobile Select-Style Dropdown Menu */}
           {mobileMenuOpen && (
             <>
-              <div className="holo-mobile-scrim" onClick={() => setMobileMenuOpen(false)} />
+              <div
+                className="holo-mobile-scrim"
+                onClick={() => setMobileMenuOpen(false)}
+                onTouchStart={() => setMobileMenuOpen(false)}
+              />
               <div className="holo-mobile-select-menu">
                 <div className="mobile-select-header">
                   <span className="mobile-select-eyebrow">
@@ -933,50 +975,6 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
                       <ChevronRight size={18} />
                     </button>
                   </MagneticButton>
-
-                  <MagneticButton>
-                    <button
-                      className="holo-trial-btn"
-                      onClick={() => onBegin('trial')}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '7px',
-                        padding: '12px 20px',
-                        borderRadius: '14px',
-                        background: 'rgba(120, 105, 245, 0.15)',
-                        border: '1.5px solid rgba(120, 105, 245, 0.4)',
-                        color: 'var(--hero-text, #ffffff)',
-                        fontWeight: 800,
-                        fontSize: '14px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        boxShadow: '0 4px 16px rgba(120, 105, 245, 0.2)'
-                      }}
-                    >
-                      <Sparkles size={16} style={{ color: '#7869f5' }} />
-                      <span>Özingizni sinab köring</span>
-                    </button>
-                  </MagneticButton>
-
-                  {secondaryCta && (
-                    <MagneticButton>
-                      <a
-                        href="#preview"
-                        className="holo-secondary-btn"
-                        onClick={(e) => {
-                          const el = document.getElementById('preview');
-                          if (el) {
-                            e.preventDefault();
-                            el.scrollIntoView({ behavior: 'smooth' });
-                          }
-                        }}
-                      >
-                        <Play size={13} style={{ fill: 'currentColor', marginRight: '2px' }} />
-                        <span>{secondaryCta}</span>
-                      </a>
-                    </MagneticButton>
-                  )}
                 </div>
 
                 <div className="holo-flags-group">

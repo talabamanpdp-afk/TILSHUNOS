@@ -288,8 +288,6 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
                       <strong className="step-code">{lvl.code}</strong>
                       <span className="step-name">{lvl.name.split(' ')[0]}</span>
                     </div>
-
-                    {isSelected && <div className="step-active-arrow" />}
                   </button>
                 );
               })}
@@ -424,7 +422,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
             align-items: center;
             gap: 9px;
             padding: 8px 14px 8px 8px;
-            border-radius: 100px;
+            border-radius: 9999px !important;
             background: ${dark ? 'rgba(21, 21, 34, 0.88)' : '#ffffff'};
             border: 1.5px solid ${dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'};
             color: var(--text);
@@ -437,7 +435,8 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
             background: var(--step-grad);
             border-color: transparent;
             color: #ffffff !important;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 0 16px var(--step-color);
+            border-radius: 9999px !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 12px var(--step-color);
             transform: translateY(-2px);
           }
           .step-node-circle {
@@ -490,17 +489,6 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
           .cefr-level-step-btn.active .step-name {
             opacity: 0.95;
             color: #ffffff;
-          }
-          .step-active-arrow {
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 6px solid var(--step-color);
           }
         }
       `}</style>

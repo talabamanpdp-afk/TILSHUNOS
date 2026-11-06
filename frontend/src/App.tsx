@@ -6,7 +6,7 @@ import { AboutPage } from './components/AboutPage';
 import { TrialTestPage } from './components/trial/TrialTestPage';
 import React, { Fragment, useEffect, useMemo, useState } from 'react';
 import {
-  Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Award, BookA, BookOpen, Bookmark, Brain,
+  Activity, ArrowDownRight, ArrowLeft, ArrowRight, ArrowUpRight, Award, BookA, BookOpen, Bookmark, Brain,
   CalendarDays, Check, CheckCheck, ChevronDown, ChevronRight, CircleHelp, Clock3, Download, Flame, Gamepad2, GraduationCap, Image,
   Headphones, Home, Languages, LayoutDashboard, Library, ListTodo, LogOut, Menu, MessageCircle,
   Mic2, Moon, MoreHorizontal, Plus, Search, Settings, Share2, Sparkles, Sun, Smartphone, Target, TrendingUp, Trophy,
@@ -1862,7 +1862,17 @@ function App() {
     }
   }, [resendCooldown]);
 
+  const saveWelcomeScrollPos = () => {
+    if (page === 'welcome' && typeof window !== 'undefined') {
+      const y = window.scrollY || document.documentElement.scrollTop || 0;
+      try {
+        sessionStorage.setItem('tilshunos_welcome_scroll', String(y));
+      } catch {}
+    }
+  };
+
   const begin = (v: 'login' | 'register' | 'trial') => {
+    saveWelcomeScrollPos();
     if (v === 'trial') {
       setPage('trial');
       return;
@@ -2081,10 +2091,14 @@ function App() {
       <WelcomePage
         cms={cmsContent}
         onBegin={begin}
-        onOpenAbout={() => setPage('about')}
+        onOpenAbout={() => {
+          saveWelcomeScrollPos();
+          setPage('about');
+        }}
         dark={dark}
         setDark={setDark}
         onSelectLevel={(lvl) => {
+          saveWelcomeScrollPos();
           setLevel(lvl);
           begin('register');
         }}
@@ -2129,7 +2143,29 @@ function App() {
           <span className="entry-logo"><img src="/brand_logo.png" alt="TILŞUNOS" className="brand-logo-img" /></span>
           <span>TILŞUNOS<span className="entry-dot">.</span><small>LEARN YOUR WAY</small></span>
         </button>
-        <nav>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            type="button"
+            className="entry-back-to-home"
+            onClick={() => setPage('welcome')}
+            title="Asosiy sahifaga qaytish"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 13px',
+              borderRadius: '9px',
+              border: dark ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(0, 0, 0, 0.12)',
+              background: dark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)',
+              color: 'inherit',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 650
+            }}
+          >
+            <ArrowLeft size={14} />
+            <span>Ortga</span>
+          </button>
           <button className="entry-theme-toggle" onClick={() => setDark(!dark)} title="Mavzuni almaştiriş">
             {dark ? <Sun size={18} /> : <Moon size={18} />}
           </button>

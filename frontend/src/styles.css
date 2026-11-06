@@ -517,11 +517,13 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
 .holo-mobile-scrim {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.28);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   z-index: 998;
+  cursor: pointer;
   animation: fadeInFast 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 @keyframes fadeInFast {
@@ -2641,6 +2643,8 @@ button:hover{filter:brightness(.99)}.stat-card:hover,.resource-card:hover{transf
   justify-content: space-between;
   padding: 22px 44px;
   transition: padding 0.25s ease;
+  position: relative;
+  z-index: 1001;
 }
 
 /* Scrolled Nav styling (revealed when user scrolls up) */

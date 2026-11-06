@@ -826,7 +826,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           gap: 24px;
         }
 
-        /* Skill Navigation Bar (Top Pills) */
+        /* Skill Navigation Bar (Top Pills - Desktop only) */
         .practice-tabs-bar {
           display: flex;
           align-items: center;
@@ -838,6 +838,15 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           -webkit-overflow-scrolling: touch;
           transform: translateZ(0);
           backface-visibility: hidden;
+        }
+
+        @media (min-width: 861px) {
+          .practice-select-box.module-select-box {
+            display: none !important;
+          }
+          .practice-tabs-bar {
+            display: flex !important;
+          }
         }
         .practice-tabs-bar::-webkit-scrollbar {
           display: none;
@@ -2299,15 +2308,40 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         }
 
         @media (max-width: 860px) {
-          /* Tabs bar horizontal scroll on tablet/mobile */
+          /* Mobile: Hide horizontal pill tabs completely, skills are chosen via select only! */
           .practice-tabs-bar {
-            justify-content: flex-start;
-            padding: 4px 2px 10px;
+            display: none !important;
           }
-          .practice-tab-pill {
-            padding: 8px 14px !important;
+          .practice-selects-row {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+            max-width: 100% !important;
+            margin-bottom: 14px !important;
+          }
+          .practice-select-box {
+            min-width: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+          }
+          .practice-select-box.module-select-box {
+            display: block !important;
+          }
+          .practice-select-input {
+            padding: 10px 28px 10px 10px !important;
             font-size: 12px !important;
             border-radius: 10px !important;
+          }
+          .practice-select-icon {
+            right: 8px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            pointer-events: none !important;
+            width: 16px !important;
+            height: 16px !important;
+          }
+          .practice-tab-pill {
+            display: none !important;
           }
           .practice-skill-card {
             height: clamp(470px, 72vh, 510px) !important;
@@ -2695,8 +2729,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 </div>
               </div>
 
-              {/* 2. Skill Module Select Dropdown */}
-              <div className="practice-select-box">
+              {/* 2. Skill Module Select Dropdown (Mobile-only: Desktop uses the horizontal pills below) */}
+              <div className="practice-select-box module-select-box">
                 <select
                   id="practice-module-select"
                   className="practice-select-input"
