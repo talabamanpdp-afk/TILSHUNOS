@@ -730,7 +730,7 @@ export function SkillsSection({
             className="skills-header-left"
             initial={{ opacity: 0, y: 35 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.25, margin: '0px 0px -80px 0px' }}
+            viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="skills-dot-matrix-left" aria-hidden="true">
@@ -759,7 +759,7 @@ export function SkillsSection({
             className="skills-header-right"
             initial={{ opacity: 0, y: 35, scale: 0.92 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: false, amount: 0.25, margin: '0px 0px -80px 0px' }}
+            viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
             <svg
@@ -868,7 +868,7 @@ export function SkillsSection({
                 initial={{ opacity: 0, y: 38, scale: 0.96, rotate: defaultRotate }}
                 whileInView={{ opacity: 1, y: 0, scale: 1, rotate: defaultRotate }}
                 whileHover={{ y: -8, scale: 1.025, rotate: 0 }}
-                viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+                viewport={{ once: true, amount: 0.15 }}
                 transition={{
                   opacity: { duration: 0.48, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] },
                   y: { duration: 0.52, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] },
@@ -944,7 +944,7 @@ export function SkillsSection({
                 whileTap={{ scale: 0.98 }}
                 initial={{ opacity: 0, y: 24, scale: 0.97 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: false, amount: 0.15, margin: '0px 0px -60px 0px' }}
+                viewport={{ once: true, amount: 0.15 }}
                 transition={{ duration: 0.44, delay: idx * 0.035, ease: [0.22, 1, 0.36, 1] }}
                 style={{
                   background: meta.pillBg,

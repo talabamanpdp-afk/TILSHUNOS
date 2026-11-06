@@ -140,7 +140,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
           }}
           initial={{ opacity: 0, y: 35 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.25, margin: '0px 0px -80px 0px' }}
+          viewport={{ once: true, amount: 0.15 }}
           transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
         >
           {/* Eyebrow */}
@@ -311,7 +311,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
             className="cefr-desktop-canvas"
             initial={{ opacity: 0, x: -35, scale: 0.97 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
-            viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+            viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
             style={{ transform: 'translateZ(0)', willChange: 'transform, opacity' }}
           >
@@ -328,7 +328,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
             style={{ display: 'flex', flexDirection: 'column', gap: '20px', transform: 'translateZ(0)', willChange: 'transform, opacity' }}
             initial={{ opacity: 0, x: 35, scale: 0.97 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
-            viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+            viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.52, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
           >
             <AnimatePresence mode="wait">
@@ -358,7 +358,7 @@ export const CEFRRoadmapSection: React.FC<CEFRRoadmapSectionProps> = ({
           style={{ marginTop: '36px' }}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.25 }}
+          viewport={{ once: true, amount: 0.15 }}
           transition={{ duration: 0.6 }}
         >
           <RoadmapProgress currentLevel={selectedLevelCode} dark={dark} levels={mergedLevels} />

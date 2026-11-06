@@ -331,7 +331,7 @@ export function FinalCtaSection({
         className="final-cta-floating-card"
         initial={{ opacity: 0, y: 36, scale: 0.96 }}
         whileInView={{ opacity: 1, y: 0, scale: 1 }}
-        viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+        viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
         style={{ transform: 'translateZ(0)', willChange: 'transform, opacity' }}
       >

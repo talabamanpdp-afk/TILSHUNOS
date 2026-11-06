@@ -687,7 +687,7 @@ export function FeaturesSection({
               <motion.div
                 key={item.key || idx}
                 {...entrance}
-                viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+                viewport={{ once: true, amount: 0.15 }}
                 style={{ width: '100%', height: '100%', display: 'flex', transform: 'translateZ(0)', willChange: 'transform, opacity' }}
               >
                 <TiltCard maxTilt={8} borderRadius="22px">

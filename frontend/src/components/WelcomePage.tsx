@@ -317,13 +317,9 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
         (entries) => {
           const windowHeight = window.innerHeight || document.documentElement.clientHeight;
           entries.forEach((entry) => {
-            const rect = entry.boundingClientRect;
             if (entry.isIntersecting) {
               entry.target.classList.add('revealed');
-            } else if (rect.top >= windowHeight - 40) {
-              // Only retreat when the user has scrolled back UP and element exited off the BOTTOM of the viewport!
-              // NEVER un-reveal while the user is inside or scrolled past the section (prevents infinite oscillation/flicker)
-              entry.target.classList.remove('revealed');
+              observer.unobserve(entry.target);
             }
           });
         },

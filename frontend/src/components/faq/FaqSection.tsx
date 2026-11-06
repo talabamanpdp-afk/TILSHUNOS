@@ -565,7 +565,7 @@ export function FaqSection({ faqs, dark }: FaqSectionProps) {
                 key={idx}
                 initial={{ opacity: 0, y: 24, scale: 0.985 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+                viewport={{ once: true, amount: 0.15 }}
                 transition={{ duration: 0.46, delay: idx * 0.035, ease: [0.22, 1, 0.36, 1] }}
                 className={`faq-card-item ${isOpen ? 'open' : ''}`}
                 style={{

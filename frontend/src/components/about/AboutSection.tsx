@@ -732,7 +732,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
             className="as-left-col"
             initial={{ opacity: 0, x: -45, y: 25 }}
             whileInView={{ opacity: 1, x: 0, y: 0 }}
-            viewport={{ once: false, amount: 0.25, margin: '0px 0px -100px 0px' }}
+            viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
             <span className="as-kicker">
@@ -760,7 +760,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
             className="as-visual-col"
             initial={{ opacity: 0, x: 45, scale: 0.95 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
-            viewport={{ once: false, amount: 0.25, margin: '0px 0px -100px 0px' }}
+            viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.75, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Floating Card: Loyiha Faollari va Yetakchilari */}
@@ -848,7 +848,7 @@ export function AboutSection({ cms, onOpenAbout, dark }: AboutSectionProps) {
                   key={idx}
                   initial={{ opacity: 0, y: 36, scale: 0.96 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: false, amount: 0.2, margin: '0px 0px -80px 0px' }}
+                  viewport={{ once: true, amount: 0.15 }}
                   transition={{ duration: 0.52, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
                   style={{ width: '100%', height: '100%', display: 'flex', transform: 'translateZ(0)', willChange: 'transform, opacity' }}
                 >
