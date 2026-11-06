@@ -77,6 +77,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   const [speakingScores, setSpeakingScores] = useState<Record<number, { score: number; text: string }>>({});
   const [activeListeningQuestionId, setActiveListeningQuestionId] = useState<number | null>(null);
   const [showTotalSpeakingScore, setShowTotalSpeakingScore] = useState(false);
+  const [activeSpeakingQIndex, setActiveSpeakingQIndex] = useState<number>(0);
 
   // Shadowing card states
   const [isShadowingListening, setIsShadowingListening] = useState(false);
@@ -216,6 +217,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     setShowListeningAnswers(false);
     setSpeakingScores({});
     setShowTotalSpeakingScore(false);
+    setActiveSpeakingQIndex(0);
     setShadowingRecognizedText('');
     setShadowingScore(null);
     setMusicCurrentTime(0);
@@ -225,6 +227,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   const goToSlide = (index: number) => {
     if (index === currentSlide) return;
     stopAllAudio();
+    if (index === 4) setActiveSpeakingQIndex(0);
     setSlideDirection(index > currentSlide ? 'next' : 'prev');
     setCurrentSlide(index);
   };
@@ -900,7 +903,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           background: linear-gradient(135deg, rgba(13, 24, 60, 0.94) 0%, rgba(7, 14, 38, 0.97) 100%) !important;
           border: 1.5px solid rgba(59, 130, 246, 0.45) !important;
           border-radius: 26px !important;
-          padding: 38px 44px !important;
+          padding: 28px 36px 20px !important;
           box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 45px rgba(37, 99, 235, 0.22) !important;
           backdrop-filter: blur(24px) !important;
           -webkit-backdrop-filter: blur(24px) !important;
@@ -912,6 +915,15 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           -webkit-backface-visibility: hidden;
           touch-action: pan-y pinch-zoom;
           z-index: 1;
+
+          /* Unified Fixed Height on Laptop / Desktop: 560px rock-solid across all 7 slides */
+          height: 560px !important;
+          min-height: 560px !important;
+          max-height: 560px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: space-between !important;
+          box-sizing: border-box !important;
         }
 
         .practice-skill-card.slide-anim-next {
@@ -967,9 +979,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           justify-content: space-between;
           flex-wrap: wrap;
           gap: 12px;
-          margin-bottom: 28px;
-          padding-bottom: 18px;
+          margin-bottom: 16px;
+          padding-bottom: 12px;
           border-bottom: 1.5px solid var(--pg-box-border);
+          flex-shrink: 0;
         }
         .practice-card-badge {
           padding: 7px 16px;
@@ -997,29 +1010,29 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           gap: 6px;
         }
 
-        /* Large 2-column Grid for Cards on Desktop */
-        .practice-card-grid {
-          display: grid;
-          grid-template-columns: minmax(320px, 400px) 1fr;
-          gap: 36px;
-          align-items: start;
-        }
-
-        /* Large Shadowing Grid for Card 7 */
+        /* Large 2-column Grid for Cards on Desktop: Fits neatly without stretching */
+        .practice-card-grid,
         .practice-shadowing-grid {
           display: grid;
-          grid-template-columns: minmax(380px, 480px) 1fr;
-          gap: 36px;
-          align-items: start;
+          grid-template-columns: 340px 1fr;
+          gap: 28px;
+          align-items: stretch;
+          flex: 1;
+          min-height: 0;
+          position: relative;
+          z-index: 1;
         }
 
         .practice-card-media {
           border-radius: 20px;
           overflow: hidden;
-          height: 310px;
+          height: 100%;
+          min-height: 240px;
+          max-height: 380px;
           background: var(--pg-box-bg);
           border: 1px solid var(--pg-box-border);
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+          position: relative;
         }
         .practice-card-media img {
           width: 100%;
@@ -1032,22 +1045,41 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         .practice-shadowing-media {
           border-radius: 20px;
           overflow: hidden;
-          height: 330px;
+          height: 100%;
+          min-height: 240px;
+          max-height: 380px;
           background: #000;
           border: 1px solid var(--pg-box-border);
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
           position: relative;
         }
 
-        /* Robust Content Column that NEVER overflows */
+        /* Content Column with smooth custom scrolling if content is long */
         .practice-content-col {
           min-width: 0;
           max-width: 100%;
           display: flex;
           flex-direction: column;
-          gap: 18px;
+          gap: 12px;
           word-break: break-word;
           overflow-wrap: break-word;
+          flex: 1;
+          min-height: 0;
+          max-height: 380px;
+          overflow-y: auto;
+          padding-right: 6px;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(99, 102, 241, 0.4) transparent;
+        }
+        .practice-content-col::-webkit-scrollbar {
+          width: 5px;
+        }
+        .practice-content-col::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .practice-content-col::-webkit-scrollbar-thumb {
+          background: rgba(99, 102, 241, 0.4);
+          border-radius: 9999px;
         }
 
         /* Reading content highlight */
@@ -1578,12 +1610,15 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           display: flex;
           align-items: center;
           gap: 10px;
+          flex-wrap: wrap;
+          flex-shrink: 0;
         }
         .practice-action-btn-listen {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 7px;
-          padding: 9px 20px;
+          padding: 8px 18px;
           border-radius: 9999px;
           background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
           color: #ffffff;
@@ -1593,6 +1628,11 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           cursor: pointer;
           box-shadow: 0 0 20px rgba(37, 99, 235, 0.8), 0 4px 14px rgba(37, 99, 235, 0.5);
           transition: all 0.2s;
+          white-space: nowrap !important;
+          flex-shrink: 0 !important;
+          min-width: 102px;
+          box-sizing: border-box;
+          text-align: center;
         }
         .practice-action-btn-listen:hover {
           transform: translateY(-2px);
@@ -1601,8 +1641,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         .practice-action-btn-test {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 7px;
-          padding: 9px 20px;
+          padding: 8px 18px;
           border-radius: 9999px;
           background: rgba(20, 184, 166, 0.14);
           border: 1.5px solid rgba(45, 212, 191, 0.75);
@@ -1612,6 +1653,11 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           cursor: pointer;
           box-shadow: 0 0 16px rgba(45, 212, 191, 0.45);
           transition: all 0.2s;
+          white-space: nowrap !important;
+          flex-shrink: 0 !important;
+          min-width: 102px;
+          box-sizing: border-box;
+          text-align: center;
         }
         .practice-action-btn-test:hover,
         .practice-action-btn-test.is-active {
@@ -1623,8 +1669,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         .practice-action-btn-purple {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 7px;
-          padding: 9px 20px;
+          padding: 8px 18px;
           border-radius: 9999px;
           background: rgba(168, 85, 247, 0.14);
           border: 1.5px solid rgba(168, 85, 247, 0.65);
@@ -1634,6 +1681,11 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           cursor: pointer;
           box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);
           transition: all 0.2s;
+          white-space: nowrap !important;
+          flex-shrink: 0 !important;
+          min-width: 102px;
+          box-sizing: border-box;
+          text-align: center;
         }
         .practice-action-btn-purple:hover {
           background: rgba(168, 85, 247, 0.28);
@@ -1644,8 +1696,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         .practice-action-btn-green {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 7px;
-          padding: 9px 20px;
+          padding: 8px 18px;
           border-radius: 9999px;
           background: linear-gradient(135deg, #10b981 0%, #059669 100%);
           color: #ffffff;
@@ -1655,10 +1708,91 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           cursor: pointer;
           box-shadow: 0 0 18px rgba(16, 185, 129, 0.6), 0 4px 14px rgba(16, 185, 129, 0.4);
           transition: all 0.2s;
+          white-space: nowrap !important;
+          flex-shrink: 0 !important;
+          min-width: 102px;
+          box-sizing: border-box;
+          text-align: center;
         }
         .practice-action-btn-green:hover {
           transform: translateY(-2px);
           box-shadow: 0 0 24px rgba(16, 185, 129, 0.8);
+        }
+
+        /* Speaking Stepper Box (Single question view for ultra compactness) */
+        .practice-speaking-stepper-box {
+          border-radius: 18px;
+          background: rgba(15, 23, 42, 0.65);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          padding: 14px 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .practice-speaking-stepper-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-bottom: 8px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .practice-speaking-stepper-label {
+          font-size: 11px;
+          font-weight: 850;
+          color: #9387ff;
+          letter-spacing: 0.8px;
+          text-transform: uppercase;
+        }
+        .practice-speaking-stepper-controls {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .practice-speaking-nav-btn {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          color: #f8fafc;
+          display: grid;
+          place-items: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .practice-speaking-nav-btn:hover:not(:disabled) {
+          background: #6366f1;
+          border-color: #6366f1;
+        }
+        .practice-speaking-nav-btn:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+        }
+        .practice-speaking-step-num {
+          font-size: 12px;
+          font-weight: 800;
+          color: #93c5fd;
+          padding: 0 4px;
+        }
+        .practice-speaking-next-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 12px;
+          border-radius: 9999px;
+          background: rgba(99, 102, 241, 0.15);
+          border: 1px solid rgba(99, 102, 241, 0.4);
+          color: #a5b4fc;
+          font-size: 12px;
+          font-weight: 750;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .practice-speaking-next-btn:hover {
+          background: rgba(99, 102, 241, 0.3);
+          color: #ffffff;
         }
         .practice-card-corner-wave {
           position: absolute;
@@ -2168,24 +2302,124 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           /* Tabs bar horizontal scroll on tablet/mobile */
           .practice-tabs-bar {
             justify-content: flex-start;
+            padding: 4px 2px 10px;
+          }
+          .practice-tab-pill {
+            padding: 8px 14px !important;
+            font-size: 12px !important;
+            border-radius: 10px !important;
           }
           .practice-skill-card {
-            padding: 22px 16px;
-            border-radius: 20px;
+            height: clamp(470px, 72vh, 510px) !important;
+            min-height: 470px !important;
+            max-height: 510px !important;
+            padding: 14px 14px 10px !important;
+            border-radius: 18px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            box-sizing: border-box !important;
           }
-          .practice-card-grid {
-            grid-template-columns: 1fr;
-            gap: 20px;
+          .practice-card-head {
+            margin-bottom: 8px !important;
+            padding-bottom: 6px !important;
+            gap: 6px !important;
           }
+          .practice-card-badge {
+            font-size: 10.5px !important;
+            padding: 4px 10px !important;
+            gap: 5px !important;
+          }
+          .practice-lang-tag {
+            font-size: 10px !important;
+            padding: 3px 8px !important;
+          }
+          .practice-card-grid,
           .practice-shadowing-grid {
-            grid-template-columns: 1fr;
-            gap: 20px;
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+            flex: 1 !important;
+            min-height: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow-y: auto !important;
+            scrollbar-width: thin;
+            padding-right: 2px !important;
+          }
+          .practice-speaking-progress-desktop-only {
+            display: none !important;
+          }
+          .practice-speaking-left-col {
+            gap: 0 !important;
+          }
+          .practice-speaking-left-col .practice-card-media {
+            height: 95px !important;
+            min-height: 95px !important;
+            max-height: 95px !important;
           }
           .practice-card-media {
-            height: 200px !important;
+            height: 105px !important;
+            min-height: 105px !important;
+            max-height: 105px !important;
+            border-radius: 12px !important;
+            flex-shrink: 0 !important;
           }
           .practice-shadowing-media {
-            height: 220px;
+            height: 125px !important;
+            min-height: 125px !important;
+            max-height: 125px !important;
+            border-radius: 12px !important;
+            flex-shrink: 0 !important;
+          }
+          .listening-music-player {
+            padding: 12px 14px !important;
+            gap: 8px !important;
+            border-radius: 14px !important;
+          }
+          .music-player-top {
+            gap: 10px !important;
+          }
+          .music-cover-art {
+            width: 44px !important;
+            height: 44px !important;
+            border-radius: 10px !important;
+          }
+          .music-meta-title {
+            font-size: 13.5px !important;
+          }
+          .music-play-btn {
+            width: 40px !important;
+            height: 40px !important;
+          }
+          .practice-content-col {
+            max-height: none !important;
+            overflow-y: visible !important;
+            gap: 8px !important;
+            padding-right: 0 !important;
+            flex-shrink: 0 !important;
+          }
+          .practice-word-title {
+            font-size: 17px !important;
+          }
+          .practice-tag-new {
+            padding: 2px 8px !important;
+            font-size: 10px !important;
+          }
+          .practice-trans-green {
+            font-size: 12.5px !important;
+          }
+          .practice-explanation-text {
+            font-size: 11px !important;
+            line-height: 1.4 !important;
+          }
+          .practice-example-box {
+            padding: 8px 10px !important;
+            border-radius: 10px !important;
+            font-size: 12.5px !important;
+          }
+          .practice-card-bottom-nav {
+            margin-top: 6px !important;
+            padding-top: 6px !important;
           }
         }
 
@@ -2227,13 +2461,27 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             order: -1;
           }
           .practice-word-row {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 12px;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px !important;
           }
           .practice-dual-action-btns {
-            width: 100%;
-            justify-content: flex-start;
+            width: 100% !important;
+            justify-content: flex-start !important;
+            gap: 6px !important;
+          }
+          .practice-action-btn-listen,
+          .practice-action-btn-test,
+          .practice-action-btn-purple,
+          .practice-action-btn-green {
+            padding: 7px 13px !important;
+            font-size: 12px !important;
+            min-width: 96px !important;
+            gap: 5px !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            box-sizing: border-box !important;
+            text-align: center !important;
           }
           .amaliy-calligraphy-wrap {
             display: none;
@@ -3152,8 +3400,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
               <div className="practice-card-grid">
                 {/* Media Image & Progress */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div className="practice-card-media" style={{ position: 'relative', height: '260px' }}>
+                <div className="practice-speaking-left-col" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="practice-card-media" style={{ position: 'relative' }}>
                     <img
                       src={currentLangData.speaking.image}
                       alt={currentLangData.speaking.title}
@@ -3163,20 +3411,20 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     />
                     <div className="practice-photo-badge">
                       <MessageSquare size={13} />
-                      <span>1 / 3 Intervyu</span>
+                      <span>{answeredQuestionsCount} / {totalQuestionsCount} Intervyu</span>
                     </div>
                   </div>
 
-                  <div className="practice-example-box">
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div className="practice-example-box practice-speaking-progress-desktop-only" style={{ padding: '8px 12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '11px', fontWeight: 850, color: '#94a3b8', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
                         Javob berilgan savollar:
                       </span>
-                      <strong style={{ fontSize: '13px', color: '#93c5fd' }}>
+                      <strong style={{ fontSize: '12.5px', color: '#93c5fd' }}>
                         {answeredQuestionsCount} / {totalQuestionsCount}
                       </strong>
                     </div>
-                    <div style={{ width: '100%', height: '8px', borderRadius: '5px', background: 'rgba(255, 255, 255, 0.1)', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '6px', borderRadius: '5px', background: 'rgba(255, 255, 255, 0.1)', overflow: 'hidden' }}>
                       <div style={{
                         width: `${(answeredQuestionsCount / (totalQuestionsCount || 1)) * 100}%`,
                         height: '100%',
@@ -3227,59 +3475,122 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     </p>
                   </div>
 
-                  {/* Question items */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    {currentLangData.speaking.questions.map((q) => {
-                      const scoreObj = speakingScores[q.id];
-                      const isRecordingThis = activeListeningQuestionId === q.id;
+                  {/* Single Question Stepper Box (Ixcham 1-savol rejimi) */}
+                  {(() => {
+                    const qList = currentLangData.speaking.questions || [];
+                    const qIndex = Math.min(activeSpeakingQIndex, Math.max(0, qList.length - 1));
+                    const q = qList[qIndex];
+                    if (!q) return null;
+                    const scoreObj = speakingScores[q.id];
+                    const isRecordingThis = activeListeningQuestionId === q.id;
 
-                      return (
-                        <div key={q.id} className="practice-example-box">
-                          <div className="practice-speaking-q-row">
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: '15px', fontWeight: 750, color: '#f1f5f9', lineHeight: '1.45' }}>
-                                {q.id}. {q.question}
-                              </div>
-                              {q.hint && (
-                                <span style={{ fontSize: '12.5px', color: '#94a3b8', display: 'block', marginTop: '5px' }}>
-                                  💡 Maslahat: {q.hint}
-                                </span>
-                              )}
+                    return (
+                      <div className="practice-speaking-stepper-box">
+                        {/* Stepper Header: Savol 1 / 3 with Next / Prev */}
+                        <div className="practice-speaking-stepper-head">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="practice-speaking-stepper-label">
+                              {qIndex + 1}-SAVOL ({qList.length} TADAN):
+                            </span>
+                            {/* Dots for questions */}
+                            <div style={{ display: 'inline-flex', gap: '5px', alignItems: 'center' }}>
+                              {qList.map((item, idx) => (
+                                <span
+                                  key={item.id}
+                                  onClick={() => setActiveSpeakingQIndex(idx)}
+                                  style={{
+                                    width: idx === qIndex ? '16px' : '6px',
+                                    height: '6px',
+                                    borderRadius: '9999px',
+                                    background: idx === qIndex ? '#38bdf8' : speakingScores[item.id] ? '#10b981' : 'rgba(255,255,255,0.25)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                  title={`${idx + 1}-savol`}
+                                />
+                              ))}
                             </div>
-
-                            {/* Mic Answer Button */}
-                            <button
-                              onClick={() => handleTestSpeakingQuestion(q.id, q.question)}
-                              className={`practice-action-btn-test ${isRecordingThis ? 'is-active' : ''}`}
-                              title="Mikrofon orqali javob beriş"
-                              style={{ flexShrink: 0 }}
-                            >
-                              <Mic size={14} />
-                              <span>{isRecordingThis ? 'Eşityapman...' : scoreObj ? 'Qayta sinaş' : 'Javob beriş'}</span>
-                            </button>
                           </div>
 
-                          {/* Question Score Feedback */}
-                          {scoreObj && (
-                            <div style={{
-                              padding: '10px 14px',
-                              borderRadius: '10px',
-                              background: 'rgba(16, 185, 129, 0.14)',
-                              border: '1px solid rgba(16, 185, 129, 0.4)',
-                              color: '#34d399',
-                              fontSize: '13px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between'
-                            }}>
-                              <span>Nutq tahlili qabul qilindi ✓</span>
-                              <strong style={{ fontWeight: 800 }}>⭐ Natija: {scoreObj.score} ball</strong>
-                            </div>
+                          <div className="practice-speaking-stepper-controls">
+                            <button
+                              onClick={() => setActiveSpeakingQIndex((prev) => Math.max(0, prev - 1))}
+                              disabled={qIndex === 0}
+                              className="practice-speaking-nav-btn"
+                              title="Oldingi savol"
+                            >
+                              <ChevronLeft size={16} />
+                            </button>
+                            <span className="practice-speaking-step-num">
+                              {qIndex + 1} / {qList.length}
+                            </span>
+                            <button
+                              onClick={() => setActiveSpeakingQIndex((prev) => Math.min(qList.length - 1, prev + 1))}
+                              disabled={qIndex === qList.length - 1}
+                              className="practice-speaking-nav-btn"
+                              title="Keyingi savol"
+                            >
+                              <ChevronRight size={16} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Active Question Content */}
+                        <div className="practice-speaking-active-q-wrap">
+                          <div style={{ fontSize: '15px', fontWeight: 800, color: '#f8fafc', lineHeight: '1.45' }}>
+                            {q.id}. {q.question}
+                          </div>
+                          {q.hint && (
+                            <span style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginTop: '4px' }}>
+                              💡 Maslahat: {q.hint}
+                            </span>
                           )}
                         </div>
-                      );
-                    })}
-                  </div>
+
+                        {/* Mic Answer Button & Next Question Button */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
+                          <button
+                            onClick={() => handleTestSpeakingQuestion(q.id, q.question)}
+                            className={`practice-action-btn-test ${isRecordingThis ? 'is-active' : ''}`}
+                            title="Mikrofon orqali javob beriş"
+                          >
+                            <Mic size={14} />
+                            <span>{isRecordingThis ? 'Eşityapman...' : scoreObj ? 'Qayta sinaş' : 'Javob beriş'}</span>
+                          </button>
+
+                          {qIndex < qList.length - 1 && (
+                            <button
+                              onClick={() => setActiveSpeakingQIndex((prev) => Math.min(qList.length - 1, prev + 1))}
+                              className="practice-speaking-next-btn"
+                              title="Keyingi savolga ötiş"
+                            >
+                              <span>Keyingi savol</span>
+                              <ChevronRight size={14} />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Question Score Feedback */}
+                        {scoreObj && (
+                          <div style={{
+                            marginTop: '8px',
+                            padding: '8px 12px',
+                            borderRadius: '10px',
+                            background: scoreObj.score >= 80 ? 'rgba(16, 185, 129, 0.14)' : 'rgba(245, 158, 11, 0.14)',
+                            border: `1px solid ${scoreObj.score >= 80 ? 'rgba(16, 185, 129, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`,
+                            color: scoreObj.score >= 80 ? '#34d399' : '#f59e0b',
+                            fontSize: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                          }}>
+                            <span>Nutq qabul qilindi ✓</span>
+                            <strong style={{ fontWeight: 800 }}>⭐ Ball: {scoreObj.score}%</strong>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Final Score Reveal Card */}
                   {showTotalSpeakingScore && isAllSpeakingAnswered && (
