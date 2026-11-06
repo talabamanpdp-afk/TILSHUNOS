@@ -833,6 +833,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           padding: 8px 4px 18px;
           scrollbar-width: none;
           -webkit-overflow-scrolling: touch;
+          transform: translateZ(0);
+          backface-visibility: hidden;
         }
         .practice-tabs-bar::-webkit-scrollbar {
           display: none;
@@ -850,28 +852,34 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           font-weight: 750;
           cursor: pointer;
           white-space: nowrap;
-          transition: all 0.22s ease;
+          transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
           flex-shrink: 0;
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          isolation: isolate;
         }
         .practice-tab-pill:hover {
           color: #ffffff !important;
           border-color: rgba(120, 105, 245, 0.4) !important;
-          transform: translateY(-2px);
         }
         .practice-tab-active-indicator {
           position: absolute;
-          inset: 0;
+          inset: -1px;
           border-radius: 14px;
           background: linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%) !important;
           box-shadow: 0 6px 20px rgba(120, 105, 245, 0.45);
           z-index: 0;
+          pointer-events: none;
+          will-change: transform;
+          transform: translateZ(0);
+          backface-visibility: hidden;
         }
         .practice-tab-pill.active {
           background: transparent !important;
           color: #ffffff !important;
           border-color: transparent !important;
           box-shadow: none !important;
-          transform: translateY(-2px);
         }
 
         /* ========================================================
@@ -899,19 +907,38 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           position: relative !important;
           overflow: hidden !important;
           color: #f8fafc !important;
-          animation: slideFade 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+          transform: translate3d(0, 0, 0);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
           touch-action: pan-y pinch-zoom;
           z-index: 1;
         }
 
-        @keyframes slideFade {
+        .practice-skill-card.slide-anim-next {
+          animation: slideFadeNext 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .practice-skill-card.slide-anim-prev {
+          animation: slideFadePrev 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideFadeNext {
           from {
             opacity: 0;
-            transform: translateX(${slideDirection === 'next' ? '20px' : '-20px'});
+            transform: translate3d(20px, 0, 0);
           }
           to {
             opacity: 1;
-            transform: translateX(0);
+            transform: translate3d(0, 0, 0);
+          }
+        }
+        @keyframes slideFadePrev {
+          from {
+            opacity: 0;
+            transform: translate3d(-20px, 0, 0);
+          }
+          to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
           }
         }
 
@@ -1266,12 +1293,54 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           flex-wrap: wrap;
           margin-bottom: 26px;
           width: 100%;
+          transform: translateZ(0);
+          backface-visibility: hidden;
         }
         .practice-select-box {
           position: relative;
           min-width: 190px;
           flex: 1;
           max-width: 260px;
+          transform: translateZ(0);
+          backface-visibility: hidden;
+        }
+        .practice-select-input {
+          width: 100%;
+          padding: 12px 36px 12px 14px;
+          border-radius: 12px;
+          border: 1.5px solid rgba(99, 102, 241, 0.45) !important;
+          background: #0f172a !important;
+          color: #f8fafc !important;
+          font-size: 13.5px;
+          font-weight: 700;
+          cursor: pointer;
+          outline: none !important;
+          appearance: none !important;
+          -webkit-appearance: none !important;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+          transform: translateZ(0);
+          backface-visibility: hidden;
+        }
+        .practice-select-input:hover,
+        .practice-select-input:focus {
+          border-color: rgba(129, 140, 248, 0.85) !important;
+          box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35) !important;
+        }
+        .practice-select-input option {
+          background: #0b1120 !important;
+          color: #f8fafc !important;
+        }
+        .practice-select-icon {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          pointer-events: none;
+          color: #9387ff;
+          display: flex;
+          align-items: center;
+          transition: color 0.2s ease;
         }
 
         /* Bottom CTA Banner (Amaliy qo'llanma bo'limi) */
@@ -1356,16 +1425,23 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           justify-content: center;
           align-items: center;
           position: relative;
+          contain: layout paint;
+          transform: translateZ(0);
+          backface-visibility: hidden;
         }
         .practice-3d-book-svg {
           width: 150px;
           height: 130px;
           filter: drop-shadow(0 14px 28px rgba(59, 130, 246, 0.45));
           animation: floatBook 4s ease-in-out infinite alternate;
+          will-change: transform;
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
         }
         @keyframes floatBook {
-          0% { transform: translateY(0px) rotate(0deg); }
-          100% { transform: translateY(-8px) rotate(-2deg); }
+          0% { transform: translate3d(0, 0px, 0) rotate(0deg); }
+          100% { transform: translate3d(0, -8px, 0) rotate(-2deg); }
         }
 
         .practice-header-center {
@@ -2184,8 +2260,11 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           }
           .practice-select-icon {
             right: 8px !important;
-            width: 15px !important;
-            height: 15px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            pointer-events: none !important;
+            width: 16px !important;
+            height: 16px !important;
           }
 
           /* Music Player 100% mobile responsive */
@@ -2356,21 +2435,6 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   className="practice-select-input"
                   value={selectedLang}
                   onChange={(e) => setSelectedLang(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 36px 12px 14px',
-                    borderRadius: '12px',
-                    border: '1.5px solid rgba(99, 102, 241, 0.4)',
-                    background: 'rgba(15, 23, 42, 0.85)',
-                    color: '#f8fafc',
-                    fontSize: '13.5px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    outline: 'none',
-                    appearance: 'none',
-                    WebkitAppearance: 'none',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
-                  }}
                 >
                   <option value="en">🇬🇧 GB English</option>
                   <option value="de">🇩🇪 Deutsch</option>
@@ -2378,16 +2442,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   <option value="ru">🇷🇺 Русский</option>
                   <option value="uz">🇺🇿 O‘zbek</option>
                 </select>
-                <div className="practice-select-icon" style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none',
-                  color: '#9387ff',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}>
+                <div className="practice-select-icon">
                   <ChevronDown size={18} strokeWidth={2.5} />
                 </div>
               </div>
@@ -2399,21 +2454,6 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                   className="practice-select-input"
                   value={currentSlide}
                   onChange={(e) => goToSlide(Number(e.target.value))}
-                  style={{
-                    width: '100%',
-                    padding: '12px 36px 12px 14px',
-                    borderRadius: '12px',
-                    border: '1.5px solid rgba(99, 102, 241, 0.4)',
-                    background: 'rgba(15, 23, 42, 0.85)',
-                    color: '#f8fafc',
-                    fontSize: '13.5px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    outline: 'none',
-                    appearance: 'none',
-                    WebkitAppearance: 'none',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
-                  }}
                 >
                   {SKILL_MODULES.map((m) => (
                     <option key={m.id} value={m.id}>
@@ -2421,16 +2461,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     </option>
                   ))}
                 </select>
-                <div className="practice-select-icon" style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none',
-                  color: '#9387ff',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}>
+                <div className="practice-select-icon">
                   <ChevronDown size={18} strokeWidth={2.5} />
                 </div>
               </div>
@@ -2473,7 +2504,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     <motion.div
                       layoutId="activePracticeTabPill"
                       className="practice-tab-active-indicator"
-                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
                     />
                   )}
                   <Icon size={16} style={{ position: 'relative', zIndex: 1 }} />
@@ -2487,7 +2518,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* SLIDE 0: VOCABULARY CARD (MATCHING REFERENCE MOCKUP) */}
           {/* ===================================================== */}
           {currentSlide === 0 && (
-            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+            <div className={`practice-skill-card slide-anim-${slideDirection} ${isDarkMode ? 'dark-card' : ''}`}>
               {renderCardCornerWave()}
 
               <div className="practice-card-head">
@@ -2640,7 +2671,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* SLIDE 1: WRITING CARD                                 */}
           {/* ===================================================== */}
           {currentSlide === 1 && (
-            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+            <div className={`practice-skill-card slide-anim-${slideDirection} ${isDarkMode ? 'dark-card' : ''}`}>
               {renderCardCornerWave()}
 
               <div className="practice-card-head">
@@ -2769,7 +2800,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* SLIDE 2: READING CARD                                 */}
           {/* ===================================================== */}
           {currentSlide === 2 && (
-            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+            <div className={`practice-skill-card slide-anim-${slideDirection} ${isDarkMode ? 'dark-card' : ''}`}>
               {renderCardCornerWave()}
 
               <div className="practice-card-head">
@@ -2889,7 +2920,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* SLIDE 3: LISTENING CARD WITH MODERN MUSIC PLAYER     */}
           {/* ===================================================== */}
           {currentSlide === 3 && (
-            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+            <div className={`practice-skill-card slide-anim-${slideDirection} ${isDarkMode ? 'dark-card' : ''}`}>
               {renderCardCornerWave()}
 
               <div className="practice-card-head">
@@ -3107,7 +3138,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* SLIDE 4: SPEAKING CARD                                */}
           {/* ===================================================== */}
           {currentSlide === 4 && (
-            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+            <div className={`practice-skill-card slide-anim-${slideDirection} ${isDarkMode ? 'dark-card' : ''}`}>
               {renderCardCornerWave()}
 
               <div className="practice-card-head">
@@ -3292,7 +3323,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* SLIDE 5: GRAMMAR CARD                                 */}
           {/* ===================================================== */}
           {currentSlide === 5 && (
-            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+            <div className={`practice-skill-card slide-anim-${slideDirection} ${isDarkMode ? 'dark-card' : ''}`}>
               {renderCardCornerWave()}
 
               <div className="practice-card-head">
@@ -3405,7 +3436,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           {/* SLIDE 6: SHADOWING CARD (LARGE VIDEO, NO AUTOPLAY)     */}
           {/* ===================================================== */}
           {currentSlide === 6 && (
-            <div className={`practice-skill-card ${isDarkMode ? 'dark-card' : ''}`}>
+            <div className={`practice-skill-card slide-anim-${slideDirection} ${isDarkMode ? 'dark-card' : ''}`}>
               {renderCardCornerWave()}
 
               <div className="practice-card-head">

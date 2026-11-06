@@ -265,7 +265,7 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
     return () => window.removeEventListener('scroll', handleScroll);
   }, [mobileMenuOpen]);
 
-  // Scroll reveal observer: smoothly animates every element as user scrolls down the page
+  // Scroll reveal observer: smoothly animates every element as user scrolls down the page (Zero-jitter 60fps)
   useEffect(() => {
     if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
 
@@ -277,18 +277,21 @@ export function WelcomePage({ cms, onBegin, onOpenAbout, dark, setDark, onSelect
 
       const observer = new IntersectionObserver(
         (entries) => {
+          const windowHeight = window.innerHeight || document.documentElement.clientHeight;
           entries.forEach((entry) => {
+            const rect = entry.boundingClientRect;
             if (entry.isIntersecting) {
               entry.target.classList.add('revealed');
-            } else {
-              // Bidirectional scroll animation: retreat smoothly when scrolling away, emerge when scrolling back!
+            } else if (rect.top >= windowHeight - 40) {
+              // Only retreat when the user has scrolled back UP and element exited off the BOTTOM of the viewport!
+              // NEVER un-reveal while the user is inside or scrolled past the section (prevents infinite oscillation/flicker)
               entry.target.classList.remove('revealed');
             }
           });
         },
         {
-          threshold: 0.15,
-          rootMargin: '0px 0px -80px 0px'
+          threshold: 0.08,
+          rootMargin: '0px 0px -50px 0px'
         }
       );
 
