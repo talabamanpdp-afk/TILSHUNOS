@@ -1159,15 +1159,13 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         }
         .practice-tab-active-indicator {
           position: absolute;
-          inset: -1px;
+          inset: 0;
           border-radius: 14px;
-          background: linear-gradient(135deg, #7869f5 0%, #5b4bf0 100%) !important;
-          box-shadow: 0 6px 20px rgba(120, 105, 245, 0.45);
+          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
           z-index: 0;
           pointer-events: none;
-          will-change: transform;
-          transform: translateZ(0);
-          backface-visibility: hidden;
         }
         .practice-tab-pill.active {
           background: transparent !important;
@@ -1381,7 +1379,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
           cursor: pointer;
           transition: all 0.2s ease;
           padding: 0;
@@ -1390,7 +1388,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           transform: scale(1.15);
           background: #38bdf8;
           color: #0f172a;
-          box-shadow: 0 0 18px rgba(56, 189, 248, 0.75);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
         }
 
         /* Custom Branded Shadowing Video Player */
@@ -1466,20 +1464,20 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           width: 62px;
           height: 62px;
           border-radius: 9999px;
-          background: rgba(37, 99, 235, 0.88);
+          background: rgba(37, 99, 235, 0.92);
           border: 2px solid rgba(255, 255, 255, 0.45);
           color: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 0 28px rgba(37, 99, 235, 0.7);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
           cursor: pointer;
           transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .custom-video-center-play:hover {
-          transform: translate(-50%, -50%) scale(1.15);
+          transform: translate(-50%, -50%) scale(1.1);
           background: #2563eb;
-          box-shadow: 0 0 36px rgba(59, 130, 246, 0.95);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
         }
         .custom-video-bottom-bar {
           position: relative;
@@ -1507,7 +1505,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           height: 100%;
           background: linear-gradient(90deg, #3b82f6 0%, #38bdf8 100%);
           border-radius: 4px;
-          box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+          box-shadow: none;
           transition: width 0.1s linear;
         }
         .custom-video-controls {
@@ -1980,19 +1978,11 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           justify-content: center;
           align-items: center;
           position: relative;
-          contain: layout paint;
-          transform: translateZ(0);
-          backface-visibility: hidden;
         }
         .practice-3d-book-svg {
           width: 150px;
           height: 130px;
-          filter: drop-shadow(0 14px 28px rgba(59, 130, 246, 0.45));
           animation: floatBook 4s ease-in-out infinite alternate;
-          will-change: transform;
-          transform: translateZ(0);
-          backface-visibility: hidden;
-          -webkit-backface-visibility: hidden;
         }
         @keyframes floatBook {
           0% { transform: translate3d(0, 0px, 0) rotate(0deg); }
@@ -2147,10 +2137,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           color: #ffffff;
           font-size: 13px;
           font-weight: 800;
-          border: none;
+          border: 1px solid rgba(255, 255, 255, 0.18);
           cursor: pointer;
-          box-shadow: 0 0 20px rgba(37, 99, 235, 0.8), 0 4px 14px rgba(37, 99, 235, 0.5);
-          transition: all 0.2s;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+          transition: all 0.2s ease;
           white-space: nowrap !important;
           flex-shrink: 0 !important;
           min-width: 102px;
@@ -2158,8 +2148,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           text-align: center;
         }
         .practice-action-btn-listen:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 0 26px rgba(37, 99, 235, 0.95), 0 6px 18px rgba(37, 99, 235, 0.6);
+          transform: translateY(-1px);
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
         }
         .practice-action-btn-test {
           display: inline-flex;
@@ -2168,14 +2159,14 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           gap: 7px;
           padding: 8px 18px;
           border-radius: 9999px;
-          background: rgba(20, 184, 166, 0.14);
-          border: 1.5px solid rgba(45, 212, 191, 0.75);
+          background: rgba(20, 184, 166, 0.16);
+          border: 1.5px solid rgba(45, 212, 191, 0.65);
           color: #2dd4bf;
           font-size: 13px;
           font-weight: 800;
           cursor: pointer;
-          box-shadow: 0 0 16px rgba(45, 212, 191, 0.45);
-          transition: all 0.2s;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+          transition: all 0.2s ease;
           white-space: nowrap !important;
           flex-shrink: 0 !important;
           min-width: 102px;
@@ -2186,8 +2177,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         .practice-action-btn-test.is-active {
           background: rgba(20, 184, 166, 0.28);
           border-color: #2dd4bf;
-          box-shadow: 0 0 22px rgba(45, 212, 191, 0.65);
-          transform: translateY(-2px);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28);
+          transform: translateY(-1px);
         }
         .practice-action-btn-purple {
           display: inline-flex;
@@ -2196,14 +2187,14 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           gap: 7px;
           padding: 8px 18px;
           border-radius: 9999px;
-          background: rgba(168, 85, 247, 0.14);
-          border: 1.5px solid rgba(168, 85, 247, 0.65);
+          background: rgba(168, 85, 247, 0.16);
+          border: 1.5px solid rgba(168, 85, 247, 0.55);
           color: #c084fc;
           font-size: 13px;
           font-weight: 800;
           cursor: pointer;
-          box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);
-          transition: all 0.2s;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+          transition: all 0.2s ease;
           white-space: nowrap !important;
           flex-shrink: 0 !important;
           min-width: 102px;
@@ -2213,8 +2204,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         .practice-action-btn-purple:hover {
           background: rgba(168, 85, 247, 0.28);
           border-color: #c084fc;
-          box-shadow: 0 0 22px rgba(168, 85, 247, 0.55);
-          transform: translateY(-2px);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28);
+          transform: translateY(-1px);
         }
         .practice-action-btn-green {
           display: inline-flex;
@@ -2227,10 +2218,10 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           color: #ffffff;
           font-size: 13px;
           font-weight: 800;
-          border: none;
+          border: 1px solid rgba(255, 255, 255, 0.18);
           cursor: pointer;
-          box-shadow: 0 0 18px rgba(16, 185, 129, 0.6), 0 4px 14px rgba(16, 185, 129, 0.4);
-          transition: all 0.2s;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+          transition: all 0.2s ease;
           white-space: nowrap !important;
           flex-shrink: 0 !important;
           min-width: 102px;
@@ -2238,8 +2229,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           text-align: center;
         }
         .practice-action-btn-green:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 0 24px rgba(16, 185, 129, 0.8);
+          transform: translateY(-1px);
+          background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
         }
         .practice-timer-pill {
           display: inline-flex;
@@ -2253,7 +2245,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           font-size: 12.5px;
           font-weight: 850;
           letter-spacing: 0.5px;
-          box-shadow: 0 0 14px rgba(245, 158, 11, 0.25);
+          box-shadow: none;
           white-space: nowrap !important;
           flex-shrink: 0 !important;
         }
@@ -2261,7 +2253,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           background: rgba(16, 185, 129, 0.15);
           border-color: rgba(16, 185, 129, 0.55);
           color: #34d399;
-          box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+          box-shadow: none;
         }
         .practice-action-btn-locked {
           display: inline-flex;
@@ -2453,7 +2445,6 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           color: #34d399;
           margin-bottom: 8px;
           line-height: 1.4;
-          filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.35));
         }
         .practice-explanation-text {
           margin: 0 0 16px;
@@ -2531,7 +2522,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           background: #6366f1;
           border-color: #6366f1;
           color: #ffffff;
-          box-shadow: 0 0 16px rgba(99, 102, 241, 0.5);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
           transform: translateY(-1px);
         }
         .practice-slider-circle-btn:disabled {
@@ -2563,7 +2554,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           width: 24px;
           border-radius: 9999px;
           background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-          box-shadow: 0 0 12px rgba(99, 102, 241, 0.7);
+          box-shadow: none;
         }
 
         /* Slide Navigation Bar (Above AMALIY MODUL) */
@@ -2647,7 +2638,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         }
         .capsule-mini-dot.active {
           background: #ffffff;
-          box-shadow: 0 0 6px #818cf8;
+          box-shadow: none;
         }
         .capsule-counter-text {
           font-size: 12.5px;
@@ -3262,12 +3253,12 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
               <ellipse cx="80" cy="72" rx="72" ry="24" transform="rotate(-15 80 72)" stroke="url(#ringGrad)" strokeWidth="2.5" opacity="0.8" />
               
               {/* Book Pages bottom edge */}
-              <path d="M42 85L80 108L122 84L86 64Z" fill="#e2e8f0" filter="drop-shadow(0 6px 14px rgba(0,0,0,0.4))" />
+              <path d="M42 85L80 108L122 84L86 64Z" fill="#e2e8f0"  />
               <path d="M42 88L80 111L122 87L122 84L80 108L42 85Z" fill="#cbd5e1" />
               <path d="M42 91L80 114L122 90L122 87L80 111L42 88Z" fill="#94a3b8" />
 
               {/* 3D Book Cover */}
-              <path d="M38 78L80 104L125 78L84 54Z" fill="url(#bookCoverGrad)" filter="drop-shadow(0 12px 24px rgba(59,130,246,0.35))" />
+              <path d="M38 78L80 104L125 78L84 54Z" fill="url(#bookCoverGrad)"  />
               <path d="M38 82L80 108L84 104L38 78Z" fill="#1d4ed8" />
               <path d="M80 108L125 82L125 78L80 104Z" fill="#1e40af" />
 
@@ -3284,17 +3275,17 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                 fontFamily="sans-serif"
                 textAnchor="middle"
                 transform="rotate(-8 80 86) skewX(-12)"
-                filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
+                
               >
                 Aa
               </text>
 
               {/* Orbital Ring front */}
-              <path d="M12 85C25 102 85 106 142 75" stroke="#38bdf8" strokeWidth="2.8" strokeLinecap="round" filter="drop-shadow(0 0 6px #38bdf8)" />
+              <path d="M12 85C25 102 85 106 142 75" stroke="#38bdf8" strokeWidth="2.8" strokeLinecap="round"  />
 
               {/* Sparkles */}
-              <path d="M138 25L140 31L146 33L140 35L138 41L136 35L130 33L136 31Z" fill="#c084fc" filter="drop-shadow(0 0 4px #c084fc)" />
-              <path d="M22 42L24 47L29 49L24 51L22 56L20 51L15 49L20 47Z" fill="#38bdf8" filter="drop-shadow(0 0 4px #38bdf8)" />
+              <path d="M138 25L140 31L146 33L140 35L138 41L136 35L130 33L136 31Z" fill="#c084fc"  />
+              <path d="M22 42L24 47L29 49L24 51L22 56L20 51L15 49L20 47Z" fill="#38bdf8"  />
               <circle cx="145" cy="65" r="2" fill="#fff" opacity="0.8" />
               <circle cx="28" cy="78" r="1.5" fill="#38bdf8" opacity="0.8" />
 
@@ -3789,7 +3780,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                           className="practice-action-btn-listen"
                           style={{
                             background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                            boxShadow: '0 0 16px rgba(59, 130, 246, 0.4)'
+                            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)'
                           }}
                           title="O‘qish vaqtini boshlash"
                         >
@@ -4083,7 +4074,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                           className="practice-action-btn-listen"
                           style={{
                             background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                            boxShadow: '0 0 16px rgba(59, 130, 246, 0.4)'
+                            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)'
                           }}
                           title="Listening testini boshlash"
                         >
