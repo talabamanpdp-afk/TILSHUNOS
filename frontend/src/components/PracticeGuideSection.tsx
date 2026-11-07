@@ -4,7 +4,7 @@ import {
   Sparkles, BookOpen, PenLine, Headphones, MessageSquare, Award,
   ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Trophy, Check, ArrowRight,
   Music, FastForward, Rewind, Copy, Globe, Shield, BarChart3, User, Cpu, Users,
-  Lock, Unlock, Timer, Clock
+  Lock, Unlock, Timer, Clock, Maximize2, ChevronsRight, ChevronsLeft
 } from 'lucide-react';
 import {
   playSpeech, stopSpeech, startListening, calculateSimilarity,
@@ -101,17 +101,28 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   const [showTotalSpeakingScore, setShowTotalSpeakingScore] = useState(false);
   const [activeSpeakingQIndex, setActiveSpeakingQIndex] = useState<number>(0);
 
-  // Shadowing card states
-  const [isShadowingListening, setIsShadowingListening] = useState(false);
-  const [shadowingRecognizedText, setShadowingRecognizedText] = useState('');
-  const [shadowingScore, setShadowingScore] = useState<number | null>(null);
-  const [shadowingFeedback, setShadowingFeedback] = useState<{
+  // Shadowing card states (Segmented Stepper + Custom Player + Resizer)
+  const [activeShadowingIndex, setActiveShadowingIndex] = useState<number>(0);
+  const [shadowingPartScores, setShadowingPartScores] = useState<Record<number, {
     score: number;
-    feedback: string;
-    advice: string;
-    isSilence?: boolean;
+    text: string;
+    advice?: string;
     omittedWords?: string[];
-  } | null>(null);
+    isLiveAi?: boolean;
+  }>>({});
+  const [isShadowingListening, setIsShadowingListening] = useState(false);
+  const [shadowingInterim, setShadowingInterim] = useState<string>('');
+  const [shadowingPlayerWidth, setShadowingPlayerWidth] = useState<number>(38); // 32% to 50%
+  const isDraggingResize = useRef(false);
+  const shadowingGridRef = useRef<HTMLDivElement | null>(null);
+
+  // Custom Video Player states
+  const shadowingVideoRef = useRef<HTMLIFrameElement | null>(null);
+  const [shadowingVideoPlaying, setShadowingVideoPlaying] = useState<boolean>(false);
+  const [shadowingVideoCurrentTime, setShadowingVideoCurrentTime] = useState<number>(0);
+  const [shadowingVideoDuration, setShadowingVideoDuration] = useState<number>(90);
+  const [shadowingVideoSpeed, setShadowingVideoSpeed] = useState<number>(1);
+  const [shadowingVideoMuted, setShadowingVideoMuted] = useState<boolean>(false);
 
   // Copy example phrase state
   const [copiedPhrase, setCopiedPhrase] = useState(false);
@@ -229,6 +240,16 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     setActiveListeningQuestionId(null);
     setSpeakingInterim('');
     setIsShadowingListening(false);
+    setShadowingInterim('');
+    try {
+      if (shadowingVideoRef.current && shadowingVideoRef.current.contentWindow) {
+        shadowingVideoRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
+          '*'
+        );
+      }
+    } catch {}
+    setShadowingVideoPlaying(false);
   };
 
   useEffect(() => {
@@ -251,8 +272,11 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     setSpeakingInterim('');
     setShowTotalSpeakingScore(false);
     setActiveSpeakingQIndex(0);
-    setShadowingRecognizedText('');
-    setShadowingScore(null);
+    setActiveShadowingIndex(0);
+    setShadowingPartScores({});
+    setShadowingInterim('');
+    setShadowingVideoPlaying(false);
+    setShadowingVideoCurrentTime(0);
     setMusicCurrentTime(0);
   }, [selectedLang]);
 
@@ -309,6 +333,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     if (index === currentSlide) return;
     stopAllAudio();
     if (index === 4) setActiveSpeakingQIndex(0);
+    if (index === 6) setActiveShadowingIndex(0);
     setSlideDirection(index > currentSlide ? 'next' : 'prev');
     setCurrentSlide(index);
   };
@@ -373,6 +398,130 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     const m = Math.floor(secs / 60);
     const s = Math.floor(secs % 60);
     return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  // Custom Video Player command sender
+  const postVideoCommand = (func: string, args: any[] = []) => {
+    try {
+      if (shadowingVideoRef.current && shadowingVideoRef.current.contentWindow) {
+        shadowingVideoRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func, args }),
+          '*'
+        );
+      }
+    } catch {}
+  };
+
+  const toggleVideoPlayback = () => {
+    if (shadowingVideoPlaying) {
+      postVideoCommand('pauseVideo');
+      setShadowingVideoPlaying(false);
+    } else {
+      stopSpeech();
+      postYTCommand('pauseVideo');
+      postVideoCommand('playVideo');
+      setShadowingVideoPlaying(true);
+    }
+  };
+
+  const handleVideoSeek = (targetSecs: number) => {
+    const clamped = Math.max(0, Math.min(shadowingVideoDuration || 90, targetSecs));
+    setShadowingVideoCurrentTime(clamped);
+    postVideoCommand('seekTo', [clamped, true]);
+    if (!shadowingVideoPlaying) {
+      postVideoCommand('playVideo');
+      setShadowingVideoPlaying(true);
+    }
+  };
+
+  const handleToggleVideoSpeed = () => {
+    const speeds = [1, 1.25, 1.5, 0.75];
+    const nextIdx = (speeds.indexOf(shadowingVideoSpeed) + 1) % speeds.length;
+    const newSpeed = speeds[nextIdx];
+    setShadowingVideoSpeed(newSpeed);
+    postVideoCommand('setPlaybackRate', [newSpeed]);
+  };
+
+  const handleToggleVideoMute = () => {
+    if (shadowingVideoMuted) {
+      postVideoCommand('unMute');
+      setShadowingVideoMuted(false);
+    } else {
+      postVideoCommand('mute');
+      setShadowingVideoMuted(true);
+    }
+  };
+
+  // Video playback time tracker
+  useEffect(() => {
+    let interval: any;
+    if (shadowingVideoPlaying) {
+      interval = setInterval(() => {
+        setShadowingVideoCurrentTime((prev) => {
+          if (prev >= (shadowingVideoDuration || 90)) {
+            setShadowingVideoPlaying(false);
+            return 0;
+          }
+          return prev + 1;
+        });
+      }, 1000 / shadowingVideoSpeed);
+    }
+    return () => clearInterval(interval);
+  }, [shadowingVideoPlaying, shadowingVideoSpeed, shadowingVideoDuration]);
+
+  // Video player resizer (Desktop/Laptop: 30% to 50%)
+  const handleStartResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingResize.current = true;
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDraggingResize.current || !shadowingGridRef.current) return;
+      const rect = shadowingGridRef.current.getBoundingClientRect();
+      const relativeX = moveEvent.clientX - rect.left;
+      const percent = Math.min(50, Math.max(30, (relativeX / rect.width) * 100));
+      setShadowingPlayerWidth(Math.round(percent));
+    };
+    const onMouseUp = () => {
+      isDraggingResize.current = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
+  const handleToggleExpand = () => {
+    setShadowingPlayerWidth((prev) => (prev >= 47 ? 36 : 50));
+  };
+
+  // Extract YouTube ID
+  const getYoutubeVideoId = (url: string) => {
+    if (!url) return '1La4QzGeaaQ';
+    try {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      if (match && match[2].length === 11) {
+        return match[2];
+      }
+    } catch {}
+    return '1La4QzGeaaQ';
+  };
+
+  // Get shadowing segments for current language
+  const getShadowingSegments = (): string[] => {
+    const data = currentLangData?.shadowing;
+    if (data?.segments && data.segments.length > 0) return data.segments;
+    if (data?.shadowingText) {
+      const parts = data.shadowingText
+        .split(/([,;:.]\s+)/)
+        .reduce((acc: string[], curr: string, i: number) => {
+          if (i % 2 === 0) acc.push(curr);
+          else if (acc.length) acc[acc.length - 1] += curr.trim();
+          return acc;
+        }, [])
+        .filter((p) => p.trim().length > 0);
+      return parts.length >= 2 ? parts : [data.shadowingText];
+    }
+    return ["Success is not final,", "failure is not fatal:", "it is the courage to continue that counts."];
   };
 
   // Speech Pronunciation Playback
@@ -614,74 +763,90 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     });
   };
 
-  // Shadowing Mic Test
-  const handleTestShadowing = () => {
+  // Shadowing Segment Mic Test with Streaming Transcript and Intelligent Comparison
+  const handleTestShadowingSegment = (partIdx: number, targetSegmentText: string) => {
     if (isShadowingListening) {
       setIsShadowingListening(false);
+      setShadowingInterim('');
       return;
     }
     if (!isSpeechRecognitionSupported()) {
-      alert('Brauzeringizda nutqni soliştiriş qöllab-quvvatlanmaydi.');
+      alert('Brauzeringizda mikrofondan ovoz yozib oliş qöllab-quvvatlanmaydi.');
       return;
     }
     setIsShadowingListening(true);
-    setShadowingRecognizedText('');
-    setShadowingScore(null);
-    setShadowingFeedback(null);
+    setShadowingInterim('');
 
     startListening({
       lang: selectedLang as SupportedLang,
-      expectedWord: currentLangData.shadowing.shadowingText,
-      onPartial: (partial) => {
-        setShadowingRecognizedText(partial);
+      expectedWord: targetSegmentText,
+      onInterim: (interim) => {
+        setShadowingInterim(interim);
       },
       onResult: (res) => {
         setIsShadowingListening(false);
-        const clean = (res.transcript || '').trim();
-        setShadowingRecognizedText(clean);
+        setShadowingInterim('');
+        const cleanSpoken = (res.transcript || '').trim();
 
-        // Silence guard for Shadowing
-        if (!clean || clean.split(/\s+/).filter(Boolean).length === 0) {
-          setShadowingScore(0);
-          setShadowingFeedback({
-            score: 0,
-            feedback: '⚠️ Ovoz aniqlanmadi. Siz heç narsa gapirmadingiz yoki audio qabul qilinmadi.',
-            advice: 'Iltimos, namunaviy audio gapni diqqat bilan tinglab, uni mikrofonga ovoz chiqarib takrorlang.',
-            isSilence: true,
-            omittedWords: currentLangData.shadowing.shadowingText.split(/\s+/).filter(Boolean)
-          });
+        if (!cleanSpoken) {
+          setShadowingPartScores((prev) => ({
+            ...prev,
+            [partIdx]: {
+              score: 0,
+              text: '⚠️ Ovoz aniqlanmadi (Nutq yo‘q)',
+              advice: 'Nutq aniqlanmadi. Iltimos, mikrofonga yaqinroq va balandroq talaffuz bilan qaytadan ayting.',
+              omittedWords: targetSegmentText.split(/\s+/).filter(Boolean)
+            }
+          }));
           return;
         }
 
-        // Real AI Shadowing Evaluation
         evaluateShadowingWithGemini({
-          referenceText: currentLangData.shadowing.shadowingText,
-          spokenText: clean,
+          spokenText: cleanSpoken,
+          referenceText: targetSegmentText,
           targetLanguage: selectedLang,
           lang: 'uz'
-        }).then(evalRes => {
-          setShadowingScore(evalRes.score);
-          setShadowingFeedback({
-            score: evalRes.score,
-            feedback: evalRes.feedback,
-            advice: evalRes.pronunciationAdvice,
-            isSilence: evalRes.isSilence,
-            omittedWords: evalRes.omittedWords
-          });
-          if (evalRes.score >= 80) triggerConfetti();
+        }).then((aiRes) => {
+          setShadowingPartScores((prev) => ({
+            ...prev,
+            [partIdx]: {
+              score: aiRes.score || aiRes.accuracyScore || 0,
+              text: cleanSpoken,
+              advice: aiRes.pronunciationAdvice || aiRes.feedback || 'Intonatsiya va so‘zlar ketma-ketligi mos keldi.',
+              omittedWords: aiRes.omittedWords || [],
+              isLiveAi: aiRes.isLiveAi
+            }
+          }));
+          if ((aiRes.score || 0) >= 80) triggerConfetti();
         }).catch(() => {
-          const score = Math.max(50, Math.min(100, Math.round(res.confidence * 100)));
-          setShadowingScore(score);
-          setShadowingFeedback({
-            score,
-            feedback: score >= 80 ? 'Ajoyib talaffuz!' : 'Yaxshi urinish.',
-            advice: 'Namunaga taqlid qilib, nutq ritmi va intonatsiyasini barqaror saqlang.'
-          });
-          if (score >= 80) triggerConfetti();
+          const rawScore = calculateSimilarity(cleanSpoken, targetSegmentText);
+          const targetWords = targetSegmentText.toLowerCase().replace(/[.,:;!?]/g, '').split(/\s+/).filter(Boolean);
+          const spokenWords = cleanSpoken.toLowerCase().replace(/[.,:;!?]/g, '').split(/\s+/).filter(Boolean);
+          const omitted = targetWords.filter((tw) => !spokenWords.some((sw) => sw.includes(tw) || tw.includes(sw)));
+
+          setShadowingPartScores((prev) => ({
+            ...prev,
+            [partIdx]: {
+              score: rawScore,
+              text: cleanSpoken,
+              advice: rawScore >= 75
+                ? 'A’lo darajadagi intonatsiya va to‘g‘ri urg‘u! 🎯'
+                : 'Ushbu qismdagi kalit so‘zlarning urg‘usi va ritmiga ko‘proq e’tibor bering.',
+              omittedWords: omitted,
+              isLiveAi: false
+            }
+          }));
+          if (rawScore >= 80) triggerConfetti();
         });
       },
-      onError: () => setIsShadowingListening(false),
-      onEnd: () => setIsShadowingListening(false)
+      onError: () => {
+        setIsShadowingListening(false);
+        setShadowingInterim('');
+      },
+      onEnd: () => {
+        setIsShadowingListening(false);
+        setShadowingInterim('');
+      }
     });
   };
 
@@ -1166,6 +1331,217 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           height: 100%;
           object-fit: cover;
           display: block;
+        }
+
+        /* Shadowing Player Wrapper with Resizer */
+        .practice-shadowing-wrapper {
+          position: relative;
+          height: 100%;
+          min-height: 260px;
+          max-height: 420px;
+          display: flex;
+        }
+
+        .shadowing-resize-handle {
+          position: absolute;
+          right: -16px;
+          top: 0;
+          bottom: 0;
+          width: 32px;
+          z-index: 25;
+          cursor: col-resize;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          user-select: none;
+        }
+        .shadowing-resize-line {
+          position: absolute;
+          width: 2px;
+          top: 20px;
+          bottom: 20px;
+          left: 15px;
+          background: rgba(255, 255, 255, 0.18);
+          border-radius: 9999px;
+          transition: background 0.2s ease, box-shadow 0.2s ease;
+        }
+        .shadowing-resize-handle:hover .shadowing-resize-line {
+          background: #38bdf8;
+          box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+        }
+        .shadowing-resize-btn {
+          position: relative;
+          z-index: 2;
+          width: 26px;
+          height: 26px;
+          border-radius: 9999px;
+          background: #0f172a;
+          border: 1.5px solid #38bdf8;
+          color: #38bdf8;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          padding: 0;
+        }
+        .shadowing-resize-btn:hover {
+          transform: scale(1.15);
+          background: #38bdf8;
+          color: #0f172a;
+          box-shadow: 0 0 18px rgba(56, 189, 248, 0.75);
+        }
+
+        /* Custom Branded Shadowing Video Player */
+        .custom-video-player {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          border-radius: 20px;
+          overflow: hidden;
+          background: #030712;
+          border: 1.5px solid rgba(59, 130, 246, 0.35);
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+        .custom-video-iframe-wrap {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 1;
+        }
+        .custom-video-top-bar {
+          position: relative;
+          z-index: 5;
+          padding: 12px 14px;
+          background: linear-gradient(180deg, rgba(3, 7, 18, 0.88) 0%, rgba(3, 7, 18, 0.5) 65%, transparent 100%);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          pointer-events: none;
+        }
+        .custom-video-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 10px;
+          border-radius: 9999px;
+          background: rgba(30, 58, 138, 0.6);
+          border: 1px solid rgba(96, 165, 250, 0.4);
+          color: #93c5fd;
+          font-size: 11px;
+          font-weight: 850;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+        }
+        .custom-video-live-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 9999px;
+          background: #ef4444;
+          box-shadow: 0 0 8px #ef4444;
+          animation: pulse 1.8s infinite;
+        }
+        .custom-video-title-pill {
+          font-size: 12px;
+          color: #e2e8f0;
+          font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 160px;
+        }
+        .custom-video-center-play {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 6;
+          width: 62px;
+          height: 62px;
+          border-radius: 9999px;
+          background: rgba(37, 99, 235, 0.88);
+          border: 2px solid rgba(255, 255, 255, 0.45);
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 28px rgba(37, 99, 235, 0.7);
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .custom-video-center-play:hover {
+          transform: translate(-50%, -50%) scale(1.15);
+          background: #2563eb;
+          box-shadow: 0 0 36px rgba(59, 130, 246, 0.95);
+        }
+        .custom-video-bottom-bar {
+          position: relative;
+          z-index: 5;
+          padding: 8px 12px 10px;
+          background: linear-gradient(0deg, rgba(3, 7, 18, 0.95) 0%, rgba(3, 7, 18, 0.75) 60%, transparent 100%);
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          backdrop-filter: blur(8px);
+        }
+        .custom-video-progress {
+          width: 100%;
+          height: 6px;
+          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.18);
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+        }
+        .custom-video-progress:hover {
+          height: 8px;
+        }
+        .custom-video-progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #3b82f6 0%, #38bdf8 100%);
+          border-radius: 4px;
+          box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+          transition: width 0.1s linear;
+        }
+        .custom-video-controls {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
+        }
+        .custom-video-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          padding: 5px 8px;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: #e2e8f0;
+          font-size: 11.5px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .custom-video-btn:hover {
+          background: rgba(59, 130, 246, 0.25);
+          border-color: rgba(59, 130, 246, 0.5);
+          color: #93c5fd;
+        }
+        .custom-video-time {
+          font-size: 11px;
+          font-weight: 800;
+          color: #94a3b8;
+          font-variant-numeric: tabular-nums;
+          white-space: nowrap;
         }
 
         /* Shadowing Video Player */
@@ -2624,11 +3000,20 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             border-radius: 12px !important;
             flex-shrink: 0 !important;
           }
+          .shadowing-resize-handle {
+            display: none !important;
+          }
+          .practice-shadowing-wrapper {
+            min-height: 160px !important;
+            max-height: 180px !important;
+            height: 170px !important;
+            flex-shrink: 0 !important;
+          }
           .practice-shadowing-media {
-            height: 120px !important;
-            min-height: 120px !important;
-            max-height: 120px !important;
-            border-radius: 12px !important;
+            height: 160px !important;
+            min-height: 160px !important;
+            max-height: 180px !important;
+            border-radius: 14px !important;
             flex-shrink: 0 !important;
           }
           .listening-music-player {
@@ -4052,164 +4437,471 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           )}
 
           {/* ===================================================== */}
-          {/* SLIDE 6: SHADOWING CARD (LARGE VIDEO, NO AUTOPLAY)     */}
+          {/* SLIDE 6: SHADOWING CARD (CUSTOM PLAYER + RESIZE + STEP) */}
           {/* ===================================================== */}
-          {currentSlide === 6 && (
-            <div data-lenis-prevent="true" className={`practice-skill-card slide-anim-${slideDirection} ${isDarkMode ? 'dark-card' : ''}`}>
-              {renderCardCornerWave()}
+          {currentSlide === 6 && (() => {
+            const segments = getShadowingSegments();
+            const safeIdx = Math.min(activeShadowingIndex, Math.max(0, segments.length - 1));
+            const currentSegment = segments[safeIdx] || '';
+            const partScore = shadowingPartScores[safeIdx];
+            const isRecordingThisSegment = isShadowingListening;
+            const answeredCount = Object.keys(shadowingPartScores).length;
+            const isAllPartsEvaluated = segments.length > 0 && answeredCount >= segments.length;
+            const avgScore = answeredCount > 0
+              ? Math.round(Object.values(shadowingPartScores).reduce((acc, curr) => acc + curr.score, 0) / answeredCount)
+              : 0;
 
-              <div className="practice-card-head">
-                <span className="practice-card-badge">
-                  <Award size={15} /> 7. SHADOWING (SOYA METODI & NUTQNI MOSLAŞTIRIŞ)
-                </span>
-                <span className="practice-lang-tag">
-                  <Globe size={13} /> {currentLangData.flag} {currentLangData.langName}
-                </span>
-              </div>
+            return (
+              <div data-lenis-prevent="true" className={`practice-skill-card slide-anim-${slideDirection} ${isDarkMode ? 'dark-card' : ''}`}>
+                {renderCardCornerWave()}
 
-              {/* Large Shadowing Grid */}
-              <div className="practice-shadowing-grid">
-                {/* Video Player: Large (330px height), autoplay=0 */}
-                <div className="practice-shadowing-media" style={{
-                  borderRadius: '20px',
-                  overflow: 'hidden',
-                  border: '1.5px solid rgba(59, 130, 246, 0.35)',
-                  boxShadow: '0 12px 32px rgba(0,0,0,0.5)'
-                }}>
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    src={getYoutubeEmbedUrl(currentLangData.shadowing.videoUrl, false)}
-                    title="Shadowing Video"
-                    style={{ border: 'none' }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+                <div className="practice-card-head">
+                  <span className="practice-card-badge">
+                    <Award size={15} /> 7. SHADOWING (SOYA METODI & NUTQNI MOSLAŞTIRIŞ)
+                  </span>
+                  <span className="practice-lang-tag">
+                    <Globe size={13} /> {currentLangData.flag} {currentLangData.langName}
+                  </span>
                 </div>
 
-                {/* Shadowing Text & Live Compare Mic */}
-                <div className="practice-content-col">
-                  {/* Tag */}
-                  <div className="practice-tag-new">
-                    <Sparkles size={12} />
-                    <span>Soya metodi</span>
-                  </div>
-
-                  {/* Title Row + Action Buttons */}
-                  <div className="practice-word-row">
-                    <div className="practice-word-title-wrap">
-                      <h3 className="practice-word-title" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)' }}>
-                        {currentLangData.shadowing.title}
-                      </h3>
-                    </div>
-
-                    <div className="practice-dual-action-btns">
-                      <button
-                        onClick={() => handlePlayTTS(currentLangData.shadowing.audioText)}
-                        className="practice-action-btn-listen"
-                        title="Audioni eşitiş"
-                      >
-                        {activeSpeakingText === currentLangData.shadowing.audioText ? <VolumeX size={15} /> : <Volume2 size={15} />}
-                        <span>{activeSpeakingText === currentLangData.shadowing.audioText ? "Töxtatiş" : "Tinglaş"}</span>
-                      </button>
-                      <button
-                        onClick={handleTestShadowing}
-                        className={`practice-action-btn-test ${isShadowingListening ? 'is-active' : ''}`}
-                        title="Nutqni mikrofonda soliştiriş"
-                      >
-                        <Mic size={15} />
-                        <span>{isShadowingListening ? 'Eşitilmoqda...' : 'Soliştiriş'}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Subtitle */}
-                  <div>
-                    <div className="practice-trans-green">
-                      Sözlovçining intonatsiyasi va urğusiga taqlid qiling
-                    </div>
-                    <p className="practice-explanation-text">
-                      Audioni eşiting va bir vaqtning özida uning ortidan takrorlang.
-                    </p>
-                  </div>
-
-                  {/* Target Text with Word-by-Word Matching (never overflows) */}
-                  <div className="practice-example-box">
-                    <div className="practice-example-head">
-                      <span className="practice-example-label">
-                        SOYA METODI UÇUN MATN (TARGET SPEECH):
-                      </span>
-                    </div>
-
-                    <div style={{
-                      fontSize: '15.5px',
-                      lineHeight: '1.9',
-                      color: '#f1f5f9',
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '5px'
-                    }}>
-                      {currentLangData.shadowing.shadowingText.split(' ').map((targetWord, idx) => {
-                        const cleanTarget = targetWord.replace(/[.,:;!?]/g, '').toLowerCase();
-                        const spokenWords = shadowingRecognizedText.toLowerCase().split(/\s+/);
-                        const isMatched = spokenWords.some((sw) => sw.includes(cleanTarget) || cleanTarget.includes(sw));
-
-                        return (
-                          <span
-                            key={idx}
-                            style={{
-                              padding: '2px 6px',
-                              borderRadius: '5px',
-                              color: isMatched ? '#34d399' : 'inherit',
-                              fontWeight: isMatched ? 850 : 500,
-                              background: isMatched ? 'rgba(16, 185, 129, 0.22)' : 'transparent',
-                              boxShadow: isMatched ? '0 0 8px rgba(16, 185, 129, 0.35)' : 'none',
-                              transition: 'all 0.2s ease',
-                              display: 'inline-block'
-                            }}
-                          >
-                            {targetWord}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Shadowing Score Feedback */}
-                  {shadowingScore !== null && (
-                    <div className="practice-example-box" style={{
-                      background: shadowingScore === 0 ? 'rgba(40, 10, 10, 0.92) !important' : 'rgba(6, 25, 20, 0.88) !important',
-                      border: shadowingScore === 0 ? '1.5px solid rgba(239, 68, 68, 0.6) !important' : '1.5px solid rgba(16, 185, 129, 0.6) !important',
-                      boxShadow: shadowingScore === 0 ? '0 0 16px rgba(239, 68, 68, 0.25) !important' : '0 0 16px rgba(16, 185, 129, 0.25) !important'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                        <span style={{ color: shadowingScore === 0 ? '#ef4444' : '#34d399', fontWeight: 800, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          {shadowingScore === 0 ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
-                          {shadowingScore === 0 ? 'Ovoz aniqlanmadi (Nutq yöq)' : '✓ Aytilgan nutq bilan soliştirildi'}
-                        </span>
-                        <strong style={{ fontSize: '15px', color: shadowingScore === 0 ? '#ef4444' : '#10b981', filter: shadowingScore === 0 ? 'none' : 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))' }}>
-                          {shadowingScore === 0 ? '0%' : `⭐ Moslik darajasi: ${shadowingScore}%`}
-                        </strong>
+                {/* Resizable Shadowing Grid (Desktop: variable player width up to 50%) */}
+                <div
+                  ref={shadowingGridRef}
+                  className="practice-shadowing-grid"
+                  style={{
+                    gridTemplateColumns: `${shadowingPlayerWidth}% 1fr`
+                  }}
+                >
+                  {/* Left Column: Custom Branded Video Player with Expand Handle */}
+                  <div className="practice-shadowing-wrapper">
+                    {/* Custom Video Player */}
+                    <div className="custom-video-player">
+                      {/* Hidden Iframe behind with controls=0 */}
+                      <div className="custom-video-iframe-wrap">
+                        <iframe
+                          ref={shadowingVideoRef}
+                          width="100%"
+                          height="100%"
+                          src={`https://www.youtube.com/embed/${getYoutubeVideoId(currentLangData.shadowing.videoUrl)}?enablejsapi=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0&disablekb=1&playsinline=1&fs=0`}
+                          title="Shadowing Custom Video Player"
+                          style={{ border: 'none', width: '100%', height: '100%' }}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+                        />
                       </div>
-                      {shadowingFeedback?.advice && (
-                        <div style={{ fontSize: '12.5px', color: '#cbd5e1', lineHeight: '1.5', marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '6px' }}>
-                          💡 <strong>AI repetitor tavsiyasi:</strong> {shadowingFeedback.advice}
+
+                      {/* Sleek Custom Top Bar */}
+                      <div className="custom-video-top-bar">
+                        <div className="custom-video-badge">
+                          <span className="custom-video-live-dot" />
+                          <span>TILŞUNOS HD PLAYER</span>
                         </div>
+                        <div className="custom-video-title-pill" title={currentLangData.shadowing.title}>
+                          {currentLangData.shadowing.title}
+                        </div>
+                      </div>
+
+                      {/* Big Glowing Center Play Button */}
+                      {!shadowingVideoPlaying && (
+                        <button
+                          onClick={toggleVideoPlayback}
+                          className="custom-video-center-play"
+                          title="Videoni ijro etish"
+                        >
+                          <Play size={28} fill="currentColor" style={{ marginLeft: '4px' }} />
+                        </button>
                       )}
-                      {shadowingFeedback?.omittedWords && shadowingFeedback.omittedWords.length > 0 && shadowingScore > 0 && (
-                        <div style={{ fontSize: '12px', color: '#f59e0b', marginTop: '4px' }}>
-                          ⚠️ Noaniq yoki tuşirib qoldirilgan sözlar: {shadowingFeedback.omittedWords.slice(0, 4).join(', ')}
+
+                      {/* Custom Sleek Bottom Controls Bar */}
+                      <div className="custom-video-bottom-bar">
+                        {/* Progress Scrubber */}
+                        <div
+                          className="custom-video-progress"
+                          onClick={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const clickPos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                            const targetSecs = Math.round(clickPos * (shadowingVideoDuration || 90));
+                            handleVideoSeek(targetSecs);
+                          }}
+                          title="Videoni kerakli vaqtiga o‘tkazish"
+                        >
+                          <div
+                            className="custom-video-progress-fill"
+                            style={{ width: `${Math.min(100, (shadowingVideoCurrentTime / (shadowingVideoDuration || 90)) * 100).toFixed(2)}%` }}
+                          />
+                        </div>
+
+                        {/* Controls Row */}
+                        <div className="custom-video-controls">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <button
+                              onClick={toggleVideoPlayback}
+                              className="custom-video-btn"
+                              title={shadowingVideoPlaying ? "Pauza" : "Tinglash va ko‘rish"}
+                            >
+                              {shadowingVideoPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+                            </button>
+
+                            <button
+                              onClick={() => handleVideoSeek(shadowingVideoCurrentTime - 5)}
+                              className="custom-video-btn"
+                              title="5 soniya orqaga (-5s)"
+                            >
+                              <RotateCcw size={11} /> -5s
+                            </button>
+
+                            <button
+                              onClick={() => handleVideoSeek(shadowingVideoCurrentTime + 5)}
+                              className="custom-video-btn"
+                              title="5 soniya oldinga (+5s)"
+                            >
+                              +5s <FastForward size={11} />
+                            </button>
+
+                            <span className="custom-video-time">
+                              {formatTime(shadowingVideoCurrentTime)} / {formatTime(shadowingVideoDuration || 90)}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <button
+                              onClick={handleToggleVideoSpeed}
+                              className="custom-video-btn"
+                              title="Ijro tezligi: 1x, 1.25x, 1.5x, 0.75x"
+                            >
+                              ⚡ {shadowingVideoSpeed}x
+                            </button>
+
+                            <button
+                              onClick={handleToggleVideoMute}
+                              className="custom-video-btn"
+                              title={shadowingVideoMuted ? "Ovozni yoqish" : "Ovozni o‘chirish"}
+                            >
+                              {shadowingVideoMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Resize Handle (Desktop/Laptop: Drag or Click to expand up to 50%) */}
+                    <div
+                      className="shadowing-resize-handle"
+                      onMouseDown={handleStartResize}
+                      title="Pleyer kengligini yonga tortib o‘zgartiring yoki bosing"
+                    >
+                      <div className="shadowing-resize-line" />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleExpand();
+                        }}
+                        className="shadowing-resize-btn"
+                        title={shadowingPlayerWidth >= 47 ? "Pleyerni asl o‘lchamiga qaytarish" : "Pleyerni 50% ga kengaytirish"}
+                      >
+                        {shadowingPlayerWidth >= 47 ? <ChevronLeft size={15} /> : <ChevronRight size={15} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Segmented Shadowing Stepper & Real-time Comparison */}
+                  <div className="practice-content-col">
+                    {/* Tag */}
+                    <div className="practice-tag-new">
+                      <Sparkles size={12} />
+                      <span>Soya metodi (Segment Stepper)</span>
+                    </div>
+
+                    {/* Title Row */}
+                    <div className="practice-word-row">
+                      <div className="practice-word-title-wrap">
+                        <h3 className="practice-word-title" style={{ fontSize: 'clamp(20px, 2.2vw, 26px)' }}>
+                          {currentLangData.shadowing.title}
+                        </h3>
+                      </div>
+
+                      {isAllPartsEvaluated && (
+                        <div className="practice-dual-action-btns">
+                          <span style={{
+                            padding: '6px 14px',
+                            borderRadius: '9999px',
+                            background: 'rgba(16, 185, 129, 0.15)',
+                            border: '1px solid #10b981',
+                            color: '#34d399',
+                            fontSize: '12px',
+                            fontWeight: 850
+                          }}>
+                            ⭐ O‘rtacha: {avgScore}%
+                          </span>
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </div>
 
-              {/* Bottom Card Dots & Pagination */}
-              {renderCardBottomNav(6)}
-            </div>
-          )}
+                    {/* Subtitle */}
+                    <div>
+                      <div className="practice-trans-green">
+                        Sözlovçining intonatsiyasi va urğusiga taqlid qiling
+                      </div>
+                      <p className="practice-explanation-text">
+                        Matn bir nechta qismlarga ajratilgan. Har bir qismni alohida tinglang, takrorlang va solishtiring.
+                      </p>
+                    </div>
+
+                    {/* Shadowing Segment Stepper Box */}
+                    <div className="practice-speaking-stepper-box">
+                      {/* Stepper Header: Qism 1 / 3 with Next / Prev */}
+                      <div className="practice-speaking-stepper-head">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className="practice-speaking-stepper-label">
+                            {safeIdx + 1}-QISM ({segments.length} TADAN):
+                          </span>
+                          {/* Progress dots for parts */}
+                          <div style={{ display: 'inline-flex', gap: '5px', alignItems: 'center' }}>
+                            {segments.map((_, idx) => (
+                              <span
+                                key={idx}
+                                onClick={() => setActiveShadowingIndex(idx)}
+                                style={{
+                                  width: idx === safeIdx ? '16px' : '6px',
+                                  height: '6px',
+                                  borderRadius: '9999px',
+                                  background: idx === safeIdx ? '#38bdf8' : shadowingPartScores[idx] ? '#10b981' : 'rgba(255,255,255,0.25)',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                title={`${idx + 1}-qism`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="practice-speaking-stepper-controls">
+                          <button
+                            onClick={() => setActiveShadowingIndex((prev) => Math.max(0, prev - 1))}
+                            disabled={safeIdx === 0}
+                            className="practice-speaking-nav-btn"
+                            title="Oldingi qism"
+                          >
+                            <ChevronLeft size={16} />
+                          </button>
+                          <span className="practice-speaking-step-num">
+                            {safeIdx + 1} / {segments.length}
+                          </span>
+                          <button
+                            onClick={() => setActiveShadowingIndex((prev) => Math.min(segments.length - 1, prev + 1))}
+                            disabled={safeIdx === segments.length - 1}
+                            className="practice-speaking-nav-btn"
+                            title="Keyingi qism"
+                          >
+                            <ChevronRight size={16} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Active Segment Speech Box with Word-by-Word Matching */}
+                      <div className="practice-example-box" style={{
+                        marginTop: '8px',
+                        border: '1.5px solid rgba(56, 189, 248, 0.35)',
+                        background: 'rgba(15, 23, 42, 0.72)'
+                      }}>
+                        <div className="practice-example-head">
+                          <span className="practice-example-label" style={{ color: '#38bdf8' }}>
+                            SOYA METODI UÇUN MATN ({safeIdx + 1}-QISM):
+                          </span>
+                        </div>
+
+                        <div style={{
+                          fontSize: '16px',
+                          lineHeight: '1.9',
+                          color: '#f1f5f9',
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '6px'
+                        }}>
+                          {currentSegment.split(/\s+/).map((targetWord, idx) => {
+                            const cleanTarget = targetWord.replace(/[.,:;!?]/g, '').toLowerCase();
+                            const spokenWords = (partScore?.text || '').toLowerCase().split(/\s+/);
+                            const isMatched = spokenWords.some((sw) => sw.includes(cleanTarget) || cleanTarget.includes(sw));
+                            const hasSpoken = !!partScore && partScore.score > 0;
+
+                            return (
+                              <span
+                                key={idx}
+                                style={{
+                                  padding: '3px 8px',
+                                  borderRadius: '6px',
+                                  color: hasSpoken ? (isMatched ? '#34d399' : '#f87171') : '#f8fafc',
+                                  fontWeight: 800,
+                                  background: hasSpoken
+                                    ? (isMatched ? 'rgba(16, 185, 129, 0.22)' : 'rgba(239, 68, 68, 0.18)')
+                                    : 'rgba(255, 255, 255, 0.05)',
+                                  border: hasSpoken
+                                    ? (isMatched ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(239, 68, 68, 0.4)')
+                                    : '1px solid rgba(255, 255, 255, 0.08)',
+                                  boxShadow: hasSpoken && isMatched ? '0 0 10px rgba(16, 185, 129, 0.3)' : 'none',
+                                  transition: 'all 0.25s ease',
+                                  display: 'inline-block'
+                                }}
+                              >
+                                {targetWord}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Action Row: Tinglash & Solishtirish & Next */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <button
+                            onClick={() => handlePlayTTS(currentSegment)}
+                            className="practice-action-btn-listen"
+                            title="Ushbu qismni tinglash"
+                          >
+                            {activeSpeakingText === currentSegment ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                            <span>{activeSpeakingText === currentSegment ? "To'xtatish" : "Tinglash"}</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleTestShadowingSegment(safeIdx, currentSegment)}
+                            className={`practice-action-btn-test ${isRecordingThisSegment ? 'is-active' : ''}`}
+                            title="Ushbu qismni mikrofonda solishtirish"
+                          >
+                            <Mic size={15} />
+                            <span>{isRecordingThisSegment ? 'Eşitilmoqda...' : partScore ? 'Qayta solishtirish' : 'Solishtirish'}</span>
+                          </button>
+                        </div>
+
+                        {safeIdx < segments.length - 1 && (
+                          <button
+                            onClick={() => setActiveShadowingIndex((prev) => Math.min(segments.length - 1, prev + 1))}
+                            className="practice-speaking-next-btn"
+                            title="Keyingi qismga o‘tish"
+                          >
+                            <span>Keyingi qism</span>
+                            <ChevronRight size={14} />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Live Interim Streaming Transcript */}
+                      {isRecordingThisSegment && shadowingInterim && (
+                        <div style={{
+                          marginTop: '10px',
+                          padding: '9px 13px',
+                          borderRadius: '10px',
+                          background: 'rgba(56, 189, 248, 0.12)',
+                          border: '1px dashed #38bdf8',
+                          color: '#38bdf8',
+                          fontSize: '13px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}>
+                          <Mic size={14} className="animate-pulse" />
+                          <span>Eşitilmoqda: <strong>"{shadowingInterim}"</strong></span>
+                        </div>
+                      )}
+
+                      {/* Evaluated Part Result Card */}
+                      {partScore && (
+                        <div style={{
+                          marginTop: '10px',
+                          padding: '12px 14px',
+                          borderRadius: '12px',
+                          background: partScore.score >= 80 ? 'rgba(16, 185, 129, 0.1)' : partScore.score >= 50 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                          border: `1.5px solid ${partScore.score >= 80 ? 'rgba(16, 185, 129, 0.5)' : partScore.score >= 50 ? 'rgba(245, 158, 11, 0.5)' : 'rgba(239, 68, 68, 0.5)'}`,
+                          boxShadow: `0 0 16px ${partScore.score >= 80 ? 'rgba(16, 185, 129, 0.2)' : partScore.score >= 50 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                            <span style={{
+                              fontSize: '11px',
+                              fontWeight: 850,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.6px',
+                              color: partScore.score >= 80 ? '#34d399' : partScore.score >= 50 ? '#fbbf24' : '#f87171'
+                            }}>
+                              {partScore.score >= 80 ? '✓ TÖĞRI MOSLASHTIRILDI' : partScore.score >= 50 ? '⚠️ YAŞIRIŞ / YAQIN' : '✗ TALAFUZDA XATOLIKLAR'}
+                            </span>
+                            <strong style={{
+                              fontSize: '13.5px',
+                              fontWeight: 850,
+                              color: partScore.score >= 80 ? '#34d399' : partScore.score >= 50 ? '#fbbf24' : '#f87171'
+                            }}>
+                              ⭐ Moslik darajasi: {partScore.score}%
+                            </strong>
+                          </div>
+
+                          <div style={{ fontSize: '13px', color: '#f1f5f9' }}>
+                            <span style={{ color: '#94a3b8' }}>🗣️ Siz aytgan matn:</span> <strong>"{partScore.text}"</strong>
+                          </div>
+
+                          {partScore.omittedWords && partScore.omittedWords.length > 0 && partScore.score > 0 && (
+                            <div style={{
+                              padding: '8px 10px',
+                              borderRadius: '8px',
+                              background: 'rgba(239, 68, 68, 0.1)',
+                              border: '1px solid rgba(239, 68, 68, 0.25)',
+                              fontSize: '12px',
+                              color: '#fca5a5'
+                            }}>
+                              <strong style={{ color: '#ef4444', display: 'block', marginBottom: '2px' }}>
+                                ⚠️ Noaniq yoki tushirib qoldirilgan so‘zlar:
+                              </strong>
+                              <span>{partScore.omittedWords.slice(0, 4).join(', ')}</span>
+                            </div>
+                          )}
+
+                          {partScore.advice && (
+                            <div style={{ fontSize: '12px', color: '#cbd5e1', fontStyle: 'italic' }}>
+                              💡 AI repetitor tavsiyasi: {partScore.advice}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* All Segments Completed Celebration */}
+                    {isAllPartsEvaluated && (
+                      <div className="practice-example-box" style={{
+                        background: 'rgba(6, 25, 20, 0.92) !important',
+                        border: '1.5px solid rgba(16, 185, 129, 0.75) !important',
+                        boxShadow: '0 0 24px rgba(16, 185, 129, 0.3) !important',
+                        marginTop: '10px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                          <div>
+                            <span style={{ fontSize: '11px', fontWeight: 850, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                              🎉 BARCHA QISMLAR MUVAFFAQIYATLI YAKUNLANDI!
+                            </span>
+                            <h4 style={{ margin: '4px 0', fontSize: '18px', fontWeight: 850, color: '#ffffff' }}>
+                              O‘rtacha moslik darajangiz: {avgScore}%
+                            </h4>
+                            <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>
+                              Soya metodi orqali gap intonatsiyasi va urg‘usini muvaffaqiyatli o‘zlashtirdingiz.
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => onBegin('register')}
+                            className="practice-action-btn-green"
+                            style={{ padding: '8px 16px', fontSize: '13px' }}
+                          >
+                            To‘liq kursni boshlash
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bottom Card Dots & Pagination */}
+                {renderCardBottomNav(6)}
+              </div>
+            );
+          })()}
 
           {/* ===================================================== */}
           {/* FEATURED BANNER: AMALIY MODUL (MATCHING IMAGE 2)      */}

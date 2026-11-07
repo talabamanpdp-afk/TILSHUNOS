@@ -61,6 +61,7 @@ export interface ShadowingCardData {
   title: string;
   shadowingText: string;
   audioText: string;
+  segments?: string[];
 }
 
 export interface LanguagePracticeGuide {
@@ -177,7 +178,12 @@ export const DEFAULT_PRACTICE_GUIDE: PracticeGuideConfig = {
         videoUrl: "https://www.youtube.com/watch?v=1La4QzGeaaQ",
         title: "Winston Churchill — The Power of Courage",
         shadowingText: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
-        audioText: "Success is not final, failure is not fatal: it is the courage to continue that counts."
+        audioText: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+        segments: [
+          "Success is not final,",
+          "failure is not fatal:",
+          "it is the courage to continue that counts."
+        ]
       }
     },
     de: {
@@ -255,7 +261,12 @@ export const DEFAULT_PRACTICE_GUIDE: PracticeGuideConfig = {
         videoUrl: "https://www.youtube.com/watch?v=1La4QzGeaaQ",
         title: "Johann Wolfgang von Goethe — Zitat",
         shadowingText: "Es ist nicht genug zu wissen, man muss auch anwenden; es ist nicht genug zu wollen, man muss auch tun.",
-        audioText: "Es ist nicht genug zu wissen, man muss auch anwenden; es ist nicht genug zu wollen, man muss auch tun."
+        audioText: "Es ist nicht genug zu wissen, man muss auch anwenden; es ist nicht genug zu wollen, man muss auch tun.",
+        segments: [
+          "Es ist nicht genug zu wissen,",
+          "man muss auch anwenden;",
+          "es ist nicht genug zu wollen, man muss auch tun."
+        ]
       }
     },
     tr: {
@@ -333,7 +344,12 @@ export const DEFAULT_PRACTICE_GUIDE: PracticeGuideConfig = {
         videoUrl: "https://www.youtube.com/watch?v=1La4QzGeaaQ",
         title: "Mevlana Celaleddin Rumi — Özlü Söz",
         shadowingText: "Dünle beraber gitti cancağızım, ne kadar söz varsa düne ait. Şimdi yeni şeyler söylemek lazım.",
-        audioText: "Dünle beraber gitti cancağızım, ne kadar söz varsa düne ait. Şimdi yeni şeyler söylemek lazım."
+        audioText: "Dünle beraber gitti cancağızım, ne kadar söz varsa düne ait. Şimdi yeni şeyler söylemek lazım.",
+        segments: [
+          "Dünle beraber gitti cancağızım,",
+          "ne kadar söz varsa düne ait.",
+          "Şimdi yeni şeyler söylemek lazım."
+        ]
       }
     },
     ru: {
@@ -411,7 +427,12 @@ export const DEFAULT_PRACTICE_GUIDE: PracticeGuideConfig = {
         videoUrl: "https://www.youtube.com/watch?v=1La4QzGeaaQ",
         title: "Лев Толстой — Мысль о совершенствовании",
         shadowingText: "Чтобы жить честно, надо рваться, путаться, биться, ошибаться, начинать и бросать, и вечно бороться и лишаться.",
-        audioText: "Чтобы жить честно, надо рваться, путаться, биться, ошибаться, начинать и бросать, и вечно бороться и лишаться."
+        audioText: "Чтобы жить честно, надо рваться, путаться, биться, ошибаться, начинать и бросать, и вечно бороться и лишаться.",
+        segments: [
+          "Чтобы жить честно, надо рваться,",
+          "путаться, биться, ошибаться,",
+          "начинать и бросать, и вечно бороться и лишаться."
+        ]
       }
     },
     uz: {
@@ -489,7 +510,12 @@ export const DEFAULT_PRACTICE_GUIDE: PracticeGuideConfig = {
         videoUrl: "https://www.youtube.com/watch?v=1La4QzGeaaQ",
         title: "Alişer Navoiy — Hikmatli Bayt",
         shadowingText: "Olam ahli bilingizkim, iş emas duşmanliğ, yor öling bir-biringizğakim, erur yorliğ.",
-        audioText: "Olam ahli bilingizkim, iş emas duşmanliğ, yor öling bir-biringizğakim, erur yorliğ."
+        audioText: "Olam ahli bilingizkim, iş emas duşmanliğ, yor öling bir-biringizğakim, erur yorliğ.",
+        segments: [
+          "Olam ahli bilingizkim,",
+          "iş emas duşmanliğ,",
+          "yor öling bir-biringizğakim, erur yorliğ."
+        ]
       }
     }
   }
