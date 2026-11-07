@@ -3,10 +3,11 @@ import {
   Volume2, VolumeX, Mic, Play, Pause, RotateCcw, CheckCircle2, AlertCircle,
   Sparkles, BookOpen, PenLine, Headphones, MessageSquare, Award,
   ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Trophy, Check, ArrowRight,
-  Music, FastForward, Rewind, Copy, Globe, Shield, BarChart3, User, Cpu, Users
+  Music, FastForward, Rewind, Copy, Globe, Shield, BarChart3, User, Cpu, Users,
+  Lock, Unlock, Timer, Clock
 } from 'lucide-react';
 import {
-  playSpeech, stopSpeech, startListening,
+  playSpeech, stopSpeech, startListening, calculateSimilarity,
   SupportedLang, isSpeechRecognitionSupported
 } from '../utils/speech';
 import {
@@ -55,17 +56,26 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
 
   // Vocab card states
   const [vocabWordScore, setVocabWordScore] = useState<number | null>(null);
-  const [vocabPhraseScore, setVocabPhraseScore] = useState<number | null>(null);
+  const [vocabWordRecognized, setVocabWordRecognized] = useState<string>('');
+  const [vocabWordFeedback, setVocabWordFeedback] = useState<string | null>(null);
+  const [vocabInterim, setVocabInterim] = useState<string>('');
   const [isListeningVocabWord, setIsListeningVocabWord] = useState(false);
-  const [isListeningVocabPhrase, setIsListeningVocabPhrase] = useState(false);
 
   // Writing card states
   const [showLetterTranslation, setShowLetterTranslation] = useState(false);
 
-  // Reading card states
+  // Reading card states with Timer
+  const readingDuration = (guideConfig as any)?.readingDuration || 60;
+  const [readingStarted, setReadingStarted] = useState(false);
+  const [readingTimer, setReadingTimer] = useState<number>(readingDuration);
+  const [readingTimerRunning, setReadingTimerRunning] = useState(false);
   const [showReadingAnswers, setShowReadingAnswers] = useState(false);
 
-  // Listening card states: Dedicated Music Player (NO video shown!)
+  // Listening card states: Dedicated Music Player (NO video shown!) + Timer
+  const listeningDuration = (guideConfig as any)?.listeningDuration || 60;
+  const [listeningStarted, setListeningStarted] = useState(false);
+  const [listeningTimer, setListeningTimer] = useState<number>(listeningDuration);
+  const [listeningTimerRunning, setListeningTimerRunning] = useState(false);
   const ytIframeRef = useRef<HTMLIFrameElement | null>(null);
   const [musicPlaying, setMusicPlaying] = useState(false);
   const [musicCurrentTime, setMusicCurrentTime] = useState(0); // in seconds
@@ -74,7 +84,19 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
   const [showListeningAnswers, setShowListeningAnswers] = useState(false);
 
   // Speaking card states
-  const [speakingScores, setSpeakingScores] = useState<Record<number, { score: number; text: string }>>({});
+  const [speakingScores, setSpeakingScores] = useState<Record<number, {
+    score: number;
+    text: string;
+    cefrLevel?: string;
+    feedback?: string;
+    mistakes?: string[];
+    alternativePhrasing?: string;
+    improvements?: string[];
+    pronunciationFeedback?: string;
+    isLiveAi?: boolean;
+  }>>({});
+  const [speakingAiLoading, setSpeakingAiLoading] = useState<Record<number, boolean>>({});
+  const [speakingInterim, setSpeakingInterim] = useState<string>('');
   const [activeListeningQuestionId, setActiveListeningQuestionId] = useState<number | null>(null);
   const [showTotalSpeakingScore, setShowTotalSpeakingScore] = useState(false);
   const [activeSpeakingQIndex, setActiveSpeakingQIndex] = useState<number>(0);
@@ -203,25 +225,84 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     postYTCommand('pauseVideo');
     setMusicPlaying(false);
     setIsListeningVocabWord(false);
-    setIsListeningVocabPhrase(false);
+    setVocabInterim('');
     setActiveListeningQuestionId(null);
+    setSpeakingInterim('');
     setIsShadowingListening(false);
   };
 
   useEffect(() => {
     stopAllAudio();
     setVocabWordScore(null);
-    setVocabPhraseScore(null);
+    setVocabWordRecognized('');
+    setVocabWordFeedback(null);
+    setVocabInterim('');
     setShowLetterTranslation(false);
+    setReadingStarted(false);
+    setReadingTimer(readingDuration);
+    setReadingTimerRunning(false);
     setShowReadingAnswers(false);
+    setListeningStarted(false);
+    setListeningTimer(listeningDuration);
+    setListeningTimerRunning(false);
     setShowListeningAnswers(false);
     setSpeakingScores({});
+    setSpeakingAiLoading({});
+    setSpeakingInterim('');
     setShowTotalSpeakingScore(false);
     setActiveSpeakingQIndex(0);
     setShadowingRecognizedText('');
     setShadowingScore(null);
     setMusicCurrentTime(0);
   }, [selectedLang]);
+
+  // Reading countdown timer loop
+  useEffect(() => {
+    let timer: any;
+    if (readingTimerRunning && readingTimer > 0) {
+      timer = setInterval(() => {
+        setReadingTimer((prev) => {
+          if (prev <= 1) {
+            setReadingTimerRunning(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [readingTimerRunning, readingTimer]);
+
+  // Listening countdown timer loop
+  useEffect(() => {
+    let timer: any;
+    if (listeningTimerRunning && listeningTimer > 0) {
+      timer = setInterval(() => {
+        setListeningTimer((prev) => {
+          if (prev <= 1) {
+            setListeningTimerRunning(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [listeningTimerRunning, listeningTimer]);
+
+  const handleStartReading = () => {
+    setReadingStarted(true);
+    setReadingTimer(readingDuration);
+    setReadingTimerRunning(true);
+    setShowReadingAnswers(false);
+  };
+
+  const handleStartListening = () => {
+    setListeningStarted(true);
+    setListeningTimer(listeningDuration);
+    setListeningTimerRunning(true);
+    setShowListeningAnswers(false);
+  };
 
   // Clean audio on slide change
   const goToSlide = (index: number) => {
@@ -380,10 +461,11 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     } catch {}
   };
 
-  // Vocab Word Mic Test
+  // Vocab Word Mic Test (Real speech comparison)
   const handleTestVocabWord = () => {
     if (isListeningVocabWord) {
       setIsListeningVocabWord(false);
+      setVocabInterim('');
       return;
     }
     if (!isSpeechRecognitionSupported()) {
@@ -392,52 +474,57 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
     }
     setIsListeningVocabWord(true);
     setVocabWordScore(null);
+    setVocabWordRecognized('');
+    setVocabWordFeedback(null);
+    setVocabInterim('');
 
     startListening({
       lang: selectedLang as SupportedLang,
       expectedWord: currentLangData.vocab.word,
+      onInterim: (text) => {
+        setVocabInterim(text);
+      },
       onResult: (res) => {
         setIsListeningVocabWord(false);
-        const score = Math.max(65, Math.min(100, Math.round(res.confidence * 100)));
-        setVocabWordScore(score);
-        if (score >= 80) triggerConfetti();
+        setVocabInterim('');
+        const cleanSpoken = (res.transcript || '').trim();
+        setVocabWordRecognized(cleanSpoken);
+
+        if (!cleanSpoken) {
+          setVocabWordScore(0);
+          setVocabWordFeedback("Ovoz aniqlanmadi. Qaytadan balandroq va aniqroq ayting! 🎙️");
+          return;
+        }
+
+        // Calculate actual similarity (0 to 100) using Levenshtein distance
+        const rawScore = calculateSimilarity(cleanSpoken, currentLangData.vocab.word);
+        setVocabWordScore(rawScore);
+
+        if (rawScore >= 80) {
+          setVocabWordFeedback("A'lo darajadagi to'g'ri talaffuz! 🎯");
+          triggerConfetti();
+        } else if (rawScore >= 50) {
+          setVocabWordFeedback("Yaxshi urinish, lekin so‘z oxiri yoki urg‘usiga e'tibor bering! 👍");
+        } else {
+          setVocabWordFeedback(`Umuman boshqa so‘z yoki noaniq tovush aytildi. Kutilgan so‘z: "${currentLangData.vocab.word}" 🔄`);
+        }
       },
-      onError: () => setIsListeningVocabWord(false),
-      onEnd: () => setIsListeningVocabWord(false)
+      onError: () => {
+        setIsListeningVocabWord(false);
+        setVocabInterim('');
+      },
+      onEnd: () => {
+        setIsListeningVocabWord(false);
+        setVocabInterim('');
+      }
     });
   };
 
-  // Vocab Phrase Mic Test
-  const handleTestVocabPhrase = () => {
-    if (isListeningVocabPhrase) {
-      setIsListeningVocabPhrase(false);
-      return;
-    }
-    if (!isSpeechRecognitionSupported()) {
-      alert('Brauzeringizda mikrofondan ovoz yozib oliş qöllab-quvvatlanmaydi.');
-      return;
-    }
-    setIsListeningVocabPhrase(true);
-    setVocabPhraseScore(null);
-
-    startListening({
-      lang: selectedLang as SupportedLang,
-      expectedWord: currentLangData.vocab.examplePhrase,
-      onResult: (res) => {
-        setIsListeningVocabPhrase(false);
-        const score = Math.max(70, Math.min(100, Math.round(res.confidence * 100)));
-        setVocabPhraseScore(score);
-        if (score >= 80) triggerConfetti();
-      },
-      onError: () => setIsListeningVocabPhrase(false),
-      onEnd: () => setIsListeningVocabPhrase(false)
-    });
-  };
-
-  // Speaking Question Mic Test
+  // Speaking Question Mic Test with Real AI and Streaming Transcript
   const handleTestSpeakingQuestion = (questionId: number, questionText: string) => {
     if (activeListeningQuestionId === questionId) {
       setActiveListeningQuestionId(null);
+      setSpeakingInterim('');
       return;
     }
     if (!isSpeechRecognitionSupported()) {
@@ -445,12 +532,17 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
       return;
     }
     setActiveListeningQuestionId(questionId);
+    setSpeakingInterim('');
 
     startListening({
       lang: selectedLang as SupportedLang,
       expectedWord: questionText,
+      onInterim: (interim) => {
+        setSpeakingInterim(interim);
+      },
       onResult: (res) => {
         setActiveListeningQuestionId(null);
+        setSpeakingInterim('');
         const clean = (res.transcript || '').trim();
         const words = clean.split(/\s+/).filter(w => w.length > 1);
 
@@ -460,11 +552,16 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             ...prev,
             [questionId]: {
               score: 0,
-              text: '⚠️ Ovoz aniqlanmadi (Nutq yöq)'
+              text: '⚠️ Ovoz aniqlanmadi (Nutq yo‘q)',
+              feedback: 'Nutq aniqlanmadi. Iltimos, mikrofonga aniq ovozda to‘liq gap bilan javob bering.',
+              mistakes: ['Hech qanday so‘z eshitilmadi. Mikrofon sozlamalarini va ruxsatini tekshiring.']
             }
           }));
           return;
         }
+
+        // Set AI loading indicator
+        setSpeakingAiLoading((prev) => ({ ...prev, [questionId]: true }));
 
         // Live AI or Dynamic Evaluation
         evaluateSpeakingWithGemini({
@@ -474,26 +571,46 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           targetLanguage: selectedLang,
           lang: 'uz'
         }).then(aiRes => {
+          setSpeakingAiLoading((prev) => ({ ...prev, [questionId]: false }));
           setSpeakingScores((prev) => ({
             ...prev,
             [questionId]: {
               score: aiRes.score,
-              text: clean
+              text: clean,
+              cefrLevel: aiRes.cefrLevel,
+              feedback: aiRes.feedback,
+              mistakes: aiRes.mistakes,
+              alternativePhrasing: aiRes.alternativePhrasing,
+              improvements: aiRes.improvements,
+              pronunciationFeedback: aiRes.pronunciationFeedback,
+              isLiveAi: aiRes.isLiveAi
             }
           }));
+          if (aiRes.score >= 80) triggerConfetti();
         }).catch(() => {
+          setSpeakingAiLoading((prev) => ({ ...prev, [questionId]: false }));
           const score = Math.max(60, Math.min(94, Math.round(55 + words.length * 5)));
           setSpeakingScores((prev) => ({
             ...prev,
             [questionId]: {
               score,
-              text: clean
+              text: clean,
+              cefrLevel: score >= 85 ? 'C1' : score >= 75 ? 'B2' : 'B1',
+              feedback: 'Nutq qabul qilindi. Fikr bildirishga intilish yaxshi.',
+              mistakes: ['Murakkab grammatik strukturalar yetarli emas.'],
+              alternativePhrasing: `Regarding this topic, I would emphasize that regular practice and immersion are essential keys to success.`
             }
           }));
         });
       },
-      onError: () => setActiveListeningQuestionId(null),
-      onEnd: () => setActiveListeningQuestionId(null)
+      onError: () => {
+        setActiveListeningQuestionId(null);
+        setSpeakingInterim('');
+      },
+      onEnd: () => {
+        setActiveListeningQuestionId(null);
+        setSpeakingInterim('');
+      }
     });
   };
 
@@ -1748,6 +1865,69 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           transform: translateY(-2px);
           box-shadow: 0 0 24px rgba(16, 185, 129, 0.8);
         }
+        .practice-timer-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          border-radius: 9999px;
+          background: rgba(245, 158, 11, 0.15);
+          border: 1.5px solid rgba(245, 158, 11, 0.55);
+          color: #fbbf24;
+          font-size: 12.5px;
+          font-weight: 850;
+          letter-spacing: 0.5px;
+          box-shadow: 0 0 14px rgba(245, 158, 11, 0.25);
+          white-space: nowrap !important;
+          flex-shrink: 0 !important;
+        }
+        .practice-timer-pill.is-done {
+          background: rgba(16, 185, 129, 0.15);
+          border-color: rgba(16, 185, 129, 0.55);
+          color: #34d399;
+          box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+        }
+        .practice-action-btn-locked {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          padding: 8px 18px;
+          border-radius: 9999px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1.5px dashed rgba(255, 255, 255, 0.22);
+          color: #94a3b8;
+          font-size: 13px;
+          font-weight: 800;
+          cursor: not-allowed;
+          opacity: 0.75;
+          white-space: nowrap !important;
+          flex-shrink: 0 !important;
+        }
+        .listening-audio-tip-box {
+          margin-top: 14px;
+          padding: 12px 14px;
+          border-radius: 14px;
+          background: rgba(15, 23, 42, 0.65);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .listening-tip-label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          font-weight: 850;
+          color: #93c5fd;
+          letter-spacing: 0.6px;
+          text-transform: uppercase;
+          margin-bottom: 4px;
+        }
+        .listening-tip-text {
+          font-size: 11.5px;
+          line-height: 1.5;
+          color: #cbd5e1;
+          margin: 0;
+        }
 
         /* Speaking Stepper Box (Single question view for ultra compactness) */
         .practice-speaking-stepper-box {
@@ -2903,9 +3083,9 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     <span>Yangi so‘z</span>
                   </div>
 
-                  {/* Word title + Audio/Mic Action Buttons */}
+                  {/* Word title + Audio icon + Sinash button right beside it */}
                   <div className="practice-word-row">
-                    <div className="practice-word-title-wrap">
+                    <div className="practice-word-title-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <h3 className="practice-word-title">
                         {currentLangData.vocab.word}
                       </h3>
@@ -2916,25 +3096,13 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                       >
                         {activeSpeakingText === currentLangData.vocab.word ? <VolumeX size={17} /> : <Volume2 size={17} />}
                       </button>
-                    </div>
-
-                    {/* Dual Action Buttons: Tinglash (Blue) & Sinash (Teal) */}
-                    <div className="practice-dual-action-btns">
-                      <button
-                        onClick={() => handlePlayTTS(currentLangData.vocab.word)}
-                        className="practice-action-btn-listen"
-                        title="Talaffuzni tinglash"
-                      >
-                        <Volume2 size={15} />
-                        <span>Tinglash</span>
-                      </button>
                       <button
                         onClick={handleTestVocabWord}
                         className={`practice-action-btn-test ${isListeningVocabWord ? 'is-active' : ''}`}
-                        title="Talaffuzingizni mikrofonda sinash"
+                        title="So‘z talaffuzini mikrofonda sinash"
                       >
                         <Mic size={15} />
-                        <span>{isListeningVocabWord ? 'Eshitilmoqda...' : 'Sinash'}</span>
+                        <span>{isListeningVocabWord ? 'Eşitilmoqda...' : 'Sinash'}</span>
                       </button>
                     </div>
                   </div>
@@ -2959,51 +3127,100 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                     </p>
                   </div>
 
-                  {/* Example Phrase Card with Copy Icon */}
+                  {/* Example Phrase Card with Gapni Tinglash & Copy Icon */}
                   <div className="practice-example-box">
                     <div className="practice-example-head">
                       <span className="practice-example-label">
                         NAMUNA GAP (EXAMPLE PHRASE):
                       </span>
-                      <button
-                        onClick={() => handleCopyExample(currentLangData.vocab.examplePhrase)}
-                        className="practice-copy-btn"
-                        title={copiedPhrase ? "Nusxa olindi!" : "Gapdan nusxa olish"}
-                      >
-                        {copiedPhrase ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
-                      </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                          onClick={() => handlePlayTTS(currentLangData.vocab.examplePhrase)}
+                          className="practice-action-btn-listen"
+                          style={{ padding: '5px 12px', fontSize: '12px', minWidth: 'auto' }}
+                          title="Namuna gapni tinglash"
+                        >
+                          {activeSpeakingText === currentLangData.vocab.examplePhrase ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                          <span>{activeSpeakingText === currentLangData.vocab.examplePhrase ? "To'xtatish" : "Gapni tinglash"}</span>
+                        </button>
+                        <button
+                          onClick={() => handleCopyExample(currentLangData.vocab.examplePhrase)}
+                          className="practice-copy-btn"
+                          title={copiedPhrase ? "Nusxa olindi!" : "Gapdan nusxa olish"}
+                        >
+                          {copiedPhrase ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+                        </button>
+                      </div>
                     </div>
 
                     <div className="practice-example-sentence">
                       "{currentLangData.vocab.examplePhrase}"
                     </div>
 
-                    {/* Word & Phrase Scores Feedback */}
-                    {(vocabWordScore !== null || vocabPhraseScore !== null) && (
-                      <div style={{ display: 'flex', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
-                        {vocabWordScore !== null && (
+                    {/* Live interim while recording word */}
+                    {isListeningVocabWord && vocabInterim && (
+                      <div style={{
+                        marginTop: '8px',
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        background: 'rgba(56, 189, 248, 0.12)',
+                        border: '1px dashed #38bdf8',
+                        color: '#38bdf8',
+                        fontSize: '12.5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                        <Mic size={14} className="animate-pulse" />
+                        <span>Eşitilmoqda: <strong>"{vocabInterim}"</strong></span>
+                      </div>
+                    )}
+
+                    {/* Word Pronunciation Accuracy Result */}
+                    {vocabWordScore !== null && (
+                      <div style={{
+                        marginTop: '10px',
+                        padding: '10px 14px',
+                        borderRadius: '12px',
+                        background: vocabWordScore >= 80 ? 'rgba(16, 185, 129, 0.12)' : vocabWordScore >= 50 ? 'rgba(245, 158, 11, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                        border: `1.5px solid ${vocabWordScore >= 80 ? 'rgba(16, 185, 129, 0.6)' : vocabWordScore >= 50 ? 'rgba(245, 158, 11, 0.6)' : 'rgba(239, 68, 68, 0.6)'}`,
+                        boxShadow: `0 0 16px ${vocabWordScore >= 80 ? 'rgba(16, 185, 129, 0.2)' : vocabWordScore >= 50 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                           <span style={{
-                            fontSize: '12px',
-                            fontWeight: 800,
-                            padding: '4px 11px',
-                            borderRadius: '7px',
-                            background: vocabWordScore >= 80 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                            color: vocabWordScore >= 80 ? '#10b981' : '#f59e0b'
+                            fontSize: '11px',
+                            fontWeight: 850,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.6px',
+                            color: vocabWordScore >= 80 ? '#34d399' : vocabWordScore >= 50 ? '#fbbf24' : '#f87171'
                           }}>
-                            🎯 So‘z talaffuz bali: {vocabWordScore}%
+                            {vocabWordScore >= 80 ? '✓ TÖĞRI TALAFFUZ' : vocabWordScore >= 50 ? '⚠️ YAŞIRIŞ / YAQIN' : '✗ NOTÖĞRI TALAFFUZ'}
                           </span>
+                          <strong style={{
+                            fontSize: '13.5px',
+                            fontWeight: 850,
+                            color: vocabWordScore >= 80 ? '#34d399' : vocabWordScore >= 50 ? '#fbbf24' : '#f87171'
+                          }}>
+                            🎯 Aniqlik bali: {vocabWordScore}%
+                          </strong>
+                        </div>
+
+                        {vocabWordRecognized && (
+                          <div style={{ fontSize: '13px', color: '#f1f5f9' }}>
+                            <span style={{ color: '#94a3b8' }}>Siz aytgan so‘z:</span> <strong>"{vocabWordRecognized}"</strong>
+                            {vocabWordScore < 80 && (
+                              <span style={{ color: '#94a3b8', marginLeft: '8px' }}>(Kutilgan: <strong>"{currentLangData.vocab.word}"</strong>)</span>
+                            )}
+                          </div>
                         )}
-                        {vocabPhraseScore !== null && (
-                          <span style={{
-                            fontSize: '12px',
-                            fontWeight: 800,
-                            padding: '4px 11px',
-                            borderRadius: '7px',
-                            background: vocabPhraseScore >= 80 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                            color: vocabPhraseScore >= 80 ? '#10b981' : '#f59e0b'
-                          }}>
-                            ⭐ Gap talaffuz bali: {vocabPhraseScore}%
-                          </span>
+
+                        {vocabWordFeedback && (
+                          <div style={{ fontSize: '12px', color: '#cbd5e1', fontStyle: 'italic' }}>
+                            {vocabWordFeedback}
+                          </div>
                         )}
                       </div>
                     )}

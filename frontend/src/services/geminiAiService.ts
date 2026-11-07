@@ -125,6 +125,8 @@ export interface SpeakingEvaluationResult {
   pronunciationFeedback: string;
   feedback: string;
   improvements: string[];
+  mistakes?: string[];
+  alternativePhrasing?: string;
   isLiveAi: boolean;
   isSilence?: boolean;
   providerModel?: string;
@@ -624,8 +626,10 @@ Baholash mezonlari:
 2. Lexical Resource (0-100)
 3. Grammatical Range & Accuracy (0-100)
 4. Umumiy ball (0-100) va CEFR darajasi (A1, A2, B1, B2, C1, C2)
-5. Talaffuz va sur'at tavsiyasi (Pronunciation feedback)
-6. Xulosa va 2 ta amaliy maslahat.
+5. Aniqlangan xatoliklar (Grammatik xatolar, noto'g'ri qo'llangan so'zlar yoki predloglar)
+6. Muqobil ifoda (Alternative phrasing - ushbu fikrni ravon va tabiiy gapirish varianti)
+7. Talaffuz va sur'at tavsiyasi (Pronunciation feedback)
+8. Xulosa va 2 ta amaliy maslahat.
 
 Javobni FAQAT quyidagi JSON formatida qaytaring:
 {
@@ -634,6 +638,10 @@ Javobni FAQAT quyidagi JSON formatida qaytaring:
   "fluencyScore": 84,
   "vocabularyScore": 88,
   "grammarScore": 83,
+  "mistakes": [
+    "Xatolik misoli: '...' o'rniga '...' ishlatilishi lozim edi"
+  ],
+  "alternativePhrasing": "Tabiiy va ravon ifodalangan muqobil gap (ingliz tilida)",
   "pronunciationFeedback": "Talaffuz va urg'u bo'yicha maslahat (Ş, Ç, Ğ, Ö harflarida)",
   "feedback": "Javobning qisqacha xolis xulosasi",
   "improvements": [
@@ -686,6 +694,10 @@ ${cleanSpoken}
     fluencyScore: Math.min(95, score + 2),
     vocabularyScore: Math.max(60, score - 3),
     grammarScore: score,
+    mistakes: wordCount < 6
+      ? ['Javob juda qisqa bo‘ldi. Fikrni to‘liq ochib berish uchun kamida 2-3 ta kengaytirilgan gap tuzish maqsadga muvofiq.']
+      : ['Gap tuzilishida akademik bog‘lovchilar (masalan: "furthermore", "in addition", "consequently") yetarlicha qo‘llanilmadi.'],
+    alternativePhrasing: `In my perspective, regarding this question, I firmly believe that regular practice and immersion are crucial keys to real progress.`,
     pronunciationFeedback: 'Ovoz intonatsiyasi va urg‘ular tushunarli. So‘zlar orasidagi to‘xtalishlarni qisqartirish orqali nutq ravonligini oshiring.',
     feedback: `Nutq qabul qilindi (${wordCount} ta so‘z). Fikr bildirishga intilish yaxshi, nutq sur’atini barqaror saqlang.`,
     improvements: [
