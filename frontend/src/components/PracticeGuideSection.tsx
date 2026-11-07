@@ -14,7 +14,7 @@ import {
   PracticeGuideConfig, LanguagePracticeGuide, DEFAULT_PRACTICE_GUIDE
 } from '../data/practiceGuideData';
 import {
-  evaluateSpeakingWithGemini, evaluateShadowingWithGemini
+  evaluateSpeakingWithGemini, evaluateShadowingWithGemini, analyzeSpokenSpeechLinguistically
 } from '../services/geminiAiService';
 import confetti from 'canvas-confetti';
 import { motion } from 'framer-motion';
@@ -738,16 +738,24 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           if (aiRes.score >= 80) triggerConfetti();
         }).catch(() => {
           setSpeakingAiLoading((prev) => ({ ...prev, [questionId]: false }));
-          const score = Math.max(60, Math.min(94, Math.round(55 + words.length * 5)));
+          const dynRes = analyzeSpokenSpeechLinguistically({
+            spokenText: clean,
+            question: questionText,
+            part: 'part1',
+            targetLanguage: selectedLang
+          });
           setSpeakingScores((prev) => ({
             ...prev,
             [questionId]: {
-              score,
+              score: dynRes.score,
               text: clean,
-              cefrLevel: score >= 85 ? 'C1' : score >= 75 ? 'B2' : 'B1',
-              feedback: 'Nutq qabul qilindi. Fikr bildirishga intilish yaxshi.',
-              mistakes: ['Murakkab grammatik strukturalar yetarli emas.'],
-              alternativePhrasing: `Regarding this topic, I would emphasize that regular practice and immersion are essential keys to success.`
+              cefrLevel: dynRes.cefrLevel,
+              feedback: dynRes.feedback,
+              mistakes: dynRes.mistakes,
+              alternativePhrasing: dynRes.alternativePhrasing,
+              improvements: dynRes.improvements,
+              pronunciationFeedback: dynRes.pronunciationFeedback,
+              isLiveAi: false
             }
           }));
         });
@@ -960,10 +968,14 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         /* Card Bottom Navigation (Chevrons & Dots) in Light Mode */
         .welcome-preview-section.light-preview-section .practice-card-bottom-nav {
           border-top: 1.5px solid rgba(226, 232, 240, 0.9) !important;
+          background: rgba(255, 255, 255, 0.98) !important;
+          backdrop-filter: blur(16px) !important;
+          -webkit-backdrop-filter: blur(16px) !important;
           position: relative !important;
-          z-index: 10 !important;
-          margin-top: 28px !important;
-          padding-top: 20px !important;
+          z-index: 30 !important;
+          margin-top: auto !important;
+          padding-top: 10px !important;
+          padding-bottom: 4px !important;
         }
 
         /* Subtle Light Mode Wave Tint (Prevents dark blob under pagination) */
@@ -1304,11 +1316,13 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
         .practice-shadowing-grid {
           display: grid;
           grid-template-columns: 340px 1fr;
+          grid-template-rows: minmax(0, 1fr);
           gap: 28px;
           align-items: stretch;
-          flex: 1;
+          flex: 1 1 0;
           min-height: 0;
-          height: 100%;
+          max-height: 440px;
+          overflow: hidden;
           position: relative;
           z-index: 1;
         }
@@ -1317,8 +1331,8 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           border-radius: 20px;
           overflow: hidden;
           height: 100%;
-          min-height: 240px;
-          max-height: 420px;
+          min-height: 200px;
+          max-height: 340px;
           background: var(--pg-box-bg);
           border: 1px solid var(--pg-box-border);
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -1564,13 +1578,14 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           gap: 12px;
           word-break: break-word;
           overflow-wrap: break-word;
-          flex: 1;
+          flex: 1 1 0;
           min-height: 0;
           height: 100%;
           max-height: 100% !important;
           overflow-y: auto !important;
           overflow-x: hidden !important;
           padding-right: 8px !important;
+          padding-bottom: 48px !important;
           scrollbar-width: thin !important;
           scrollbar-color: #6366f1 rgba(15, 23, 42, 0.4) !important;
           overscroll-behavior-y: contain;
@@ -2499,12 +2514,16 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
           align-items: center;
           justify-content: center;
           gap: 14px;
-          margin-top: 14px;
-          padding-top: 12px;
-          border-top: 1px solid rgba(255, 255, 255, 0.08);
-          position: relative;
-          z-index: 10;
-          flex-shrink: 0;
+          margin-top: auto !important;
+          padding-top: 10px !important;
+          padding-bottom: 4px !important;
+          border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+          background: rgba(7, 14, 38, 0.98) !important;
+          backdrop-filter: blur(16px) !important;
+          -webkit-backdrop-filter: blur(16px) !important;
+          position: relative !important;
+          z-index: 30 !important;
+          flex-shrink: 0 !important;
         }
         .practice-slider-circle-btn {
           width: 36px;
@@ -3039,7 +3058,7 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
             flex-direction: column !important;
             gap: 8px !important;
             padding-right: 0 !important;
-            padding-bottom: 24px !important;
+            padding-bottom: 48px !important;
           }
           .practice-word-title {
             font-size: 17px !important;
@@ -4414,12 +4433,12 @@ export function PracticeGuideSection({ guideConfig, onBegin, dark }: PracticeGui
                         {/* Comprehensive AI Evaluation Card */}
                         {scoreObj && !isRecordingThis && !speakingAiLoading[q.id] && (
                           <div style={{
-                            marginTop: '12px',
-                            padding: '12px 16px',
+                            marginTop: '10px',
+                            padding: '12px 14px',
                             borderRadius: '14px',
-                            background: scoreObj.score >= 80 ? 'rgba(6, 30, 22, 0.88)' : scoreObj.score >= 50 ? 'rgba(30, 22, 10, 0.88)' : 'rgba(35, 10, 15, 0.88)',
-                            border: `1.5px solid ${scoreObj.score >= 80 ? 'rgba(16, 185, 129, 0.6)' : scoreObj.score >= 50 ? 'rgba(245, 158, 11, 0.6)' : 'rgba(239, 68, 68, 0.6)'}`,
-                            boxShadow: `0 0 20px ${scoreObj.score >= 80 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)'}`,
+                            background: scoreObj.score >= 80 ? 'rgba(6, 30, 22, 0.92)' : scoreObj.score >= 50 ? 'rgba(30, 22, 10, 0.92)' : 'rgba(35, 10, 15, 0.92)',
+                            border: `1.5px solid ${scoreObj.score >= 80 ? 'rgba(16, 185, 129, 0.5)' : scoreObj.score >= 50 ? 'rgba(245, 158, 11, 0.5)' : 'rgba(239, 68, 68, 0.5)'}`,
+                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
                             display: 'flex',
                             flexDirection: 'column',
                             gap: '8px'
